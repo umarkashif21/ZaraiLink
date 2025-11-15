@@ -78,7 +78,7 @@
     *   You need *two* terminal windows open: one running the Django backend (`python manage.py runserver`) and one running the React frontend (`npm start`).
 
 ## Team Members
-- umarkashif21 - [Your Role, e.g., Backend Lead / FYP Lead]
-- [Partner 2 Name] - [Role]
-- [Partner 3 Name] - [Role]
-- [Partner 4 Name] - [Role]
+- umarkashif21 - FYP Lead
+- Fahad Nadeem - Supreme Leader
+- Ibrahim Rana - Leader
+- Salman Adnan - Tech Lead
