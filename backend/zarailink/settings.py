@@ -74,11 +74,14 @@ WSGI_APPLICATION = 'zarailink.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',  # Use PostgreSQL
+        'NAME': 'ZaraiLink',                     # <-- Your database name from Step 3
+        'USER': 'postgres',                         # <-- Your PostgreSQL username
+        'PASSWORD': '1234',       # <-- Your PostgreSQL password
+        'HOST': 'localhost',                        # <-- Local server
+        'PORT': '5432',                             # <-- Default port
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
