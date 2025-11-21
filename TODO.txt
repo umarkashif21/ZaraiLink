@@ -1,0 +1,2 @@
+Resend eamil verification not working when we are redirected to the page from "Login" page
+
