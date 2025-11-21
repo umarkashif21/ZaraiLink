@@ -195,6 +195,7 @@ def api_login(request):
         return JsonResponse({"error": "Invalid request"}, status=400)
 
 
+@csrf_exempt
 def api_logout(request):
     logout(request)
     return JsonResponse({"success": True})
