@@ -22,6 +22,10 @@ class User(AbstractUser):
     )
     token_created_at = models.DateTimeField(default=timezone.now)
 
+    # New fields for enhanced schema
+    phone_number = models.CharField(max_length=30, blank=True, null=True, verbose_name=_("Phone Number"))
+    job_title = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Job Title"))
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
@@ -45,3 +49,46 @@ class User(AbstractUser):
         self.verification_token = uuid.uuid4()
         self.token_created_at = timezone.now()
         self.save(update_fields=['verification_token', 'token_created_at'])
+
+
+class UserAlertPreference(models.Model):
+    """User's notification preferences for alerts"""
+    FREQUENCY_CHOICES = [
+        ('realtime', 'Realtime'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+    ]
+    
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='alert_preferences'
+    )
+    followed_products = models.JSONField(
+        default=list,
+        help_text="JSON array of product IDs"
+    )
+    followed_countries = models.JSONField(
+        default=list,
+        help_text="JSON array of country names"
+    )
+    categories = models.JSONField(
+        default=list,
+        help_text="JSON array of alert categories"
+    )
+    notify_email = models.BooleanField(default=True)
+    notify_in_app = models.BooleanField(default=True)
+    frequency = models.CharField(
+        max_length=50,
+        choices=FREQUENCY_CHOICES,
+        default='daily'
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'User Alert Preference'
+        verbose_name_plural = 'User Alert Preferences'
+
+    def __str__(self):
+        return f"{self.user.email} - Alert Preferences"
