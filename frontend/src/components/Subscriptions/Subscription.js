@@ -79,7 +79,10 @@ const Subscription = () => {
           'X-CSRFToken': csrftoken,
         },
         credentials: 'include',
-        body: JSON.stringify({ code: redeemCode.trim() }),
+        body: JSON.stringify({ 
+          code: redeemCode.trim(),
+          plan_id: selectedPlan?.id  // Send the selected plan ID
+        }),
       });
 
       const data = await response.json();
