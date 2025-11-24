@@ -82,11 +82,11 @@ const Dashboard = () => {
 
             <div 
               className="action-card"
-              onClick={() => navigate('/trade-directory/find-suppliers')}
+              onClick={() => navigate('/trade-directory/find-buyers')}
             >
               <div className="action-icon buyer">🛒</div>
               <h3>Find Buyers</h3>
-              <p>Discover potential buyers for your products</p>
+              <p>Connect with verified buyers and distributors for your produce.</p>
               <span className="action-arrow">→</span>
             </div>
 

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+
+
 import { useAuth } from '../../context/AuthContext';
 import { Modal } from '../Common/Modal';
 import Navbar from '../Layout/Navbar';
@@ -15,6 +17,8 @@ const Subscription = () => {
   const [redeemCode, setRedeemCode] = useState('');
   const [redeeming, setRedeeming] = useState(false);
   const [redeemMessage, setRedeemMessage] = useState({ type: '', text: '' });
+
+  const [billingCycle, setBillingCycle] = useState('monthly');
 
   useEffect(() => {
     loadPlans();
@@ -89,6 +93,18 @@ const Subscription = () => {
     }
   };
 
+  const filteredPlans = plans.filter(plan => {
+    const name = plan.plan_name.toLowerCase();
+    const description = plan.description ? plan.description.toLowerCase() : '';
+    const isAnnual = name.includes('annually') || name.includes('yearly') || description.includes('annual');
+    
+    if (billingCycle === 'monthly') {
+      return !isAnnual;
+    } else {
+      return isAnnual;
+    }
+  });
+
   if (loading) {
     return (
       <div className="subscription-container">
@@ -113,10 +129,27 @@ const Subscription = () => {
         </div>
       </div>
 
-      <p className="subtitle">Choose a plan and redeem your code to get started</p>
+      <div className="subscription-controls">
+        <p className="subtitle">Choose a plan and redeem your code to get started</p>
+        
+        <div className="billing-toggle">
+          <button 
+            className={`toggle-btn ${billingCycle === 'monthly' ? 'active' : ''}`}
+            onClick={() => setBillingCycle('monthly')}
+          >
+            Monthly
+          </button>
+          <button 
+            className={`toggle-btn ${billingCycle === 'annual' ? 'active' : ''}`}
+            onClick={() => setBillingCycle('annual')}
+          >
+            Annually
+          </button>
+        </div>
+      </div>
 
       <div className="plans-grid">
-        {plans.map((plan) => (
+        {filteredPlans.map((plan) => (
           <div key={plan.id} className="plan-card">
             <div className="plan-header">
               <h3>{plan.plan_name}</h3>
@@ -128,7 +161,7 @@ const Subscription = () => {
             <div className="plan-tokens">
               <span className="tokens-value">{plan.tokens_included.toLocaleString()}</span>
               <span className="tokens-label">credits</span>
-              <span className="billing-cycle">per month</span>
+              <span className="billing-cycle">per {billingCycle === 'monthly' ? 'month' : 'year'}</span>
             </div>
 
             {plan.description && (

@@ -69,7 +69,10 @@ class RedeemCodeAdmin(admin.ModelAdmin):
     status_badge.short_description = 'Status'
     
     # Custom admin actions
-    actions = ['generate_codes_500', 'generate_codes_5k', 'generate_codes_15k']
+    actions = [
+        'generate_codes_500', 'generate_codes_5k', 'generate_codes_15k',
+        'generate_codes_6k_annual', 'generate_codes_60k_annual', 'generate_codes_900k_annual'
+    ]
     
     @admin.action(description='🎁 Generate 15 codes for 500 Credits Plan')
     def generate_codes_500(self, request, queryset):
@@ -82,6 +85,18 @@ class RedeemCodeAdmin(admin.ModelAdmin):
     @admin.action(description='🎁 Generate 15 codes for 15K Credits Plan')
     def generate_codes_15k(self, request, queryset):
         self._generate_codes(request, '15K Credits', 15)
+
+    @admin.action(description='🎁 Generate 15 codes for 6000 Credits Annually')
+    def generate_codes_6k_annual(self, request, queryset):
+        self._generate_codes(request, '6000 Credits Annually', 15)
+
+    @admin.action(description='🎁 Generate 15 codes for 60K Credits Annually')
+    def generate_codes_60k_annual(self, request, queryset):
+        self._generate_codes(request, '60K Credits Annually', 15)
+
+    @admin.action(description='🎁 Generate 15 codes for 900K Credits Annually')
+    def generate_codes_900k_annual(self, request, queryset):
+        self._generate_codes(request, '900K Credits Annually', 15)
     
     def _generate_codes(self, request, plan_name, count):
         try:

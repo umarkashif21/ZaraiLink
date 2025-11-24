@@ -48,11 +48,11 @@ class Command(BaseCommand):
             },
             # Annual Plans
             {
-                'plan_name': '6K Credits Annually',
+                'plan_name': '6000 Credits Annually',
                 'price': 99.00,
                 'currency': 'PKR',
                 'tokens_included': 6000,
-                'description': 'Starter annual plan - save with yearly billing (500/month equivalent)',
+                'description': 'Starter annual plan - save with yearly billing',
                 'features': {
                     'contacts_unlock': '6,000 contacts per year',
                     'support': 'Email support',
@@ -65,7 +65,7 @@ class Command(BaseCommand):
                 'price': 350.00,
                 'currency': 'PKR',
                 'tokens_included': 60000,
-                'description': 'Standard annual plan - maximum savings (5K/month equivalent)',
+                'description': 'Standard annual plan - maximum savings',
                 'features': {
                     'contacts_unlock': '60,000 contacts per year',
                     'support': 'Priority email support',
@@ -79,7 +79,7 @@ class Command(BaseCommand):
                 'price': 1090.00,
                 'currency': 'PKR',
                 'tokens_included': 900000,
-                'description': 'Ultimate annual plan - best value (75K/month equivalent)',
+                'description': 'Ultimate annual plan - best value',
                 'features': {
                     'contacts_unlock': '900,000 contacts per year',
                     'support': 'Premium support + dedicated account manager',
