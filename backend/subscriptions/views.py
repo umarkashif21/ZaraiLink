@@ -62,8 +62,41 @@ def redeem_code(request):
             'status': 'error',
             'message': 'Invalid redeem code'
         }, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
         return Response({
             'status': 'error',
             'message': f'An error occurred: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.urls import reverse
+
+@user_passes_test(lambda u: u.is_staff)
+def generate_codes_view(request):
+    if request.method == 'POST':
+        plan_id = request.POST.get('plan_id')
+        try:
+            plan = SubscriptionPlan.objects.get(id=plan_id)
+            codes = []
+            for _ in range(10):
+                while True:
+                    code = RedeemCode.generate_code()
+                    if not RedeemCode.objects.filter(code=code).exists():
+                        break
+                
+                RedeemCode.objects.create(
+                    code=code,
+                    plan=plan,
+                    status='active'
+                )
+                codes.append(code)
+            
+            messages.success(request, f'Successfully generated 10 codes for {plan.plan_name}.')
+        except SubscriptionPlan.DoesNotExist:
+            messages.error(request, 'Selected plan does not exist.')
+        except Exception as e:
+            messages.error(request, f'Error generating codes: {str(e)}')
+            
+    return redirect('admin:index')

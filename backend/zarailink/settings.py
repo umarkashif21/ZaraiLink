@@ -73,7 +73,7 @@ ROOT_URLCONF = 'zarailink.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'accounts' / 'templates'],  # <-- ADD THIS
+        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'accounts' / 'templates'],  # <-- ADD THIS
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

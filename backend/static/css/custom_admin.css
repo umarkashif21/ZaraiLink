@@ -1,0 +1,184 @@
+/* Custom Admin Theme - Light & Clean */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #10b981;
+    --primary-hover: #059669;
+    --text-color: #1f2937;
+    --bg-color: #f3f4f6;
+    --card-bg: #ffffff;
+    --border-color: #e5e7eb;
+    --header-bg: #ffffff;
+    --sidebar-bg: #ffffff;
+    --link-color: #10b981;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+/* Header */
+#header {
+    background: var(--header-bg);
+    color: var(--text-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 1rem 2rem;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#header #branding h1 {
+    color: var(--text-color);
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+#header a:link, #header a:visited {
+    color: var(--text-color);
+}
+
+#header .user-tools {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Sidebar & Content */
+#container {
+    background: transparent;
+    min-width: 0;
+}
+
+.main > .content {
+    padding: 2rem;
+}
+
+/* Modules/Cards */
+.module {
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.module caption {
+    background: transparent;
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+td, th {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    background: #f9fafb;
+}
+
+tr.row1, tr.row2 {
+    background: white;
+}
+
+tr:hover td {
+    background: #f9fafb;
+}
+
+/* Buttons */
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: none;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
+    background: var(--primary-hover);
+}
+
+.button.default, input[type=submit].default, .submit-row input.default {
+    background: var(--primary-color);
+}
+
+/* Breadcrumbs */
+div.breadcrumbs {
+    background: white;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    color: #6b7280;
+}
+
+div.breadcrumbs a {
+    color: var(--primary-color);
+}
+
+/* Forms */
+.form-row {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+input[type=text], input[type=password], input[type=email], input[type=url], input[type=number], textarea, select {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.5rem;
+    font-family: inherit;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Custom Dropdown in Header */
+.admin-plan-select {
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.admin-generate-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.admin-generate-form {
+    display: flex;
+    align-items: center;
+    margin-right: 2rem;
+}

@@ -1,91 +1,56 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from subscriptions.models import SubscriptionPlan, RedeemCode
-from django.utils import timezone
-from datetime import timedelta
-
+from django.db.models import Q
 
 class Command(BaseCommand):
-    help = 'Generate redeem codes for subscription plans'
+    help = 'Generate redeem codes for a specific subscription plan'
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            'plan_id',
-            type=int,
-            help='Subscription plan ID to generate codes for'
-        )
-        parser.add_argument(
-            '--count',
-            type=int,
-            default=10,
-            help='Number of codes to generate (default: 10)'
-        )
-        parser.add_argument(
-            '--length',
-            type=int,
-            default=12,
-            help='Code length (default: 12)'
-        )
-        parser.add_argument(
-            '--expires-days',
-            type=int,
-            default=None,
-            help='Number of days until expiration (optional)'
-        )
+        parser.add_argument('plan_identifier', type=str, help='ID or Name of the subscription plan')
+        parser.add_argument('--count', type=int, default=10, help='Number of codes to generate (default: 10)')
 
     def handle(self, *args, **options):
-        plan_id = options['plan_id']
+        plan_identifier = options['plan_identifier']
         count = options['count']
-        length = options['length']
-        expires_days = options['expires_days']
 
-        # Get the subscription plan
         try:
-            plan = SubscriptionPlan.objects.get(id=plan_id)
+            # Try to fetch by ID first
+            if plan_identifier.isdigit():
+                plan = SubscriptionPlan.objects.get(id=int(plan_identifier))
+            else:
+                # Try to fetch by exact name, then case-insensitive name
+                try:
+                    plan = SubscriptionPlan.objects.get(plan_name=plan_identifier)
+                except SubscriptionPlan.DoesNotExist:
+                    plan = SubscriptionPlan.objects.get(plan_name__iexact=plan_identifier)
+
         except SubscriptionPlan.DoesNotExist:
-            self.stdout.write(self.style.ERROR(f'Subscription plan with ID {plan_id} does not exist'))
-            return
+            # If still not found, try partial match
+            plans = SubscriptionPlan.objects.filter(plan_name__icontains=plan_identifier)
+            if plans.count() == 1:
+                plan = plans.first()
+            elif plans.count() > 1:
+                plan_names = ", ".join([p.plan_name for p in plans])
+                raise CommandError(f'Multiple plans found matching "{plan_identifier}": {plan_names}. Please be more specific.')
+            else:
+                raise CommandError(f'Plan "{plan_identifier}" not found.')
 
-        # Calculate expiration date if specified
-        expires_at = None
-        if expires_days:
-            expires_at = timezone.now() + timedelta(days=expires_days)
+        self.stdout.write(f'Generating {count} codes for plan: {plan.plan_name}...')
 
-        # Generate codes
-        generated_codes = []
-        for i in range(count):
-            # Generate unique code
+        codes = []
+        for _ in range(count):
             while True:
-                code = RedeemCode.generate_code(length=length)
+                code = RedeemCode.generate_code()
                 if not RedeemCode.objects.filter(code=code).exists():
                     break
-
-            # Create the redeem code
-            redeem_code = RedeemCode.objects.create(
+            
+            RedeemCode.objects.create(
                 code=code,
                 plan=plan,
-                status='active',
-                expires_at=expires_at
+                status='active'
             )
-            generated_codes.append(redeem_code.code)
+            codes.append(code)
 
-        # Display results
-        self.stdout.write(self.style.SUCCESS(f'\n✅ Successfully generated {count} redeem codes for "{plan.plan_name}"'))
-        self.stdout.write(f'\nPlan: {plan.plan_name}')
-        self.stdout.write(f'Tokens: {plan.tokens_included}')
-        self.stdout.write(f'Billing Cycle: {plan.billing_cycle if hasattr(plan, "billing_cycle") else "N/A"}')
-        
-        if expires_at:
-            self.stdout.write(f'Expires: {expires_at.strftime("%Y-%m-%d %H:%M:%S")}')
-        else:
-            self.stdout.write('Expires: Never')
-
-        self.stdout.write('\n' + '=' * 50)
-        self.stdout.write(self.style.SUCCESS('\nGenerated Codes:'))
-        self.stdout.write('=' * 50 + '\n')
-        
-        for idx, code in enumerate(generated_codes, 1):
-            self.stdout.write(f'{idx:3d}. {code}')
-
-        self.stdout.write('\n' + '=' * 50)
-        self.stdout.write(f'\n💾 Codes saved to database and ready to redeem!')
-        self.stdout.write(f'📋 Total codes generated: {count}\n')
+        self.stdout.write(self.style.SUCCESS(f'Successfully generated {count} codes:'))
+        for code in codes:
+            self.stdout.write(code)
