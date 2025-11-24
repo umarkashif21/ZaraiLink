@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
@@ -19,30 +20,49 @@ const FindBuyers = () => {
   const [regions, setRegions] = useState([]);
   const [sectors, setSectors] = useState([]);
   const [types, setTypes] = useState([]);
-  // Roles not needed as filter since this is specific to Buyers
+  const [buyerRoleId, setBuyerRoleId] = useState(null);
 
   useEffect(() => {
     loadFilterOptions();
-    searchCompanies();
   }, []);
+
+  useEffect(() => {
+    if (buyerRoleId) {
+      searchCompanies();
+    }
+  }, [buyerRoleId]);
 
   const loadFilterOptions = async () => {
     try {
-      const [regionsRes, sectorsRes, typesRes] = await Promise.all([
+      const [regionsRes, sectorsRes, typesRes, rolesRes] = await Promise.all([
         fetch('http://localhost:8000/api/companies/regions/'),
         fetch('http://localhost:8000/api/sectors/'),
-        fetch('http://localhost:8000/api/company-types/')
+        fetch('http://localhost:8000/api/company-types/'),
+        fetch('http://localhost:8000/api/company-roles/')
       ]);
 
       if (regionsRes.ok) setRegions(await regionsRes.json());
       if (sectorsRes.ok) setSectors(await sectorsRes.json());
       if (typesRes.ok) setTypes(await typesRes.json());
+      
+      if (rolesRes.ok) {
+        const roles = await rolesRes.json();
+        const buyerRole = roles.find(r => r.name.toLowerCase() === 'buyer');
+        if (buyerRole) {
+          setBuyerRoleId(buyerRole.id);
+        } else {
+          console.error('Buyer role not found in backend');
+          setError('System configuration error: Buyer role missing');
+        }
+      }
     } catch (err) {
       console.error('Failed to load filter options', err);
     }
   };
 
   const searchCompanies = async () => {
+    if (!buyerRoleId) return;
+    
     setLoading(true);
     setError(null);
 
@@ -52,7 +72,7 @@ const FindBuyers = () => {
       if (filters.region) params.append('region', filters.region);
       if (filters.sector) params.append('sector', filters.sector);
       if (filters.type) params.append('type', filters.type);
-      params.append('role', 'Buyer'); // Enforce Buyer role
+      params.append('role', buyerRoleId); // Use dynamic ID
 
       const response = await fetch(
         `http://localhost:8000/api/companies/?${params.toString()}`,
@@ -116,7 +136,9 @@ const FindBuyers = () => {
         // Better: refactor searchCompanies to take params, but keeping it consistent with FindSuppliers structure
         // Let's just reload the page or re-fetch manually
         // Re-fetching manually with default values:
-        fetchCompaniesWithParams({ role: 'Buyer' });
+        if (buyerRoleId) {
+            fetchCompaniesWithParams({ role: buyerRoleId });
+        }
     }, 0);
   };
 
