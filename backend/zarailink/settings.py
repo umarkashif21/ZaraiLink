@@ -48,6 +48,10 @@ INSTALLED_APPS = [
 
     # Custom Apps
     'accounts',
+    'subscriptions',
+    'companies',
+    'trade_data',
+    'market_intel',
 ]
 
 MIDDLEWARE = [
