@@ -29,6 +29,7 @@ def list_plans(request):
 def redeem_code(request):
     """Redeem a subscription code"""
     code_str = request.data.get('code', '').strip().upper()
+    plan_id = request.data.get('plan_id')
     
     if not code_str:
         return Response({
@@ -39,6 +40,13 @@ def redeem_code(request):
     try:
         # Find the code
         code = RedeemCode.objects.select_for_update().get(code=code_str)
+        
+        # Validate that the code belongs to the selected plan
+        if plan_id and code.plan.id != plan_id:
+            return Response({
+                'status': 'error',
+                'message': f'This code is for "{code.plan.plan_name}", not the selected plan'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         # Attempt to redeem
         success, message = code.redeem(request.user)
@@ -62,10 +70,12 @@ def redeem_code(request):
             'status': 'error',
             'message': 'Invalid redeem code'
         }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
         return Response({
             'status': 'error',
             'message': f'An error occurred: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 from django.contrib.auth.decorators import user_passes_test
