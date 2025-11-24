@@ -16,8 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
+
+# Simple favicon handler to prevent 404 errors
+def favicon(request):
+    return HttpResponse(status=204)  # No Content
 
 urlpatterns = [
+    path('favicon.ico', favicon),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('api/', include('companies.urls')),
