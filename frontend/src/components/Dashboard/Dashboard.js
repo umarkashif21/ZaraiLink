@@ -1,99 +1,161 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Navbar from '../Layout/Navbar';
+import './Dashboard.css';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, tokenBalance } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex flex-col">
-      {/* Navigation Bar */}
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <div className="text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
-        <div className="flex items-center space-x-4">
-          <span className="text-gray-700">Welcome, {user?.name || user?.email}!</span>
-          <button
-            onClick={handleLogout}
-            className="bg-[#1A4D2E] text-white px-4 py-2 rounded-lg hover:bg-[#163f26] transition"
-          >
-            Logout
-          </button>
+    <div className="dashboard-wrapper">
+      <Navbar />
+      
+      <div className="dashboard-container">
+        {/* Hero Section */}
+        <div className="hero-section">
+          <h1>Welcome back, {user?.name || user?.email?.split('@')[0]}! 👋</h1>
+          <p className="hero-subtitle">
+            Your gateway to Pakistan's agricultural trade intelligence
+          </p>
         </div>
-      </nav>
 
-      {/* Main Dashboard Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-10">
-        <div className="bg-white w-full max-w-4xl rounded-2xl shadow-lg p-10 space-y-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-[#1A4D2E] mb-4">
-              Welcome to ZaraiLink Dashboard
-            </h1>
-            <p className="text-gray-600 text-lg">
-              Your Gateway to Pakistan's Verified Trade Intelligence
-            </p>
-          </div>
-
-          {/* User Info Card */}
-          <div className="bg-green-50 rounded-lg p-6 space-y-3">
-            <h2 className="text-2xl font-semibold text-[#1A4D2E] mb-3">Your Account</h2>
-            <div className="space-y-2">
-              <p className="text-gray-700">
-                <span className="font-medium">Name:</span> {user?.name || 'Not provided'}
-              </p>
-              <p className="text-gray-700">
-                <span className="font-medium">Email:</span> {user?.email}
-              </p>
-              <p className="text-gray-700">
-                <span className="font-medium">Status:</span>{' '}
-                <span className={user?.email_verified ? 'text-green-600' : 'text-yellow-600'}>
-                  {user?.email_verified ? ' Verified' : 'Pending Verification'}
-                </span>
-              </p>
+        {/* Stats Cards */}
+        <div className="stats-grid">
+          <div className="stat-card token-card">
+            <div className="stat-icon">💎</div>
+            <div className="stat-content">
+              <h3>{tokenBalance || 0}</h3>
+              <p>Available Tokens</p>
             </div>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            <div className="bg-white border-2 border-green-200 rounded-lg p-6 hover:shadow-md transition">
-              <h3 className="text-xl font-semibold text-[#1A4D2E] mb-2">Trade Directory</h3>
-              <p className="text-gray-600">
-                Access verified suppliers and buyers across Pakistan's agricultural sector.
-              </p>
-            </div>
-            <div className="bg-white border-2 border-green-200 rounded-lg p-6 hover:shadow-md transition">
-              <h3 className="text-xl font-semibold text-[#1A4D2E] mb-2">Market Intelligence</h3>
-              <p className="text-gray-600">
-                Get real-time insights on commodity prices and market trends.
-              </p>
-            </div>
-            <div className="bg-white border-2 border-green-200 rounded-lg p-6 hover:shadow-md transition">
-              <h3 className="text-xl font-semibold text-[#1A4D2E] mb-2">Analytics Dashboard</h3>
-              <p className="text-gray-600">
-                Visualize trade patterns and identify business opportunities.
-              </p>
-            </div>
-            <div className="bg-white border-2 border-green-200 rounded-lg p-6 hover:shadow-md transition">
-              <h3 className="text-xl font-semibold text-[#1A4D2E] mb-2">Subscription Plans</h3>
-              <p className="text-gray-600">
-                Upgrade your account to unlock premium features and unlimited access.
-              </p>
-            </div>
-          </div>
-
-          {/* Call to Action */}
-          <div className="text-center mt-8">
-            <p className="text-gray-600 mb-4">
-              This is a demonstration dashboard. Full features coming soon!
-            </p>
-            <button className="bg-[#1A4D2E] text-white px-6 py-3 rounded-lg hover:bg-[#163f26] transition font-semibold">
-              Explore Features
+            <button 
+              onClick={() => navigate('/subscription')}
+              className="stat-action"
+            >
+              Get More →
             </button>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">🏭</div>
+            <div className="stat-content">
+              <h3>Discover</h3>
+              <p>Verified Suppliers</p>
+            </div>
+            <button 
+              onClick={() => navigate('/trade-directory/find-suppliers')}
+              className="stat-action"
+            >
+              Browse →
+            </button>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">🤝</div>
+            <div className="stat-content">
+              <h3>Connect</h3>
+              <p>Business Partners</p>
+            </div>
+            <button 
+              onClick={() => navigate('/trade-directory/find-suppliers')}
+              className="stat-action"
+            >
+              Explore →
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="quick-actions-section">
+          <h2>Quick Actions</h2>
+          <div className="actions-grid">
+            <div 
+              className="action-card"
+              onClick={() => navigate('/trade-directory/find-suppliers')}
+            >
+              <div className="action-icon supplier">🏭</div>
+              <h3>Find Suppliers</h3>
+              <p>Search verified agricultural suppliers across Pakistan</p>
+              <span className="action-arrow">→</span>
+            </div>
+
+            <div 
+              className="action-card"
+              onClick={() => navigate('/trade-directory/find-suppliers')}
+            >
+              <div className="action-icon buyer">🛒</div>
+              <h3>Find Buyers</h3>
+              <p>Discover potential buyers for your products</p>
+              <span className="action-arrow">→</span>
+            </div>
+
+            <div 
+              className="action-card"
+              onClick={() => navigate('/subscription')}
+            >
+              <div className="action-icon subscription">💳</div>
+              <h3>Manage Subscription</h3>
+              <p>View plans and redeem codes for more tokens</p>
+              <span className="action-arrow">→</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Features Section */}
+        <div className="features-section">
+          <h2>Platform Features</h2>
+          <div className="features-grid">
+            <div className="feature-item">
+              <span className="feature-icon">✓</span>
+              <div>
+                <h4>Verified Directory</h4>
+                <p>Access to PAR-verified agricultural businesses</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <span className="feature-icon">✓</span>
+              <div>
+                <h4>Direct Contacts</h4>
+                <p>Unlock key decision-maker contact information</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <span className="feature-icon">✓</span>
+              <div>
+                <h4>Company Profiles</h4>
+                <p>Detailed profiles with products and trade data</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <span className="feature-icon">✓</span>
+              <div>
+                <h4>Token System</h4>
+                <p>Flexible credit-based access to premium features</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="cta-section">
+          <div className="cta-content">
+            <h2>Ready to grow your business?</h2>
+            <p>Start exploring verified suppliers and unlock valuable contacts</p>
+            <div className="cta-buttons">
+              <button 
+                onClick={() => navigate('/trade-directory/find-suppliers')}
+                className="btn-primary-cta"
+              >
+                Browse Directory
+              </button>
+              <button 
+                onClick={() => navigate('/subscription')}
+                className="btn-secondary-cta"
+              >
+                View Plans
+              </button>
+            </div>
           </div>
         </div>
       </div>

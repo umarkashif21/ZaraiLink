@@ -79,10 +79,12 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    loading,
+    tokenBalance: user?.token_balance || 0,
     login,
     logout,
-    loading,
     isAuthenticated: !!user,
+    refreshUser: checkAuthStatus, // Allow components to refresh user data
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

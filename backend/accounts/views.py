@@ -186,7 +186,8 @@ def api_login(request):
                 "user": {
                     "name": f"{user.first_name} {user.last_name}".strip(),
                     "email": user.email,
-                    "email_verified": user.email_verified
+                    "email_verified": user.email_verified,
+                    "token_balance": user.token_balance
                 }
             })
         else:
@@ -211,7 +212,8 @@ def api_check_auth(request):
             "user": {
                 "name": f"{request.user.first_name} {request.user.last_name}".strip(),
                 "email": request.user.email,
-                "email_verified": request.user.email_verified
+                "email_verified": request.user.email_verified,
+                "token_balance": request.user.token_balance
             }
         })
     else:

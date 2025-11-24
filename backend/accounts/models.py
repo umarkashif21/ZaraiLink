@@ -25,6 +25,9 @@ class User(AbstractUser):
     # New fields for enhanced schema
     phone_number = models.CharField(max_length=30, blank=True, null=True, verbose_name=_("Phone Number"))
     job_title = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Job Title"))
+    
+    # Token balance for contact unlocking
+    token_balance = models.IntegerField(default=0, verbose_name=_("Token Balance"))
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
@@ -49,6 +52,24 @@ class User(AbstractUser):
         self.verification_token = uuid.uuid4()
         self.token_created_at = timezone.now()
         self.save(update_fields=['verification_token', 'token_created_at'])
+    
+    # Token management methods
+    def has_tokens(self, amount=1):
+        """Check if user has enough tokens"""
+        return self.token_balance >= amount
+    
+    def deduct_tokens(self, amount=1):
+        """Deduct tokens from balance"""
+        if self.has_tokens(amount):
+            self.token_balance -= amount
+            self.save(update_fields=['token_balance'])
+            return True
+        return False
+    
+    def add_tokens(self, amount):
+        """Add tokens to balance"""
+        self.token_balance += amount
+        self.save(update_fields=['token_balance'])
 
 
 class UserAlertPreference(models.Model):
