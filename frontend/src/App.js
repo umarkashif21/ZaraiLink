@@ -19,6 +19,10 @@ import EmailVerification from "./components/Auth/EmailVerification";
 import ResetPassword from "./components/Auth/ResetPassword";
 import VerifyEmailSuccess from "./components/Auth/VerifyEmailSuccess";
 import Dashboard from "./components/Dashboard/Dashboard";
+import FindSuppliers from "./components/TradeDirectory/FindSuppliers";
+import FindBuyers from "./components/TradeDirectory/FindBuyers";
+import CompanyProfile from "./components/TradeDirectory/CompanyProfile";
+import Subscription from "./components/Subscriptions/Subscription";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -60,18 +64,15 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
+    <AuthProvider>
+      <Router>
         <Routes>
-          {/* Redirect root "/" to /login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-
-          {/* Public Authentication Routes */}
+          {/* Public Routes */}
           <Route
-            path="/signup"
+            path="/"
             element={
               <PublicRoute>
-                <Signup />
+                <Login />
               </PublicRoute>
             }
           />
@@ -83,10 +84,18 @@ function App() {
               </PublicRoute>
             }
           />
+          <Route
+            path="/signup"
+            element={
+              <PublicRoute>
+                <Signup />
+              </PublicRoute>
+            }
+          />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/verify-email" element={<EmailVerification />} />
-          <Route path="/verify-email/:token" element={<VerifyEmailSuccess />} />
+          <Route path="/email-verification" element={<EmailVerification />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/verify-email/:token" element={<VerifyEmailSuccess />} />
 
           {/* Protected Routes */}
           <Route
@@ -97,9 +106,46 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
+          {/* Trade Directory Routes */}
+          <Route
+            path="/trade-directory/find-suppliers"
+            element={
+              <ProtectedRoute>
+                <FindSuppliers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trade-directory/find-buyers"
+            element={
+              <ProtectedRoute>
+                <FindBuyers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trade-directory/company/:id"
+            element={
+              <ProtectedRoute>
+                <CompanyProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscription"
+            element={
+              <ProtectedRoute>
+                <Subscription />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AuthProvider>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 

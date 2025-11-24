@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+import secrets
+import string
 
 
 class SubscriptionPlan(models.Model):
@@ -90,4 +92,103 @@ class TokenPurchase(models.Model):
         ordering = ['-purchased_at']
 
     def __str__(self):
-        return f"{self.user.email} - {self.tokens_purchased} tokens ({self.purchased_at.date()})"
+        return f"{self.user.email} - {self.tokens_purchased} tokens - {self.purchased_at}"
+
+
+class RedeemCode(models.Model):
+    """
+    Redeemable codes for subscription plans
+    Replaces payment processing for MVP/testing
+    """
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('redeemed', 'Redeemed'),
+        ('expired', 'Expired'),
+    ]
+    
+    code = models.CharField(
+        max_length=16,
+        unique=True,
+        db_index=True,
+        help_text="Unique redemption code"
+    )
+    plan = models.ForeignKey(
+        SubscriptionPlan,
+        on_delete=models.CASCADE,
+        related_name='redeem_codes'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
+    redeemed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='redeemed_codes'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    redeemed_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True, help_text="Optional expiration date")
+    
+    class Meta:
+        verbose_name = 'Redeem Code'
+        verbose_name_plural = 'Redeem Codes'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['code', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.code} - {self.plan.plan_name} ({self.status})"
+    
+    @staticmethod
+    def generate_code(length=12):
+        """Generate a random alphanumeric code"""
+        # Use uppercase letters and digits, exclude ambiguous characters (0, O, I, 1)
+        chars = string.ascii_uppercase + string.digits
+        chars = chars.replace('0', '').replace('O', '').replace('I', '').replace('1', '')
+        return ''.join(secrets.choice(chars) for _ in range(length))
+    
+    def redeem(self, user):
+        """Redeem this code for a user"""
+        from django.utils import timezone
+        
+        if self.status != 'active':
+            return False, f"Code is {self.status}"
+        
+        if self.expires_at and timezone.now() > self.expires_at:
+            self.status = 'expired'
+            self.save()
+            return False, "Code has expired"
+        
+        # Mark as redeemed
+        self.status = 'redeemed'
+        self.redeemed_by = user
+        self.redeemed_at = timezone.now()
+        self.save()
+        
+        # Add tokens to user
+        user.add_tokens(self.plan.tokens_included)
+        
+        # Create UserSubscription record
+        from datetime import timedelta
+        
+        end_date = timezone.now().date()
+        if self.plan.billing_cycle == 'monthly':
+            end_date += timedelta(days=30)
+        elif self.plan.billing_cycle == 'yearly':
+            end_date += timedelta(days=365)
+        
+        UserSubscription.objects.create(
+            user=user,
+            plan=self.plan,
+            status='active',
+            start_date=timezone.now().date(),
+            end_date=end_date,
+            billing_cycle=self.plan.billing_cycle or 'monthly'
+        )
+        
+        return True, "Code redeemed successfully"
