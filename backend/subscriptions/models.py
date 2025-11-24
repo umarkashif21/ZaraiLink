@@ -176,11 +176,16 @@ class RedeemCode(models.Model):
         # Create UserSubscription record
         from datetime import timedelta
         
-        end_date = timezone.now().date()
-        if self.plan.billing_cycle == 'monthly':
-            end_date += timedelta(days=30)
-        elif self.plan.billing_cycle == 'yearly':
-            end_date += timedelta(days=365)
+        # Determine billing cycle from plan name
+        plan_name_lower = self.plan.plan_name.lower()
+        if 'annual' in plan_name_lower or 'yearly' in plan_name_lower:
+            billing_cycle = 'yearly'
+            duration_days = 365
+        else:
+            billing_cycle = 'monthly'
+            duration_days = 30
+        
+        end_date = timezone.now().date() + timedelta(days=duration_days)
         
         UserSubscription.objects.create(
             user=user,
@@ -188,7 +193,7 @@ class RedeemCode(models.Model):
             status='active',
             start_date=timezone.now().date(),
             end_date=end_date,
-            billing_cycle=self.plan.billing_cycle or 'monthly'
+            billing_cycle=billing_cycle
         )
         
         return True, "Code redeemed successfully"
