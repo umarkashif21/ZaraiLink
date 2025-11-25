@@ -47,11 +47,15 @@ const FindBuyers = () => {
       
       if (rolesRes.ok) {
         const roles = await rolesRes.json();
-        const buyerRole = roles.find(r => r.name.toLowerCase() === 'buyer');
+        console.log('🔍 Available roles:', roles);
+        // Prioritize "Buyers" (plural) over "Buyer" (singular)
+        const buyerRole = roles.find(r => r.name.toLowerCase() === 'buyers') ||
+                          roles.find(r => r.name.toLowerCase() === 'buyer');
         if (buyerRole) {
+          console.log('✅ Found buyer role:', buyerRole);
           setBuyerRoleId(buyerRole.id);
         } else {
-          console.error('Buyer role not found in backend');
+          console.error('❌ Buyer role not found in backend');
           setError('System configuration error: Buyer role missing');
         }
       }
@@ -61,8 +65,12 @@ const FindBuyers = () => {
   };
 
   const searchCompanies = async () => {
-    if (!buyerRoleId) return;
+    if (!buyerRoleId) {
+      console.log('❌ No buyerRoleId, exiting searchCompanies');
+      return;
+    }
     
+    console.log('🔍 searchCompanies called with buyerRoleId:', buyerRoleId);
     setLoading(true);
     setError(null);
 
@@ -74,22 +82,29 @@ const FindBuyers = () => {
       if (filters.type) params.append('type', filters.type);
       params.append('role', buyerRoleId); // Use dynamic ID
 
-      const response = await fetch(
-        `http://localhost:8000/api/companies/?${params.toString()}`,
-        { credentials: 'include' }
-      );
+      const apiUrl = `http://localhost:8000/api/companies/?${params.toString()}`;
+      console.log('📡 Fetching from:', apiUrl);
+
+      const response = await fetch(apiUrl, { credentials: 'include' });
+      console.log('📥 Response status:', response.status, response.ok);
 
       if (response.ok) {
         const data = await response.json();
-        setCompanies(data.results || data);
+        console.log('✅ Raw API response:', data);
+        console.log('📊 Data type:', Array.isArray(data) ? 'Array' : typeof data);
+        
+        const companies = data.results || data;
+        console.log('🏢 Companies to set:', companies.length, 'companies');
+        setCompanies(companies);
       } else {
         throw new Error('Failed to load buyers');
       }
     } catch (err) {
       setError('Failed to load buyers. Please try again.');
-      console.error('Search error:', err);
+      console.error('❌ Search error:', err);
     } finally {
       setLoading(false);
+      console.log('🏁 searchCompanies completed');
     }
   };
 
@@ -190,22 +205,22 @@ const FindBuyers = () => {
         <div className="filter-options">
           <select name="region" value={filters.region} onChange={handleFilterChange}>
             <option value="">All Regions</option>
-            {regions.map(r => (
-              <option key={r.id} value={r.name}>{r.name}</option>
+            {regions.map(region => (
+              <option key={region} value={region}>{region}</option>
             ))}
           </select>
 
           <select name="sector" value={filters.sector} onChange={handleFilterChange}>
             <option value="">All Sectors</option>
             {sectors.map(s => (
-              <option key={s.id} value={s.name}>{s.name}</option>
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
 
           <select name="type" value={filters.type} onChange={handleFilterChange}>
             <option value="">All Company Types</option>
             {types.map(t => (
-              <option key={t.id} value={t.name}>{t.name}</option>
+              <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
 
@@ -241,7 +256,7 @@ const FindBuyers = () => {
                 <div className="card-body">
                   <div className="info-row">
                     <span className="label">Location:</span>
-                    <span className="value">{company.city || company.district}, {company.province}</span>
+                    <span className="value">{company.district || 'N/A'}, {company.province}</span>
                   </div>
                   <div className="info-row">
                     <span className="label">Sector:</span>
@@ -249,7 +264,7 @@ const FindBuyers = () => {
                   </div>
                   <div className="info-row">
                     <span className="label">Type:</span>
-                    <span className="value">{company.company_type_name}</span>
+                    <span className="value">{company.type_name || 'N/A'}</span>
                   </div>
                 </div>
 
