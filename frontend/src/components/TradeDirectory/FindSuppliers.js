@@ -12,7 +12,7 @@ const FindSuppliers = () => {
     region: '',
     sector: '',
     type: '',
-    role: ''
+    role: 'Supplier' // Default role set to Supplier
   });
   
   // Filter options loaded from backend
@@ -22,16 +22,14 @@ const FindSuppliers = () => {
     types: [],
     roles: []
   });
+  
+  // State for supplier role ID
+  const [supplierRoleId, setSupplierRoleId] = useState(null);
 
   // Load filter options on component mount
   useEffect(() => {
     loadFilterOptions();
   }, []);
-
-  // Load companies when filters change
-  useEffect(() => {
-    searchCompanies();
-  }, [filters]);
 
   const loadFilterOptions = async () => {
     try {
@@ -51,13 +49,35 @@ const FindSuppliers = () => {
         ]);
 
         setFilterOptions({ regions, sectors, types, roles });
+        
+        console.log('🔍 Available roles:', roles);
+        // Prioritize "Suppliers" (plural) over "Supplier" (singular)
+        const supplierRole = roles.find(r => r.name.toLowerCase() === 'suppliers') ||
+                             roles.find(r => r.name.toLowerCase() === 'supplier');
+        if (supplierRole) {
+          console.log('✅ Found supplier role:', supplierRole);
+          setSupplierRoleId(supplierRole.id);
+          // Call searchCompanies directly with the role ID
+          searchCompanies(supplierRole.id);
+        } else {
+          console.error('❌ Supplier role not found in backend');
+          setError('System configuration error: Supplier role missing');
+        }
       }
     } catch (err) {
       console.error('Failed to load filter options:', err);
     }
   };
 
-  const searchCompanies = async () => {
+  const searchCompanies = async (roleIdToUse) => {
+    // Use passed roleId or fall back to state
+    const roleId = roleIdToUse || supplierRoleId;
+    console.log('🔍 searchCompanies called with roleId:', roleId);
+    if (!roleId) {
+      console.log('❌ No roleId, exiting');
+      return; // Don't search without supplier role
+    }
+    
     setLoading(true);
     setError(null);
 
@@ -68,24 +88,39 @@ const FindSuppliers = () => {
       if (filters.region) params.append('region', filters.region);
       if (filters.sector) params.append('sector', filters.sector);
       if (filters.type) params.append('type', filters.type);
-      if (filters.role) params.append('role', filters.role);
+      params.append('role', roleId); // Always filter by supplier role
+      
+      const apiUrl = `http://localhost:8000/api/companies/?${params.toString()}`;
+      console.log('📡 Fetching from:', apiUrl);
 
       const response = await fetch(
-        `http://localhost:8000/api/companies/?${params.toString()}`,
+        apiUrl,
         { credentials: 'include' }
       );
+      
+      console.log('📥 Response status:', response.status, response.ok);
 
       if (response.ok) {
         const data = await response.json();
-        setCompanies(data.results || data); // Handle paginated or non-paginated response
+        console.log('✅ Raw API response:', data);
+        console.log('📊 Data type:', Array.isArray(data) ? 'Array' : typeof data);
+        console.log('📈 Data length/keys:', Array.isArray(data) ? data.length : Object.keys(data));
+        
+        const companies = data.results || data;
+        console.log('🏢 Companies to set:', companies);
+        console.log('🏢 Companies count:', Array.isArray(companies) ? companies.length : 'not an array');
+        
+        setCompanies(companies); // Handle paginated or non-paginated response
+        console.log('✨ setCompanies called with:', companies.length, 'companies');
       } else {
         throw new Error('Failed to load companies');
       }
     } catch (err) {
-      setError('Failed to load companies. Please try again.');
-      console.error('Search error:', err);
+      console.error('❌ Search error:', err);
+      setError('Failed to load suppliers. Please try again.');
     } finally {
       setLoading(false);
+      console.log('🏁 searchCompanies completed');
     }
   };
 
@@ -192,6 +227,12 @@ const FindSuppliers = () => {
       )}
 
       {/* Companies Grid */}
+      {!loading && !error && (() => {
+        console.log('🎨 Rendering companies section, companies state:', companies);
+        console.log('🎨 Companies length:', companies.length);
+        return true; // Just run the logs, don't affect rendering
+      })()}
+      
       {!loading && !error && (
         <div className="companies-section">
           <div className="results-header">
