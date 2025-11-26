@@ -11,15 +11,12 @@ const FindBuyers = () => {
   const [filters, setFilters] = useState({
     search: '',
     region: '',
-    sector: '',
-    type: '',
-    role: 'Buyer' // Default role set to Buyer
+    sector: ''
   });
 
   // Filter options state
   const [regions, setRegions] = useState([]);
   const [sectors, setSectors] = useState([]);
-  const [types, setTypes] = useState([]);
   const [buyerRoleId, setBuyerRoleId] = useState(null);
 
   useEffect(() => {
@@ -34,16 +31,14 @@ const FindBuyers = () => {
 
   const loadFilterOptions = async () => {
     try {
-      const [regionsRes, sectorsRes, typesRes, rolesRes] = await Promise.all([
+      const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
         fetch('http://localhost:8000/api/companies/regions/'),
         fetch('http://localhost:8000/api/sectors/'),
-        fetch('http://localhost:8000/api/company-types/'),
         fetch('http://localhost:8000/api/company-roles/')
       ]);
 
       if (regionsRes.ok) setRegions(await regionsRes.json());
       if (sectorsRes.ok) setSectors(await sectorsRes.json());
-      if (typesRes.ok) setTypes(await typesRes.json());
       
       if (rolesRes.ok) {
         const roles = await rolesRes.json();
@@ -79,7 +74,6 @@ const FindBuyers = () => {
       if (filters.search) params.append('search', filters.search);
       if (filters.region) params.append('region', filters.region);
       if (filters.sector) params.append('sector', filters.sector);
-      if (filters.type) params.append('type', filters.type);
       params.append('role', buyerRoleId); // Use dynamic ID
 
       const apiUrl = `http://localhost:8000/api/companies/?${params.toString()}`;
@@ -125,36 +119,14 @@ const FindBuyers = () => {
     setFilters({
       search: '',
       region: '',
-      sector: '',
-      type: '',
-      role: 'Buyer'
+      sector: ''
     });
-    // Trigger search after state update would require useEffect dependency or separate call
-    // For simplicity, we'll just reload with initial state logic if we were using it, 
-    // but here we need to manually trigger search with reset values
-    // A better way is to pass the reset values directly to search
-    // But since searchCompanies uses state, we might need to wait or pass args.
-    // Let's just set state and let the user click search or use a timeout/effect.
-    // Actually, let's just call search with explicit empty params + buyer role
-    
-    // Quick fix: just set filters and let user search, or force reload
-    // Ideally:
-    setFilters({
-        search: '',
-        region: '',
-        sector: '',
-        type: '',
-        role: 'Buyer'
-    });
+    // Trigger search with reset values after state update
     setTimeout(() => {
-        // This is a bit hacky but works for simple cases without refactoring searchCompanies to accept args
-        // Better: refactor searchCompanies to take params, but keeping it consistent with FindSuppliers structure
-        // Let's just reload the page or re-fetch manually
-        // Re-fetching manually with default values:
-        if (buyerRoleId) {
-            fetchCompaniesWithParams({ role: buyerRoleId });
-        }
-    }, 0);
+      if (buyerRoleId) {
+        searchCompanies();
+      }
+    }, 100);
   };
 
   const fetchCompaniesWithParams = async (customFilters) => {
@@ -203,26 +175,40 @@ const FindBuyers = () => {
         </form>
 
         <div className="filter-options">
-          <select name="region" value={filters.region} onChange={handleFilterChange}>
+          <select 
+            name="region" 
+            value={filters.region} 
+            onChange={(e) => {
+              handleFilterChange(e);
+              // Auto-trigger search after state update
+              setTimeout(() => {
+                if (buyerRoleId) searchCompanies();
+              }, 100);
+            }}
+          >
             <option value="">All Regions</option>
             {regions.map(region => (
               <option key={region} value={region}>{region}</option>
             ))}
           </select>
 
-          <select name="sector" value={filters.sector} onChange={handleFilterChange}>
+          <select 
+            name="sector" 
+            value={filters.sector} 
+            onChange={(e) => {
+              handleFilterChange(e);
+              // Auto-trigger search after state update
+              setTimeout(() => {
+                if (buyerRoleId) searchCompanies();
+              }, 100);
+            }}
+          >
             <option value="">All Sectors</option>
             {sectors.map(s => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
 
-          <select name="type" value={filters.type} onChange={handleFilterChange}>
-            <option value="">All Company Types</option>
-            {types.map(t => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
 
           <button type="button" onClick={handleReset} className="btn-reset">
             Reset Filters

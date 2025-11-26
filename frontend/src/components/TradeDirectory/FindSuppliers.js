@@ -10,17 +10,13 @@ const FindSuppliers = () => {
   const [filters, setFilters] = useState({
     search: '',
     region: '',
-    sector: '',
-    type: '',
-    role: 'Supplier' // Default role set to Supplier
+    sector: ''
   });
   
   // Filter options loaded from backend
   const [filterOptions, setFilterOptions] = useState({
     regions: [],
-    sectors: [],
-    types: [],
-    roles: []
+    sectors: []
   });
   
   // State for supplier role ID
@@ -33,22 +29,20 @@ const FindSuppliers = () => {
 
   const loadFilterOptions = async () => {
     try {
-      const [regionsRes, sectorsRes, typesRes, rolesRes] = await Promise.all([
+      const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
         fetch('http://localhost:8000/api/companies/regions/', { credentials: 'include' }),
         fetch('http://localhost:8000/api/sectors/', { credentials: 'include' }),
-        fetch('http://localhost:8000/api/company-types/', { credentials: 'include' }),
         fetch('http://localhost:8000/api/company-roles/', { credentials: 'include' })
       ]);
 
-      if (regionsRes.ok && sectorsRes.ok && typesRes.ok && rolesRes.ok) {
-        const [regions, sectors, types, roles] = await Promise.all([
+      if (regionsRes.ok && sectorsRes.ok && rolesRes.ok) {
+        const [regions, sectors, roles] = await Promise.all([
           regionsRes.json(),
           sectorsRes.json(),
-          typesRes.json(),
           rolesRes.json()
         ]);
 
-        setFilterOptions({ regions, sectors, types, roles });
+        setFilterOptions({ regions, sectors });
         
         console.log('🔍 Available roles:', roles);
         // Prioritize "Suppliers" (plural) over "Supplier" (singular)
@@ -87,7 +81,6 @@ const FindSuppliers = () => {
       if (filters.search) params.append('search', filters.search);
       if (filters.region) params.append('region', filters.region);
       if (filters.sector) params.append('sector', filters.sector);
-      if (filters.type) params.append('type', filters.type);
       params.append('role', roleId); // Always filter by supplier role
       
       const apiUrl = `http://localhost:8000/api/companies/?${params.toString()}`;
@@ -128,14 +121,25 @@ const FindSuppliers = () => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (supplierRoleId) {
+      searchCompanies(supplierRoleId);
+    }
+  };
+
   const resetFilters = () => {
     setFilters({
       search: '',
       region: '',
-      sector: '',
-      type: '',
-      role: ''
+      sector: ''
     });
+    // Trigger search with reset values after state update
+    setTimeout(() => {
+      if (supplierRoleId) {
+        searchCompanies(supplierRoleId);
+      }
+    }, 100);
   };
 
   return (
@@ -149,7 +153,7 @@ const FindSuppliers = () => {
 
       {/* Filters Section */}
       <div className="filters-section">
-        <div className="search-bar">
+        <form onSubmit={handleSearch} className="search-bar">
           <input
             type="text"
             placeholder="Search companies by name..."
@@ -157,12 +161,19 @@ const FindSuppliers = () => {
             onChange={(e) => handleFilterChange('search', e.target.value)}
             className="search-input"
           />
-        </div>
+          <button type="submit" className="btn-search">Search</button>
+        </form>
 
         <div className="filters-grid">
           <select
             value={filters.region}
-            onChange={(e) => handleFilterChange('region', e.target.value)}
+            onChange={(e) => {
+              handleFilterChange('region', e.target.value);
+              // Auto-trigger search after state update
+              setTimeout(() => {
+                if (supplierRoleId) searchCompanies(supplierRoleId);
+              }, 100);
+            }}
             className="filter-select"
           >
             <option value="">All Regions</option>
@@ -173,7 +184,13 @@ const FindSuppliers = () => {
 
           <select
             value={filters.sector}
-            onChange={(e) => handleFilterChange('sector', e.target.value)}
+            onChange={(e) => {
+              handleFilterChange('sector', e.target.value);
+              // Auto-trigger search after state update
+              setTimeout(() => {
+                if (supplierRoleId) searchCompanies(supplierRoleId);
+              }, 100);
+            }}
             className="filter-select"
           >
             <option value="">All Sectors</option>
@@ -182,27 +199,7 @@ const FindSuppliers = () => {
             ))}
           </select>
 
-          <select
-            value={filters.type}
-            onChange={(e) => handleFilterChange('type', e.target.value)}
-            className="filter-select"
-          >
-            <option value="">All Types</option>
-            {filterOptions.types.map(type => (
-              <option key={type.id} value={type.id}>{type.name}</option>
-            ))}
-          </select>
 
-          <select
-            value={filters.role}
-            onChange={(e) => handleFilterChange('role', e.target.value)}
-            className="filter-select"
-          >
-            <option value="">All Roles</option>
-            {filterOptions.roles.map(role => (
-              <option key={role.id} value={role.id}>{role.name}</option>
-            ))}
-          </select>
 
           <button onClick={resetFilters} className="reset-btn">
             Reset Filters
