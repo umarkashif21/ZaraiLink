@@ -45,6 +45,17 @@ const Navbar = () => {
             </div>
           </div>
 
+          <div className="nav-dropdown">
+            <button className={`nav-link dropdown-toggle ${isActive('/trade-intelligence') ? 'active' : ''}`}>
+              Trade Intelligence ▼
+            </button>
+            <div className="dropdown-content">
+              <Link to="/trade-intelligence/ledger">Trade Ledger</Link>
+              <Link to="/trade-intelligence/pulse">Trade Pulse</Link>
+              <Link to="/trade-intelligence/lens">Trade Lens</Link>
+            </div>
+          </div>
+
           <Link 
             to="/subscription" 
             className={`nav-link ${isActive('/subscription') ? 'active' : ''}`}

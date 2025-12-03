@@ -28,4 +28,5 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('api/', include('companies.urls')),
     path('api/subscriptions/', include('subscriptions.urls')),
+    path('api/trade-ledger/', include('trade_ledger.urls')),
 ]

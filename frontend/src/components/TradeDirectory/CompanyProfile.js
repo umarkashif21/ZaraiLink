@@ -94,11 +94,14 @@ const CompanyProfile = () => {
         
         // Reload company data to update contact statuses
         setTimeout(() => loadCompanyData(), 500);
-      } else if (data.status === 'insufficient_tokens') {
-        setShowInsufficientTokensModal(true);
       } else {
-        setErrorMessage(data.message || 'Failed to unlock contact');
-        setShowErrorModal(true);
+        // Check for specific error statuses
+        if (data.status === 'insufficient_tokens' || response.status === 402) {
+          setShowInsufficientTokensModal(true);
+        } else {
+          setErrorMessage(data.message || 'Failed to unlock contact');
+          setShowErrorModal(true);
+        }
       }
     } catch (err) {
       setErrorMessage('Network error. Please check your connection.');
