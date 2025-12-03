@@ -1,27 +1,28 @@
 from django.contrib import admin
-from ckeditor.widgets import CKEditorWidget
+from django_ckeditor_5.widgets import CKEditor5Widget
 from django import forms
 from .models import (
     Sector, CompanyRole, CompanyType, Image, Company, 
     CompanyProduct, KeyContact, KeyContactUnlock
 )
-# Removed AdminAnnouncement, IngestionLog, CompanyMetricsCache as they are NOT in the models.py file I just viewed.
-# If they are supposed to be there, they are missing from models.py.
-# Based on the error log, the admin was trying to register them, but if they don't exist in models.py, I should remove them from admin.py or add them to models.py.
-# The user request said "change the models from backend... and other things".
-# But the errors are about fields not existing.
-# Let's check if those models exist in companies/models.py.
-# I viewed companies/models.py and it ends at KeyContactUnlock.
-# So AdminAnnouncement, IngestionLog, CompanyMetricsCache DO NOT EXIST in companies/models.py.
-# I will remove them from admin.py to fix the errors.
 
-# Custom form with CKEditor
+# Custom form with CKEditor 5
 class CompanyAdminForm(forms.ModelForm):
-    description = forms.CharField(widget=CKEditorWidget(), required=False)
+    description = forms.CharField(widget=CKEditor5Widget(config_name='extends'), required=False)
     
     class Meta:
         model = Company
         fields = '__all__'
+
+
+# Inline admin for KeyContactUnlock - manage unlocks within KeyContact admin
+class KeyContactUnlockInline(admin.TabularInline):
+    model = KeyContactUnlock
+    extra = 0
+    readonly_fields = ('user', 'unlocked_at')
+    can_delete = True  # Allow admins to remove unlocks
+    verbose_name = 'Contact Unlock'
+    verbose_name_plural = 'Contact Unlocks (Users who unlocked this contact)'
 
 
 @admin.register(Sector)
@@ -55,7 +56,7 @@ class CompanyAdmin(admin.ModelAdmin):
     # 'has_trade_data' is NOT in the model.
     
     list_filter = ('verification_status', 'is_directory_profile', 'sector', 'company_role')
-    search_fields = ('name', 'legal_name', 'email', 'website')
+    search_fields = ('name', 'legal_name', 'contact_email', 'website')
     readonly_fields = ('created_at', 'updated_at')
     date_hierarchy = 'created_at'
     
@@ -67,13 +68,13 @@ class CompanyAdmin(admin.ModelAdmin):
             'fields': ('description',)
         }),
         ('Contact Information', {
-            'fields': ('email', 'phone', 'website', 'address', 'district', 'province', 'country')
+            'fields': ('contact_email', 'phone', 'website', 'address', 'district', 'province', 'country')
         }),
         ('Business Details', {
-            'fields': ('year_established', 'number_of_employees', 'annual_revenue')
+            'fields': ('year_established', 'number_of_employees', 'horeca_retail_info', 'ntn_number', 'trade_license_number')
         }),
         ('Status & Flags', {
-            'fields': ('verification_status', 'is_directory_profile')
+            'fields': ('verification_status', 'is_directory_profile', 'has_trade_data')
         }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at'),
@@ -94,7 +95,25 @@ class KeyContactAdmin(admin.ModelAdmin):
     list_display = ('name', 'company', 'designation', 'is_public', 'unlock_count')
     list_filter = ('is_public', 'company')
     search_fields = ('name', 'designation', 'company__name', 'email', 'phone')
-    readonly_fields = ('unlock_count',)
+    readonly_fields = ('unlock_count', 'created_at', 'updated_at')
+    inlines = [KeyContactUnlockInline]  # Show unlocks inline
+    
+    fieldsets = (
+        ('Contact Information', {
+            'fields': ('company', 'name', 'designation')
+        }),
+        ('Contact Details', {
+            'fields': ('phone', 'email', 'whatsapp')
+        }),
+        ('Visibility', {
+            'fields': ('is_public',),
+            'description': 'Public contacts are visible to all users without requiring tokens'
+        }),
+        ('Metadata', {
+            'fields': ('unlock_count', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
     
     def unlock_count(self, obj):
         return obj.unlocks.count()

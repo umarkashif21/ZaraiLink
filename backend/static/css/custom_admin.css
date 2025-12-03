@@ -67,6 +67,15 @@ body, html {
     border: 1px solid var(--border-color);
 }
 
+/* All Headings - Critical Fix for Visibility */
+h1, h2, h3, h4, h5, h6,
+#content h1, #content h2, #content h3, #content h4, #content h5, #content h6,
+.module h2, .module h3, .dashboard h1, .dashboard h2, .dashboard h3,
+caption, .module caption {
+    color: var(--text-color) !important;
+    background: transparent !important;
+}
+
 /* Change List */
 #changelist, #changelist-form, .results {
     background: var(--card-bg) !important;

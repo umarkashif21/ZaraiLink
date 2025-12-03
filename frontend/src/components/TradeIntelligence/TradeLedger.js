@@ -5,13 +5,12 @@ import './TradeIntelligence.css';
 
 const TradeLedger = () => {
   const navigate = useNavigate();
-  const [companies, setCompanies] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [statistics, setStatistics] = useState(null);
+  const [comps, setComps] = useState([]);
+  const [cats, setCats] = useState([]);
+  const [load, setLoad] = useState(true);
+  const [stats, setStats] = useState(null);
   
-  // Filter states
-  const [filters, setFilters] = useState({
+  const [filts, setFilts] = useState({
     country: '',
     product: '',
     type: '',
@@ -20,100 +19,92 @@ const TradeLedger = () => {
   });
 
   useEffect(() => {
-    loadCategories();
-    loadCompanies();
+    loadCats();
+    loadComps();
   }, []);
 
   useEffect(() => {
-    loadCompanies();
-  }, [filters]);
+    loadComps();
+  }, [filts]);
 
-  const loadCategories = async () => {
+  const loadCats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/trade-ledger/product-categories/');
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data);
+      const res = await fetch('http://localhost:8000/api/trade-ledger/product-categories/');
+      if (res.ok) {
+        const data = await res.json();
+        setCats(data);
       }
     } catch (err) {
-      console.error('Failed to load categories:', err);
+      console.error(err);
     }
   };
 
-  const loadCompanies = async () => {
-    setLoading(true);
+  const loadComps = async () => {
+    setLoad(true);
     try {
-      // Build query string
-      const params = new URLSearchParams();
-      if (filters.country) params.append('country', filters.country);
-      if (filters.product) params.append('product', filters.product);
-      if (filters.type) params.append('type', filters.type);
-      if (filters.dateFrom) params.append('date_from', filters.dateFrom);
-      if (filters.dateTo) params.append('date_to', filters.dateTo);
+      const p = new URLSearchParams();
+      if (filts.country) p.append('country', filts.country);
+      if (filts.product) p.append('product', filts.product);
+      if (filts.type) p.append('type', filts.type);
+      if (filts.dateFrom) p.append('date_from', filts.dateFrom);
+      if (filts.dateTo) p.append('date_to', filts.dateTo);
 
-      const response = await fetch(`http://localhost:8000/api/trade-ledger/companies/?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCompanies(data);
+      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/?${p}`);
+      if (res.ok) {
+        const data = await res.json();
+        setComps(data);
       }
 
-      // Load statistics if product is selected
-      if (filters.product) {
-        const statsResponse = await fetch(
-          `http://localhost:8000/api/trade-ledger/companies/statistics/?product=${filters.product}&${params}`
+      if (filts.product) {
+        const sRes = await fetch(
+          `http://localhost:8000/api/trade-ledger/companies/statistics/?product=${filts.product}&${p}`
         );
-        if (statsResponse.ok) {
-          const statsData = await statsResponse.json();
-          setStatistics(statsData);
+        if (sRes.ok) {
+          const sData = await sRes.json();
+          setStats(sData);
         }
       } else {
-        setStatistics(null);
+        setStats(null);
       }
     } catch (err) {
-      console.error('Failed to load companies:', err);
+      console.error(err);
     } finally {
-      setLoading(false);
+      setLoad(false);
     }
   };
 
-  const handleFilterChange = (field, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const onFiltChange = (f, v) => {
+    setFilts(prev => ({ ...prev, [f]: v }));
   };
 
-  const handleCompanyClick = (companyId) => {
-    navigate(`/trade-intelligence/company/${companyId}/overview`);
+  const onCompClick = (id) => {
+    navigate(`/trade-intelligence/company/${id}/overview`);
   };
 
-  const formatCurrency = (value) => {
-    if (!value) return 'N/A';
+  const fmtCurr = (v) => {
+    if (!v) return 'N/A';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(value);
+    }).format(v);
   };
 
-  const formatPercentage = (value) => {
-    if (value === null || value === undefined) return 'N/A';
-    const sign = value >= 0 ? '+' : '';
-    return `${sign}${value.toFixed(2)}%`;
+  const fmtPct = (v) => {
+    if (v === null || v === undefined) return 'N/A';
+    return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
   };
 
   return (
     <>
       <Navbar />
       <div className="trade-ledger-container">
-        {/* Header */}
         <div className="trade-ledger-header">
           <h1>📊 Trade Ledger</h1>
           <p>Comprehensive trade intelligence and company analytics</p>
         </div>
 
-        {/* Filters Section */}
         <div className="filters-section">
           <div className="filters-grid">
             <div className="filter-group">
@@ -121,20 +112,20 @@ const TradeLedger = () => {
               <input
                 type="text"
                 placeholder="Search by country..."
-                value={filters.country}
-                onChange={(e) => handleFilterChange('country', e.target.value)}
+                value={filts.country}
+                onChange={(e) => onFiltChange('country', e.target.value)}
               />
             </div>
 
             <div className="filter-group">
               <label>Product Category</label>
               <select
-                value={filters.product}
-                onChange={(e) => handleFilterChange('product', e.target.value)}
+                value={filts.product}
+                onChange={(e) => onFiltChange('product', e.target.value)}
               >
                 <option value="">All Products</option>
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                {cats.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -142,8 +133,8 @@ const TradeLedger = () => {
             <div className="filter-group">
               <label>Company Type</label>
               <select
-                value={filters.type}
-                onChange={(e) => handleFilterChange('type', e.target.value)}
+                value={filts.type}
+                onChange={(e) => onFiltChange('type', e.target.value)}
               >
                 <option value="">All Types</option>
                 <option value="exporter">Exporter</option>
@@ -155,8 +146,8 @@ const TradeLedger = () => {
               <label>Date From</label>
               <input
                 type="date"
-                value={filters.dateFrom}
-                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                value={filts.dateFrom}
+                onChange={(e) => onFiltChange('dateFrom', e.target.value)}
               />
             </div>
 
@@ -164,76 +155,74 @@ const TradeLedger = () => {
               <label>Date To</label>
               <input
                 type="date"
-                value={filters.dateTo}
-                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                value={filts.dateTo}
+                onChange={(e) => onFiltChange('dateTo', e.target.value)}
               />
             </div>
           </div>
         </div>
 
-        {/* Metrics Row - Only show when product is selected */}
-        {statistics && filters.product && (
+        {stats && filts.product && (
           <div className="metrics-row">
             <div className="metric-card">
               <h3>Average Price</h3>
-              <div className="metric-value">{formatCurrency(statistics.avg_price)}</div>
+              <div className="metric-value">{fmtCurr(stats.avg_price)}</div>
               <p className="metric-subtext">Across all companies</p>
             </div>
             <div className="metric-card">
               <h3>YoY Growth</h3>
               <div className="metric-value" style={{
-                color: statistics.avg_yoy_growth >= 0 ? '#22c55e' : '#ef4444'
+                color: stats.avg_yoy_growth >= 0 ? '#22c55e' : '#ef4444'
               }}>
-                {formatPercentage(statistics.avg_yoy_growth)}
+                {fmtPct(stats.avg_yoy_growth)}
               </div>
               <p className="metric-subtext">Year-over-year</p>
             </div>
             <div className="metric-card">
               <h3>Total Volume</h3>
               <div className="metric-value">
-                {statistics.total_volume 
-                  ? new Intl.NumberFormat('en-US').format(statistics.total_volume) 
+                {stats.total_volume 
+                  ? new Intl.NumberFormat('en-US').format(stats.total_volume) 
                   : 'N/A'}
               </div>
               <p className="metric-subtext">Combined volume</p>
             </div>
             <div className="metric-card">
               <h3>Total Companies</h3>
-              <div className="metric-value">{statistics.total_companies || companies.length}</div>
+              <div className="metric-value">{stats.total_companies || comps.length}</div>
               <p className="metric-subtext">In this category</p>
             </div>
           </div>
         )}
 
-        {/* Companies Grid */}
-        {loading ? (
+        {load ? (
           <div className="loading-container">
             <div className="spinner"></div>
             <p>Loading companies...</p>
           </div>
-        ) : companies.length === 0 ? (
+        ) : comps.length === 0 ? (
           <div className="empty-state">
             <h2>No companies found</h2>
             <p>Try adjusting your filters</p>
           </div>
         ) : (
           <div className="companies-grid">
-            {companies.map(tradeCompany => (
+            {comps.map(c => (
               <div
-                key={tradeCompany.id}
+                key={c.id}
                 className="company-card"
-                onClick={() => handleCompanyClick(tradeCompany.id)}
+                onClick={() => onCompClick(c.id)}
               >
                 <div className="company-card-header">
                   <div>
-                    <h3>{tradeCompany.company.name}</h3>
+                    <h3>{c.company.name}</h3>
                     <p className="company-location">
-                      📍 {tradeCompany.company.province}, {tradeCompany.company.country}
+                      📍 {c.company.province}, {c.company.country}
                     </p>
                   </div>
-                  {tradeCompany.is_exporter && tradeCompany.is_importer ? (
+                  {c.is_exporter && c.is_importer ? (
                     <span className="company-badge">Both</span>
-                  ) : tradeCompany.is_exporter ? (
+                  ) : c.is_exporter ? (
                     <span className="company-badge">Exporter</span>
                   ) : (
                     <span className="company-badge">Importer</span>
@@ -244,24 +233,24 @@ const TradeLedger = () => {
                   <div className="stat-item">
                     <span className="stat-label">Est. Revenue</span>
                     <span className="stat-value">
-                      {formatCurrency(tradeCompany.estimated_revenue)}
+                      {fmtCurr(c.estimated_revenue)}
                     </span>
                   </div>
                   <div className="stat-item">
                     <span className="stat-label">Trade Volume</span>
                     <span className="stat-value">
-                      {formatCurrency(tradeCompany.trade_volume)}
+                      {fmtCurr(c.trade_volume)}
                     </span>
                   </div>
                   <div className="stat-item">
                     <span className="stat-label">Products</span>
-                    <span className="stat-value">{tradeCompany.top_products?.length || 0}</span>
+                    <span className="stat-value">{c.top_products?.length || 0}</span>
                   </div>
                   <div className="stat-item">
                     <span className="stat-label">Active Since</span>
                     <span className="stat-value">
-                      {tradeCompany.active_since 
-                        ? new Date(tradeCompany.active_since).getFullYear()
+                      {c.active_since 
+                        ? new Date(c.active_since).getFullYear()
                         : 'N/A'}
                     </span>
                   </div>

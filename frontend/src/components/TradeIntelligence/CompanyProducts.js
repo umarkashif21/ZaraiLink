@@ -6,65 +6,64 @@ import './TradeIntelligence.css';
 const CompanyProducts = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [company, setCompany] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const loc = useLocation();
+  const [comp, setComp] = useState(null);
+  const [prods, setProds] = useState([]);
+  const [load, setLoad] = useState(true);
 
-  const currentTab = location.pathname.split('/').pop();
+  const tab = loc.pathname.split('/').pop();
 
   useEffect(() => {
-    loadCompanyData();
-    loadProducts();
+    loadData();
+    loadProds();
   }, [id]);
 
-  const loadCompanyData = async () => {
+  const loadData = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
-      if (response.ok) {
-        const data = await response.json();
-        setCompany(data);
+      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
+      if (res.ok) {
+        const data = await res.json();
+        setComp(data);
       }
     } catch (err) {
-      console.error('Failed to load company:', err);
+      console.error(err);
     }
   };
 
-  const loadProducts = async () => {
+  const loadProds = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/products/`);
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data);
+      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/products/`);
+      if (res.ok) {
+        const data = await res.json();
+        setProds(data);
       }
     } catch (err) {
-      console.error('Failed to load products:', err);
+      console.error(err);
     } finally {
-      setLoading(false);
+      setLoad(false);
     }
   };
 
-  const navigateToTab = (tab) => {
-    navigate(`/trade-intelligence/company/${id}/${tab}`);
+  const navTab = (t) => {
+    navigate(`/trade-intelligence/company/${id}/${t}`);
   };
 
-  const formatCurrency = (value) => {
-    if (!value) return 'N/A';
+  const fmtCurr = (v) => {
+    if (!v) return 'N/A';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: value.currency || 'USD',
+      currency: v.currency || 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(value);
+    }).format(v);
   };
 
-  const formatPercentage = (value) => {
-    if (value === null || value === undefined) return 'N/A';
-    const sign = value >= 0 ? '+' : '';
-    return `${sign}${parseFloat(value).toFixed(2)}%`;
+  const fmtPct = (v) => {
+    if (v === null || v === undefined) return 'N/A';
+    return `${v >= 0 ? '+' : ''}${parseFloat(v).toFixed(2)}%`;
   };
 
-  if (loading) {
+  if (load) {
     return (
       <>
         <Navbar />
@@ -80,41 +79,39 @@ const CompanyProducts = () => {
     <>
       <Navbar />
       <div className="company-detail-container">
-        {/* Header */}
-        {company && (
+        {comp && (
           <>
             <div className="company-detail-header">
-              <h1>{company.company.name}</h1>
-              <p>📍 {company.company.province}, {company.company.country}</p>
+              <h1>{comp.company.name}</h1>
+              <p>📍 {comp.company.province}, {comp.company.country}</p>
               <div className="company-tags">
-                {company.is_exporter && <span className="company-tag">Exporter</span>}
-                {company.is_importer && <span className="company-tag">Importer</span>}
+                {comp.is_exporter && <span className="company-tag">Exporter</span>}
+                {comp.is_importer && <span className="company-tag">Importer</span>}
               </div>
             </div>
 
-            {/* Tab Navigation */}
             <div className="tab-navigation">
               <button
-                className={`tab-button ${currentTab === 'overview' ? 'active' : ''}`}
-                onClick={() => navigateToTab('overview')}
+                className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
+                onClick={() => navTab('overview')}
               >
                 Overview
               </button>
               <button
-                className={`tab-button ${currentTab === 'products' ? 'active' : ''}`}
-                onClick={() => navigateToTab('products')}
+                className={`tab-button ${tab === 'products' ? 'active' : ''}`}
+                onClick={() => navTab('products')}
               >
-                Products ({company.total_products || 0})
+                Products ({comp.total_products || 0})
               </button>
               <button
-                className={`tab-button ${currentTab === 'partners' ? 'active' : ''}`}
-                onClick={() => navigateToTab('partners')}
+                className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
+                onClick={() => navTab('partners')}
               >
-                Partners ({company.total_partners || 0})
+                Partners ({comp.total_partners || 0})
               </button>
               <button
-                className={`tab-button ${currentTab === 'trends' ? 'active' : ''}`}
-                onClick={() => navigateToTab('trends')}
+                className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
+                onClick={() => navTab('trends')}
               >
                 Trends
               </button>
@@ -122,11 +119,10 @@ const CompanyProducts = () => {
           </>
         )}
 
-        {/* Tab Content - Products */}
         <div className="tab-content">
           <h2>Product Performance</h2>
 
-          {products.length === 0 ? (
+          {prods.length === 0 ? (
             <div className="empty-state">
               <p>No products found</p>
             </div>
@@ -142,30 +138,30 @@ const CompanyProducts = () => {
                 </tr>
               </thead>
               <tbody>
-                {products.map((product, idx) => (
+                {prods.map((p, idx) => (
                   <tr key={idx}>
                     <td>
-                      <strong>{product.product_name}</strong>
-                      {product.hs_code && (
+                      <strong>{p.product_name}</strong>
+                      {p.hs_code && (
                         <div style={{ fontSize: '0.85rem', color: '#718096' }}>
-                          HS Code: {product.hs_code}
+                          HS Code: {p.hs_code}
                         </div>
                       )}
                     </td>
-                    <td>{product.category_name || 'N/A'}</td>
+                    <td>{p.category_name || 'N/A'}</td>
                     <td>
                       {new Intl.NumberFormat('en-US', {
                         style: 'currency',
-                        currency: product.currency || 'USD'
-                      }).format(product.avg_price)}
+                        currency: p.currency || 'USD'
+                      }).format(p.avg_price)}
                     </td>
                     <td>
-                      {new Intl.NumberFormat('en-US').format(product.volume)} {product.unit}
+                      {new Intl.NumberFormat('en-US').format(p.volume)} {p.unit}
                     </td>
                     <td>
-                      {product.yoy_growth !== null && product.yoy_growth !== undefined ? (
-                        <span className={`growth-badge ${parseFloat(product.yoy_growth) >= 0 ? 'positive' : 'negative'}`}>
-                          {formatPercentage(product.yoy_growth)}
+                      {p.yoy_growth !== null && p.yoy_growth !== undefined ? (
+                        <span className={`growth-badge ${parseFloat(p.yoy_growth) >= 0 ? 'positive' : 'negative'}`}>
+                          {fmtPct(p.yoy_growth)}
                         </span>
                       ) : (
                         'N/A'
@@ -177,8 +173,7 @@ const CompanyProducts = () => {
             </table>
           )}
 
-          {/* Product Charts Section */}
-          {products.length > 0 && (
+          {prods.length > 0 && (
             <div style={{ marginTop: '2rem' }}>
               <h3>Product Analysis Charts</h3>
               <p style={{ color: '#718096', marginTop: '1rem' }}>

@@ -29,4 +29,5 @@ urlpatterns = [
     path('api/', include('companies.urls')),
     path('api/subscriptions/', include('subscriptions.urls')),
     path('api/trade-ledger/', include('trade_ledger.urls')),
+    path("ckeditor5/", include('django_ckeditor_5.urls')),  # CKEditor 5
 ]

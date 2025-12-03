@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -87,6 +88,16 @@ const Dashboard = () => {
               <div className="action-icon buyer">🛒</div>
               <h3>Find Buyers</h3>
               <p>Connect with verified buyers and distributors for your produce.</p>
+              <span className="action-arrow">→</span>
+            </div>
+
+            <div 
+              className="action-card"
+              onClick={() => navigate('/trade-intelligence/ledger')}
+            >
+              <div className="action-icon intelligence">📊</div>
+              <h3>Trade Intelligence</h3>
+              <p>Access comprehensive trade data and company analytics</p>
               <span className="action-arrow">→</span>
             </div>
 

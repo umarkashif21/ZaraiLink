@@ -163,6 +163,7 @@ class CompanyProduct(models.Model):
     description = models.TextField(blank=True)
     variety = models.CharField(max_length=100, blank=True, help_text="e.g., Basmati, Super Kernel")
     value_added = models.CharField(max_length=255, blank=True, help_text="e.g., Organic certified, Pre-washed")
+    hsn_code = models.CharField(max_length=20, blank=True, help_text="Harmonized System Nomenclature code")
     image = models.ForeignKey(
         Image,
         on_delete=models.SET_NULL,

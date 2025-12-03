@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
 import './FindSuppliers.css';
@@ -22,48 +22,7 @@ const FindSuppliers = () => {
   // State for supplier role ID
   const [supplierRoleId, setSupplierRoleId] = useState(null);
 
-  // Load filter options on component mount
-  useEffect(() => {
-    loadFilterOptions();
-  }, []);
-
-  const loadFilterOptions = async () => {
-    try {
-      const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
-        fetch('http://localhost:8000/api/companies/regions/', { credentials: 'include' }),
-        fetch('http://localhost:8000/api/sectors/', { credentials: 'include' }),
-        fetch('http://localhost:8000/api/company-roles/', { credentials: 'include' })
-      ]);
-
-      if (regionsRes.ok && sectorsRes.ok && rolesRes.ok) {
-        const [regions, sectors, roles] = await Promise.all([
-          regionsRes.json(),
-          sectorsRes.json(),
-          rolesRes.json()
-        ]);
-
-        setFilterOptions({ regions, sectors });
-        
-        console.log('🔍 Available roles:', roles);
-        // Prioritize "Suppliers" (plural) over "Supplier" (singular)
-        const supplierRole = roles.find(r => r.name.toLowerCase() === 'suppliers') ||
-                             roles.find(r => r.name.toLowerCase() === 'supplier');
-        if (supplierRole) {
-          console.log('✅ Found supplier role:', supplierRole);
-          setSupplierRoleId(supplierRole.id);
-          // Call searchCompanies directly with the role ID
-          searchCompanies(supplierRole.id);
-        } else {
-          console.error('❌ Supplier role not found in backend');
-          setError('System configuration error: Supplier role missing');
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load filter options:', err);
-    }
-  };
-
-  const searchCompanies = async (roleIdToUse) => {
+  const searchCompanies = useCallback(async (roleIdToUse) => {
     // Use passed roleId or fall back to state
     const roleId = roleIdToUse || supplierRoleId;
     console.log('🔍 searchCompanies called with roleId:', roleId);
@@ -115,7 +74,51 @@ const FindSuppliers = () => {
       setLoading(false);
       console.log('🏁 searchCompanies completed');
     }
-  };
+  }, [supplierRoleId, filters]);
+
+  const loadFilterOptions = useCallback(async () => {
+    try {
+      const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
+        fetch('http://localhost:8000/api/companies/regions/', { credentials: 'include' }),
+        fetch('http://localhost:8000/api/sectors/', { credentials: 'include' }),
+        fetch('http://localhost:8000/api/company-roles/', { credentials: 'include' })
+      ]);
+
+      if (regionsRes.ok && sectorsRes.ok && rolesRes.ok) {
+        const [regions, sectors, roles] = await Promise.all([
+          regionsRes.json(),
+          sectorsRes.json(),
+          rolesRes.json()
+        ]);
+
+        setFilterOptions({ 
+          regions: regions.filter(r => r && r.trim() !== ''), 
+          sectors
+        });
+        
+        console.log('🔍 Available roles:', roles);
+        // Prioritize "Suppliers" (plural) over "Supplier" (singular)
+        const supplierRole = roles.find(r => r.name.toLowerCase() === 'suppliers') ||
+                             roles.find(r => r.name.toLowerCase() === 'supplier');
+        if (supplierRole) {
+          console.log('✅ Found supplier role:', supplierRole);
+          setSupplierRoleId(supplierRole.id);
+          // Call searchCompanies directly with the role ID
+          searchCompanies(supplierRole.id);
+        } else {
+          console.error('❌ Supplier role not found in backend');
+          setError('System configuration error: Supplier role missing');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load filter options:', err);
+    }
+  }, [searchCompanies]);
+
+  // Load filter options on component mount
+  useEffect(() => {
+    loadFilterOptions();
+  }, [loadFilterOptions]);
 
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
@@ -247,7 +250,7 @@ const FindSuppliers = () => {
               {companies.map(company => (
                 <div key={company.id} className="company-card">
                   <div className="card-header">
-                    <h3>{company.name}</h3>
+                    <h3>{company.name.toUpperCase()}</h3>
                     <span className={`status-badge ${company.verification_status}`}>
                       {company.verification_status === 'verified' ? '✓ Verified' : 'Pending'}
                     </span>

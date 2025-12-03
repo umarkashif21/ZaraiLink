@@ -33,7 +33,7 @@ class CompanyProductSerializer(serializers.ModelSerializer):
     """Company product serializer"""
     class Meta:
         model = CompanyProduct
-        fields = ['id', 'name', 'description', 'variety', 'value_added']
+        fields = ['id', 'name', 'description', 'variety', 'value_added', 'hsn_code']
 
 
 class KeyContactSerializer(serializers.ModelSerializer):
