@@ -13,7 +13,6 @@ from .serializers import (
 
 
 class TradeCompanyViewSet(viewsets.ReadOnlyModelViewSet):
-    """API for browsing trade companies"""
     queryset = TradeCompany.objects.select_related('company').prefetch_related(
         'products', 'partners', 'trends'
     )
@@ -25,88 +24,75 @@ class TradeCompanyViewSet(viewsets.ReadOnlyModelViewSet):
         return TradeCompanyDetailSerializer
     
     def get_queryset(self):
-        """Filter companies based on query params"""
-        queryset = self.queryset
+        qs = self.queryset
         
-        # Apply filters
         country = self.request.query_params.get('country', '').strip()
-        product = self.request.query_params.get('product', '').strip()
-        company_type = self.request.query_params.get('type', '').strip()
-        date_from = self.request.query_params.get('date_from', '').strip()
-        date_to = self.request.query_params.get('date_to', '').strip()
+        prod = self.request.query_params.get('product', '').strip()
+        ctype = self.request.query_params.get('type', '').strip()
+        d_from = self.request.query_params.get('date_from', '').strip()
+        d_to = self.request.query_params.get('date_to', '').strip()
         
         if country:
-            # Filter by partner countries
-            queryset = queryset.filter(partners__country__icontains=country).distinct()
+            qs = qs.filter(partners__country__icontains=country).distinct()
         
-        if product:
-            # Filter by product category
-            queryset = queryset.filter(products__category_id=product).distinct()
+        if prod:
+            qs = qs.filter(products__category_id=prod).distinct()
         
-        if company_type == 'exporter':
-            queryset = queryset.filter(is_exporter=True)
-        elif company_type == 'importer':
-            queryset = queryset.filter(is_importer=True)
+        if ctype == 'exporter':
+            qs = qs.filter(is_exporter=True)
+        elif ctype == 'importer':
+            qs = qs.filter(is_importer=True)
         
-        if date_from:
-            queryset = queryset.filter(active_since__gte=date_from)
-        if date_to:
-            queryset = queryset.filter(active_since__lte=date_to)
+        if d_from:
+            qs = qs.filter(active_since__gte=d_from)
+        if d_to:
+            qs = qs.filter(active_since__lte=d_to)
         
-        return queryset
+        return qs
     
     @action(detail=True, methods=['get'])
-    def products(self, request, pk=None):
-        """Get products for a specific company"""
-        company = self.get_object()
-        products = company.products.all()
-        serializer = TradeProductSerializer(products, many=True)
-        return Response(serializer.data)
+    def products(self, req, pk=None):
+        c = self.get_object()
+        prods = c.products.all()
+        ser = TradeProductSerializer(prods, many=True)
+        return Response(ser.data)
     
     @action(detail=True, methods=['get'])
-    def partners(self, request, pk=None):
-        """Get partners for a specific company"""
-        company = self.get_object()
-        partners = company.partners.all()
-        serializer = TradePartnerSerializer(partners, many=True)
-        return Response(serializer.data)
+    def partners(self, req, pk=None):
+        c = self.get_object()
+        parts = c.partners.all()
+        ser = TradePartnerSerializer(parts, many=True)
+        return Response(ser.data)
     
     @action(detail=True, methods=['get'])
-    def trends(self, request, pk=None):
-        """Get trends for a specific company"""
-        company = self.get_object()
-        trends = company.trends.all()
-        serializer = TradeTrendSerializer(trends, many=True)
-        return Response(serializer.data)
+    def trends(self, req, pk=None):
+        c = self.get_object()
+        trds = c.trends.all()
+        ser = TradeTrendSerializer(trds, many=True)
+        return Response(ser.data)
     
     @action(detail=False, methods=['get'])
-    def statistics(self, request):
-        """Get aggregate statistics for filtered companies"""
-        queryset = self.get_queryset()
-        product_id = request.query_params.get('product', '').strip()
+    def statistics(self, req):
+        qs = self.get_queryset()
+        pid = req.query_params.get('product', '').strip()
         
         stats = {}
         
-        if product_id:
-            # Get statistics for specific product
-            products = TradeProduct.objects.filter(
-                company__in=queryset,
-                category_id=product_id
-            )
-            stats['avg_price'] = products.aggregate(Avg('avg_price'))['avg_price__avg']
-            stats['avg_yoy_growth'] = products.aggregate(Avg('yoy_growth'))['yoy_growth__avg']
-            stats['total_volume'] = products.aggregate(Sum('volume'))['volume__sum']
+        if pid:
+            prods = TradeProduct.objects.filter(company__in=qs, category_id=pid)
+            stats['avg_price'] = prods.aggregate(Avg('avg_price'))['avg_price__avg']
+            stats['avg_yoy_growth'] = prods.aggregate(Avg('yoy_growth'))['yoy_growth__avg']
+            stats['total_volume'] = prods.aggregate(Sum('volume'))['volume__sum']
         
-        stats['total_companies'] = queryset.count()
+        stats['total_companies'] = qs.count()
         
         return Response(stats)
 
 
 class ProductCategoryListView(APIView):
-    """List all product categories"""
     permission_classes = [AllowAny]
     
-    def get(self, request):
-        categories = ProductCategory.objects.all().order_by('name')
-        serializer = ProductCategorySerializer(categories, many=True)
-        return Response(serializer.data)
+    def get(self, req):
+        cats = ProductCategory.objects.all().order_by('name')
+        ser = ProductCategorySerializer(cats, many=True)
+        return Response(ser.data)

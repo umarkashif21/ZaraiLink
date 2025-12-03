@@ -1,47 +1,7 @@
 {% extends "admin/base.html" %}
 {% load static %}
-{% load admin_extras %}
-
-{% block title %}{{ title }} | ZaraiLink Admin{% endblock %}
 
 {% block extrastyle %}
     {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/custom_admin.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
 {% endblock %}
-
-{% block branding %}
-<h1 id="site-name"><a href="{% url 'admin:index' %}">ZaraiLink Administration</a></h1>
-{% endblock %}
-
-{% block usertools %}
-<div class="user-tools">
-    {% if user.is_active and user.is_staff %}
-        <form action="{% url 'subscriptions:generate_codes' %}" method="post" class="admin-generate-form">
-            {% csrf_token %}
-            {% get_subscription_plans as plans %}
-            <select name="plan_id" class="admin-plan-select" required>
-                <option value="" disabled selected>Select Plan to Generate Codes</option>
-                {% for plan in plans %}
-                    <option value="{{ plan.id }}">{{ plan.plan_name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="admin-generate-btn">Generate 10 Codes</button>
-        </form>
-    {% endif %}
-    
-    {% block welcome-msg %}
-        {% if user.is_active and user.is_staff %}
-            {% url 'django-admindocs-docroot' as docsroot %}
-            {% if docsroot %}
-                <a href="{{ docsroot }}">Documentation</a> /
-            {% endif %}
-        {% endif %}
-        {% if user.has_usable_password %}
-        <a href="{% url 'admin:password_change' %}">Change password</a> /
-        {% endif %}
-        <a href="{% url 'admin:logout' %}">Log out</a>
-    {% endblock %}
-</div>
-{% endblock %}
-
-{% block nav-global %}{% endblock %}

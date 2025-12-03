@@ -6,79 +6,73 @@ import './TradeIntelligence.css';
 const CompanyPartners = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [company, setCompany] = useState(null);
-  const [partners, setPartners] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const loc = useLocation();
+  const [comp, setComp] = useState(null);
+  const [parts, setParts] = useState([]);
+  const [load, setLoad] = useState(true);
 
-  const currentTab = location.pathname.split('/').pop();
+  const tab = loc.pathname.split('/').pop();
 
   useEffect(() => {
-    loadCompanyData();
-    loadPartners();
+    loadData();
+    loadParts();
   }, [id]);
 
-  const loadCompanyData = async () => {
+  const loadData = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
-      if (response.ok) {
-        const data = await response.json();
-        setCompany(data);
+      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
+      if (res.ok) {
+        const data = await res.json();
+        setComp(data);
       }
     } catch (err) {
-      console.error('Failed to load company:', err);
+      console.error(err);
     }
   };
 
-  const loadPartners = async () => {
+  const loadParts = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/partners/`);
-      if (response.ok) {
-        const data = await response.json();
-        setPartners(data);
+      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/partners/`);
+      if (res.ok) {
+        const data = await res.json();
+        setParts(data);
       }
     } catch (err) {
-      console.error('Failed to load partners:', err);
+      console.error(err);
     } finally {
-      setLoading(false);
+      setLoad(false);
     }
   };
 
-  const navigateToTab = (tab) => {
-    navigate(`/trade-intelligence/company/${id}/${tab}`);
+  const navTab = (t) => {
+    navigate(`/trade-intelligence/company/${id}/${t}`);
   };
 
-  const formatCurrency = (value) => {
-    if (!value) return 'N/A';
+  const fmtCurr = (v) => {
+    if (!v) return 'N/A';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(value);
+    }).format(v);
   };
 
-  const getTopPartners = (count) => {
-    return [...partners]
-      .sort((a, b) => parseFloat(b.trade_volume) - parseFloat(a.trade_volume))
-      .slice(0, count);
-  };
-
-  const getTopExportCountries = () => {
-    return partners
+  const topExps = () => {
+    return parts
       .filter(p => p.is_export)
       .sort((a, b) => parseFloat(b.trade_volume) - parseFloat(a.trade_volume))
       .slice(0, 5);
   };
 
-  const getTopPorts = () => {
-    return partners
+  const topPorts = () => {
+    return parts
       .filter(p => p.port_name)
       .sort((a, b) => parseFloat(b.trade_volume) - parseFloat(a.trade_volume))
       .slice(0, 5);
   };
 
-  if (loading) {
+  if (load) {
     return (
       <>
         <Navbar />
@@ -94,41 +88,39 @@ const CompanyPartners = () => {
     <>
       <Navbar />
       <div className="company-detail-container">
-        {/* Header */}
-        {company && (
+        {comp && (
           <>
             <div className="company-detail-header">
-              <h1>{company.company.name}</h1>
-              <p>📍 {company.company.province}, {company.company.country}</p>
+              <h1>{comp.company.name}</h1>
+              <p>📍 {comp.company.province}, {comp.company.country}</p>
               <div className="company-tags">
-                {company.is_exporter && <span className="company-tag">Exporter</span>}
-                {company.is_importer && <span className="company-tag">Importer</span>}
+                {comp.is_exporter && <span className="company-tag">Exporter</span>}
+                {comp.is_importer && <span className="company-tag">Importer</span>}
               </div>
             </div>
 
-            {/* Tab Navigation */}
             <div className="tab-navigation">
               <button
-                className={`tab-button ${currentTab === 'overview' ? 'active' : ''}`}
-                onClick={() => navigateToTab('overview')}
+                className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
+                onClick={() => navTab('overview')}
               >
                 Overview
               </button>
               <button
-                className={`tab-button ${currentTab === 'products' ? 'active' : ''}`}
-                onClick={() => navigateToTab('products')}
+                className={`tab-button ${tab === 'products' ? 'active' : ''}`}
+                onClick={() => navTab('products')}
               >
-                Products ({company.total_products || 0})
+                Products ({comp.total_products || 0})
               </button>
               <button
-                className={`tab-button ${currentTab === 'partners' ? 'active' : ''}`}
-                onClick={() => navigateToTab('partners')}
+                className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
+                onClick={() => navTab('partners')}
               >
-                Partners ({company.total_partners || 0})
+                Partners ({comp.total_partners || 0})
               </button>
               <button
-                className={`tab-button ${currentTab === 'trends' ? 'active' : ''}`}
-                onClick={() => navigateToTab('trends')}
+                className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
+                onClick={() => navTab('trends')}
               >
                 Trends
               </button>
@@ -136,49 +128,46 @@ const CompanyPartners = () => {
           </>
         )}
 
-        {/* Tab Content - Partners */}
         <div className="tab-content">
           <h2>Partner Network</h2>
 
-          {/* Key Metrics */}
-          {company && (
+          {comp && (
             <div className="info-cards-grid">
               <div className="info-card">
                 <h4>Partner Diversity Score</h4>
-                <div className="info-card-value">{company.partner_diversity_score || 0}/100</div>
+                <div className="info-card-value">{comp.partner_diversity_score || 0}/100</div>
               </div>
               <div className="info-card">
                 <h4>Total Partner Countries</h4>
-                <div className="info-card-value">{company.total_partners || 0}</div>
+                <div className="info-card-value">{comp.total_partners || 0}</div>
               </div>
               <div className="info-card">
                 <h4>Export Partners</h4>
                 <div className="info-card-value">
-                  {partners.filter(p => p.is_export).length}
+                  {parts.filter(p => p.is_export).length}
                 </div>
               </div>
               <div className="info-card">
                 <h4>Import Partners</h4>
                 <div className="info-card-value">
-                  {partners.filter(p => !p.is_export).length}
+                  {parts.filter(p => !p.is_export).length}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Top Exporting Countries */}
           <div style={{ marginTop: '2rem' }}>
             <h3>Top Exporting Countries</h3>
-            {getTopExportCountries().length > 0 ? (
+            {topExps().length > 0 ? (
               <div className="partners-grid">
-                {getTopExportCountries().map((partner, idx) => (
+                {topExps().map((p, idx) => (
                   <div key={idx} className="partner-card">
-                    <div className="partner-country">{partner.country}</div>
+                    <div className="partner-country">{p.country}</div>
                     <div className="partner-volume">
-                      {formatCurrency(partner.trade_volume)}
+                      {fmtCurr(p.trade_volume)}
                     </div>
                     <div style={{ fontSize: '0.85rem', color: '#718096', marginTop: '0.5rem' }}>
-                      {parseFloat(partner.percentage_share).toFixed(1)}% of total
+                      {parseFloat(p.percentage_share).toFixed(1)}% of total
                     </div>
                   </div>
                 ))}
@@ -188,19 +177,18 @@ const CompanyPartners = () => {
             )}
           </div>
 
-          {/* Top Ports of Entry */}
           <div style={{ marginTop: '2rem' }}>
             <h3>Top Ports of Entry</h3>
-            {getTopPorts().length > 0 ? (
+            {topPorts().length > 0 ? (
               <div className="partners-grid">
-                {getTopPorts().map((partner, idx) => (
+                {topPorts().map((p, idx) => (
                   <div key={idx} className="partner-card">
-                    <div className="partner-country">{partner.port_name}</div>
+                    <div className="partner-country">{p.port_name}</div>
                     <div style={{ fontSize: '0.9rem', color: '#718096', marginTop: '0.3rem' }}>
-                      {partner.country}
+                      {p.country}
                     </div>
                     <div className="partner-volume" style={{ marginTop: '0.5rem' }}>
-                      {formatCurrency(partner.trade_volume)}
+                      {fmtCurr(p.trade_volume)}
                     </div>
                   </div>
                 ))}
@@ -210,8 +198,7 @@ const CompanyPartners = () => {
             )}
           </div>
 
-          {/* All Partners Table */}
-          {partners.length > 0 && (
+          {parts.length > 0 && (
             <div style={{ marginTop: '2rem' }}>
               <h3>All Partners</h3>
               <table className="products-table" style={{ marginTop: '1rem' }}>
@@ -225,17 +212,17 @@ const CompanyPartners = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {partners.map((partner, idx) => (
+                  {parts.map((p, idx) => (
                     <tr key={idx}>
-                      <td><strong>{partner.country}</strong></td>
-                      <td>{partner.port_name || 'N/A'}</td>
+                      <td><strong>{p.country}</strong></td>
+                      <td>{p.port_name || 'N/A'}</td>
                       <td>
-                        <span className={`growth-badge ${partner.is_export ? 'positive' : 'negative'}`}>
-                          {partner.is_export ? 'Export' : 'Import'}
+                        <span className={`growth-badge ${p.is_export ? 'positive' : 'negative'}`}>
+                          {p.is_export ? 'Export' : 'Import'}
                         </span>
                       </td>
-                      <td>{formatCurrency(partner.trade_volume)}</td>
-                      <td>{parseFloat(partner.percentage_share).toFixed(2)}%</td>
+                      <td>{fmtCurr(p.trade_volume)}</td>
+                      <td>{parseFloat(p.percentage_share).toFixed(2)}%</td>
                     </tr>
                   ))}
                 </tbody>

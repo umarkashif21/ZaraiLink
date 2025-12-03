@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
 import './FindBuyers.css';
@@ -19,47 +19,7 @@ const FindBuyers = () => {
   const [sectors, setSectors] = useState([]);
   const [buyerRoleId, setBuyerRoleId] = useState(null);
 
-  useEffect(() => {
-    loadFilterOptions();
-  }, []);
-
-  useEffect(() => {
-    if (buyerRoleId) {
-      searchCompanies();
-    }
-  }, [buyerRoleId]);
-
-  const loadFilterOptions = async () => {
-    try {
-      const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
-        fetch('http://localhost:8000/api/companies/regions/'),
-        fetch('http://localhost:8000/api/sectors/'),
-        fetch('http://localhost:8000/api/company-roles/')
-      ]);
-
-      if (regionsRes.ok) setRegions(await regionsRes.json());
-      if (sectorsRes.ok) setSectors(await sectorsRes.json());
-      
-      if (rolesRes.ok) {
-        const roles = await rolesRes.json();
-        console.log('🔍 Available roles:', roles);
-        // Prioritize "Buyers" (plural) over "Buyer" (singular)
-        const buyerRole = roles.find(r => r.name.toLowerCase() === 'buyers') ||
-                          roles.find(r => r.name.toLowerCase() === 'buyer');
-        if (buyerRole) {
-          console.log('✅ Found buyer role:', buyerRole);
-          setBuyerRoleId(buyerRole.id);
-        } else {
-          console.error('❌ Buyer role not found in backend');
-          setError('System configuration error: Buyer role missing');
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load filter options', err);
-    }
-  };
-
-  const searchCompanies = async () => {
+  const searchCompanies = useCallback(async () => {
     if (!buyerRoleId) {
       console.log('❌ No buyerRoleId, exiting searchCompanies');
       return;
@@ -100,6 +60,49 @@ const FindBuyers = () => {
       setLoading(false);
       console.log('🏁 searchCompanies completed');
     }
+  }, [buyerRoleId, filters]);
+
+  useEffect(() => {
+    loadFilterOptions();
+  }, []);
+
+  useEffect(() => {
+    if (buyerRoleId) {
+      searchCompanies();
+    }
+  }, [buyerRoleId, searchCompanies]);
+
+  const loadFilterOptions = async () => {
+    try {
+      const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
+        fetch('http://localhost:8000/api/companies/regions/'),
+        fetch('http://localhost:8000/api/sectors/'),
+        fetch('http://localhost:8000/api/company-roles/')
+      ]);
+
+      if (regionsRes.ok) {
+        const regionsData = await regionsRes.json();
+        setRegions(regionsData.filter(r => r && r.trim() !== ''));
+      }
+      if (sectorsRes.ok) setSectors(await sectorsRes.json());
+      
+      if (rolesRes.ok) {
+        const roles = await rolesRes.json();
+        console.log('🔍 Available roles:', roles);
+        // Prioritize "Buyers" (plural) over "Buyer" (singular)
+        const buyerRole = roles.find(r => r.name.toLowerCase() === 'buyers') ||
+                          roles.find(r => r.name.toLowerCase() === 'buyer');
+        if (buyerRole) {
+          console.log('✅ Found buyer role:', buyerRole);
+          setBuyerRoleId(buyerRole.id);
+        } else {
+          console.error('❌ Buyer role not found in backend');
+          setError('System configuration error: Buyer role missing');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load filter options', err);
+    }
   };
 
   const handleFilterChange = (e) => {
@@ -129,29 +132,7 @@ const FindBuyers = () => {
     }, 100);
   };
 
-  const fetchCompaniesWithParams = async (customFilters) => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams();
-        // Add custom filters
-        Object.entries(customFilters).forEach(([key, value]) => {
-            if(value) params.append(key, value);
-        });
-        
-        const response = await fetch(
-            `http://localhost:8000/api/companies/?${params.toString()}`,
-            { credentials: 'include' }
-        );
-        if (response.ok) {
-            const data = await response.json();
-            setCompanies(data.results || data);
-        }
-      } catch (err) {
-          console.error(err);
-      } finally {
-          setLoading(false);
-      }
-  };
+
 
   return (
     <>
@@ -210,6 +191,7 @@ const FindBuyers = () => {
           </select>
 
 
+
           <button type="button" onClick={handleReset} className="btn-reset">
             Reset Filters
           </button>
@@ -233,7 +215,7 @@ const FindBuyers = () => {
             companies.map(company => (
               <div key={company.id} className="company-card">
                 <div className="card-header">
-                  <h3>{company.name}</h3>
+                  <h3>{company.name.toUpperCase()}</h3>
                   {company.verification_status === 'verified' && (
                     <span className="verified-badge">✓ Verified</span>
                   )}

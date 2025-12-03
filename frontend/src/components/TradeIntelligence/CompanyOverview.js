@@ -6,45 +6,45 @@ import './TradeIntelligence.css';
 const CompanyOverview = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [company, setCompany] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const loc = useLocation();
+  const [comp, setComp] = useState(null);
+  const [load, setLoad] = useState(true);
 
-  const currentTab = location.pathname.split('/').pop();
+  const tab = loc.pathname.split('/').pop();
 
   useEffect(() => {
-    loadCompanyDetails();
+    loadComp();
   }, [id]);
 
-  const loadCompanyDetails = async () => {
+  const loadComp = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
-      if (response.ok) {
-        const data = await response.json();
-        setCompany(data);
+      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
+      if (res.ok) {
+        const data = await res.json();
+        setComp(data);
       }
     } catch (err) {
-      console.error('Failed to load company:', err);
+      console.error(err);
     } finally {
-      setLoading(false);
+      setLoad(false);
     }
   };
 
-  const navigateToTab = (tab) => {
-    navigate(`/trade-intelligence/company/${id}/${tab}`);
+  const navTab = (t) => {
+    navigate(`/trade-intelligence/company/${id}/${t}`);
   };
 
-  const formatCurrency = (value) => {
-    if (!value) return 'N/A';
+  const fmtCurr = (v) => {
+    if (!v) return 'N/A';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(value);
+    }).format(v);
   };
 
-  if (loading) {
+  if (load) {
     return (
       <>
         <Navbar />
@@ -56,7 +56,7 @@ const CompanyOverview = () => {
     );
   }
 
-  if (!company) {
+  if (!comp) {
     return (
       <>
         <Navbar />
@@ -71,86 +71,81 @@ const CompanyOverview = () => {
     <>
       <Navbar />
       <div className="company-detail-container">
-        {/* Header */}
         <div className="company-detail-header">
-          <h1>{company.company.name}</h1>
-          <p>📍 {company.company.province}, {company.company.country}</p>
+          <h1>{comp.company.name}</h1>
+          <p>📍 {comp.company.province}, {comp.company.country}</p>
           <div className="company-tags">
-            {company.is_exporter && <span className="company-tag">Exporter</span>}
-            {company.is_importer && <span className="company-tag">Importer</span>}
-            {company.company.sector && <span className="company-tag">{company.company.sector.name}</span>}
+            {comp.is_exporter && <span className="company-tag">Exporter</span>}
+            {comp.is_importer && <span className="company-tag">Importer</span>}
+            {comp.company.sector && <span className="company-tag">{comp.company.sector.name}</span>}
           </div>
         </div>
 
-        {/* Tab Navigation */}
         <div className="tab-navigation">
           <button
-            className={`tab-button ${currentTab === 'overview' ? 'active' : ''}`}
-            onClick={() => navigateToTab('overview')}
+            className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
+            onClick={() => navTab('overview')}
           >
             Overview
           </button>
           <button
-            className={`tab-button ${currentTab === 'products' ? 'active' : ''}`}
-            onClick={() => navigateToTab('products')}
+            className={`tab-button ${tab === 'products' ? 'active' : ''}`}
+            onClick={() => navTab('products')}
           >
-            Products ({company.total_products || 0})
+            Products ({comp.total_products || 0})
           </button>
           <button
-            className={`tab-button ${currentTab === 'partners' ? 'active' : ''}`}
-            onClick={() => navigateToTab('partners')}
+            className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
+            onClick={() => navTab('partners')}
           >
-            Partners ({company.total_partners || 0})
+            Partners ({comp.total_partners || 0})
           </button>
           <button
-            className={`tab-button ${currentTab === 'trends' ? 'active' : ''}`}
-            onClick={() => navigateToTab('trends')}
+            className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
+            onClick={() => navTab('trends')}
           >
             Trends
           </button>
         </div>
 
-        {/* Tab Content - Overview */}
         <div className="tab-content">
           <h2>Company Overview</h2>
           
-          {/* Key Metrics */}
           <div className="info-cards-grid">
             <div className="info-card">
               <h4>Estimated Revenue</h4>
-              <div className="info-card-value">{formatCurrency(company.estimated_revenue)}</div>
+              <div className="info-card-value">{fmtCurr(comp.estimated_revenue)}</div>
             </div>
             <div className="info-card">
               <h4>Trade Volume</h4>
-              <div className="info-card-value">{formatCurrency(company.trade_volume)}</div>
+              <div className="info-card-value">{fmtCurr(comp.trade_volume)}</div>
             </div>
             <div className="info-card">
               <h4>Partner Diversity Score</h4>
-              <div className="info-card-value">{company.partner_diversity_score || 0}/100</div>
+              <div className="info-card-value">{comp.partner_diversity_score || 0}/100</div>
             </div>
             <div className="info-card">
               <h4>Active Since</h4>
               <div className="info-card-value">
-                {company.active_since ? new Date(company.active_since).getFullYear() : 'N/A'}
+                {comp.active_since ? new Date(comp.active_since).getFullYear() : 'N/A'}
               </div>
             </div>
           </div>
 
-          {/* Top 3 Products */}
           <div style={{ marginTop: '2rem' }}>
             <h3>Top Traded Products</h3>
             <div className="products-grid" style={{ marginTop: '1rem' }}>
-              {company.products && company.products.slice(0, 3).map((product, idx) => (
+              {comp.products && comp.products.slice(0, 3).map((p, idx) => (
                 <div key={idx} className="info-card">
-                  <h4>{product.product_name}</h4>
+                  <h4>{p.product_name}</h4>
                   <div className="stat-item">
                     <span className="stat-label">Avg Price</span>
-                    <span className="stat-value">{formatCurrency(product.avg_price)}</span>
+                    <span className="stat-value">{fmtCurr(p.avg_price)}</span>
                   </div>
                   <div className="stat-item" style={{ marginTop: '0.5rem' }}>
                     <span className="stat-label">Volume</span>
                     <span className="stat-value">
-                      {new Intl.NumberFormat('en-US').format(product.volume)} {product.unit}
+                      {new Intl.NumberFormat('en-US').format(p.volume)} {p.unit}
                     </span>
                   </div>
                 </div>
@@ -158,7 +153,6 @@ const CompanyOverview = () => {
             </div>
           </div>
 
-          {/* Similar Companies - Placeholder */}
           <div style={{ marginTop: '2rem' }}>
             <h3>Similar Companies</h3>
             <p style={{ color: '#718096', marginTop: '1rem' }}>

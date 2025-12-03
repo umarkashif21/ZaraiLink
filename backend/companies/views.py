@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from django.db import transaction
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .models import (
     Company, KeyContact, KeyContactUnlock,
     Sector, CompanyRole, CompanyType
@@ -60,8 +62,17 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         regions = Company.objects.filter(
             verification_status='verified',
             province__isnull=False
-        ).values_list('province', flat=True).distinct().order_by('province')
+        ).exclude(province='').values_list('province', flat=True).distinct().order_by('province')
         return Response(list(regions))
+    
+    @action(detail=False, methods=['get'])
+    def hsn_codes(self, request):
+        """Get available HSN codes from products"""
+        from .models import CompanyProduct
+        hsn_codes = CompanyProduct.objects.exclude(
+            hsn_code=''
+        ).values_list('hsn_code', flat=True).distinct().order_by('hsn_code')
+        return Response(list(hsn_codes))
 
 
 class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
@@ -78,6 +89,7 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(company_id=company)
         return queryset.select_related('company')
     
+    @method_decorator(csrf_exempt)
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     @transaction.atomic
     def unlock(self, request, pk=None):

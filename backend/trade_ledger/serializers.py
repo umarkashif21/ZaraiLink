@@ -42,7 +42,6 @@ class TradeTrendSerializer(serializers.ModelSerializer):
 
 
 class TradeCompanyListSerializer(serializers.ModelSerializer):
-    """Serializer for trade company list view"""
     company = CompanyListSerializer(read_only=True)
     top_products = serializers.SerializerMethodField()
     
@@ -53,20 +52,17 @@ class TradeCompanyListSerializer(serializers.ModelSerializer):
             'active_since', 'is_exporter', 'is_importer', 'top_products'
         ]
     
-    def get_top_products(self, obj):
-        """Get top 3 products by volume"""
-        top_products = obj.products.order_by('-volume')[:3]
-        return TradeProductSerializer(top_products, many=True).data
+    def get_top_products(self, o):
+        qs = o.products.order_by('-volume')[:3]
+        return TradeProductSerializer(qs, many=True).data
 
 
 class TradeCompanyDetailSerializer(serializers.ModelSerializer):
-    """Detailed serializer for single company view"""
     company = CompanyListSerializer(read_only=True)
     products = TradeProductSerializer(many=True, read_only=True)
     partners = TradePartnerSerializer(many=True, read_only=True)
     trends = TradeTrendSerializer(many=True, read_only=True)
     
-    # Computed fields
     total_products = serializers.SerializerMethodField()
     total_partners = serializers.SerializerMethodField()
     partner_diversity_score = serializers.SerializerMethodField()
@@ -80,14 +76,12 @@ class TradeCompanyDetailSerializer(serializers.ModelSerializer):
             'total_products', 'total_partners', 'partner_diversity_score'
         ]
     
-    def get_total_products(self, obj):
-        return obj.products.count()
+    def get_total_products(self, o):
+        return o.products.count()
     
-    def get_total_partners(self, obj):
-        return obj.partners.values('country').distinct().count()
+    def get_total_partners(self, o):
+        return o.partners.values('country').distinct().count()
     
-    def get_partner_diversity_score(self, obj):
-        """Calculate diversity score based on number of countries and distribution"""
-        partners_count = obj.partners.values('country').distinct().count()
-        # Simple formula: more countries = higher score, max 100
-        return min(partners_count * 10, 100)
+    def get_partner_diversity_score(self, o):
+        cnt = o.partners.values('country').distinct().count()
+        return min(cnt * 10, 100)

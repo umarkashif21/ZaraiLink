@@ -6,60 +6,60 @@ import './TradeIntelligence.css';
 const CompanyTrends = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [company, setCompany] = useState(null);
-  const [trends, setTrends] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const loc = useLocation();
+  const [comp, setComp] = useState(null);
+  const [trds, setTrds] = useState([]);
+  const [load, setLoad] = useState(true);
 
-  const currentTab = location.pathname.split('/').pop();
+  const tab = loc.pathname.split('/').pop();
 
   useEffect(() => {
-    loadCompanyData();
-    loadTrends();
+    loadData();
+    loadTrds();
   }, [id]);
 
-  const loadCompanyData = async () => {
+  const loadData = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
-      if (response.ok) {
-        const data = await response.json();
-        setCompany(data);
+      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
+      if (res.ok) {
+        const data = await res.json();
+        setComp(data);
       }
     } catch (err) {
-      console.error('Failed to load company:', err);
+      console.error(err);
     }
   };
 
-  const loadTrends = async () => {
+  const loadTrds = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/trends/`);
-      if (response.ok) {
-        const data = await response.json();
-        setTrends(data);
+      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/trends/`);
+      if (res.ok) {
+        const data = await res.json();
+        setTrds(data);
       }
     } catch (err) {
-      console.error('Failed to load trends:', err);
+      console.error(err);
     } finally {
-      setLoading(false);
+      setLoad(false);
     }
   };
 
-  const navigateToTab = (tab) => {
-    navigate(`/trade-intelligence/company/${id}/${tab}`);
+  const navTab = (t) => {
+    navigate(`/trade-intelligence/company/${id}/${t}`);
   };
 
-  const formatCurrency = (value) => {
-    if (!value) return 'N/A';
+  const fmtCurr = (v) => {
+    if (!v) return 'N/A';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    }).format(value);
+    }).format(v);
   };
 
-  const getRecentTrends = () => {
-    return [...trends]
+  const recTrds = () => {
+    return [...trds]
       .sort((a, b) => {
         if (b.year !== a.year) return b.year - a.year;
         return b.month - a.month;
@@ -67,30 +67,29 @@ const CompanyTrends = () => {
       .slice(0, 12);
   };
 
-  const getQuarterlyGrowth = () => {
-    // Group by quarter and calculate average YoY growth
-    const quarters = {};
-    trends.forEach(trend => {
-      const quarter = Math.ceil(trend.month / 3);
-      const key = `${trend.year}-Q${quarter}`;
-      if (!quarters[key]) {
-        quarters[key] = { count: 0, totalGrowth: 0, year: trend.year, quarter };
+  const qGrowth = () => {
+    const qs = {};
+    trds.forEach(t => {
+      const q = Math.ceil(t.month / 3);
+      const k = `${t.year}-Q${q}`;
+      if (!qs[k]) {
+        qs[k] = { count: 0, total: 0, year: t.year, q };
       }
-      if (trend.yoy_volume_growth !== null) {
-        quarters[key].count += 1;
-        quarters[key].totalGrowth += parseFloat(trend.yoy_volume_growth);
+      if (t.yoy_volume_growth !== null) {
+        qs[k].count += 1;
+        qs[k].total += parseFloat(t.yoy_volume_growth);
       }
     });
 
-    return Object.entries(quarters)
-      .map(([key, data]) => ({
-        label: key,
-        growth: data.count > 0 ? (data.totalGrowth / data.count).toFixed(2) : 0
+    return Object.entries(qs)
+      .map(([k, d]) => ({
+        label: k,
+        growth: d.count > 0 ? (d.total / d.count).toFixed(2) : 0
       }))
-      .slice(-8); // Last 8 quarters
+      .slice(-8);
   };
 
-  if (loading) {
+  if (load) {
     return (
       <>
         <Navbar />
@@ -106,41 +105,39 @@ const CompanyTrends = () => {
     <>
       <Navbar />
       <div className="company-detail-container">
-        {/* Header */}
-        {company && (
+        {comp && (
           <>
             <div className="company-detail-header">
-              <h1>{company.company.name}</h1>
-              <p>📍 {company.company.province}, {company.company.country}</p>
+              <h1>{comp.company.name}</h1>
+              <p>📍 {comp.company.province}, {comp.company.country}</p>
               <div className="company-tags">
-                {company.is_exporter && <span className="company-tag">Exporter</span>}
-                {company.is_importer && <span className="company-tag">Importer</span>}
+                {comp.is_exporter && <span className="company-tag">Exporter</span>}
+                {comp.is_importer && <span className="company-tag">Importer</span>}
               </div>
             </div>
 
-            {/* Tab Navigation */}
             <div className="tab-navigation">
               <button
-                className={`tab-button ${currentTab === 'overview' ? 'active' : ''}`}
-                onClick={() => navigateToTab('overview')}
+                className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
+                onClick={() => navTab('overview')}
               >
                 Overview
               </button>
               <button
-                className={`tab-button ${currentTab === 'products' ? 'active' : ''}`}
-                onClick={() => navigateToTab('products')}
+                className={`tab-button ${tab === 'products' ? 'active' : ''}`}
+                onClick={() => navTab('products')}
               >
-                Products ({company.total_products || 0})
+                Products ({comp.total_products || 0})
               </button>
               <button
-                className={`tab-button ${currentTab === 'partners' ? 'active' : ''}`}
-                onClick={() => navigateToTab('partners')}
+                className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
+                onClick={() => navTab('partners')}
               >
-                Partners ({company.total_partners || 0})
+                Partners ({comp.total_partners || 0})
               </button>
               <button
-                className={`tab-button ${currentTab === 'trends' ? 'active' : ''}`}
-                onClick={() => navigateToTab('trends')}
+                className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
+                onClick={() => navTab('trends')}
               >
                 Trends
               </button>
@@ -148,17 +145,15 @@ const CompanyTrends = () => {
           </>
         )}
 
-        {/* Tab Content - Trends */}
         <div className="tab-content">
           <h2>Trade Trends & Analytics</h2>
 
-          {trends.length === 0 ? (
+          {trds.length === 0 ? (
             <div className="empty-state">
               <p>No trend data available</p>
             </div>
           ) : (
             <>
-              {/* Recent Monthly Trends */}
               <div style={{ marginTop: '2rem' }}>
                 <h3>Monthly Volume vs Avg Price (Recent 12 Months)</h3>
                 <table className="products-table" style={{ marginTop: '1rem' }}>
@@ -173,29 +168,29 @@ const CompanyTrends = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {getRecentTrends().map((trend, idx) => (
+                    {recTrds().map((t, idx) => (
                       <tr key={idx}>
                         <td>
-                          <strong>{trend.month_name} {trend.year}</strong>
+                          <strong>{t.month_name} {t.year}</strong>
                         </td>
-                        <td>{trend.product_name || 'All Products'}</td>
-                        <td>{new Intl.NumberFormat('en-US').format(trend.volume)}</td>
-                        <td>{formatCurrency(trend.avg_price)}</td>
+                        <td>{t.product_name || 'All Products'}</td>
+                        <td>{new Intl.NumberFormat('en-US').format(t.volume)}</td>
+                        <td>{fmtCurr(t.avg_price)}</td>
                         <td>
-                          {trend.yoy_volume_growth !== null ? (
-                            <span className={`growth-badge ${parseFloat(trend.yoy_volume_growth) >= 0 ? 'positive' : 'negative'}`}>
-                              {parseFloat(trend.yoy_volume_growth) >= 0 ? '+' : ''}
-                              {parseFloat(trend.yoy_volume_growth).toFixed(2)}%
+                          {t.yoy_volume_growth !== null ? (
+                            <span className={`growth-badge ${parseFloat(t.yoy_volume_growth) >= 0 ? 'positive' : 'negative'}`}>
+                              {parseFloat(t.yoy_volume_growth) >= 0 ? '+' : ''}
+                              {parseFloat(t.yoy_volume_growth).toFixed(2)}%
                             </span>
                           ) : (
                             'N/A'
                           )}
                         </td>
                         <td>
-                          {trend.yoy_price_growth !== null ? (
-                            <span className={`growth-badge ${parseFloat(trend.yoy_price_growth) >= 0 ? 'positive' : 'negative'}`}>
-                              {parseFloat(trend.yoy_price_growth) >= 0 ? '+' : ''}
-                              {parseFloat(trend.yoy_price_growth).toFixed(2)}%
+                          {t.yoy_price_growth !== null ? (
+                            <span className={`growth-badge ${parseFloat(t.yoy_price_growth) >= 0 ? 'positive' : 'negative'}`}>
+                              {parseFloat(t.yoy_price_growth) >= 0 ? '+' : ''}
+                              {parseFloat(t.yoy_price_growth).toFixed(2)}%
                             </span>
                           ) : (
                             'N/A'
@@ -207,24 +202,22 @@ const CompanyTrends = () => {
                 </table>
               </div>
 
-              {/* Quarterly Growth Summary */}
               <div style={{ marginTop: '2rem' }}>
                 <h3>YoY Volume Growth By Quarter</h3>
                 <div className="info-cards-grid" style={{ marginTop: '1rem' }}>
-                  {getQuarterlyGrowth().map((quarter, idx) => (
+                  {qGrowth().map((q, idx) => (
                     <div key={idx} className="info-card">
-                      <h4>{quarter.label}</h4>
+                      <h4>{q.label}</h4>
                       <div className="info-card-value" style={{
-                        color: parseFloat(quarter.growth) >= 0 ? '#22c55e' : '#ef4444'
+                        color: parseFloat(q.growth) >= 0 ? '#22c55e' : '#ef4444'
                       }}>
-                        {parseFloat(quarter.growth) >= 0 ? '+' : ''}{quarter.growth}%
+                        {parseFloat(q.growth) >= 0 ? '+' : ''}{q.growth}%
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Charts Placeholder */}
               <div style={{ marginTop: '2rem' }}>
                 <h3>Interactive Charts & Visualizations</h3>
                 <p style={{ color: '#718096', marginTop: '1rem' }}>
