@@ -23,6 +23,13 @@ import FindSuppliers from "./components/TradeDirectory/FindSuppliers";
 import FindBuyers from "./components/TradeDirectory/FindBuyers";
 import CompanyProfile from "./components/TradeDirectory/CompanyProfile";
 import Subscription from "./components/Subscriptions/Subscription";
+import TradeLedger from "./components/TradeIntelligence/TradeLedger";
+import TradePulse from "./components/TradeIntelligence/TradePulse";
+import TradeLens from "./components/TradeIntelligence/TradeLens";
+import CompanyOverview from "./components/TradeIntelligence/CompanyOverview";
+import CompanyProducts from "./components/TradeIntelligence/CompanyProducts";
+import CompanyPartners from "./components/TradeIntelligence/CompanyPartners";
+import CompanyTrends from "./components/TradeIntelligence/CompanyTrends";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -132,6 +139,66 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Trade Intelligence Routes */}
+          <Route
+            path="/trade-intelligence/ledger"
+            element={
+              <ProtectedRoute>
+                <TradeLedger />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trade-intelligence/pulse"
+            element={
+              <ProtectedRoute>
+                <TradePulse />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trade-intelligence/lens"
+            element={
+              <ProtectedRoute>
+                <TradeLens />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trade-intelligence/company/:id/overview"
+            element={
+              <ProtectedRoute>
+                <CompanyOverview />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trade-intelligence/company/:id/products"
+            element={
+              <ProtectedRoute>
+                <CompanyProducts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trade-intelligence/company/:id/partners"
+            element={
+              <ProtectedRoute>
+                <CompanyPartners />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trade-intelligence/company/:id/trends"
+            element={
+              <ProtectedRoute>
+                <CompanyTrends />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Subscription Route */}
           <Route
             path="/subscription"
             element={

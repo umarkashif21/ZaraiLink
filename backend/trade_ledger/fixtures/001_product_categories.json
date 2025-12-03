@@ -1,0 +1,92 @@
+[
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 1,
+        "fields": {
+            "name": "Basmati Rice",
+            "hs_code": "1006.30",
+            "description": "Premium long-grain aromatic rice"
+        }
+    },
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 2,
+        "fields": {
+            "name": "Non-Basmati Rice",
+            "hs_code": "1006.10",
+            "description": "Standard rice varieties"
+        }
+    },
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 3,
+        "fields": {
+            "name": "Kinnow (Citrus)",
+            "hs_code": "0805.21",
+            "description": "Pakistani citrus fruit"
+        }
+    },
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 4,
+        "fields": {
+            "name": "Mango",
+            "hs_code": "0804.50",
+            "description": "Fresh mangoes"
+        }
+    },
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 5,
+        "fields": {
+            "name": "Potato",
+            "hs_code": "0701.90",
+            "description": "Fresh potatoes"
+        }
+    },
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 6,
+        "fields": {
+            "name": "Onion",
+            "hs_code": "0703.10",
+            "description": "Fresh onions"
+        }
+    },
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 7,
+        "fields": {
+            "name": "Cotton",
+            "hs_code": "5201.00",
+            "description": "Raw cotton"
+        }
+    },
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 8,
+        "fields": {
+            "name": "Wheat",
+            "hs_code": "1001.99",
+            "description": "Wheat grain"
+        }
+    },
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 9,
+        "fields": {
+            "name": "Dates",
+            "hs_code": "0804.10",
+            "description": "Fresh or dried dates"
+        }
+    },
+    {
+        "model": "trade_ledger.productcategory",
+        "pk": 10,
+        "fields": {
+            "name": "Spices",
+            "hs_code": "0910.99",
+            "description": "Various spices"
+        }
+    }
+]
