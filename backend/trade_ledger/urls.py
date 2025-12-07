@@ -1,11 +1,19 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import TradeCompanyViewSet, ProductCategoryListView
-
-router = DefaultRouter()
-router.register(r'companies', TradeCompanyViewSet, basename='trade-company')
+# trade_ledger/urls.py
+# trade_ledger/urls.py
+from django.urls import path
+from . import views  # ← This correctly imports trade_ledger/views.py
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('product-categories/', ProductCategoryListView.as_view(), name='product-categories'),
+    path('explorer/', views.explorer_api, name='explorer_api'),
+    path('company/<str:company_name>/overview/', views.company_overview_api),
+    path('company/<str:company_name>/products/', views.company_products_api),
+    path('company/<str:company_name>/partners/', views.company_partners_api),
+    path('company/<str:company_name>/trends/', views.company_trends_api),
+    path('compare/', views.compare_companies_api),
+    
+    # GNN APIs
+    path('company/<str:company_name>/similar/', views.similar_companies_api),
+    path('company/<str:company_name>/potential-partners/', views.potential_partners_api),
+    path('company/<str:company_name>/network-influence/', views.network_influence_api),
+    path('product-clusters/', views.product_clusters_api),
 ]
