@@ -14,20 +14,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# zarailink/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
 
-# Simple favicon handler to prevent 404 errors
 def favicon(request):
-    return HttpResponse(status=204)  # No Content
+    return HttpResponse(status=204)
 
 urlpatterns = [
     path('favicon.ico', favicon),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
-    path('api/', include('companies.urls')),
     path('api/subscriptions/', include('subscriptions.urls')),
-    path('api/trade-ledger/', include('trade_ledger.urls')),
-    path("ckeditor5/", include('django_ckeditor_5.urls')),  # CKEditor 5
+    path('api/', include('trade_ledger.urls')),  # ← Only this line for trade_ledger
+    path("ckeditor5/", include('django_ckeditor_5.urls')),
 ]

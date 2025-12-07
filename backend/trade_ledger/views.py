@@ -1,98 +1,310 @@
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.views import APIView
-from django.db.models import Q, Sum, Avg, Count
-from .models import ProductCategory, TradeCompany, TradeProduct, TradePartner, TradeTrend
-from .serializers import (
-    ProductCategorySerializer, TradeCompanyListSerializer,
-    TradeCompanyDetailSerializer, TradeProductSerializer,
-    TradePartnerSerializer, TradeTrendSerializer
-)
+# trade_ledger/views.py
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .services.explorer import get_explorer_companies
+from .services.company import get_company_overview_metrics
+from .services.products import get_company_product_performance, get_avg_price_trend_monthly, get_volume_share
+from .services.partners import get_top_partners, get_trade_volume_by_country, get_partner_trends, get_product_mix_per_partner
+from .services.trends import get_volume_price_monthly, get_yoy_growth_by_quarter
+from .services.compare import get_company_comparison_metrics
+from trade_data.models import CompanyEmbedding, ProductEmbedding  # For GNN data
+
+def _parse_date(date_str):
+    if not date_str:
+        return None
+    from datetime import datetime
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except:
+        return None
 
 
-class TradeCompanyViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = TradeCompany.objects.select_related('company').prefetch_related(
-        'products', 'partners', 'trends'
+# ----------------------------
+# EXPLORER (Enhanced with GNN Segment Tags)
+# ----------------------------
+def explorer_api(request):
+    direction = request.GET.get('direction', 'import')
+    date_from = _parse_date(request.GET.get('date_from'))
+    date_to = _parse_date(request.GET.get('date_to'))
+    country = request.GET.get('country')
+    product_category_id = request.GET.get('product_category_id')
+    product_subcategory_id = request.GET.get('product_subcategory_id')
+    product_item_id = request.GET.get('product_item_id')
+    search_query = request.GET.get('search')
+    limit = min(int(request.GET.get('limit', 100)), 1000)
+
+    companies = get_explorer_companies(
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country,
+        product_category_id=product_category_id,
+        product_subcategory_id=product_subcategory_id,
+        product_item_id=product_item_id,
+        search_query=search_query,
+        limit=limit
     )
-    permission_classes = [AllowAny]
-    
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return TradeCompanyListSerializer
-        return TradeCompanyDetailSerializer
-    
-    def get_queryset(self):
-        qs = self.queryset
-        
-        country = self.request.query_params.get('country', '').strip()
-        prod = self.request.query_params.get('product', '').strip()
-        ctype = self.request.query_params.get('type', '').strip()
-        d_from = self.request.query_params.get('date_from', '').strip()
-        d_to = self.request.query_params.get('date_to', '').strip()
-        
-        if country:
-            qs = qs.filter(partners__country__icontains=country).distinct()
-        
-        if prod:
-            qs = qs.filter(products__category_id=prod).distinct()
-        
-        if ctype == 'exporter':
-            qs = qs.filter(is_exporter=True)
-        elif ctype == 'importer':
-            qs = qs.filter(is_importer=True)
-        
-        if d_from:
-            qs = qs.filter(active_since__gte=d_from)
-        if d_to:
-            qs = qs.filter(active_since__lte=d_to)
-        
-        return qs
-    
-    @action(detail=True, methods=['get'])
-    def products(self, req, pk=None):
-        c = self.get_object()
-        prods = c.products.all()
-        ser = TradeProductSerializer(prods, many=True)
-        return Response(ser.data)
-    
-    @action(detail=True, methods=['get'])
-    def partners(self, req, pk=None):
-        c = self.get_object()
-        parts = c.partners.all()
-        ser = TradePartnerSerializer(parts, many=True)
-        return Response(ser.data)
-    
-    @action(detail=True, methods=['get'])
-    def trends(self, req, pk=None):
-        c = self.get_object()
-        trds = c.trends.all()
-        ser = TradeTrendSerializer(trds, many=True)
-        return Response(ser.data)
-    
-    @action(detail=False, methods=['get'])
-    def statistics(self, req):
-        qs = self.get_queryset()
-        pid = req.query_params.get('product', '').strip()
-        
-        stats = {}
-        
-        if pid:
-            prods = TradeProduct.objects.filter(company__in=qs, category_id=pid)
-            stats['avg_price'] = prods.aggregate(Avg('avg_price'))['avg_price__avg']
-            stats['avg_yoy_growth'] = prods.aggregate(Avg('yoy_growth'))['yoy_growth__avg']
-            stats['total_volume'] = prods.aggregate(Sum('volume'))['volume__sum']
-        
-        stats['total_companies'] = qs.count()
-        
-        return Response(stats)
+
+    # Add GNN segment tags
+    company_names = [c['company'] for c in companies]
+    embedding_map = {
+        e.company_name: e.cluster_tag
+        for e in CompanyEmbedding.objects.filter(company_name__in=company_names)
+    }
+    for c in companies:
+        c['segment_tag'] = embedding_map.get(c['company'], "Other")
+
+    return JsonResponse({"results": companies})
 
 
-class ProductCategoryListView(APIView):
-    permission_classes = [AllowAny]
-    
-    def get(self, req):
-        cats = ProductCategory.objects.all().order_by('name')
-        ser = ProductCategorySerializer(cats, many=True)
-        return Response(ser.data)
+# ----------------------------
+# COMPANY PROFILE - OVERVIEW (Enhanced with Network Influence)
+# ----------------------------
+def company_overview_api(request, company_name):
+    direction = request.GET.get('direction', 'import')
+    date_from = _parse_date(request.GET.get('date_from'))
+    date_to = _parse_date(request.GET.get('date_to'))
+    country = request.GET.get('country')
+    product_category_id = request.GET.get('product_category_id')
+    product_subcategory_id = request.GET.get('product_subcategory_id')
+    product_item_id = request.GET.get('product_item_id')
+
+    metrics = get_company_overview_metrics(
+        company_name=company_name,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country,
+        product_category_id=product_category_id,
+        product_subcategory_id=product_subcategory_id,
+        product_item_id=product_item_id
+    )
+
+    # Add GNN network influence
+    try:
+        emb = CompanyEmbedding.objects.get(company_name=company_name)
+        metrics['network_influence'] = {
+            'pagerank': float(emb.pagerank),
+            'degree': emb.degree
+        }
+        metrics['reputation_tags'] = [emb.cluster_tag]
+    except CompanyEmbedding.DoesNotExist:
+        metrics['network_influence'] = {'pagerank': 0.0, 'degree': 0}
+        metrics['reputation_tags'] = ["Other"]
+
+    return JsonResponse(metrics)
+
+
+# ----------------------------
+# COMPANY PROFILE - PRODUCTS (Enhanced with Product Clusters)
+# ----------------------------
+def company_products_api(request, company_name):
+    direction = request.GET.get('direction', 'import')
+    date_from = _parse_date(request.GET.get('date_from'))
+    date_to = _parse_date(request.GET.get('date_to'))
+    country = request.GET.get('country')
+
+    performance = list(get_company_product_performance(
+        company_name=company_name,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country
+    ))
+
+    volume_share = list(get_volume_share(
+        company_name=company_name,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country
+    ))
+
+    # Avg price trend for top product
+    top_product = performance[0] if performance else None
+    price_trend = []
+    if top_product:
+        try:
+            from trade_data.models import ProductItem
+            item = ProductItem.objects.get(name=top_product['product_name'])
+            price_trend = list(get_avg_price_trend_monthly(
+                company_name=company_name,
+                product_item_id=item.id,
+                direction=direction,
+                date_from=date_from,
+                date_to=date_to,
+                country=country
+            ))
+        except:
+            pass
+
+    # Add product clusters
+    product_clusters = list(
+        ProductEmbedding.objects.values_list('cluster_tag', flat=True).distinct()
+    )
+
+    return JsonResponse({
+        "product_performance": performance,
+        "avg_price_trend": price_trend,
+        "volume_share": volume_share,
+        "product_clusters": product_clusters
+    })
+
+
+# ----------------------------
+# COMPANY PROFILE - PARTNERS
+# ----------------------------
+def company_partners_api(request, company_name):
+    direction = request.GET.get('direction', 'import')
+    date_from = _parse_date(request.GET.get('date_from'))
+    date_to = _parse_date(request.GET.get('date_to'))
+    country = request.GET.get('country')
+
+    top_partners = list(get_top_partners(
+        company_name=company_name,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country,
+        limit=10
+    ))
+
+    trade_by_country = list(get_trade_volume_by_country(
+        company_name=company_name,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country
+    ))
+
+    partner_trends = list(get_partner_trends(
+        company_name=company_name,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country,
+        top_n=5
+    ))
+
+    product_mix = {}
+    for partner in top_partners[:3]:
+        partner_name = partner['partner']
+        mix = list(get_product_mix_per_partner(
+            company_name=company_name,
+            partner_name=partner_name,
+            direction=direction,
+            date_from=date_from,
+            date_to=date_to,
+            country=country
+        ))
+        product_mix[partner_name] = mix
+
+    return JsonResponse({
+        "top_partners": top_partners,
+        "trade_volume_by_country": trade_by_country,
+        "partner_trends": partner_trends,
+        "product_mix_per_partner": product_mix
+    })
+
+
+# ----------------------------
+# COMPANY PROFILE - TRENDS
+# ----------------------------
+def company_trends_api(request, company_name):
+    direction = request.GET.get('direction', 'import')
+    date_from = _parse_date(request.GET.get('date_from'))
+    date_to = _parse_date(request.GET.get('date_to'))
+    country = request.GET.get('country')
+
+    volume_price = list(get_volume_price_monthly(
+        company_name=company_name,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country
+    ))
+
+    quarterly = list(get_yoy_growth_by_quarter(
+        company_name=company_name,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country
+    ))
+
+    return JsonResponse({
+        "volume_price_trend": volume_price,
+        "quarterly_volume": quarterly
+    })
+
+
+# ----------------------------
+# COMPARE COMPANIES
+# ----------------------------
+@csrf_exempt
+@require_http_methods(["POST"])
+def compare_companies_api(request):
+    try:
+        data = json.loads(request.body)
+        company_names = data.get('companies', [])
+        direction = data.get('direction', 'import')
+        date_from = _parse_date(data.get('date_from'))
+        date_to = _parse_date(data.get('date_to'))
+        country = data.get('country')
+    except:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    if len(company_names) < 2 or len(company_names) > 4:
+        return JsonResponse({"error": "Select 2-4 companies"}, status=400)
+
+    metrics = get_company_comparison_metrics(
+        company_names=company_names,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country
+    )
+    return JsonResponse(metrics)
+
+
+# ============================
+# GNN-SPECIFIC APIS
+# ============================
+
+def similar_companies_api(request, company_name):
+    """Explorer → Peer company recommendation"""
+    try:
+        emb = CompanyEmbedding.objects.get(company_name=company_name)
+    except CompanyEmbedding.DoesNotExist:
+        return JsonResponse({"similar_companies": []})
+
+    from .services.gnn import get_similar_companies
+    similar = get_similar_companies(company_name, top_k=4)
+    return JsonResponse({"similar_companies": similar})
+
+
+def potential_partners_api(request, company_name):
+    """Overview → Link prediction (same as similar companies)"""
+    return similar_companies_api(request, company_name)
+
+
+def network_influence_api(request, company_name):
+    """Overview → Centrality metrics"""
+    try:
+        emb = CompanyEmbedding.objects.get(company_name=company_name)
+        return JsonResponse({
+            "pagerank": float(emb.pagerank),
+            "degree": emb.degree
+        })
+    except CompanyEmbedding.DoesNotExist:
+        return JsonResponse({"pagerank": 0.0, "degree": 0})
+
+
+def product_clusters_api(request):
+    """Products → Latent category cards"""
+    clusters = list(
+        ProductEmbedding.objects.values_list('cluster_tag', flat=True).distinct()
+    )
+    return JsonResponse({"product_clusters": clusters})
