@@ -2,7 +2,7 @@
 from django.db.models import Sum, Avg, Count, Q, F
 from trade_data.models import Transaction
 from .filters import apply_transaction_filters
-print("✅ explorer.py LOADED — Transaction imported")
+# Debug import check removed - was causing encoding issues
 
 def get_explorer_companies(
     direction='import',

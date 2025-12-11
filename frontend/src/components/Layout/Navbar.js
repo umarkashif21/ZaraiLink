@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, tokenBalance, logout } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -62,10 +64,27 @@ const Navbar = () => {
           >
             Subscription
           </Link>
+          
+          <Link 
+            to="/watchlist" 
+            className={`nav-link ${isActive('/watchlist') ? 'active' : ''}`}
+          >
+            ⭐ Watchlist
+          </Link>
         </div>
 
         {/* Right Section */}
         <div className="navbar-right">
+          {/* Theme Toggle */}
+          <button 
+            className="theme-toggle" 
+            onClick={toggleTheme}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? '☀️' : '🌙'}
+          </button>
+
           {/* Token Balance */}
           <div className="token-display">
             <span className="token-icon">💎</span>
@@ -99,3 +118,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

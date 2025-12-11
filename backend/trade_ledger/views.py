@@ -307,4 +307,108 @@ def product_clusters_api(request):
     clusters = list(
         ProductEmbedding.objects.values_list('cluster_tag', flat=True).distinct()
     )
-    return JsonResponse({"product_clusters": clusters})
+    return JsonResponse({"clusters": clusters})
+
+
+# ----------------------------
+# LINK PREDICTION APIs
+# ----------------------------
+def predict_sellers_api(request, buyer_name):
+    """
+    Predict potential sellers for a buyer.
+    Query params:
+        - method: node2vec, common_neighbors, product, jaccard, preferential, combined (default)
+        - top_k: number of results (default 10)
+    """
+    from .services.link_prediction import (
+        predict_sellers_node2vec,
+        predict_sellers_common_neighbors,
+        predict_sellers_by_product,
+        predict_sellers_jaccard,
+        predict_sellers_preferential_attachment,
+        predict_sellers_combined
+    )
+    
+    method = request.GET.get('method', 'combined')
+    top_k = int(request.GET.get('top_k', 10))
+    
+    if method == 'node2vec':
+        result = predict_sellers_node2vec(buyer_name, top_k)
+    elif method == 'common_neighbors':
+        result = predict_sellers_common_neighbors(buyer_name, top_k)
+    elif method == 'product':
+        result = predict_sellers_by_product(buyer_name, top_k)
+    elif method == 'jaccard':
+        result = predict_sellers_jaccard(buyer_name, top_k)
+    elif method == 'preferential':
+        result = predict_sellers_preferential_attachment(buyer_name, top_k)
+    else:  # combined
+        result = predict_sellers_combined(buyer_name, top_k)
+    
+    return JsonResponse(result)
+
+
+def predict_buyers_api(request, seller_name):
+    """
+    Predict potential buyers for a seller.
+    Query params:
+        - method: node2vec, common_neighbors, product, combined (default)
+        - top_k: number of results (default 10)
+    """
+    from .services.link_prediction import (
+        predict_buyers_node2vec,
+        predict_buyers_common_neighbors,
+        predict_buyers_by_product,
+        predict_buyers_combined
+    )
+    
+    method = request.GET.get('method', 'combined')
+    top_k = int(request.GET.get('top_k', 10))
+    
+    if method == 'node2vec':
+        result = predict_buyers_node2vec(seller_name, top_k)
+    elif method == 'common_neighbors':
+        result = predict_buyers_common_neighbors(seller_name, top_k)
+    elif method == 'product':
+        result = predict_buyers_by_product(seller_name, top_k)
+    else:  # combined
+        result = predict_buyers_combined(seller_name, top_k)
+    
+    return JsonResponse(result)
+
+
+def link_prediction_methods_api(request):
+    """Return available link prediction methods and their descriptions."""
+    methods = [
+        {
+            "id": "node2vec",
+            "name": "Node2Vec Similarity",
+            "description": "Uses graph neural network embeddings to find similar trading patterns"
+        },
+        {
+            "id": "common_neighbors",
+            "name": "Common Neighbors",
+            "description": "Finds sellers/buyers that share connections with similar companies"
+        },
+        {
+            "id": "product",
+            "name": "Product Co-Trade",
+            "description": "Matches based on product category overlap"
+        },
+        {
+            "id": "jaccard",
+            "name": "Jaccard Coefficient",
+            "description": "Normalized similarity measure based on shared connections"
+        },
+        {
+            "id": "preferential",
+            "name": "Preferential Attachment",
+            "description": "Recommends popular/well-connected trading partners"
+        },
+        {
+            "id": "combined",
+            "name": "Combined (All Methods)",
+            "description": "Aggregates scores from all methods for best results"
+        }
+    ]
+    return JsonResponse({"methods": methods})

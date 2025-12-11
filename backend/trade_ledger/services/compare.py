@@ -1,5 +1,5 @@
 # services/compare.py
-from django.db.models import Sum, Avg, StdDev, F, FloatField
+from django.db.models import Sum, Avg, StdDev, F, FloatField, Count
 from django.db.models.functions import Cast
 from trade_data.models import Transaction
 from .company import get_mom_growth_for_company

@@ -110,6 +110,16 @@ const Dashboard = () => {
               <p>View plans and redeem codes for more tokens</p>
               <span className="action-arrow">→</span>
             </div>
+
+            <div 
+              className="action-card"
+              onClick={() => navigate('/trade-intelligence/link-prediction')}
+            >
+              <div className="action-icon" style={{background: 'linear-gradient(135deg, #8b5cf6, #6366f1)'}}>🔮</div>
+              <h3>AI Partner Prediction</h3>
+              <p>Discover potential trading partners using machine learning</p>
+              <span className="action-arrow">→</span>
+            </div>
           </div>
         </div>
 

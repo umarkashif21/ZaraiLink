@@ -1,6 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
+import { SkeletonCard } from '../Common/Skeleton';
+import EmptyState from '../Common/EmptyState';
+import Pagination from '../Common/Pagination';
+import SortSelector from '../Common/SortSelector';
+import ExportButton from '../Common/ExportButton';
+import Breadcrumb from '../Common/Breadcrumb';
+import WatchlistButton from '../Common/WatchlistButton';
+import useWatchlist from '../../hooks/useWatchlist';
+import useDebounce from '../../hooks/useDebounce';
 import './TradeIntelligence.css';
 
 const TradeLedger = () => {
@@ -10,6 +19,16 @@ const TradeLedger = () => {
   const [load, setLoad] = useState(true);
   const [stats, setStats] = useState(null);
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+  
+  // Sorting state
+  const [sortBy, setSortBy] = useState('name_asc');
+  
+  // Watchlist hook
+  const { isInWatchlist, toggleWatchlist } = useWatchlist();
+  
   const [filts, setFilts] = useState({
     country: '',
     product: '',
@@ -17,6 +36,9 @@ const TradeLedger = () => {
     dateFrom: '',
     dateTo: ''
   });
+  
+  // Debounce country filter
+  const debouncedCountry = useDebounce(filts.country, 300);
 
   useEffect(() => {
     loadCats();
@@ -29,13 +51,16 @@ const TradeLedger = () => {
 
   const loadCats = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/trade-ledger/product-categories/');
+      // Use product-clusters endpoint which exists in trade_ledger
+      const res = await fetch('http://localhost:8000/api/product-clusters/', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        setCats(data);
+        // Convert clusters to category-like format
+        const categories = data.clusters ? data.clusters.map((name, idx) => ({ id: idx + 1, name })) : [];
+        setCats(categories);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load categories:', err);
     }
   };
 
@@ -43,31 +68,49 @@ const TradeLedger = () => {
     setLoad(true);
     try {
       const p = new URLSearchParams();
+      p.append('direction', 'import'); // Default to import
       if (filts.country) p.append('country', filts.country);
-      if (filts.product) p.append('product', filts.product);
-      if (filts.type) p.append('type', filts.type);
       if (filts.dateFrom) p.append('date_from', filts.dateFrom);
       if (filts.dateTo) p.append('date_to', filts.dateTo);
+      p.append('limit', '50');
 
-      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/?${p}`);
+      // Use the explorer API which exists
+      const res = await fetch(`http://localhost:8000/api/explorer/?${p}`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        setComps(data);
+        // Transform explorer data to match expected format
+        const transformedComps = (data.results || []).map((item, idx) => ({
+          id: idx + 1,
+          company: {
+            name: item.company,
+            province: '',
+            country: ''
+          },
+          estimated_revenue: item.avg_price * item.total_volume,
+          trade_volume: item.total_volume,
+          is_exporter: false,
+          is_importer: true,
+          active_since: null,
+          top_products: [],
+          segment_tag: item.segment_tag || 'Other'
+        }));
+        setComps(transformedComps);
       }
 
+      // Stats calculation from the loaded companies
       if (filts.product) {
-        const sRes = await fetch(
-          `http://localhost:8000/api/trade-ledger/companies/statistics/?product=${filts.product}&${p}`
-        );
-        if (sRes.ok) {
-          const sData = await sRes.json();
-          setStats(sData);
-        }
+        // For now, just set basic stats
+        setStats({
+          avg_price: 0,
+          avg_yoy_growth: 0,
+          total_volume: 0,
+          total_companies: 0
+        });
       } else {
         setStats(null);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load companies:', err);
     } finally {
       setLoad(false);
     }
@@ -77,8 +120,10 @@ const TradeLedger = () => {
     setFilts(prev => ({ ...prev, [f]: v }));
   };
 
-  const onCompClick = (id) => {
-    navigate(`/trade-intelligence/company/${id}/overview`);
+  const onCompClick = (companyName) => {
+    // Use the company name for navigation, URL encoded for safety
+    const encodedName = encodeURIComponent(companyName);
+    navigate(`/trade-intelligence/company/${encodedName}/overview`);
   };
 
   const fmtCurr = (v) => {
@@ -96,13 +141,73 @@ const TradeLedger = () => {
     return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
   };
 
+  // Sorted data
+  const sortedComps = useMemo(() => {
+    const sorted = [...comps];
+    const [field, direction] = sortBy.split('_');
+    sorted.sort((a, b) => {
+      let valA, valB;
+      if (field === 'name') {
+        valA = a.company.name.toLowerCase();
+        valB = b.company.name.toLowerCase();
+      } else if (field === 'revenue') {
+        valA = a.estimated_revenue || 0;
+        valB = b.estimated_revenue || 0;
+      } else if (field === 'volume') {
+        valA = a.trade_volume || 0;
+        valB = b.trade_volume || 0;
+      } else {
+        valA = a.company.name.toLowerCase();
+        valB = b.company.name.toLowerCase();
+      }
+      if (direction === 'asc') return valA > valB ? 1 : -1;
+      return valA < valB ? 1 : -1;
+    });
+    return sorted;
+  }, [comps, sortBy]);
+
+  // Paginated data
+  const totalPages = Math.ceil(sortedComps.length / itemsPerPage);
+  const paginatedComps = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sortedComps.slice(start, start + itemsPerPage);
+  }, [sortedComps, currentPage, itemsPerPage]);
+
+  // Export columns
+  const exportColumns = [
+    { key: 'company.name', label: 'Company Name' },
+    { key: 'estimated_revenue', label: 'Est. Revenue' },
+    { key: 'trade_volume', label: 'Trade Volume' },
+    { key: 'segment_tag', label: 'Segment' },
+  ];
+
+  // Format data for export
+  const exportData = comps.map(c => ({
+    'company.name': c.company.name,
+    estimated_revenue: fmtCurr(c.estimated_revenue),
+    trade_volume: fmtCurr(c.trade_volume),
+    segment_tag: c.segment_tag,
+  }));
   return (
     <>
       <Navbar />
       <div className="trade-ledger-container">
+        <Breadcrumb />
+        
         <div className="trade-ledger-header">
-          <h1>📊 Trade Ledger</h1>
-          <p>Comprehensive trade intelligence and company analytics</p>
+          <div>
+            <h1>📊 Trade Ledger</h1>
+            <p>Comprehensive trade intelligence and company analytics</p>
+          </div>
+          <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <SortSelector value={sortBy} onChange={setSortBy} />
+            <ExportButton 
+              data={exportData} 
+              columns={exportColumns} 
+              filename="trade-ledger-companies"
+              title="Trade Ledger Export"
+            />
+          </div>
         </div>
 
         <div className="filters-section">
@@ -196,68 +301,91 @@ const TradeLedger = () => {
         )}
 
         {load ? (
-          <div className="loading-container">
-            <div className="spinner"></div>
-            <p>Loading companies...</p>
+          <div className="companies-grid">
+            {/* Skeleton loading cards */}
+            {[1,2,3,4,5,6,7,8].map(i => <SkeletonCard key={i} />)}
           </div>
         ) : comps.length === 0 ? (
-          <div className="empty-state">
-            <h2>No companies found</h2>
-            <p>Try adjusting your filters</p>
-          </div>
+          <EmptyState
+            title="No companies found"
+            description="Try adjusting your filters or search criteria"
+            actionLabel="Clear Filters"
+            onAction={() => setFilts({ country: '', product: '', type: '', dateFrom: '', dateTo: '' })}
+          />
         ) : (
-          <div className="companies-grid">
-            {comps.map(c => (
-              <div
-                key={c.id}
-                className="company-card"
-                onClick={() => onCompClick(c.id)}
-              >
-                <div className="company-card-header">
-                  <div>
-                    <h3>{c.company.name}</h3>
-                    <p className="company-location">
-                      📍 {c.company.province}, {c.company.country}
-                    </p>
+          <>
+            <div className="companies-grid">
+              {paginatedComps.map(c => (
+                <div
+                  key={c.id}
+                  className="company-card"
+                  onClick={() => onCompClick(c.company.name)}
+                >
+                  <div className="company-card-header">
+                    <div>
+                      <h3>{c.company.name}</h3>
+                      <p className="company-location">
+                        📍 {c.company.province || 'N/A'}, {c.company.country || 'N/A'}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <WatchlistButton
+                        isWatched={isInWatchlist(c.company.name)}
+                        onToggle={(e) => {
+                          e.stopPropagation();
+                          toggleWatchlist({ id: c.company.name, name: c.company.name });
+                        }}
+                        size="small"
+                      />
+                      {c.is_exporter && c.is_importer ? (
+                        <span className="company-badge">Both</span>
+                      ) : c.is_exporter ? (
+                        <span className="company-badge">Exporter</span>
+                      ) : (
+                        <span className="company-badge">Importer</span>
+                      )}
+                    </div>
                   </div>
-                  {c.is_exporter && c.is_importer ? (
-                    <span className="company-badge">Both</span>
-                  ) : c.is_exporter ? (
-                    <span className="company-badge">Exporter</span>
-                  ) : (
-                    <span className="company-badge">Importer</span>
-                  )}
-                </div>
 
-                <div className="company-stats">
-                  <div className="stat-item">
-                    <span className="stat-label">Est. Revenue</span>
-                    <span className="stat-value">
-                      {fmtCurr(c.estimated_revenue)}
-                    </span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Trade Volume</span>
-                    <span className="stat-value">
-                      {fmtCurr(c.trade_volume)}
-                    </span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Products</span>
-                    <span className="stat-value">{c.top_products?.length || 0}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Active Since</span>
-                    <span className="stat-value">
-                      {c.active_since 
-                        ? new Date(c.active_since).getFullYear()
-                        : 'N/A'}
-                    </span>
+                  <div className="company-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Est. Revenue</span>
+                      <span className="stat-value">
+                        {fmtCurr(c.estimated_revenue)}
+                      </span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Trade Volume</span>
+                      <span className="stat-value">
+                        {fmtCurr(c.trade_volume)}
+                      </span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Products</span>
+                      <span className="stat-value">{c.top_products?.length || 0}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Active Since</span>
+                      <span className="stat-value">
+                        {c.active_since 
+                          ? new Date(c.active_since).getFullYear()
+                          : 'N/A'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalItems={comps.length}
+              itemsPerPage={itemsPerPage}
+            />
+          </>
         )}
       </div>
     </>
