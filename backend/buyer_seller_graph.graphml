@@ -1,0 +1,4285 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d1" for="edge" attr.name="weight" attr.type="double"/>
+<key id="d0" for="node" attr.name="type" attr.type="string"/>
+<graph edgedefault="undirected"><node id="Trading Corporation Of Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tereos Acucar E Energia">
+  <data key="d0">seller</data>
+</node>
+<node id="Brothers Enterprise Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Al Khaleej Sugar Co Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Barrett Hodgson Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Emad Trade House Fzco">
+  <data key="d0">seller</data>
+</node>
+<node id="Protech">
+  <data key="d0">buyer</data>
+</node>
+<node id="Lactalis Ingredients">
+  <data key="d0">seller</data>
+</node>
+<node id="Martin Dow Specialities Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sigma-Aldrich Chemie Gmbh">
+  <data key="d0">seller</data>
+</node>
+<node id="Grandma Catering Management Services Smc Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shanzhan International Catering Management (Henan) Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Renacon Pharma Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Seawall Enterprise Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="W Woodward Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Jawed &amp; Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Qinhuangdao Lihua Starch Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="I.M Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Yiwu Zhixin Import And Export Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Med Pharm Research Lab">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dongying City Longxing Chemical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Unisa Pharmaceutical Industries Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Qingdao Foture Industry Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Jawed Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Foshan Gaoming Jinjie Import And Export Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Agp Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Msm Prai Berhad">
+  <data key="d0">seller</data>
+</node>
+<node id="Cheminova Corporation">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shanghai Huamao Pharmaceutical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Aba Stepsworth Dwc Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Mattoo Sons">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pt Mayora Indah Tbk">
+  <data key="d0">seller</data>
+</node>
+<node id="Farm Aid Group">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pacific Pharmaceuticals Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Weifang Shengtai Medicine Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Global Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Galaxo Smith Kline Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Abbott Laboratories Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hilton Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tate &amp; Lyle Sugars Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Nestle Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Cargill Bio-Chemical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Tabros Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Leprino Foods Dairy Products Co">
+  <data key="d0">seller</data>
+</node>
+<node id="Lucky Core Industries Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dfe Pahrma Gmbh &amp; Co Kg">
+  <data key="d0">seller</data>
+</node>
+<node id="Ccl Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Guangdond Yichao Biological Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="The Searle Co Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Chuming Pharmaceutical Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Davis Pharmaceutical Laboratories">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hangzhou Starshine Pharmaceutical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Best Day International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Guangdong Youzhiweipin Biotechnology">
+  <data key="d0">seller</data>
+</node>
+<node id="Sb Pharma">
+  <data key="d0">buyer</data>
+</node>
+<node id="Foreach Enterprise Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Epharm Laboratories">
+  <data key="d0">buyer</data>
+</node>
+<node id="Malkara Birlik Sut Ve Sut Mamulleri As">
+  <data key="d0">seller</data>
+</node>
+<node id="M A Kamil Farma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Infoark Industry Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Klarg Exports">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tate &amp; Lyle Boleraz Sro">
+  <data key="d0">seller</data>
+</node>
+<node id="Shanghai Tianjia Biochemical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Pharmatec Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ai-Cha Food Trading Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Guangzhou Dongchen International Trade Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Haameem">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mondelez Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sensient Technologies Europe Gmbh">
+  <data key="d0">seller</data>
+</node>
+<node id="Axis Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sethness Roquette Food (Lianyungang) Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Archard Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Aptly Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zibo Weibin Imp &amp; Exp Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Pepsi-Cola International Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Chase Up">
+  <data key="d0">buyer</data>
+</node>
+<node id="Aykilic Gross Dis Ticaret Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Getz Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Chem Color International Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Agar International Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sachsenmilch Leppersdorf Gmbh">
+  <data key="d0">seller</data>
+</node>
+<node id="Hamza Enterprise">
+  <data key="d0">buyer</data>
+</node>
+<node id="Al Zain International Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Rano Fashion Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Global Marketing Carporation">
+  <data key="d0">buyer</data>
+</node>
+<node id="Puratos Nv">
+  <data key="d0">seller</data>
+</node>
+<node id="Mars International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mars Way Food Stuff Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Thanh Thanh Cong – Bien Hoa">
+  <data key="d0">seller</data>
+</node>
+<node id="Agris Ninh Hoa Import Export">
+  <data key="d0">seller</data>
+</node>
+<node id="Muller &amp; Phipps (Pakistan) Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Perfetti Van Melle Confectionery (Shenzhen) Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Imcd Middle East Fzco">
+  <data key="d0">seller</data>
+</node>
+<node id="Rasco Pharma">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pak International">
+  <data key="d0">buyer</data>
+</node>
+<node id="The Connection">
+  <data key="d0">buyer</data>
+</node>
+<node id="Qingdao Songwal Biotech Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="F.B Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dulceplus Golosinas Sa">
+  <data key="d0">seller</data>
+</node>
+<node id="Krypton Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Qingdao Hisunny Imp &amp; Exp Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Wilson's Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Apeloa Hong Kong Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Pharmevo Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dfe Pharma Gmbh &amp; Co Kg">
+  <data key="d0">seller</data>
+</node>
+<node id="Inventor Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Armor Proteines Sas">
+  <data key="d0">seller</data>
+</node>
+<node id="Shijiazhuang Jiaduohao Food Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Ss Agencies">
+  <data key="d0">buyer</data>
+</node>
+<node id="Xiamen Ying Wan Foodstuff Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Parkar Pharma">
+  <data key="d0">buyer</data>
+</node>
+<node id="Toss Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="One Health Pharma">
+  <data key="d0">buyer</data>
+</node>
+<node id="Infoark International Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Standard Drug Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Horizon Healthcare Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Otsuka Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Unilever Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Aromsa Besin Aroma Ve Katki Maddeleri San Ve Tic">
+  <data key="d0">seller</data>
+</node>
+<node id="Mohammadi Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pt Yupi Indo Jelly Gum Tbk">
+  <data key="d0">seller</data>
+</node>
+<node id="Musaji Adam &amp; Sons">
+  <data key="d0">buyer</data>
+</node>
+<node id="Daejung Chemicals &amp; Metals Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Laboratory Scientific Supplies Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Merck Life Science Kgaa">
+  <data key="d0">seller</data>
+</node>
+<node id="Bridge Initiative Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zhejiang New Vision Imp &amp; Exp Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Nabiqasim Industries Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sami Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Meggle Gmbh &amp; Co Kg">
+  <data key="d0">seller</data>
+</node>
+<node id="Farm Wise Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Jiangsu Soho Honry Import &amp; Export Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="United Chemical Corporation Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hinucon Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="East Chemsources Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Hiranis Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Epoch Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Platinum Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pacific Sugar Corporation Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="World Sugar Export Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Fk Trader">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fora Sweets Gida San Ve Tic As">
+  <data key="d0">seller</data>
+</node>
+<node id="Nutrico Morinaga Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="San Soon Seng Food Industries Sdn Bhd">
+  <data key="d0">seller</data>
+</node>
+<node id="Pharma Chemicals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Rahim Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zarnam Farhikhtegan Research">
+  <data key="d0">seller</data>
+</node>
+<node id="Cspc Shengxue Glucose Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Hawk Bio Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fortune Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Aipu Food Industry Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Malkani Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pt Savoria Kreasi Rasa">
+  <data key="d0">seller</data>
+</node>
+<node id="Mansoor Chemical">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ferozsons Laboratories Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Genix Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ahmad Naveed">
+  <data key="d0">buyer</data>
+</node>
+<node id="Waheed Waheed">
+  <data key="d0">seller</data>
+</node>
+<node id="Univet Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="K.S.L Export Trading Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="The Thai Sugar Trading Corp">
+  <data key="d0">seller</data>
+</node>
+<node id="Abdullah Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Yiwu Guoyou Import &amp; Export Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Atco Laboratories Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Philip Morris (Pakistan) Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pt Hanjaya Mandala Sampoerna Tbk">
+  <data key="d0">seller</data>
+</node>
+<node id="Shazeb Pharmaceutical Industries Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Global Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Guangdong Haoliyuan Food Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Chemtech">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sons Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shenzhen Rungu Food Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Northern Logistics Carrier Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Xinjiang haoyuguo international trade Co">
+  <data key="d0">seller</data>
+</node>
+<node id="The Coca-Cola Export Corporation Pakistan Branch">
+  <data key="d0">buyer</data>
+</node>
+<node id="Famous Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shabbir International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Candy Shandy Enterprise">
+  <data key="d0">buyer</data>
+</node>
+<node id="Yiwu Saijia Trading Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Qas International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Anhui Ebuy International Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Zoic International">
+  <data key="d0">buyer</data>
+</node>
+<node id="A.F.U International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Eurozyme Gida Katki Mad San Ve Tic As">
+  <data key="d0">seller</data>
+</node>
+<node id="Friesland Campina Domo">
+  <data key="d0">seller</data>
+</node>
+<node id="Fynk Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ma Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Damel Group Sl">
+  <data key="d0">seller</data>
+</node>
+<node id="Rush Foods">
+  <data key="d0">buyer</data>
+</node>
+<node id="Asian Gulf Shisha Molasses">
+  <data key="d0">buyer</data>
+</node>
+<node id="Jk International Fze">
+  <data key="d0">seller</data>
+</node>
+<node id="Leads Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Arshine Lifescience Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="R.S International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ies Global Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Alpavit Gmbh &amp; Co Kg">
+  <data key="d0">seller</data>
+</node>
+<node id="Al-Chemist Corp">
+  <data key="d0">buyer</data>
+</node>
+<node id="New Natural Biotech Fz Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Kulsoom International">
+  <data key="d0">buyer</data>
+</node>
+<node id="M.A Kamil">
+  <data key="d0">buyer</data>
+</node>
+<node id="Gn Chemicals Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Bluebird Commodities Fzco">
+  <data key="d0">seller</data>
+</node>
+<node id="As Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tayas Gida San Ve Tic As">
+  <data key="d0">seller</data>
+</node>
+<node id="Fipharm Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Nishat Sutas Dairy Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ol Usa Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Mariam International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Szumex International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dairyland Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Wheyco Gmbh">
+  <data key="d0">seller</data>
+</node>
+<node id="Hemani International Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Qingdao Icd Biochemistry Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Haji Razak Haji Habib Janoo">
+  <data key="d0">buyer</data>
+</node>
+<node id="B Healthy Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Medipak Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ghani Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Javed Chemical Corporation">
+  <data key="d0">buyer</data>
+</node>
+<node id="Chromachemie Laboratory Pvt Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Scilife Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ckd Pharmaceuticals Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Martin Dow Marker Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ns Trade International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fusion Fareway Food Products Co Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Liaoning Pharmaceutical Foreign Trade Corporation">
+  <data key="d0">seller</data>
+</node>
+<node id="Amazon Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Inshal Pharmaceutical Industries">
+  <data key="d0">buyer</data>
+</node>
+<node id="Embassy Of The Republic Of Ukraine">
+  <data key="d0">buyer</data>
+</node>
+<node id="Rapid World General Trading Co Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Aftab Chemical Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Haleon Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Milchwerke Mittelelbe Gmbh">
+  <data key="d0">seller</data>
+</node>
+<node id="Batala Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Makkah Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Gamco International">
+  <data key="d0">buyer</data>
+</node>
+<node id="General Candy Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Embassy Of United States Of America">
+  <data key="d0">buyer</data>
+</node>
+<node id="International Diplomatic Supplies Inc">
+  <data key="d0">seller</data>
+</node>
+<node id="Sheheryar Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Monin Asia Kl Sdn Bhd">
+  <data key="d0">seller</data>
+</node>
+<node id="Highnoon Laboratories Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Great Wall Trading Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Rongcheng More Efficient Trading Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Fm Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dohler Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dohler Gida Sanayi As">
+  <data key="d0">seller</data>
+</node>
+<node id="S. J &amp; G Fazul Ellahie Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="D-Haans Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Izfaar Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Regent Laboratories">
+  <data key="d0">buyer</data>
+</node>
+<node id="Embassy Of Germany">
+  <data key="d0">buyer</data>
+</node>
+<node id="Karl Geuther Handels-Gmbh &amp; Co Kg">
+  <data key="d0">seller</data>
+</node>
+<node id="Has Trading Solutions">
+  <data key="d0">buyer</data>
+</node>
+<node id="Makeup 4U">
+  <data key="d0">seller</data>
+</node>
+<node id="Quaper Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Yiwu Youcan Food Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="I &amp; H Services">
+  <data key="d0">buyer</data>
+</node>
+<node id="Defeem Sdn Bhd">
+  <data key="d0">seller</data>
+</node>
+<node id="Selmore Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zafa Pharmaceutical Laboratories Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Haleeb Foods Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Takasago International (Pakistan) Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dpexi Private Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Pt Raja Impex">
+  <data key="d0">seller</data>
+</node>
+<node id="Mallard Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Wuhan Lipharma Chemicals Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Martin Dow Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Roohi Chaudhri">
+  <data key="d0">buyer</data>
+</node>
+<node id="Access Usa Shipping">
+  <data key="d0">seller</data>
+</node>
+<node id="Ismail &amp; Rais Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="M Yasin Ibico">
+  <data key="d0">buyer</data>
+</node>
+<node id="Yiwu Yilong Import And Export Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="New Chemical Centre">
+  <data key="d0">buyer</data>
+</node>
+<node id="Daks Trading Fz Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Yah Impex">
+  <data key="d0">buyer</data>
+</node>
+<node id="Yiwu Harpy Import And Export Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Lgc Gmbh">
+  <data key="d0">seller</data>
+</node>
+<node id="Premier Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Best Brands General Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Anhui Kemfood International Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Amna Keyani">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ccnsport Hong Kong Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="International Importers">
+  <data key="d0">buyer</data>
+</node>
+<node id="Gallop Water Sciences">
+  <data key="d0">buyer</data>
+</node>
+<node id="Singsino Group Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Hoechst Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Haameem Food Solutions">
+  <data key="d0">buyer</data>
+</node>
+<node id="Bakbel Europe Sa">
+  <data key="d0">seller</data>
+</node>
+<node id="Pollen Endustriyel Gida Sanayi Ve Ticaret As">
+  <data key="d0">seller</data>
+</node>
+<node id="Murree Brewery Co Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="D.D Willimason (Uk) Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Herbion Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mukaty Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pt Damai Karya Abadi">
+  <data key="d0">seller</data>
+</node>
+<node id="Norte-Eurocao Slu">
+  <data key="d0">seller</data>
+</node>
+<node id="Shenyang Flourish Biotech Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Austin Chemical Co Inc">
+  <data key="d0">seller</data>
+</node>
+<node id="Infinity Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Trade Genius Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Elite Chemicals Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dangschat T.O.H Gmbh &amp; Co Kg">
+  <data key="d0">seller</data>
+</node>
+<node id="Vision For The Kingdom In Pakistan">
+  <data key="d0">buyer</data>
+</node>
+<node id="Barnabas Aid">
+  <data key="d0">seller</data>
+</node>
+<node id="Abdool Aly Moosabhoy &amp; Sons">
+  <data key="d0">buyer</data>
+</node>
+<node id="D.D Williamson Ingredients (Shanghai) Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Jrs Pharma Gmbh &amp; Co Kg">
+  <data key="d0">seller</data>
+</node>
+<node id="Mak Kemikal">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pt Gandum Mas Kencana">
+  <data key="d0">seller</data>
+</node>
+<node id="Frontier Dextrose Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Star Laboratories Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Decent Pharma">
+  <data key="d0">buyer</data>
+</node>
+<node id="Poulvet Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Angus Bio (Shanghai) Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Pak Suzuki Motor Co Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Suzuki Motor Corporation">
+  <data key="d0">seller</data>
+</node>
+<node id="Zanctok Pharmaceutical Laboratories">
+  <data key="d0">buyer</data>
+</node>
+<node id="Don Valley Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hangzhou Telida Biopharmtech Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Sucere Foods Corporation">
+  <data key="d0">seller</data>
+</node>
+<node id="Mediflow Pharmaceutical Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Indus Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fonterra Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Zeta Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Karam Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pt Arta Maja Prima">
+  <data key="d0">seller</data>
+</node>
+<node id="Blooming Foods Fzco">
+  <data key="d0">seller</data>
+</node>
+<node id="Naveed Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Evergreen Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Palzar Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sweetzone Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Sea Quest Logistic Services">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mr Khurram">
+  <data key="d0">seller</data>
+</node>
+<node id="Aamster Laboratories (Branch)">
+  <data key="d0">buyer</data>
+</node>
+<node id="Isis Pharmaceuticals &amp; Chemical Works">
+  <data key="d0">buyer</data>
+</node>
+<node id="Betelnuts Corporation">
+  <data key="d0">buyer</data>
+</node>
+<node id="J.K Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="C/O Conseil De L Europe Edqm Int">
+  <data key="d0">seller</data>
+</node>
+<node id="Jinnah Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tahir Muhammad Iqbal Hookmani">
+  <data key="d0">buyer</data>
+</node>
+<node id="Asfa Karim">
+  <data key="d0">seller</data>
+</node>
+<node id="Imtiaz Group Smc Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Jeram Coconut Sdn Bhd">
+  <data key="d0">seller</data>
+</node>
+<node id="Usman Brothers Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Al Showaib Al Dhahabi General Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Searle Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Werrick Pharamaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Flash Laboratories">
+  <data key="d0">buyer</data>
+</node>
+<node id="Coca Cola Beverages Pakistan Ltd Lhr">
+  <data key="d0">buyer</data>
+</node>
+<node id="Anadolu Etap Penkon Gida Ve Icecek">
+  <data key="d0">seller</data>
+</node>
+<node id="Shantou Yuanda Foods Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Dhl Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dhl Worldwide Express">
+  <data key="d0">seller</data>
+</node>
+<node id="Bless Laboratories Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="United Food Group">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shazal's Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Universal Logistics Services Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ups Air Couriers Of America">
+  <data key="d0">seller</data>
+</node>
+<node id="Shahmurad Sugar Mills Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zhejiang Synose Tech Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Firstop Commercial And Trading Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tcs Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tcs Express Ww">
+  <data key="d0">seller</data>
+</node>
+<node id="M I Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Wdcw Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Obs Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Gmp Foods Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Rose Containerline Inc">
+  <data key="d0">seller</data>
+</node>
+<node id="Continental Worldwide Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Atago Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Gerry's International Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fedex Express">
+  <data key="d0">seller</data>
+</node>
+<node id="M.R.S Star General Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Ahsons Drug Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Emrays (Hangzhou) Pharmaceutical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Enzon Pharma Labs Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Macter International Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Winthrox Laboratories Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Acme Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Friesland Campina Engro Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Friesland Campina Nederland Bv">
+  <data key="d0">seller</data>
+</node>
+<node id="R.A Impex">
+  <data key="d0">buyer</data>
+</node>
+<node id="M2K2 Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Nova Link General Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="N.N Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shantou Lebei Trading Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Honber International Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Adamjee Pharmaceutical Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Nation Trade International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Yiwu East Coast Import &amp; Export">
+  <data key="d0">seller</data>
+</node>
+<node id="Kayans Pharmaceuticals Industries">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ibrahim Khatri Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mcc Huaye Duddar Mining Co Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Uniwell International Machinery Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Meggle Africa And Middle East Dmcc">
+  <data key="d0">seller</data>
+</node>
+<node id="Sethness Products Co">
+  <data key="d0">seller</data>
+</node>
+<node id="M Hanif &amp; Sons">
+  <data key="d0">buyer</data>
+</node>
+<node id="Healthtek Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hubei Sweet Element Food Technology">
+  <data key="d0">seller</data>
+</node>
+<node id="Z And F Sungold Corporation">
+  <data key="d0">seller</data>
+</node>
+<node id="Nabi Qasim Industries Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Prime International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Medisure Laboratories Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Emrays Middleeast General Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Haarold's Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Glucorp Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mission Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Transmed International Pte Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="A.M International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Asian Food Industries Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fenchem Supply Chain Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Galaxy Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Crimson Middle East Fz Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Aqua Food">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mek Gida Sanayi Ve Ticaret Ltd Sirketi">
+  <data key="d0">seller</data>
+</node>
+<node id="S.R International">
+  <data key="d0">buyer</data>
+</node>
+<node id="A Z Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Taiwanfuyou Food Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Ashrafsons Pharmaceutical Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mylab Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Raja Govt. Contractor, General Order Supplier And Importer-Exporter">
+  <data key="d0">buyer</data>
+</node>
+<node id="Masfa Industries Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zhejiang Medicines &amp; Health Products Import &amp; Export Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Vetcon Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Atlantic Pharmaceutical Laboratories">
+  <data key="d0">buyer</data>
+</node>
+<node id="Cortex Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Embassy Of The Republic Of Tajikistan">
+  <data key="d0">buyer</data>
+</node>
+<node id="Giant Ingredients Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="D-Maarson Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Flaxen Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dairy Life Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zhaoqing Huanfa Biotechnology Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Royal Ilac San Tic Ltd Sti">
+  <data key="d0">seller</data>
+</node>
+<node id="Gujranwala Food Industries Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Al Ard Al Zarkha Goods">
+  <data key="d0">seller</data>
+</node>
+<node id="Ahmed Tariq Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sanna Laboratories">
+  <data key="d0">buyer</data>
+</node>
+<node id="Reign Pharmaceuticals Pcsir Klc Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fauji Foods Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Glorious Laboratories">
+  <data key="d0">buyer</data>
+</node>
+<node id="Far Eastern Impex Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Irca Manufacturing Netherlands Bv">
+  <data key="d0">seller</data>
+</node>
+<node id="Majestic Pharma">
+  <data key="d0">buyer</data>
+</node>
+<node id="High-Q Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Al-Burque Enterprise">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hangzhou Clake Biotech Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Sunshine Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Suedzucker Ag">
+  <data key="d0">seller</data>
+</node>
+<node id="Jawa Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Anhui Newchem Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Central Chemicals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Greyhound Chromatography and Allied Chemicals Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Nawal Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Lisko Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Faas Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zain Enterprise Oilfield Supply Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Soar Biotech Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Haris Fayyaz">
+  <data key="d0">buyer</data>
+</node>
+<node id="Selfridges &amp; Co">
+  <data key="d0">seller</data>
+</node>
+<node id="Jhk Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Baariq Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Efroze Chemical Industries Private Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Swan Impex Llp">
+  <data key="d0">buyer</data>
+</node>
+<node id="Perfetti Van Melle (Vietnam) Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Shanggao Richwant Trading Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Shandong Lianmeng International Trade Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="G.T Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shazia Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Lotte Vietnam Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="S.S Naseeruddin">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shandong Tianliang Import And Export Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Sz Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hangzhou Zhongbao Imp &amp; Exp Corp Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Multiple Trading House">
+  <data key="d0">buyer</data>
+</node>
+<node id="Khat Tadawul General Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Yiwu Umm E Hani Trading Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Hassan Nazir International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Yaseen And Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Bahr Al Najah Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Fivestar Corporation">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ras Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Qingdao Doeast Chemical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Pharmedic Laboratories Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Arochem">
+  <data key="d0">buyer</data>
+</node>
+<node id="Emrays International General Trading Co Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Rinda Food Industries Sdn Bhd">
+  <data key="d0">seller</data>
+</node>
+<node id="Bin Dawood Flavours Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pamir Gida Sanayi As">
+  <data key="d0">seller</data>
+</node>
+<node id="Kohinoor Industries">
+  <data key="d0">buyer</data>
+</node>
+<node id="Venus Pharma">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tate &amp; Lyle Slovakia Sro">
+  <data key="d0">seller</data>
+</node>
+<node id="Morgan Technologies Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Diamond Fabrics Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="A &amp; K Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shanghai J. Shine Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Maac International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mr International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Intervac Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Memon Brothers">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ahmed Chemical Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ibrahim International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Puratos (Thailand) Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Saeed Brothers">
+  <data key="d0">buyer</data>
+</node>
+<node id="Yijia Consultants Smc Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hong Kong Foreal Industrial Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Alb Wholesale Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Al Taqi Impex">
+  <data key="d0">buyer</data>
+</node>
+<node id="York Star Hong Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Takayuki Shirota">
+  <data key="d0">buyer</data>
+</node>
+<node id="Nippan Ips Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Shawn Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Aspin Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Labbaik Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Chemical Trades">
+  <data key="d0">buyer</data>
+</node>
+<node id="U.S Corporation">
+  <data key="d0">buyer</data>
+</node>
+<node id="Adil And Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="High Profile Poultry Services">
+  <data key="d0">buyer</data>
+</node>
+<node id="Vega Pharma Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="World-Wide Services">
+  <data key="d0">buyer</data>
+</node>
+<node id="Royal Chemicals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Muneeb Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Naveed Impex">
+  <data key="d0">buyer</data>
+</node>
+<node id="Doehler Gmbh">
+  <data key="d0">seller</data>
+</node>
+<node id="Bdairy Bv">
+  <data key="d0">seller</data>
+</node>
+<node id="Revive Pharmakon">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fizi Pharmaceutical And Chemical Laboratories">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pharmawise Labs. Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dalda Foods Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Abdullah Solutions">
+  <data key="d0">buyer</data>
+</node>
+<node id="S.S Scientific System">
+  <data key="d0">buyer</data>
+</node>
+<node id="Duksan Pure Chemicals Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Bint-E-Sulham Trading &amp; Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Boba Bubble Beverages Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Bosmos International Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="D Orsogna Dolciaria Srl">
+  <data key="d0">seller</data>
+</node>
+<node id="Guangdong Yichao Biological Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Shafiq Iqbal Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tiva Gida San Ve Tic As">
+  <data key="d0">seller</data>
+</node>
+<node id="Vetrox Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Semos Pharmaceutical Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Avicenna Laboratories Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Saadet Gida Pazarlama San Ve Tic As">
+  <data key="d0">seller</data>
+</node>
+<node id="Dhl International Bahrain Bsc">
+  <data key="d0">seller</data>
+</node>
+<node id="Lakhani Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Bismillah Trading Co">
+  <data key="d0">buyer</data>
+</node>
+<node id="Docile Alimentos Ltda">
+  <data key="d0">seller</data>
+</node>
+<node id="Jilin Cofco Bio-Chem And Bio-Energy Marketing">
+  <data key="d0">seller</data>
+</node>
+<node id="Hongye Chemical Group Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Awais Trading Corporation">
+  <data key="d0">buyer</data>
+</node>
+<node id="Route-2 Health Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Changsha Vigorous Tech Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Bilal Impex">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hashwan Traders Pack House And Cold Storage Facility">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sois Life Sciences">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fakhar Abbas Shah">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ahmar Abbas Shah">
+  <data key="d0">seller</data>
+</node>
+<node id="Qasim Import Export Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Beschoo Trading Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Global Imports">
+  <data key="d0">buyer</data>
+</node>
+<node id="Alamgir">
+  <data key="d0">buyer</data>
+</node>
+<node id="I.A Global Eximp">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sa Corporation">
+  <data key="d0">buyer</data>
+</node>
+<node id="Azarkian Toss Intl">
+  <data key="d0">seller</data>
+</node>
+<node id="Horeca Systems">
+  <data key="d0">buyer</data>
+</node>
+<node id="Madam Sun Sdn Bhd">
+  <data key="d0">seller</data>
+</node>
+<node id="Citi Pharma Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zhejiang Jinlian Chemtech Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Zain Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Aries Pharmaceutical Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Sultan Chemicals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Trading World">
+  <data key="d0">buyer</data>
+</node>
+<node id="Kings International General Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Pak Polychem Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Usama Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dsv Solutions Slovakia Sro">
+  <data key="d0">seller</data>
+</node>
+<node id="Moosani Impex">
+  <data key="d0">buyer</data>
+</node>
+<node id="Divine Food Hub">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tradex International Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Neutra Cure">
+  <data key="d0">buyer</data>
+</node>
+<node id="Heal Pharmaceutical Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Five Star Trading">
+  <data key="d0">buyer</data>
+</node>
+<node id="Qingdao Fugar Chemical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Asr Group">
+  <data key="d0">seller</data>
+</node>
+<node id="Farmasino Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="International Franchises Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Tradetrans Corp">
+  <data key="d0">seller</data>
+</node>
+<node id="Dream Nest Fze Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Irca Spa">
+  <data key="d0">seller</data>
+</node>
+<node id="Supreme Traders">
+  <data key="d0">buyer</data>
+</node>
+<node id="Stair Way Electronics Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Shree Sai Trading">
+  <data key="d0">seller</data>
+</node>
+<node id="Evliya Sek San Ve Tic Ltd Sti">
+  <data key="d0">seller</data>
+</node>
+<node id="Fayrefield Foods As">
+  <data key="d0">seller</data>
+</node>
+<node id="Embassy Of The Russian Federation">
+  <data key="d0">buyer</data>
+</node>
+<node id="Peter Justesen Company As">
+  <data key="d0">seller</data>
+</node>
+<node id="Rayburn Trading Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Maka Tarabar">
+  <data key="d0">seller</data>
+</node>
+<node id="Delight Enterprises Smc Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Bagat Agro Impex Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Phytocon International Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Jamaica Foodstuff Trading Co Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="National Radio Telecommunication Corporation Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fast Da Trade Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Muhammad Arslan Ramzan">
+  <data key="d0">buyer</data>
+</node>
+<node id="Maria Violeta Jardines Rubieles">
+  <data key="d0">seller</data>
+</node>
+<node id="Global Trade Link">
+  <data key="d0">buyer</data>
+</node>
+<node id="Elif Cikolata San Ve Tic Ltd Sti">
+  <data key="d0">seller</data>
+</node>
+<node id="Neutro Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ideal Foods &amp; Chemicals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ruland Chemistry (Nanjing) Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Pollen End Gida San Ve Tic">
+  <data key="d0">seller</data>
+</node>
+<node id="Sabbaq Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pt Yupi Indo Jelly Gum">
+  <data key="d0">seller</data>
+</node>
+<node id="Sk &amp; Sons">
+  <data key="d0">buyer</data>
+</node>
+<node id="Rotex Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Iman Tariq Cheema">
+  <data key="d0">buyer</data>
+</node>
+<node id="Monakhal Wariech">
+  <data key="d0">seller</data>
+</node>
+<node id="Elvan Gida San Ve Tic As">
+  <data key="d0">seller</data>
+</node>
+<node id="Syed Naeem General Trading">
+  <data key="d0">seller</data>
+</node>
+<node id="Shanghai Richfield Internaitonal Trade Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Fuji Global Chocolate (M) Sdn Bhd">
+  <data key="d0">seller</data>
+</node>
+<node id="Irza Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Raim Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Novi Srl">
+  <data key="d0">seller</data>
+</node>
+<node id="Arshine Food Additives Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Stylopod Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shenzhen Xingyan International">
+  <data key="d0">seller</data>
+</node>
+<node id="Shenzhen Yezi Biotech Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Sanofi Aventis Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Solaris Life Sciences Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Dhl Express International (Th) Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Sociedad Espanola De Colorantes Naturales">
+  <data key="d0">seller</data>
+</node>
+<node id="Maple Star Food Solutions">
+  <data key="d0">buyer</data>
+</node>
+<node id="Rice And Spice Filling Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="North Mile Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Dhl Express International">
+  <data key="d0">seller</data>
+</node>
+<node id="Adchem International Fzco">
+  <data key="d0">seller</data>
+</node>
+<node id="Fynk Pharmacuticals Formerly Unison Chem Works">
+  <data key="d0">buyer</data>
+</node>
+<node id="Heilongjiang Jinxiang Biochemical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Aa Foods">
+  <data key="d0">buyer</data>
+</node>
+<node id="Adm Besin Ve Tarim As">
+  <data key="d0">seller</data>
+</node>
+<node id="Embassy Of Jordan">
+  <data key="d0">buyer</data>
+</node>
+<node id="Green Tract Shipping Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Yiwu Huayi Imp And Exp Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Syeda Ambreen Mushtaq">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mango Fresh">
+  <data key="d0">seller</data>
+</node>
+<node id="Shaigan Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Advan Pharmachem Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Innova Ingredients Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shenzhen Xpa International Log">
+  <data key="d0">seller</data>
+</node>
+<node id="Business Links International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pmmc Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Mi International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Pt Pusan Manis Mulia">
+  <data key="d0">seller</data>
+</node>
+<node id="Hudson Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Farooq Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Adeel Ahmad">
+  <data key="d0">buyer</data>
+</node>
+<node id="Meliana Tonga">
+  <data key="d0">seller</data>
+</node>
+<node id="Hangzhou Pharmco Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Twin Star International">
+  <data key="d0">buyer</data>
+</node>
+<node id="Iram Yousaf">
+  <data key="d0">buyer</data>
+</node>
+<node id="Jalal Maical">
+  <data key="d0">seller</data>
+</node>
+<node id="Elko Organization Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Zak Tech">
+  <data key="d0">buyer</data>
+</node>
+<node id="Haseeb Lab Supplies">
+  <data key="d0">buyer</data>
+</node>
+<node id="Central Pak Trading Fz Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Guangdong Shantai Foodstuff Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Matco Foods Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Mcc Resources Development Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Owin Industry Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Rashidiya Impex">
+  <data key="d0">buyer</data>
+</node>
+<node id="Chifeng Eyeris Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Sh Muhammad Rashid And Brothers">
+  <data key="d0">buyer</data>
+</node>
+<node id="Panteley Toshev Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Kervan Gida San Ve Tic As">
+  <data key="d0">seller</data>
+</node>
+<node id="Signet Excipients Pvt Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Mafworth Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Geofman Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shantou Yangyu Foodstuff Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Bonart Gida Sanayi Ve Ticaret As">
+  <data key="d0">seller</data>
+</node>
+<node id="Thermo Fisher Scientific">
+  <data key="d0">seller</data>
+</node>
+<node id="Stand Pharm Pakistan Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Abdullah Impex">
+  <data key="d0">buyer</data>
+</node>
+<node id="Meraj Din Mohammad Iqbal">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hebei Jinfeng Starch Sugar Alcohol">
+  <data key="d0">seller</data>
+</node>
+<node id="Pfizer Pakistan Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Aziz Impex">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ebuy Enterprise Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Zhejiang Chemicals Import And Export Corporation">
+  <data key="d0">seller</data>
+</node>
+<node id="J.S Corporation">
+  <data key="d0">buyer</data>
+</node>
+<node id="Evolution Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Astral Neutraceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Fa Enterprises">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hebei Xiaoxixi Food Science And Technology">
+  <data key="d0">seller</data>
+</node>
+<node id="Premium Chemicals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Shanghai Icv Chemical Technology Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Caliph Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Hangzhou Dawn Ray Pharmaceutical Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Ciba Pharmaceuticals Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Molekula Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Imperial Foods General Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Attabak Pharmaceutical Industries">
+  <data key="d0">buyer</data>
+</node>
+<node id="Himark Laboratories Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Eterna Pharma Pvt Ltd">
+  <data key="d0">buyer</data>
+</node>
+<node id="Ard Al Buraq General Trading Llc">
+  <data key="d0">seller</data>
+</node>
+<node id="Valor Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Apsis Pharmaceuticals">
+  <data key="d0">buyer</data>
+</node>
+<node id="Bakers Supplies">
+  <data key="d0">buyer</data>
+</node>
+<node id="Xiamen Yasin Industry &amp; Trade Co Ltd">
+  <data key="d0">seller</data>
+</node>
+<node id="Novargo Inc">
+  <data key="d0">seller</data>
+</node>
+<edge source="Trading Corporation Of Pakistan Pvt Ltd" target="Tereos Acucar E Energia">
+  <data key="d1">27000.0</data>
+</edge>
+<edge source="Trading Corporation Of Pakistan Pvt Ltd" target="Al Khaleej Sugar Co Llc">
+  <data key="d1">115750.0</data>
+</edge>
+<edge source="Trading Corporation Of Pakistan Pvt Ltd" target="Thanh Thanh Cong – Bien Hoa">
+  <data key="d1">11650.0</data>
+</edge>
+<edge source="Trading Corporation Of Pakistan Pvt Ltd" target="Agris Ninh Hoa Import Export">
+  <data key="d1">14600.0</data>
+</edge>
+<edge source="Trading Corporation Of Pakistan Pvt Ltd" target="Pacific Sugar Corporation Ltd">
+  <data key="d1">25000.0</data>
+</edge>
+<edge source="Trading Corporation Of Pakistan Pvt Ltd" target="World Sugar Export Co Ltd">
+  <data key="d1">10000.0</data>
+</edge>
+<edge source="Trading Corporation Of Pakistan Pvt Ltd" target="K.S.L Export Trading Co Ltd">
+  <data key="d1">5576.0</data>
+</edge>
+<edge source="Trading Corporation Of Pakistan Pvt Ltd" target="The Thai Sugar Trading Corp">
+  <data key="d1">20674.0</data>
+</edge>
+<edge source="Brothers Enterprise Pvt Ltd" target="Al Khaleej Sugar Co Llc">
+  <data key="d1">416.0</data>
+</edge>
+<edge source="Brothers Enterprise Pvt Ltd" target="Aba Stepsworth Dwc Llc">
+  <data key="d1">82.9</data>
+</edge>
+<edge source="Brothers Enterprise Pvt Ltd" target="Sethness Roquette Food (Lianyungang) Co Ltd">
+  <data key="d1">1.6</data>
+</edge>
+<edge source="Brothers Enterprise Pvt Ltd" target="Sachsenmilch Leppersdorf Gmbh">
+  <data key="d1">336.0</data>
+</edge>
+<edge source="Brothers Enterprise Pvt Ltd" target="Jilin Cofco Bio-Chem And Bio-Energy Marketing">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Brothers Enterprise Pvt Ltd" target="Shandong Lianmeng International Trade Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Barrett Hodgson Pakistan Pvt Ltd" target="Emad Trade House Fzco">
+  <data key="d1">150.0</data>
+</edge>
+<edge source="Barrett Hodgson Pakistan Pvt Ltd" target="Dfe Pahrma Gmbh &amp; Co Kg">
+  <data key="d1">34.49</data>
+</edge>
+<edge source="Emad Trade House Fzco" target="W Woodward Pakistan Pvt Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Emad Trade House Fzco" target="Shabbir International">
+  <data key="d1">0.35</data>
+</edge>
+<edge source="Emad Trade House Fzco" target="Sami Pharmaceuticals Pvt Ltd">
+  <data key="d1">150.0</data>
+</edge>
+<edge source="Emad Trade House Fzco" target="Healthtek Pvt Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Emad Trade House Fzco" target="Getz Pharma Pvt Ltd">
+  <data key="d1">19.975</data>
+</edge>
+<edge source="Emad Trade House Fzco" target="Nabi Qasim Industries Pvt Ltd">
+  <data key="d1">11.55</data>
+</edge>
+<edge source="Emad Trade House Fzco" target="Macter International Ltd">
+  <data key="d1">0.30000000000000004</data>
+</edge>
+<edge source="Protech" target="Lactalis Ingredients">
+  <data key="d1">198.0</data>
+</edge>
+<edge source="Protech" target="Shanghai Tianjia Biochemical Co Ltd">
+  <data key="d1">51.0</data>
+</edge>
+<edge source="Protech" target="Honber International Ltd">
+  <data key="d1">12.5</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Nestle Pakistan Ltd">
+  <data key="d1">1484.875</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Dairyland Pvt Ltd">
+  <data key="d1">198.0</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Haleeb Foods Ltd">
+  <data key="d1">197.975</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Cheminova Corporation">
+  <data key="d1">24.75</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Friesland Campina Engro Pakistan Ltd">
+  <data key="d1">2969.825</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Fauji Foods Ltd">
+  <data key="d1">99.0</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Morgan Technologies Pvt Ltd">
+  <data key="d1">8.25</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Dalda Foods Ltd">
+  <data key="d1">173.25</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Nishat Sutas Dairy Ltd">
+  <data key="d1">24.75</data>
+</edge>
+<edge source="Lactalis Ingredients" target="Sh Muhammad Rashid And Brothers">
+  <data key="d1">99.0</data>
+</edge>
+<edge source="Martin Dow Specialities Pvt Ltd" target="Sigma-Aldrich Chemie Gmbh">
+  <data key="d1">0.006</data>
+</edge>
+<edge source="Martin Dow Specialities Pvt Ltd" target="Merck Life Science Kgaa">
+  <data key="d1">0.00205</data>
+</edge>
+<edge source="Sigma-Aldrich Chemie Gmbh" target="Laboratory Scientific Supplies Pvt Ltd">
+  <data key="d1">0.01900000000000001</data>
+</edge>
+<edge source="Grandma Catering Management Services Smc Pvt Ltd" target="Shanzhan International Catering Management (Henan) Co Ltd">
+  <data key="d1">1.1</data>
+</edge>
+<edge source="Renacon Pharma Ltd" target="Seawall Enterprise Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Renacon Pharma Ltd" target="Liaoning Pharmaceutical Foreign Trade Corporation">
+  <data key="d1">120.0</data>
+</edge>
+<edge source="Renacon Pharma Ltd" target="Qingdao Hisunny Imp &amp; Exp Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Farm Aid Group">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Haameem">
+  <data key="d1">69.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Archard Pharmaceuticals Pvt Ltd">
+  <data key="d1">173.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Chem Color International Pvt Ltd">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Agar International Pvt Ltd">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Hamza Enterprise">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Otsuka Pakistan Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Nabiqasim Industries Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Zoic International">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Rush Foods">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="R.S International">
+  <data key="d1">196.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Davis Pharmaceutical Laboratories">
+  <data key="d1">240.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Ckd Pharmaceuticals Pakistan Pvt Ltd">
+  <data key="d1">192.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Makkah Traders">
+  <data key="d1">80.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="S. J &amp; G Fazul Ellahie Pvt Ltd">
+  <data key="d1">4.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Izfaar Pharmaceuticals Pvt Ltd">
+  <data key="d1">49.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Selmore Pharmaceuticals Pvt Ltd">
+  <data key="d1">72.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Star Laboratories Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Decent Pharma">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Indus Pharma Pvt Ltd">
+  <data key="d1">192.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Aamster Laboratories (Branch)">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="United Chemical Corporation Pvt Ltd">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Jinnah Pharmaceuticals Pvt Ltd">
+  <data key="d1">51.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Shazal's Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Epoch Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Winthrox Laboratories Pvt Ltd">
+  <data key="d1">96.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Kayans Pharmaceuticals Industries">
+  <data key="d1">216.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Prime International">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Haarold's Pharmaceuticals Pvt Ltd">
+  <data key="d1">192.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Mission Pharmaceuticals">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Ashrafsons Pharmaceutical Pvt Ltd">
+  <data key="d1">168.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Masfa Industries Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Vetcon Pharmaceuticals Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Kulsoom International">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Inventor Pharma Pvt Ltd">
+  <data key="d1">72.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="D-Maarson Pharmaceuticals">
+  <data key="d1">96.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Flaxen Trading Co">
+  <data key="d1">22.5</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Reign Pharmaceuticals Pcsir Klc Pvt Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Majestic Pharma">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Evergreen Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Nawal Pharmaceuticals">
+  <data key="d1">72.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Lisko Pakistan Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Baariq Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="D-Haans Pharma Pvt Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Amazon Pharmaceuticals Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Sz Traders">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Betelnuts Corporation">
+  <data key="d1">280.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Fivestar Corporation">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Bless Laboratories Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Atco Laboratories Ltd">
+  <data key="d1">96.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Venus Pharma">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Kohinoor Industries">
+  <data key="d1">96.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="M Hanif &amp; Sons">
+  <data key="d1">80.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Intervac Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Ahmed Chemical Co">
+  <data key="d1">52.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Axis Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Ras Pharmaceuticals Pvt Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Chemical Trades">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="U.S Corporation">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Adil And Co">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Royal Chemicals">
+  <data key="d1">98.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Muneeb Trading Co">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Naveed Impex">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Pharma Chemicals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Fizi Pharmaceutical And Chemical Laboratories">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Bint-E-Sulham Trading &amp; Enterprises">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Semos Pharmaceutical Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Avicenna Laboratories Pvt Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Lakhani Pharma Pvt Ltd">
+  <data key="d1">26.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Bismillah Trading Co">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Mariam International">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Sois Life Sciences">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="I.A Global Eximp">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Pak Polychem Enterprises">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Tabros Pharma Pvt Ltd">
+  <data key="d1">30.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Usama Enterprises">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Glorious Laboratories">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Moosani Impex">
+  <data key="d1">84.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Zak Tech">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Acme Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="A &amp; K Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Neutra Cure">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Astral Neutraceuticals">
+  <data key="d1">49.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Mylab Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Gallop Water Sciences">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Attabak Pharmaceutical Industries">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Seawall Enterprise Ltd" target="Himark Laboratories Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="W Woodward Pakistan Pvt Ltd" target="Weifang Shengtai Medicine Co Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="W Woodward Pakistan Pvt Ltd" target="Msm Prai Berhad">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Jawed &amp; Co" target="Qinhuangdao Lihua Starch Co Ltd">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="United Chemical Corporation Pvt Ltd">
+  <data key="d1">84.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Chemtech">
+  <data key="d1">84.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Kulsoom International">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Mariam International">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Haji Razak Haji Habib Janoo">
+  <data key="d1">84.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Mukaty Enterprises">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Aftab Chemical Co">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Betelnuts Corporation">
+  <data key="d1">672.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Flash Laboratories">
+  <data key="d1">186.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Nestle Pakistan Ltd">
+  <data key="d1">1400.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Haameem">
+  <data key="d1">84.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Bin Dawood Flavours Pvt Ltd">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Sultan Chemicals">
+  <data key="d1">17.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Moosani Impex">
+  <data key="d1">46.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Innova Ingredients Pvt Ltd">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Abdullah Impex">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Qinhuangdao Lihua Starch Co Ltd" target="Aziz Impex">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="I.M Traders" target="Yiwu Zhixin Import And Export Co Ltd">
+  <data key="d1">1.728</data>
+</edge>
+<edge source="I.M Traders" target="Shijiazhuang Jiaduohao Food Co Ltd">
+  <data key="d1">1.92</data>
+</edge>
+<edge source="I.M Traders" target="Pt Raja Impex">
+  <data key="d1">6.0588</data>
+</edge>
+<edge source="Med Pharm Research Lab" target="Dongying City Longxing Chemical Co Ltd">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Dongying City Longxing Chemical Co Ltd" target="Mallard Pharmaceuticals Pvt Ltd">
+  <data key="d1">6.0</data>
+</edge>
+<edge source="Dongying City Longxing Chemical Co Ltd" target="Eterna Pharma Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Unisa Pharmaceutical Industries Ltd" target="Qingdao Foture Industry Co Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Unisa Pharmaceutical Industries Ltd" target="Zhejiang Medicines &amp; Health Products Import &amp; Export Co Ltd">
+  <data key="d1">200.0</data>
+</edge>
+<edge source="Qingdao Foture Industry Co Ltd" target="D-Haans Pharma Pvt Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Qingdao Foture Industry Co Ltd" target="Ahsons Drug Co">
+  <data key="d1">72.0</data>
+</edge>
+<edge source="Qingdao Foture Industry Co Ltd" target="Mak Kemikal">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Qingdao Foture Industry Co Ltd" target="Aamster Laboratories (Branch)">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Qingdao Foture Industry Co Ltd" target="Ciba Pharmaceuticals Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Qingdao Foture Industry Co Ltd" target="Valor Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Jawed Traders" target="Foshan Gaoming Jinjie Import And Export Co Ltd">
+  <data key="d1">28.511899999999997</data>
+</edge>
+<edge source="Jawed Traders" target="Yiwu Saijia Trading Co Ltd">
+  <data key="d1">26.454920000000005</data>
+</edge>
+<edge source="Foshan Gaoming Jinjie Import And Export Co Ltd" target="Famous Trading Co">
+  <data key="d1">5.3568</data>
+</edge>
+<edge source="Foshan Gaoming Jinjie Import And Export Co Ltd" target="Fm Enterprises">
+  <data key="d1">0.1272</data>
+</edge>
+<edge source="Foshan Gaoming Jinjie Import And Export Co Ltd" target="Malkani Traders">
+  <data key="d1">48.30041</data>
+</edge>
+<edge source="Agp Ltd" target="Msm Prai Berhad">
+  <data key="d1">150.0</data>
+</edge>
+<edge source="Agp Ltd" target="Dfe Pahrma Gmbh &amp; Co Kg">
+  <data key="d1">29.139999999999997</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Global Pharmaceuticals Pvt Ltd">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Galaxo Smith Kline Pakistan Ltd">
+  <data key="d1">575.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Abbott Laboratories Pakistan Ltd">
+  <data key="d1">300.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Hilton Pharma Pvt Ltd">
+  <data key="d1">200.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Mansoor Chemical">
+  <data key="d1">125.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Getz Pharma Pvt Ltd">
+  <data key="d1">180.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Genix Pharma Pvt Ltd">
+  <data key="d1">75.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Sami Pharmaceuticals Pvt Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Tabros Pharma Pvt Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Herbion Pakistan Pvt Ltd">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Msm Prai Berhad" target="Evolution Pharmaceuticals Pvt Ltd">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Cheminova Corporation" target="Shanghai Huamao Pharmaceutical Co Ltd">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Shanghai Huamao Pharmaceutical Co Ltd" target="Pacific Pharmaceuticals Ltd">
+  <data key="d1">2.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Tabros Pharma Pvt Ltd">
+  <data key="d1">4.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Pharmatec Pakistan Pvt Ltd">
+  <data key="d1">6.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Horizon Healthcare Pvt Ltd">
+  <data key="d1">6.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Nabiqasim Industries Pvt Ltd">
+  <data key="d1">1.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Pharmevo Pvt Ltd">
+  <data key="d1">4.95</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Hiranis Pharmaceuticals Pvt Ltd">
+  <data key="d1">7.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Platinum Pharmaceuticals Pvt Ltd">
+  <data key="d1">22.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Epharm Laboratories">
+  <data key="d1">10.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Batala Pharmaceuticals">
+  <data key="d1">19.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Quaper Pvt Ltd">
+  <data key="d1">18.2</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Sami Pharmaceuticals Pvt Ltd">
+  <data key="d1">39.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Martin Dow Ltd">
+  <data key="d1">1.325</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Atco Laboratories Ltd">
+  <data key="d1">11.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Adamjee Pharmaceutical Pvt Ltd">
+  <data key="d1">19.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Nabi Qasim Industries Pvt Ltd">
+  <data key="d1">2.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Sunshine Pharmaceuticals">
+  <data key="d1">19.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Scilife Pharma Pvt Ltd">
+  <data key="d1">6.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="S. J &amp; G Fazul Ellahie Pvt Ltd">
+  <data key="d1">21.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Heal Pharmaceutical Pvt Ltd">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Rotex Pharma Pvt Ltd">
+  <data key="d1">1.0</data>
+</edge>
+<edge source="Aba Stepsworth Dwc Llc" target="Solaris Life Sciences Pvt Ltd">
+  <data key="d1">1.0</data>
+</edge>
+<edge source="Mattoo Sons" target="Pt Mayora Indah Tbk">
+  <data key="d1">64.88148</data>
+</edge>
+<edge source="Pt Mayora Indah Tbk" target="Pak International">
+  <data key="d1">26.5088</data>
+</edge>
+<edge source="Pt Mayora Indah Tbk" target="Ghani Enterprises">
+  <data key="d1">14.112</data>
+</edge>
+<edge source="Farm Aid Group" target="Qingdao Hisunny Imp &amp; Exp Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Farm Aid Group" target="Z And F Sungold Corporation">
+  <data key="d1">72.0</data>
+</edge>
+<edge source="Farm Aid Group" target="Liaoning Pharmaceutical Foreign Trade Corporation">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Pacific Pharmaceuticals Ltd" target="Weifang Shengtai Medicine Co Ltd">
+  <data key="d1">11.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="Axis Pharmaceuticals">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="Atco Laboratories Ltd">
+  <data key="d1">125.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="Shazeb Pharmaceutical Industries Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="Pharmevo Pvt Ltd">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="Medipak Ltd">
+  <data key="d1">150.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="Frontier Dextrose Ltd">
+  <data key="d1">200.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="Mediflow Pharmaceutical Pvt Ltd">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="A.M International">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="Hinucon Pvt Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Weifang Shengtai Medicine Co Ltd" target="S. J &amp; G Fazul Ellahie Pvt Ltd">
+  <data key="d1">2.0</data>
+</edge>
+<edge source="Global Pharmaceuticals Pvt Ltd" target="Malkara Birlik Sut Ve Sut Mamulleri As">
+  <data key="d1">16.0</data>
+</edge>
+<edge source="Global Pharmaceuticals Pvt Ltd" target="Emrays International General Trading Co Llc">
+  <data key="d1">22.0</data>
+</edge>
+<edge source="Galaxo Smith Kline Pakistan Ltd" target="Tate &amp; Lyle Sugars Ltd">
+  <data key="d1">43.0</data>
+</edge>
+<edge source="Galaxo Smith Kline Pakistan Ltd" target="Dfe Pahrma Gmbh &amp; Co Kg">
+  <data key="d1">82.88</data>
+</edge>
+<edge source="Galaxo Smith Kline Pakistan Ltd" target="Lgc Gmbh">
+  <data key="d1">0.01</data>
+</edge>
+<edge source="Abbott Laboratories Pakistan Ltd" target="Dfe Pahrma Gmbh &amp; Co Kg">
+  <data key="d1">80.36</data>
+</edge>
+<edge source="Abbott Laboratories Pakistan Ltd" target="D.D Willimason (Uk) Ltd">
+  <data key="d1">1.0</data>
+</edge>
+<edge source="Abbott Laboratories Pakistan Ltd" target="Milchwerke Mittelelbe Gmbh">
+  <data key="d1">0.15</data>
+</edge>
+<edge source="Abbott Laboratories Pakistan Ltd" target="Asr Group">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Hilton Pharma Pvt Ltd" target="Imcd Middle East Fzco">
+  <data key="d1">3.0</data>
+</edge>
+<edge source="Hilton Pharma Pvt Ltd" target="Meggle Gmbh &amp; Co Kg">
+  <data key="d1">172.20000000000002</data>
+</edge>
+<edge source="Hilton Pharma Pvt Ltd" target="Dfe Pahrma Gmbh &amp; Co Kg">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Hilton Pharma Pvt Ltd" target="Signet Excipients Pvt Ltd">
+  <data key="d1">1.7999999999999998</data>
+</edge>
+<edge source="Nestle Pakistan Ltd" target="Cargill Bio-Chemical Co Ltd">
+  <data key="d1">799.675</data>
+</edge>
+<edge source="Nestle Pakistan Ltd" target="Leprino Foods Dairy Products Co">
+  <data key="d1">2441.2</data>
+</edge>
+<edge source="Nestle Pakistan Ltd" target="Friesland Campina Domo">
+  <data key="d1">824.049</data>
+</edge>
+<edge source="Nestle Pakistan Ltd" target="Wheyco Gmbh">
+  <data key="d1">648.0</data>
+</edge>
+<edge source="Nestle Pakistan Ltd" target="Sethness Roquette Food (Lianyungang) Co Ltd">
+  <data key="d1">0.02268</data>
+</edge>
+<edge source="Nestle Pakistan Ltd" target="Fonterra Ltd">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Tabros Pharma Pvt Ltd" target="Malkara Birlik Sut Ve Sut Mamulleri As">
+  <data key="d1">30.0</data>
+</edge>
+<edge source="Lucky Core Industries Ltd" target="Dfe Pahrma Gmbh &amp; Co Kg">
+  <data key="d1">89.52000000000001</data>
+</edge>
+<edge source="Lucky Core Industries Ltd" target="Shenyang Flourish Biotech Co Ltd">
+  <data key="d1">10.0</data>
+</edge>
+<edge source="Lucky Core Industries Ltd" target="Cspc Shengxue Glucose Co Ltd">
+  <data key="d1">15.0</data>
+</edge>
+<edge source="Lucky Core Industries Ltd" target="Meggle Gmbh &amp; Co Kg">
+  <data key="d1">19.575</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Getz Pharma Pvt Ltd">
+  <data key="d1">314.78</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Toss Enterprises">
+  <data key="d1">124.97000000000001</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Ferozsons Laboratories Ltd">
+  <data key="d1">9.0</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Genix Pharma Pvt Ltd">
+  <data key="d1">0.1</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="The Searle Co Ltd">
+  <data key="d1">88.0</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Scilife Pharma Pvt Ltd">
+  <data key="d1">0.15000000000000002</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Martin Dow Marker Ltd">
+  <data key="d1">15.6</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Highnoon Laboratories Ltd">
+  <data key="d1">2.5</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Atco Laboratories Ltd">
+  <data key="d1">12.1</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Martin Dow Ltd">
+  <data key="d1">39.4</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Pharmevo Pvt Ltd">
+  <data key="d1">30.9</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Searle Pakistan Ltd">
+  <data key="d1">10.0</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Macter International Ltd">
+  <data key="d1">0.4</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="High-Q Pharmaceuticals">
+  <data key="d1">34.4</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Hoechst Pakistan Ltd">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Haleon Pakistan Ltd">
+  <data key="d1">4.0</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Medisure Laboratories Pakistan Pvt Ltd">
+  <data key="d1">6.3</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Obs Pharma Pvt Ltd">
+  <data key="d1">10.0</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Sanofi Aventis Pakistan Ltd">
+  <data key="d1">30.0</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Elite Chemicals Co">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Dfe Pahrma Gmbh &amp; Co Kg" target="Stand Pharm Pakistan Pvt Ltd">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Ccl Pharmaceuticals Pvt Ltd" target="Guangdond Yichao Biological Co Ltd">
+  <data key="d1">14.605</data>
+</edge>
+<edge source="Ccl Pharmaceuticals Pvt Ltd" target="Guangdong Yichao Biological Co Ltd">
+  <data key="d1">5.14</data>
+</edge>
+<edge source="The Searle Co Ltd" target="Chuming Pharmaceutical Ltd">
+  <data key="d1">3850.0</data>
+</edge>
+<edge source="The Searle Co Ltd" target="D.D Williamson Ingredients (Shanghai) Ltd">
+  <data key="d1">6.0</data>
+</edge>
+<edge source="Davis Pharmaceutical Laboratories" target="Hangzhou Starshine Pharmaceutical Co Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Davis Pharmaceutical Laboratories" target="Liaoning Pharmaceutical Foreign Trade Corporation">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Hangzhou Starshine Pharmaceutical Co Ltd" target="Aamster Laboratories (Branch)">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Hangzhou Starshine Pharmaceutical Co Ltd" target="Selmore Pharmaceuticals Pvt Ltd">
+  <data key="d1">0.2</data>
+</edge>
+<edge source="Best Day International" target="Guangdong Youzhiweipin Biotechnology">
+  <data key="d1">4.751600000000001</data>
+</edge>
+<edge source="Sb Pharma" target="Foreach Enterprise Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Foreach Enterprise Ltd" target="Amazon Pharmaceuticals Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Foreach Enterprise Ltd" target="Mylab Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Epharm Laboratories" target="Malkara Birlik Sut Ve Sut Mamulleri As">
+  <data key="d1">15.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Rasco Pharma">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Mansoor Chemical">
+  <data key="d1">11.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Fynk Pharmaceuticals">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Regent Laboratories">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Zafa Pharmaceutical Laboratories Pvt Ltd">
+  <data key="d1">40.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Herbion Pakistan Pvt Ltd">
+  <data key="d1">60.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Faas Pharmaceuticals Pvt Ltd">
+  <data key="d1">3.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Pharmedic Laboratories Pvt Ltd">
+  <data key="d1">12.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Adamjee Pharmaceutical Pvt Ltd">
+  <data key="d1">10.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Aries Pharmaceutical Pvt Ltd">
+  <data key="d1">6.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Rotex Pharma Pvt Ltd">
+  <data key="d1">3.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Solaris Life Sciences Pvt Ltd">
+  <data key="d1">3.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Fynk Pharmacuticals Formerly Unison Chem Works">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Malkara Birlik Sut Ve Sut Mamulleri As" target="Sunshine Pharmaceuticals">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="M A Kamil Farma Pvt Ltd" target="Infoark Industry Co Ltd">
+  <data key="d1">0.1</data>
+</edge>
+<edge source="Infoark Industry Co Ltd" target="Isis Pharmaceuticals &amp; Chemical Works">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Infoark Industry Co Ltd" target="Baariq Pharmaceuticals">
+  <data key="d1">1.0</data>
+</edge>
+<edge source="Infoark Industry Co Ltd" target="Selmore Pharmaceuticals Pvt Ltd">
+  <data key="d1">1.0</data>
+</edge>
+<edge source="Infoark Industry Co Ltd" target="Elko Organization Pvt Ltd">
+  <data key="d1">3.0</data>
+</edge>
+<edge source="Infoark Industry Co Ltd" target="Inshal Pharmaceutical Industries">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Klarg Exports" target="Tate &amp; Lyle Boleraz Sro">
+  <data key="d1">281.17499999999995</data>
+</edge>
+<edge source="Klarg Exports" target="Tate &amp; Lyle Slovakia Sro">
+  <data key="d1">17.25</data>
+</edge>
+<edge source="Klarg Exports" target="Dsv Solutions Slovakia Sro">
+  <data key="d1">0.025</data>
+</edge>
+<edge source="Klarg Exports" target="Adm Besin Ve Tarim As">
+  <data key="d1">72.0</data>
+</edge>
+<edge source="Klarg Exports" target="Mafworth Ltd">
+  <data key="d1">0.03</data>
+</edge>
+<edge source="Pharmatec Pakistan Pvt Ltd" target="Sociedad Espanola De Colorantes Naturales">
+  <data key="d1">8.0</data>
+</edge>
+<edge source="Ai-Cha Food Trading Pvt Ltd" target="Guangzhou Dongchen International Trade Co Ltd">
+  <data key="d1">0.52</data>
+</edge>
+<edge source="Mondelez Pakistan Ltd" target="Sensient Technologies Europe Gmbh">
+  <data key="d1">1.5100000000000002</data>
+</edge>
+<edge source="Axis Pharmaceuticals" target="Liaoning Pharmaceutical Foreign Trade Corporation">
+  <data key="d1">72.0</data>
+</edge>
+<edge source="Sethness Roquette Food (Lianyungang) Co Ltd" target="Pepsi-Cola International Pvt Ltd">
+  <data key="d1">585.0</data>
+</edge>
+<edge source="Sethness Roquette Food (Lianyungang) Co Ltd" target="The Coca-Cola Export Corporation Pakistan Branch">
+  <data key="d1">1118.0</data>
+</edge>
+<edge source="Sethness Roquette Food (Lianyungang) Co Ltd" target="Glucorp Pvt Ltd">
+  <data key="d1">0.9</data>
+</edge>
+<edge source="Sethness Roquette Food (Lianyungang) Co Ltd" target="Matco Foods Ltd">
+  <data key="d1">5.2</data>
+</edge>
+<edge source="Aptly Pharmaceuticals" target="Zibo Weibin Imp &amp; Exp Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Aptly Pharmaceuticals" target="Singsino Group Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Aptly Pharmaceuticals" target="Liaoning Pharmaceutical Foreign Trade Corporation">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Aptly Pharmaceuticals" target="Cspc Shengxue Glucose Co Ltd">
+  <data key="d1">22.0</data>
+</edge>
+<edge source="Zibo Weibin Imp &amp; Exp Co Ltd" target="Evergreen Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Zibo Weibin Imp &amp; Exp Co Ltd" target="Atco Laboratories Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Zibo Weibin Imp &amp; Exp Co Ltd" target="Jinnah Pharmaceuticals Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Zibo Weibin Imp &amp; Exp Co Ltd" target="G.T Pharma Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Pepsi-Cola International Pvt Ltd" target="Sethness Products Co">
+  <data key="d1">0.09616</data>
+</edge>
+<edge source="Chase Up" target="Aykilic Gross Dis Ticaret Ltd">
+  <data key="d1">2.4096</data>
+</edge>
+<edge source="Chase Up" target="Bluebird Commodities Fzco">
+  <data key="d1">0.053</data>
+</edge>
+<edge source="Chase Up" target="Al Ard Al Zarkha Goods">
+  <data key="d1">0.88776</data>
+</edge>
+<edge source="Getz Pharma Pvt Ltd" target="Meggle Gmbh &amp; Co Kg">
+  <data key="d1">0.025</data>
+</edge>
+<edge source="Getz Pharma Pvt Ltd" target="Dfe Pharma Gmbh &amp; Co Kg">
+  <data key="d1">0.22</data>
+</edge>
+<edge source="Sachsenmilch Leppersdorf Gmbh" target="Nishat Sutas Dairy Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Hamza Enterprise" target="Shandong Tianliang Import And Export Co Ltd">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Hamza Enterprise" target="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Al Zain International Traders" target="Rano Fashion Llc">
+  <data key="d1">0.011</data>
+</edge>
+<edge source="Global Marketing Carporation" target="Puratos Nv">
+  <data key="d1">2.445</data>
+</edge>
+<edge source="Global Marketing Carporation" target="Puratos (Thailand) Co Ltd">
+  <data key="d1">16.189999999999998</data>
+</edge>
+<edge source="Mars International" target="Mars Way Food Stuff Llc">
+  <data key="d1">0.077</data>
+</edge>
+<edge source="Muller &amp; Phipps (Pakistan) Pvt Ltd" target="Perfetti Van Melle Confectionery (Shenzhen) Co Ltd">
+  <data key="d1">232.75440000000006</data>
+</edge>
+<edge source="Muller &amp; Phipps (Pakistan) Pvt Ltd" target="Perfetti Van Melle (Vietnam) Ltd">
+  <data key="d1">10.459128</data>
+</edge>
+<edge source="Pak International" target="Pt Raja Impex">
+  <data key="d1">8.45098</data>
+</edge>
+<edge source="Pak International" target="Pamir Gida Sanayi As">
+  <data key="d1">12.75624</data>
+</edge>
+<edge source="Pak International" target="Alb Wholesale Ltd">
+  <data key="d1">18.565559999999998</data>
+</edge>
+<edge source="The Connection" target="Qingdao Songwal Biotech Co Ltd">
+  <data key="d1">2.0</data>
+</edge>
+<edge source="F.B Enterprises" target="Dulceplus Golosinas Sa">
+  <data key="d1">23.847</data>
+</edge>
+<edge source="F.B Enterprises" target="B Healthy Ltd">
+  <data key="d1">2.4739999999999998</data>
+</edge>
+<edge source="F.B Enterprises" target="Sucere Foods Corporation">
+  <data key="d1">5.04859</data>
+</edge>
+<edge source="F.B Enterprises" target="Hubei Sweet Element Food Technology">
+  <data key="d1">5.154</data>
+</edge>
+<edge source="F.B Enterprises" target="Yiwu Harpy Import And Export Co Ltd">
+  <data key="d1">1.304</data>
+</edge>
+<edge source="F.B Enterprises" target="Dream Nest Fze Llc">
+  <data key="d1">6.173</data>
+</edge>
+<edge source="F.B Enterprises" target="Ard Al Buraq General Trading Llc">
+  <data key="d1">2.0</data>
+</edge>
+<edge source="Krypton Pharma Pvt Ltd" target="Qingdao Hisunny Imp &amp; Exp Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Qingdao Hisunny Imp &amp; Exp Co Ltd" target="Inshal Pharmaceutical Industries">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Qingdao Hisunny Imp &amp; Exp Co Ltd" target="Selmore Pharmaceuticals Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Qingdao Hisunny Imp &amp; Exp Co Ltd" target="Bless Laboratories Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Qingdao Hisunny Imp &amp; Exp Co Ltd" target="Inventor Pharma Pvt Ltd">
+  <data key="d1">26.0</data>
+</edge>
+<edge source="Qingdao Hisunny Imp &amp; Exp Co Ltd" target="Heal Pharmaceutical Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Wilson's Pharmaceuticals" target="Apeloa Hong Kong Ltd">
+  <data key="d1">375.0</data>
+</edge>
+<edge source="Wilson's Pharmaceuticals" target="Hangzhou Zhongbao Imp &amp; Exp Corp Ltd">
+  <data key="d1">0.35</data>
+</edge>
+<edge source="Apeloa Hong Kong Ltd" target="Werrick Pharamaceuticals">
+  <data key="d1">360.0</data>
+</edge>
+<edge source="Pharmevo Pvt Ltd" target="Dfe Pharma Gmbh &amp; Co Kg">
+  <data key="d1">3.9</data>
+</edge>
+<edge source="Dfe Pharma Gmbh &amp; Co Kg" target="Sami Pharmaceuticals Pvt Ltd">
+  <data key="d1">0.1</data>
+</edge>
+<edge source="Dfe Pharma Gmbh &amp; Co Kg" target="Obs Pharma Pvt Ltd">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Dfe Pharma Gmbh &amp; Co Kg" target="Ferozsons Laboratories Ltd">
+  <data key="d1">4.0</data>
+</edge>
+<edge source="Dfe Pharma Gmbh &amp; Co Kg" target="Highnoon Laboratories Ltd">
+  <data key="d1">2.0</data>
+</edge>
+<edge source="Dfe Pharma Gmbh &amp; Co Kg" target="Horizon Healthcare Pvt Ltd">
+  <data key="d1">0.15</data>
+</edge>
+<edge source="Inventor Pharma Pvt Ltd" target="Armor Proteines Sas">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Inventor Pharma Pvt Ltd" target="Anhui Kemfood International Co Ltd">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Inventor Pharma Pvt Ltd" target="Farmasino Co Ltd">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Parkar Pharma">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Standard Drug Co">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Epoch Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Pharma Chemicals">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Mak Kemikal">
+  <data key="d1">85.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Zanctok Pharmaceutical Laboratories">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Efroze Chemical Industries Private Ltd">
+  <data key="d1">10.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Aspin Pharma Pvt Ltd">
+  <data key="d1">18.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Irza Pharma Pvt Ltd">
+  <data key="d1">10.0</data>
+</edge>
+<edge source="Armor Proteines Sas" target="Shaigan Pharmaceuticals Pvt Ltd">
+  <data key="d1">10.0</data>
+</edge>
+<edge source="Ss Agencies" target="Xiamen Ying Wan Foodstuff Co Ltd">
+  <data key="d1">8.32344</data>
+</edge>
+<edge source="One Health Pharma" target="Infoark International Co Ltd">
+  <data key="d1">0.2</data>
+</edge>
+<edge source="One Health Pharma" target="Gn Chemicals Co Ltd">
+  <data key="d1">0.2</data>
+</edge>
+<edge source="Infoark International Co Ltd" target="Zoic International">
+  <data key="d1">12.0</data>
+</edge>
+<edge source="Infoark International Co Ltd" target="Mallard Pharmaceuticals Pvt Ltd">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Otsuka Pakistan Ltd" target="Cspc Shengxue Glucose Co Ltd">
+  <data key="d1">132.0</data>
+</edge>
+<edge source="Otsuka Pakistan Ltd" target="Liaoning Pharmaceutical Foreign Trade Corporation">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Unilever Pakistan Ltd" target="Aromsa Besin Aroma Ve Katki Maddeleri San Ve Tic">
+  <data key="d1">6.2</data>
+</edge>
+<edge source="Mohammadi Traders" target="Pt Yupi Indo Jelly Gum Tbk">
+  <data key="d1">60.71328</data>
+</edge>
+<edge source="Mohammadi Traders" target="Pt Yupi Indo Jelly Gum">
+  <data key="d1">12.179856</data>
+</edge>
+<edge source="Musaji Adam &amp; Sons" target="Daejung Chemicals &amp; Metals Co Ltd">
+  <data key="d1">0.36200000000000004</data>
+</edge>
+<edge source="Laboratory Scientific Supplies Pvt Ltd" target="Merck Life Science Kgaa">
+  <data key="d1">0.005</data>
+</edge>
+<edge source="Bridge Initiative Pvt Ltd" target="Zhejiang New Vision Imp &amp; Exp Co Ltd">
+  <data key="d1">2.2</data>
+</edge>
+<edge source="Nabiqasim Industries Pvt Ltd" target="Jrs Pharma Gmbh &amp; Co Kg">
+  <data key="d1">0.3</data>
+</edge>
+<edge source="Sami Pharmaceuticals Pvt Ltd" target="Meggle Gmbh &amp; Co Kg">
+  <data key="d1">48.25</data>
+</edge>
+<edge source="Meggle Gmbh &amp; Co Kg" target="Szumex International">
+  <data key="d1">598.1</data>
+</edge>
+<edge source="Meggle Gmbh &amp; Co Kg" target="Shabbir International">
+  <data key="d1">11.55</data>
+</edge>
+<edge source="Meggle Gmbh &amp; Co Kg" target="Hoechst Pakistan Ltd">
+  <data key="d1">36.75</data>
+</edge>
+<edge source="Meggle Gmbh &amp; Co Kg" target="Elite Chemicals Co">
+  <data key="d1">11.55</data>
+</edge>
+<edge source="Meggle Gmbh &amp; Co Kg" target="Dairy Life Pvt Ltd">
+  <data key="d1">0.45</data>
+</edge>
+<edge source="Meggle Gmbh &amp; Co Kg" target="Aspin Pharma Pvt Ltd">
+  <data key="d1">10.5</data>
+</edge>
+<edge source="Meggle Gmbh &amp; Co Kg" target="Hudson Pharma Pvt Ltd">
+  <data key="d1">0.05</data>
+</edge>
+<edge source="Meggle Gmbh &amp; Co Kg" target="Pharma Chemicals">
+  <data key="d1">10.375</data>
+</edge>
+<edge source="Meggle Gmbh &amp; Co Kg" target="Pfizer Pakistan Ltd">
+  <data key="d1">9.375</data>
+</edge>
+<edge source="Farm Wise Pvt Ltd" target="Jiangsu Soho Honry Import &amp; Export Co Ltd">
+  <data key="d1">1.0</data>
+</edge>
+<edge source="United Chemical Corporation Pvt Ltd" target="Aipu Food Industry Co Ltd">
+  <data key="d1">65.0</data>
+</edge>
+<edge source="United Chemical Corporation Pvt Ltd" target="D.D Williamson Ingredients (Shanghai) Ltd">
+  <data key="d1">38.4</data>
+</edge>
+<edge source="United Chemical Corporation Pvt Ltd" target="Anhui Ebuy International Co Ltd">
+  <data key="d1">135.0</data>
+</edge>
+<edge source="Hinucon Pvt Ltd" target="East Chemsources Ltd">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Hinucon Pvt Ltd" target="Liaoning Pharmaceutical Foreign Trade Corporation">
+  <data key="d1">144.0</data>
+</edge>
+<edge source="Hinucon Pvt Ltd" target="Shandong Lianmeng International Trade Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Hiranis Pharmaceuticals Pvt Ltd" target="Singsino Group Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Fk Trader" target="Fora Sweets Gida San Ve Tic As">
+  <data key="d1">20.394579999999998</data>
+</edge>
+<edge source="Fora Sweets Gida San Ve Tic As" target="Ismail &amp; Rais Pvt Ltd">
+  <data key="d1">10.481520000000003</data>
+</edge>
+<edge source="Nutrico Morinaga Pvt Ltd" target="San Soon Seng Food Industries Sdn Bhd">
+  <data key="d1">230.0</data>
+</edge>
+<edge source="Pharma Chemicals" target="Anhui Ebuy International Co Ltd">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Rahim Enterprises" target="Zarnam Farhikhtegan Research">
+  <data key="d1">20.4</data>
+</edge>
+<edge source="Cspc Shengxue Glucose Co Ltd" target="Indus Pharma Pvt Ltd">
+  <data key="d1">22.0</data>
+</edge>
+<edge source="Hawk Bio Pharma Pvt Ltd" target="Fortune Co Ltd">
+  <data key="d1">8.0</data>
+</edge>
+<edge source="Fortune Co Ltd" target="Univet Pharmaceuticals">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Fortune Co Ltd" target="Enzon Pharma Labs Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Aipu Food Industry Co Ltd" target="Bin Dawood Flavours Pvt Ltd">
+  <data key="d1">22.8</data>
+</edge>
+<edge source="Malkani Traders" target="Pt Savoria Kreasi Rasa">
+  <data key="d1">111.14219999999999</data>
+</edge>
+<edge source="Malkani Traders" target="Yiwu Youcan Food Co Ltd">
+  <data key="d1">42.0668</data>
+</edge>
+<edge source="Malkani Traders" target="Yiwu Harpy Import And Export Co Ltd">
+  <data key="d1">3.387</data>
+</edge>
+<edge source="Malkani Traders" target="Saadet Gida Pazarlama San Ve Tic As">
+  <data key="d1">24.9334</data>
+</edge>
+<edge source="Malkani Traders" target="Elvan Gida San Ve Tic As">
+  <data key="d1">5.50366</data>
+</edge>
+<edge source="Malkani Traders" target="Shenzhen Rungu Food Co Ltd">
+  <data key="d1">28.799</data>
+</edge>
+<edge source="Malkani Traders" target="Shenzhen Xpa International Log">
+  <data key="d1">0.01236</data>
+</edge>
+<edge source="Malkani Traders" target="Guangdong Shantai Foodstuff Co Ltd">
+  <data key="d1">4.9248</data>
+</edge>
+<edge source="Malkani Traders" target="Kervan Gida San Ve Tic As">
+  <data key="d1">13.60584</data>
+</edge>
+<edge source="Ahmad Naveed" target="Waheed Waheed">
+  <data key="d1">0.009</data>
+</edge>
+<edge source="Abdullah Trading Co" target="Yiwu Guoyou Import &amp; Export Co Ltd">
+  <data key="d1">4.404319999999999</data>
+</edge>
+<edge source="Yiwu Guoyou Import &amp; Export Co Ltd" target="Sk &amp; Sons">
+  <data key="d1">8.30736</data>
+</edge>
+<edge source="Atco Laboratories Ltd" target="Chifeng Eyeris Co Ltd">
+  <data key="d1">75.0</data>
+</edge>
+<edge source="Philip Morris (Pakistan) Ltd" target="Pt Hanjaya Mandala Sampoerna Tbk">
+  <data key="d1">46.4</data>
+</edge>
+<edge source="Shazeb Pharmaceutical Industries Ltd" target="Shandong Lianmeng International Trade Co Ltd">
+  <data key="d1">96.0</data>
+</edge>
+<edge source="Global Traders" target="Guangdong Haoliyuan Food Co Ltd">
+  <data key="d1">21.8855</data>
+</edge>
+<edge source="Sons Traders" target="Shenzhen Rungu Food Co Ltd">
+  <data key="d1">9.75552</data>
+</edge>
+<edge source="Northern Logistics Carrier Pvt Ltd" target="Xinjiang haoyuguo international trade Co">
+  <data key="d1">0.8</data>
+</edge>
+<edge source="Xinjiang haoyuguo international trade Co" target="Hashwan Traders Pack House And Cold Storage Facility">
+  <data key="d1">1.7</data>
+</edge>
+<edge source="Shabbir International" target="D.D Willimason (Uk) Ltd">
+  <data key="d1">2.0</data>
+</edge>
+<edge source="Candy Shandy Enterprise" target="Yiwu Saijia Trading Co Ltd">
+  <data key="d1">11.6617</data>
+</edge>
+<edge source="Qas International" target="Anhui Ebuy International Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Qas International" target="Angus Bio (Shanghai) Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Anhui Ebuy International Co Ltd" target="Kohinoor Industries">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Anhui Ebuy International Co Ltd" target="Kulsoom International">
+  <data key="d1">54.0</data>
+</edge>
+<edge source="Anhui Ebuy International Co Ltd" target="Maac International">
+  <data key="d1">84.0</data>
+</edge>
+<edge source="A.F.U International" target="Eurozyme Gida Katki Mad San Ve Tic As">
+  <data key="d1">4.0</data>
+</edge>
+<edge source="A.F.U International" target="Pollen Endustriyel Gida Sanayi Ve Ticaret As">
+  <data key="d1">36.88</data>
+</edge>
+<edge source="A.F.U International" target="Pollen End Gida San Ve Tic">
+  <data key="d1">5.02</data>
+</edge>
+<edge source="Ma Enterprises" target="Damel Group Sl">
+  <data key="d1">10.56256</data>
+</edge>
+<edge source="Ma Enterprises" target="Bonart Gida Sanayi Ve Ticaret As">
+  <data key="d1">0.87912</data>
+</edge>
+<edge source="Damel Group Sl" target="Gujranwala Food Industries Pvt Ltd">
+  <data key="d1">10.23744</data>
+</edge>
+<edge source="Asian Gulf Shisha Molasses" target="Jk International Fze">
+  <data key="d1">192.0</data>
+</edge>
+<edge source="Leads Pharma Pvt Ltd" target="Arshine Lifescience Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Leads Pharma Pvt Ltd" target="Fipharm Co Ltd">
+  <data key="d1">168.0</data>
+</edge>
+<edge source="Arshine Lifescience Co Ltd" target="Sanna Laboratories">
+  <data key="d1">8.0</data>
+</edge>
+<edge source="Arshine Lifescience Co Ltd" target="Inshal Pharmaceutical Industries">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Arshine Lifescience Co Ltd" target="Selmore Pharmaceuticals Pvt Ltd">
+  <data key="d1">1.6</data>
+</edge>
+<edge source="Ies Global Pvt Ltd" target="Alpavit Gmbh &amp; Co Kg">
+  <data key="d1">11.0</data>
+</edge>
+<edge source="Alpavit Gmbh &amp; Co Kg" target="Hoechst Pakistan Ltd">
+  <data key="d1">11.0</data>
+</edge>
+<edge source="Al-Chemist Corp" target="New Natural Biotech Fz Llc">
+  <data key="d1">2.8</data>
+</edge>
+<edge source="M.A Kamil" target="Gn Chemicals Co Ltd">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Gn Chemicals Co Ltd" target="Selmore Pharmaceuticals Pvt Ltd">
+  <data key="d1">2.0</data>
+</edge>
+<edge source="As Enterprises" target="Tayas Gida San Ve Tic As">
+  <data key="d1">8.698239999999998</data>
+</edge>
+<edge source="As Enterprises" target="Blooming Foods Fzco">
+  <data key="d1">6.8100000000000005</data>
+</edge>
+<edge source="As Enterprises" target="Evliya Sek San Ve Tic Ltd Sti">
+  <data key="d1">4.396</data>
+</edge>
+<edge source="As Enterprises" target="Elif Cikolata San Ve Tic Ltd Sti">
+  <data key="d1">10.719999999999999</data>
+</edge>
+<edge source="Nishat Sutas Dairy Ltd" target="Ol Usa Llc">
+  <data key="d1">38.0</data>
+</edge>
+<edge source="Mariam International" target="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Mariam International" target="Heilongjiang Jinxiang Biochemical Co Ltd">
+  <data key="d1">54.0</data>
+</edge>
+<edge source="Szumex International" target="Meggle Africa And Middle East Dmcc">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Hemani International Pvt Ltd" target="Qingdao Icd Biochemistry Co Ltd">
+  <data key="d1">2.0</data>
+</edge>
+<edge source="Qingdao Icd Biochemistry Co Ltd" target="Rashidiya Impex">
+  <data key="d1">21.0</data>
+</edge>
+<edge source="Ghani Enterprises" target="Pt Damai Karya Abadi">
+  <data key="d1">4.9799999999999995</data>
+</edge>
+<edge source="Javed Chemical Corporation" target="Chromachemie Laboratory Pvt Ltd">
+  <data key="d1">0.002</data>
+</edge>
+<edge source="Ns Trade International" target="Fusion Fareway Food Products Co Llc">
+  <data key="d1">16.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Gallop Water Sciences">
+  <data key="d1">0.024</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Zeta Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Atlantic Pharmaceutical Laboratories">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Cortex Pharmaceuticals">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Glorious Laboratories">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Revive Pharmakon">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Pharmawise Labs. Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Vetrox Pharmaceuticals">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Bless Laboratories Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Star Laboratories Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Phytocon International Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Majestic Pharma">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Stand Pharm Pakistan Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Caliph Pharmaceuticals Pvt Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Liaoning Pharmaceutical Foreign Trade Corporation" target="Apsis Pharmaceuticals">
+  <data key="d1">12.0</data>
+</edge>
+<edge source="Embassy Of The Republic Of Ukraine" target="Rapid World General Trading Co Llc">
+  <data key="d1">18.2</data>
+</edge>
+<edge source="Embassy Of The Republic Of Ukraine" target="Nova Link General Trading Llc">
+  <data key="d1">58.1</data>
+</edge>
+<edge source="Rapid World General Trading Co Llc" target="Embassy Of The Republic Of Tajikistan">
+  <data key="d1">38.3</data>
+</edge>
+<edge source="Rapid World General Trading Co Llc" target="Farooq Enterprises">
+  <data key="d1">0.012</data>
+</edge>
+<edge source="Aftab Chemical Co" target="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Aftab Chemical Co" target="Heilongjiang Jinxiang Biochemical Co Ltd">
+  <data key="d1">54.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="United Food Group">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Ibrahim Khatri Trading Co">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="M Hanif &amp; Sons">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="S.R International">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Ahmed Tariq Co">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Betelnuts Corporation">
+  <data key="d1">280.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Sz Traders">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Awais Trading Corporation">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Bilal Impex">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Shafiq Iqbal Enterprises">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Alamgir">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Moosani Impex">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Neutra Cure">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Flaxen Trading Co">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Global Trade Link">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Ahmed Chemical Co">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Muneeb Trading Co">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Fivestar Corporation">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Qiqihar Longjiang Fufeng Biotechnologies Co Ltd" target="Pak Polychem Enterprises">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Haleon Pakistan Ltd" target="Milchwerke Mittelelbe Gmbh">
+  <data key="d1">628.0</data>
+</edge>
+<edge source="Gamco International" target="General Candy Co Ltd">
+  <data key="d1">15.552</data>
+</edge>
+<edge source="General Candy Co Ltd" target="International Importers">
+  <data key="d1">13.0</data>
+</edge>
+<edge source="Embassy Of United States Of America" target="International Diplomatic Supplies Inc">
+  <data key="d1">0.057</data>
+</edge>
+<edge source="Sheheryar Enterprises" target="Monin Asia Kl Sdn Bhd">
+  <data key="d1">31.56496</data>
+</edge>
+<edge source="Highnoon Laboratories Ltd" target="Austin Chemical Co Inc">
+  <data key="d1">7.1440280000000005</data>
+</edge>
+<edge source="Great Wall Trading Pvt Ltd" target="Rongcheng More Efficient Trading Ltd">
+  <data key="d1">0.182</data>
+</edge>
+<edge source="Rongcheng More Efficient Trading Ltd" target="Firstop Commercial And Trading Pvt Ltd">
+  <data key="d1">0.958</data>
+</edge>
+<edge source="Dohler Pakistan Pvt Ltd" target="Dohler Gida Sanayi As">
+  <data key="d1">0.025</data>
+</edge>
+<edge source="Dohler Pakistan Pvt Ltd" target="Doehler Gmbh">
+  <data key="d1">0.01</data>
+</edge>
+<edge source="Embassy Of Germany" target="Karl Geuther Handels-Gmbh &amp; Co Kg">
+  <data key="d1">0.143</data>
+</edge>
+<edge source="Has Trading Solutions" target="Makeup 4U">
+  <data key="d1">0.0127</data>
+</edge>
+<edge source="Has Trading Solutions" target="Trade Genius Llc">
+  <data key="d1">0.00685</data>
+</edge>
+<edge source="Has Trading Solutions" target="M2K2 Llc">
+  <data key="d1">0.005</data>
+</edge>
+<edge source="Makeup 4U" target="Infinity Traders">
+  <data key="d1">0.07738800000000001</data>
+</edge>
+<edge source="Makeup 4U" target="Raja Govt. Contractor, General Order Supplier And Importer-Exporter">
+  <data key="d1">0.0015</data>
+</edge>
+<edge source="Makeup 4U" target="Shawn Enterprises">
+  <data key="d1">0.018</data>
+</edge>
+<edge source="Makeup 4U" target="Twin Star International">
+  <data key="d1">0.00527</data>
+</edge>
+<edge source="Quaper Pvt Ltd" target="Zhejiang Medicines &amp; Health Products Import &amp; Export Co Ltd">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="I &amp; H Services" target="Defeem Sdn Bhd">
+  <data key="d1">43.47756</data>
+</edge>
+<edge source="I &amp; H Services" target="M.R.S Star General Trading Llc">
+  <data key="d1">1.022</data>
+</edge>
+<edge source="Zafa Pharmaceutical Laboratories Pvt Ltd" target="Royal Ilac San Tic Ltd Sti">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Zafa Pharmaceutical Laboratories Pvt Ltd" target="Advan Pharmachem Co Ltd">
+  <data key="d1">3.0</data>
+</edge>
+<edge source="Haleeb Foods Ltd" target="Bdairy Bv">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Takasago International (Pakistan) Pvt Ltd" target="Dpexi Private Ltd">
+  <data key="d1">0.001</data>
+</edge>
+<edge source="Mallard Pharmaceuticals Pvt Ltd" target="Wuhan Lipharma Chemicals Co Ltd">
+  <data key="d1">0.15</data>
+</edge>
+<edge source="Martin Dow Ltd" target="Adchem International Fzco">
+  <data key="d1">0.05</data>
+</edge>
+<edge source="Roohi Chaudhri" target="Access Usa Shipping">
+  <data key="d1">0.004</data>
+</edge>
+<edge source="Access Usa Shipping" target="Diamond Fabrics Ltd">
+  <data key="d1">0.0005</data>
+</edge>
+<edge source="Ismail &amp; Rais Pvt Ltd" target="Tiva Gida San Ve Tic As">
+  <data key="d1">23.470320000000008</data>
+</edge>
+<edge source="M Yasin Ibico" target="Yiwu Yilong Import And Export Co Ltd">
+  <data key="d1">0.618</data>
+</edge>
+<edge source="Yiwu Yilong Import And Export Co Ltd" target="Abdullah Solutions">
+  <data key="d1">2.45</data>
+</edge>
+<edge source="New Chemical Centre" target="Daks Trading Fz Llc">
+  <data key="d1">0.02</data>
+</edge>
+<edge source="Yah Impex" target="Yiwu Harpy Import And Export Co Ltd">
+  <data key="d1">4.390000000000001</data>
+</edge>
+<edge source="Premier Trading Co" target="Best Brands General Trading Llc">
+  <data key="d1">5.6777</data>
+</edge>
+<edge source="Premier Trading Co" target="Imperial Foods General Trading Llc">
+  <data key="d1">2.08224</data>
+</edge>
+<edge source="Best Brands General Trading Llc" target="Naveed Trading Co">
+  <data key="d1">2.7907200000000003</data>
+</edge>
+<edge source="Anhui Kemfood International Co Ltd" target="Maac International">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Anhui Kemfood International Co Ltd" target="Ibrahim International">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Anhui Kemfood International Co Ltd" target="Shafiq Iqbal Enterprises">
+  <data key="d1">112.0</data>
+</edge>
+<edge source="Anhui Kemfood International Co Ltd" target="J.S Corporation">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="Anhui Kemfood International Co Ltd" target="Moosani Impex">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Amna Keyani" target="Ccnsport Hong Kong Ltd">
+  <data key="d1">0.001</data>
+</edge>
+<edge source="Singsino Group Ltd" target="Ashrafsons Pharmaceutical Pvt Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Singsino Group Ltd" target="Route-2 Health Pvt Ltd">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Haameem Food Solutions" target="Bakbel Europe Sa">
+  <data key="d1">17.0</data>
+</edge>
+<edge source="Haameem Food Solutions" target="Norte-Eurocao Slu">
+  <data key="d1">3.2</data>
+</edge>
+<edge source="Haameem Food Solutions" target="Pt Gandum Mas Kencana">
+  <data key="d1">16.008</data>
+</edge>
+<edge source="Murree Brewery Co Ltd" target="D.D Willimason (Uk) Ltd">
+  <data key="d1">12.0</data>
+</edge>
+<edge source="Murree Brewery Co Ltd" target="D.D Williamson Ingredients (Shanghai) Ltd">
+  <data key="d1">19.2</data>
+</edge>
+<edge source="Pt Damai Karya Abadi" target="Mr International">
+  <data key="d1">15.909189999999999</data>
+</edge>
+<edge source="Pt Damai Karya Abadi" target="Aa Foods">
+  <data key="d1">2.26844</data>
+</edge>
+<edge source="Infinity Traders" target="Trade Genius Llc">
+  <data key="d1">0.002</data>
+</edge>
+<edge source="Infinity Traders" target="M2K2 Llc">
+  <data key="d1">0.011460000000000001</data>
+</edge>
+<edge source="Elite Chemicals Co" target="Dangschat T.O.H Gmbh &amp; Co Kg">
+  <data key="d1">4.2</data>
+</edge>
+<edge source="Elite Chemicals Co" target="Suedzucker Ag">
+  <data key="d1">6.6</data>
+</edge>
+<edge source="Vision For The Kingdom In Pakistan" target="Barnabas Aid">
+  <data key="d1">1.053</data>
+</edge>
+<edge source="Abdool Aly Moosabhoy &amp; Sons" target="D.D Williamson Ingredients (Shanghai) Ltd">
+  <data key="d1">38.4</data>
+</edge>
+<edge source="Jrs Pharma Gmbh &amp; Co Kg" target="World-Wide Services">
+  <data key="d1">0.6</data>
+</edge>
+<edge source="Jrs Pharma Gmbh &amp; Co Kg" target="Nabi Qasim Industries Pvt Ltd">
+  <data key="d1">0.3</data>
+</edge>
+<edge source="Mak Kemikal" target="Emrays (Hangzhou) Pharmaceutical Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Poulvet Pharmaceuticals Pvt Ltd" target="Angus Bio (Shanghai) Co Ltd">
+  <data key="d1">24.34</data>
+</edge>
+<edge source="Angus Bio (Shanghai) Co Ltd" target="Acme Pharmaceuticals">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Angus Bio (Shanghai) Co Ltd" target="Aamster Laboratories (Branch)">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Pak Suzuki Motor Co Ltd" target="Suzuki Motor Corporation">
+  <data key="d1">0.003087</data>
+</edge>
+<edge source="Don Valley Pharmaceuticals Pvt Ltd" target="Hangzhou Telida Biopharmtech Co Ltd">
+  <data key="d1">1.5</data>
+</edge>
+<edge source="Karam Traders" target="Pt Arta Maja Prima">
+  <data key="d1">2.04</data>
+</edge>
+<edge source="Evergreen Pharmaceuticals" target="Shanghai J. Shine Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Palzar Enterprises" target="Sweetzone Ltd">
+  <data key="d1">106.554</data>
+</edge>
+<edge source="Sea Quest Logistic Services" target="Mr Khurram">
+  <data key="d1">0.007</data>
+</edge>
+<edge source="J.K Enterprises" target="C/O Conseil De L Europe Edqm Int">
+  <data key="d1">0.001</data>
+</edge>
+<edge source="J.K Enterprises" target="Thermo Fisher Scientific">
+  <data key="d1">0.01</data>
+</edge>
+<edge source="Tahir Muhammad Iqbal Hookmani" target="Asfa Karim">
+  <data key="d1">0.003</data>
+</edge>
+<edge source="Imtiaz Group Smc Pvt Ltd" target="Jeram Coconut Sdn Bhd">
+  <data key="d1">13.1234</data>
+</edge>
+<edge source="Imtiaz Group Smc Pvt Ltd" target="Shantou Yuanda Foods Co Ltd">
+  <data key="d1">8.712</data>
+</edge>
+<edge source="Imtiaz Group Smc Pvt Ltd" target="Transmed International Pte Ltd">
+  <data key="d1">41.56507</data>
+</edge>
+<edge source="Imtiaz Group Smc Pvt Ltd" target="Shanggao Richwant Trading Co Ltd">
+  <data key="d1">5.778</data>
+</edge>
+<edge source="Imtiaz Group Smc Pvt Ltd" target="Rinda Food Industries Sdn Bhd">
+  <data key="d1">7.245</data>
+</edge>
+<edge source="Imtiaz Group Smc Pvt Ltd" target="Docile Alimentos Ltda">
+  <data key="d1">11.708639999999999</data>
+</edge>
+<edge source="Imtiaz Group Smc Pvt Ltd" target="Shree Sai Trading">
+  <data key="d1">5.70312</data>
+</edge>
+<edge source="Imtiaz Group Smc Pvt Ltd" target="Jamaica Foodstuff Trading Co Llc">
+  <data key="d1">1.6835200000000001</data>
+</edge>
+<edge source="Imtiaz Group Smc Pvt Ltd" target="Shanghai Richfield Internaitonal Trade Co Ltd">
+  <data key="d1">8.22</data>
+</edge>
+<edge source="Usman Brothers Pvt Ltd" target="Al Showaib Al Dhahabi General Trading Llc">
+  <data key="d1">5.04</data>
+</edge>
+<edge source="Usman Brothers Pvt Ltd" target="Pamir Gida Sanayi As">
+  <data key="d1">27.62658000000001</data>
+</edge>
+<edge source="Werrick Pharamaceuticals" target="Hangzhou Zhongbao Imp &amp; Exp Corp Ltd">
+  <data key="d1">32.0</data>
+</edge>
+<edge source="Coca Cola Beverages Pakistan Ltd Lhr" target="Anadolu Etap Penkon Gida Ve Icecek">
+  <data key="d1">0.004</data>
+</edge>
+<edge source="Dhl Pakistan Pvt Ltd" target="Dhl Worldwide Express">
+  <data key="d1">0.2872600000000002</data>
+</edge>
+<edge source="Dhl Pakistan Pvt Ltd" target="Dhl International Bahrain Bsc">
+  <data key="d1">0.0055</data>
+</edge>
+<edge source="Dhl Pakistan Pvt Ltd" target="Dhl Express International (Th) Ltd">
+  <data key="d1">0.007</data>
+</edge>
+<edge source="Dhl Pakistan Pvt Ltd" target="Dhl Express International">
+  <data key="d1">0.0045000000000000005</data>
+</edge>
+<edge source="Universal Logistics Services Pvt Ltd" target="Ups Air Couriers Of America">
+  <data key="d1">0.3240000000000002</data>
+</edge>
+<edge source="Shahmurad Sugar Mills Ltd" target="Zhejiang Synose Tech Co Ltd">
+  <data key="d1">1.0</data>
+</edge>
+<edge source="Tcs Pvt Ltd" target="Tcs Express Ww">
+  <data key="d1">0.006</data>
+</edge>
+<edge source="M I Traders" target="Wdcw Co Ltd">
+  <data key="d1">6.140000000000001</data>
+</edge>
+<edge source="M I Traders" target="Yiwu Umm E Hani Trading Co Ltd">
+  <data key="d1">15.248</data>
+</edge>
+<edge source="M I Traders" target="Shantou Yangyu Foodstuff Co Ltd">
+  <data key="d1">7.982119999999999</data>
+</edge>
+<edge source="Gmp Foods Pvt Ltd" target="Rose Containerline Inc">
+  <data key="d1">38.0</data>
+</edge>
+<edge source="Continental Worldwide Trading Co" target="Atago Co Ltd">
+  <data key="d1">0.011</data>
+</edge>
+<edge source="Gerry's International Pvt Ltd" target="Fedex Express">
+  <data key="d1">0.035100000000000006</data>
+</edge>
+<edge source="Emrays (Hangzhou) Pharmaceutical Co Ltd" target="Medisure Laboratories Pakistan Pvt Ltd">
+  <data key="d1">15.0</data>
+</edge>
+<edge source="Emrays (Hangzhou) Pharmaceutical Co Ltd" target="Labbaik Enterprises">
+  <data key="d1">7.0</data>
+</edge>
+<edge source="Friesland Campina Engro Pakistan Ltd" target="Friesland Campina Nederland Bv">
+  <data key="d1">259.95</data>
+</edge>
+<edge source="Friesland Campina Engro Pakistan Ltd" target="D Orsogna Dolciaria Srl">
+  <data key="d1">0.056</data>
+</edge>
+<edge source="R.A Impex" target="M2K2 Llc">
+  <data key="d1">0.005</data>
+</edge>
+<edge source="M2K2 Llc" target="Zain Enterprises">
+  <data key="d1">0.0085</data>
+</edge>
+<edge source="M2K2 Llc" target="Raja Govt. Contractor, General Order Supplier And Importer-Exporter">
+  <data key="d1">0.06996000000000001</data>
+</edge>
+<edge source="Nova Link General Trading Llc" target="Embassy Of The Republic Of Tajikistan">
+  <data key="d1">19.8</data>
+</edge>
+<edge source="N.N Enterprises" target="Shantou Lebei Trading Co Ltd">
+  <data key="d1">25.008</data>
+</edge>
+<edge source="Nation Trade International" target="Yiwu East Coast Import &amp; Export">
+  <data key="d1">25.47</data>
+</edge>
+<edge source="Mcc Huaye Duddar Mining Co Pvt Ltd" target="Uniwell International Machinery Co Ltd">
+  <data key="d1">0.6</data>
+</edge>
+<edge source="Uniwell International Machinery Co Ltd" target="Mcc Resources Development Pvt Ltd">
+  <data key="d1">0.4</data>
+</edge>
+<edge source="Nabi Qasim Industries Pvt Ltd" target="Zhejiang Medicines &amp; Health Products Import &amp; Export Co Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Prime International" target="Hongye Chemical Group Ltd">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Prime International" target="Heilongjiang Jinxiang Biochemical Co Ltd">
+  <data key="d1">27.0</data>
+</edge>
+<edge source="Prime International" target="Ebuy Enterprise Ltd">
+  <data key="d1">27.0</data>
+</edge>
+<edge source="Medisure Laboratories Pakistan Pvt Ltd" target="Emrays Middleeast General Trading Llc">
+  <data key="d1">22.0</data>
+</edge>
+<edge source="Asian Food Industries Ltd" target="Fenchem Supply Chain Ltd">
+  <data key="d1">0.02638</data>
+</edge>
+<edge source="Asian Food Industries Ltd" target="Giant Ingredients Ltd">
+  <data key="d1">0.175</data>
+</edge>
+<edge source="Galaxy Enterprises" target="Crimson Middle East Fz Llc">
+  <data key="d1">18.0</data>
+</edge>
+<edge source="Aqua Food" target="Mek Gida Sanayi Ve Ticaret Ltd Sirketi">
+  <data key="d1">24.48</data>
+</edge>
+<edge source="Mek Gida Sanayi Ve Ticaret Ltd Sirketi" target="Memon Brothers">
+  <data key="d1">6.0</data>
+</edge>
+<edge source="A Z Enterprises" target="Taiwanfuyou Food Co Ltd">
+  <data key="d1">0.8</data>
+</edge>
+<edge source="Zhejiang Medicines &amp; Health Products Import &amp; Export Co Ltd" target="Jhk Pharma Pvt Ltd">
+  <data key="d1">75.0</data>
+</edge>
+<edge source="Zhejiang Medicines &amp; Health Products Import &amp; Export Co Ltd" target="Neutro Pharma Pvt Ltd">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Zhejiang Medicines &amp; Health Products Import &amp; Export Co Ltd" target="Geofman Pharmaceuticals">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="D-Maarson Pharmaceuticals" target="Hangzhou Pharmco Co Ltd">
+  <data key="d1">25.0</data>
+</edge>
+<edge source="Dairy Life Pvt Ltd" target="Zhaoqing Huanfa Biotechnology Co Ltd">
+  <data key="d1">21.0</data>
+</edge>
+<edge source="Dairy Life Pvt Ltd" target="North Mile Co Ltd">
+  <data key="d1">46.4</data>
+</edge>
+<edge source="Dairy Life Pvt Ltd" target="Panteley Toshev Ltd">
+  <data key="d1">10.72</data>
+</edge>
+<edge source="Fauji Foods Ltd" target="Fayrefield Foods As">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Far Eastern Impex Pvt Ltd" target="Irca Manufacturing Netherlands Bv">
+  <data key="d1">9.780000000000001</data>
+</edge>
+<edge source="Far Eastern Impex Pvt Ltd" target="Irca Spa">
+  <data key="d1">2.5</data>
+</edge>
+<edge source="Far Eastern Impex Pvt Ltd" target="Fuji Global Chocolate (M) Sdn Bhd">
+  <data key="d1">3.58</data>
+</edge>
+<edge source="Al-Burque Enterprise" target="Hangzhou Clake Biotech Co Ltd">
+  <data key="d1">6.0</data>
+</edge>
+<edge source="Jawa Pharmaceuticals Pvt Ltd" target="Anhui Newchem Co Ltd">
+  <data key="d1">48.0</data>
+</edge>
+<edge source="Anhui Newchem Co Ltd" target="Saeed Brothers">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Central Chemicals" target="Greyhound Chromatography and Allied Chemicals Ltd">
+  <data key="d1">0.001</data>
+</edge>
+<edge source="Central Chemicals" target="Molekula Ltd">
+  <data key="d1">0.024</data>
+</edge>
+<edge source="Zain Enterprise Oilfield Supply Pvt Ltd" target="Soar Biotech Co Ltd">
+  <data key="d1">0.081</data>
+</edge>
+<edge source="Haris Fayyaz" target="Selfridges &amp; Co">
+  <data key="d1">0.001</data>
+</edge>
+<edge source="Swan Impex Llp" target="Perfetti Van Melle (Vietnam) Ltd">
+  <data key="d1">11.959</data>
+</edge>
+<edge source="Swan Impex Llp" target="Yiwu Huayi Imp And Exp Co Ltd">
+  <data key="d1">24.5948</data>
+</edge>
+<edge source="Swan Impex Llp" target="Pt Yupi Indo Jelly Gum">
+  <data key="d1">5.4666</data>
+</edge>
+<edge source="Shazia Trading Co" target="Lotte Vietnam Co Ltd">
+  <data key="d1">4.104</data>
+</edge>
+<edge source="S.S Naseeruddin" target="Shandong Tianliang Import And Export Co Ltd">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Shandong Tianliang Import And Export Co Ltd" target="Hassan Nazir International">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Multiple Trading House" target="Khat Tadawul General Trading Llc">
+  <data key="d1">1.992</data>
+</edge>
+<edge source="Yaseen And Co" target="Bahr Al Najah Trading Llc">
+  <data key="d1">2.6649599999999998</data>
+</edge>
+<edge source="Yaseen And Co" target="Maka Tarabar">
+  <data key="d1">4.14876</data>
+</edge>
+<edge source="Ras Pharmaceuticals Pvt Ltd" target="Qingdao Doeast Chemical Co Ltd">
+  <data key="d1">1.0</data>
+</edge>
+<edge source="Arochem" target="Emrays International General Trading Co Llc">
+  <data key="d1">22.0</data>
+</edge>
+<edge source="A &amp; K Pharmaceuticals" target="Shanghai J. Shine Co Ltd">
+  <data key="d1">24.0</data>
+</edge>
+<edge source="Ahmed Chemical Co" target="Heilongjiang Jinxiang Biochemical Co Ltd">
+  <data key="d1">27.0</data>
+</edge>
+<edge source="Yijia Consultants Smc Pvt Ltd" target="Hong Kong Foreal Industrial Co Ltd">
+  <data key="d1">0.3912</data>
+</edge>
+<edge source="Alb Wholesale Ltd" target="Global Imports">
+  <data key="d1">2.4071</data>
+</edge>
+<edge source="Al Taqi Impex" target="York Star Hong Ltd">
+  <data key="d1">2.88</data>
+</edge>
+<edge source="Takayuki Shirota" target="Nippan Ips Co Ltd">
+  <data key="d1">0.000357</data>
+</edge>
+<edge source="High Profile Poultry Services" target="Vega Pharma Ltd">
+  <data key="d1">20.0</data>
+</edge>
+<edge source="Royal Chemicals" target="Arshine Food Additives Co Ltd">
+  <data key="d1">42.0</data>
+</edge>
+<edge source="Muneeb Trading Co" target="Heilongjiang Jinxiang Biochemical Co Ltd">
+  <data key="d1">27.0</data>
+</edge>
+<edge source="S.S Scientific System" target="Duksan Pure Chemicals Co Ltd">
+  <data key="d1">0.02</data>
+</edge>
+<edge source="Boba Bubble Beverages Pvt Ltd" target="Bosmos International Co Ltd">
+  <data key="d1">0.532</data>
+</edge>
+<edge source="Saadet Gida Pazarlama San Ve Tic As" target="Sabbaq Enterprises">
+  <data key="d1">24.6</data>
+</edge>
+<edge source="Bismillah Trading Co" target="Heilongjiang Jinxiang Biochemical Co Ltd">
+  <data key="d1">27.0</data>
+</edge>
+<edge source="Hongye Chemical Group Ltd" target="Awais Trading Corporation">
+  <data key="d1">56.0</data>
+</edge>
+<edge source="Route-2 Health Pvt Ltd" target="Changsha Vigorous Tech Co Ltd">
+  <data key="d1">0.005</data>
+</edge>
+<edge source="Fakhar Abbas Shah" target="Ahmar Abbas Shah">
+  <data key="d1">0.002</data>
+</edge>
+<edge source="Qasim Import Export Pvt Ltd" target="Beschoo Trading Co Ltd">
+  <data key="d1">0.3</data>
+</edge>
+<edge source="Alamgir" target="Heilongjiang Jinxiang Biochemical Co Ltd">
+  <data key="d1">27.0</data>
+</edge>
+<edge source="Sa Corporation" target="Azarkian Toss Intl">
+  <data key="d1">0.1</data>
+</edge>
+<edge source="Horeca Systems" target="Madam Sun Sdn Bhd">
+  <data key="d1">0.288</data>
+</edge>
+<edge source="Citi Pharma Ltd" target="Zhejiang Jinlian Chemtech Co Ltd">
+  <data key="d1">3.0</data>
+</edge>
+<edge source="Citi Pharma Ltd" target="Zhejiang Chemicals Import And Export Corporation">
+  <data key="d1">5.0</data>
+</edge>
+<edge source="Trading World" target="Kings International General Trading Llc">
+  <data key="d1">5.5867320000000005</data>
+</edge>
+<edge source="Trading World" target="Rayburn Trading Co Ltd">
+  <data key="d1">1.11568</data>
+</edge>
+<edge source="Trading World" target="Novargo Inc">
+  <data key="d1">0.543</data>
+</edge>
+<edge source="Divine Food Hub" target="Tradex International Llc">
+  <data key="d1">26.0</data>
+</edge>
+<edge source="Five Star Trading" target="Qingdao Fugar Chemical Co Ltd">
+  <data key="d1">28.0</data>
+</edge>
+<edge source="International Franchises Pvt Ltd" target="Tradetrans Corp">
+  <data key="d1">1.30636</data>
+</edge>
+<edge source="Supreme Traders" target="Stair Way Electronics Co Ltd">
+  <data key="d1">0.032</data>
+</edge>
+<edge source="Embassy Of The Russian Federation" target="Peter Justesen Company As">
+  <data key="d1">0.00664</data>
+</edge>
+<edge source="Delight Enterprises Smc Pvt Ltd" target="Bagat Agro Impex Llc">
+  <data key="d1">0.37752</data>
+</edge>
+<edge source="Delight Enterprises Smc Pvt Ltd" target="Syed Naeem General Trading">
+  <data key="d1">1.55305</data>
+</edge>
+<edge source="National Radio Telecommunication Corporation Pvt Ltd" target="Fast Da Trade Co Ltd">
+  <data key="d1">0.0005</data>
+</edge>
+<edge source="Muhammad Arslan Ramzan" target="Maria Violeta Jardines Rubieles">
+  <data key="d1">0.0015</data>
+</edge>
+<edge source="Ideal Foods &amp; Chemicals" target="Ruland Chemistry (Nanjing) Co Ltd">
+  <data key="d1">50.0</data>
+</edge>
+<edge source="Ideal Foods &amp; Chemicals" target="Hangzhou Dawn Ray Pharmaceutical Co Ltd">
+  <data key="d1">127.5</data>
+</edge>
+<edge source="Iman Tariq Cheema" target="Monakhal Wariech">
+  <data key="d1">0.002</data>
+</edge>
+<edge source="Raim Enterprises" target="Novi Srl">
+  <data key="d1">4.32</data>
+</edge>
+<edge source="Stylopod Pvt Ltd" target="Shenzhen Xingyan International">
+  <data key="d1">0.0023</data>
+</edge>
+<edge source="Stylopod Pvt Ltd" target="Shenzhen Yezi Biotech Co Ltd">
+  <data key="d1">0.001</data>
+</edge>
+<edge source="Maple Star Food Solutions" target="Rice And Spice Filling Llc">
+  <data key="d1">0.5</data>
+</edge>
+<edge source="Embassy Of Jordan" target="Green Tract Shipping Llc">
+  <data key="d1">0.09</data>
+</edge>
+<edge source="Syeda Ambreen Mushtaq" target="Mango Fresh">
+  <data key="d1">0.014</data>
+</edge>
+<edge source="Business Links International" target="Pmmc Llc">
+  <data key="d1">4.083</data>
+</edge>
+<edge source="Mi International" target="Pt Pusan Manis Mulia">
+  <data key="d1">0.03024</data>
+</edge>
+<edge source="Adeel Ahmad" target="Meliana Tonga">
+  <data key="d1">0.001</data>
+</edge>
+<edge source="Iram Yousaf" target="Jalal Maical">
+  <data key="d1">0.001</data>
+</edge>
+<edge source="Haseeb Lab Supplies" target="Central Pak Trading Fz Llc">
+  <data key="d1">0.006</data>
+</edge>
+<edge source="Mcc Resources Development Pvt Ltd" target="Owin Industry Co Ltd">
+  <data key="d1">0.2</data>
+</edge>
+<edge source="Meraj Din Mohammad Iqbal" target="Hebei Jinfeng Starch Sugar Alcohol">
+  <data key="d1">115.0</data>
+</edge>
+<edge source="Fa Enterprises" target="Hebei Xiaoxixi Food Science And Technology">
+  <data key="d1">1.592</data>
+</edge>
+<edge source="Premium Chemicals" target="Shanghai Icv Chemical Technology Co Ltd">
+  <data key="d1">12.0</data>
+</edge>
+<edge source="Bakers Supplies" target="Xiamen Yasin Industry &amp; Trade Co Ltd">
+  <data key="d1">0.22</data>
+</edge>
+</graph></graphml>

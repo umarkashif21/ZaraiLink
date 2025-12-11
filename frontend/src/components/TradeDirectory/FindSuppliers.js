@@ -1,6 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
+import { SkeletonCard } from '../Common/Skeleton';
+import EmptyState from '../Common/EmptyState';
+import Pagination from '../Common/Pagination';
+import SortSelector from '../Common/SortSelector';
+import ExportButton from '../Common/ExportButton';
+import Breadcrumb from '../Common/Breadcrumb';
+import WatchlistButton from '../Common/WatchlistButton';
+import VerificationBadge from '../Common/VerificationBadge';
+import useWatchlist from '../../hooks/useWatchlist';
+import useDebounce from '../../hooks/useDebounce';
 import './FindSuppliers.css';
 
 const FindSuppliers = () => {
@@ -12,6 +22,17 @@ const FindSuppliers = () => {
     region: '',
     sector: ''
   });
+  
+  // Pagination and sorting state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+  const [sortBy, setSortBy] = useState('name_asc');
+  
+  // Watchlist hook
+  const { isInWatchlist, toggleWatchlist } = useWatchlist();
+  
+  // Debounce search
+  const debouncedSearch = useDebounce(filters.search, 300);
   
   // Filter options loaded from backend
   const [filterOptions, setFilterOptions] = useState({
@@ -137,6 +158,7 @@ const FindSuppliers = () => {
       region: '',
       sector: ''
     });
+    setCurrentPage(1);
     // Trigger search with reset values after state update
     setTimeout(() => {
       if (supplierRoleId) {
@@ -145,13 +167,61 @@ const FindSuppliers = () => {
     }, 100);
   };
 
+  // Sorted companies
+  const sortedCompanies = useMemo(() => {
+    const sorted = [...companies];
+    const [field, direction] = sortBy.split('_');
+    sorted.sort((a, b) => {
+      let valA, valB;
+      if (field === 'name') {
+        valA = (a.name || '').toLowerCase();
+        valB = (b.name || '').toLowerCase();
+      } else {
+        valA = (a.name || '').toLowerCase();
+        valB = (b.name || '').toLowerCase();
+      }
+      if (direction === 'asc') return valA > valB ? 1 : -1;
+      return valA < valB ? 1 : -1;
+    });
+    return sorted;
+  }, [companies, sortBy]);
+
+  // Paginated companies
+  const totalPages = Math.ceil(sortedCompanies.length / itemsPerPage);
+  const paginatedCompanies = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sortedCompanies.slice(start, start + itemsPerPage);
+  }, [sortedCompanies, currentPage, itemsPerPage]);
+
+  // Export columns
+  const exportColumns = [
+    { key: 'name', label: 'Company Name' },
+    { key: 'province', label: 'Province' },
+    { key: 'country', label: 'Country' },
+    { key: 'sector_name', label: 'Sector' },
+    { key: 'verification_status', label: 'Status' },
+  ];
+
   return (
     <>
       <Navbar />
       <div className="find-suppliers-container">
+      <Breadcrumb />
+      
       <div className="header">
-        <h1>Find Suppliers</h1>
-        <p className="subtitle">Discover verified agricultural suppliers from Pakistan</p>
+        <div>
+          <h1>Find Suppliers</h1>
+          <p className="subtitle">Discover verified agricultural suppliers from Pakistan</p>
+        </div>
+        <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <SortSelector value={sortBy} onChange={setSortBy} />
+          <ExportButton 
+            data={companies} 
+            columns={exportColumns} 
+            filename="suppliers-list"
+            title="Suppliers Export"
+          />
+        </div>
       </div>
 
       {/* Filters Section */}
@@ -218,21 +288,16 @@ const FindSuppliers = () => {
         </div>
       )}
 
-      {/* Loading State */}
+      {/* Loading State - now with skeletons */}
       {loading && (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading companies...</p>
+        <div className="companies-section">
+          <div className="companies-grid">
+            {[1,2,3,4,5,6,7,8].map(i => <SkeletonCard key={i} />)}
+          </div>
         </div>
       )}
 
       {/* Companies Grid */}
-      {!loading && !error && (() => {
-        console.log('🎨 Rendering companies section, companies state:', companies);
-        console.log('🎨 Companies length:', companies.length);
-        return true; // Just run the logs, don't affect rendering
-      })()}
-      
       {!loading && !error && (
         <div className="companies-section">
           <div className="results-header">
@@ -241,50 +306,68 @@ const FindSuppliers = () => {
           </div>
 
           {companies.length === 0 ? (
-            <div className="no-results">
-              <p>No companies found matching your criteria.</p>
-              <button onClick={resetFilters} className="btn-secondary">Clear Filters</button>
-            </div>
+            <EmptyState
+              title="No companies found"
+              description="No companies match your search criteria. Try adjusting your filters."
+              actionLabel="Clear Filters"
+              onAction={resetFilters}
+            />
           ) : (
-            <div className="companies-grid">
-              {companies.map(company => (
-                <div key={company.id} className="company-card">
-                  <div className="card-header">
-                    <h3>{company.name.toUpperCase()}</h3>
-                    <span className={`status-badge ${company.verification_status}`}>
-                      {company.verification_status === 'verified' ? '✓ Verified' : 'Pending'}
-                    </span>
-                  </div>
-
-                  <div className="card-body">
-                    <div className="info-row">
-                      <span className="label">Location:</span>
-                      <span className="value">{company.province || 'N/A'}, {company.country}</span>
-                    </div>
-                    <div className="info-row">
-                      <span className="label">Sector:</span>
-                      <span className="value">{company.sector_name || 'N/A'}</span>
-                    </div>
-                    <div className="info-row">
-                      <span className="label">Role:</span>
-                      <span className="value">{company.role_name || 'N/A'}</span>
-                    </div>
-                    {company.type_name && (
-                      <div className="info-row">
-                        <span className="label">Type:</span>
-                        <span className="value">{company.type_name}</span>
+            <>
+              <div className="companies-grid">
+                {paginatedCompanies.map(company => (
+                  <div key={company.id} className="company-card">
+                    <div className="card-header">
+                      <h3>{(company.name || '').toUpperCase()}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <WatchlistButton
+                          isWatched={isInWatchlist(company.id)}
+                          onToggle={() => toggleWatchlist({ id: company.id, name: company.name })}
+                          size="small"
+                        />
+                        <VerificationBadge status={company.verification_status} />
                       </div>
-                    )}
-                  </div>
+                    </div>
 
-                  <div className="card-footer">
-                    <Link to={`/trade-directory/company/${company.id}`} className="btn-primary">
-                      View Profile
-                    </Link>
+                    <div className="card-body">
+                      <div className="info-row">
+                        <span className="label">Location:</span>
+                        <span className="value">{company.province || 'N/A'}, {company.country}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="label">Sector:</span>
+                        <span className="value">{company.sector_name || 'N/A'}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="label">Role:</span>
+                        <span className="value">{company.role_name || 'N/A'}</span>
+                      </div>
+                      {company.type_name && (
+                        <div className="info-row">
+                          <span className="label">Type:</span>
+                          <span className="value">{company.type_name}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="card-footer">
+                      <Link to={`/trade-directory/company/${company.id}`} className="btn-primary">
+                        View Profile
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              
+              {/* Pagination */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                totalItems={companies.length}
+                itemsPerPage={itemsPerPage}
+              />
+            </>
           )}
         </div>
       )}

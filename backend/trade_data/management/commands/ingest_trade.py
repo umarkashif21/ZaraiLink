@@ -35,7 +35,7 @@ class Command(BaseCommand):
 
         missing = [col for col in required if col.lower().replace(" ", "_") not in df.columns]
         if missing:
-            raise ValueError(f"❌ Missing columns in file: {missing}")
+            raise ValueError(f"[ERROR] Missing columns in file: {missing}")
 
         transactions_to_create = []
 
@@ -71,6 +71,18 @@ class Command(BaseCommand):
                 )
 
                 # Level 3: ProductSubCategory (full HS code, e.g., "1702.3000")
+                # Map to correct sub-category based on HS code
+                if hs_code_full == "1704.909":
+                    sub_category_name = "Other Sugar Confectionery"
+                elif hs_code_full == "1702.909":
+                    sub_category_name = "Sugar Syrups (Invert Sugar)"
+                elif hs_code_full == "1701.999":
+                    sub_category_name = "Other Cane/Beet Sugar & Chemically Pure Sucrose"
+                elif hs_code_full == "1701.139":
+                    sub_category_name = "Other Cane Sugar"
+                elif hs_code_full == "1702.19":
+                    sub_category_name = "Other Lactose & Lactose Syrup"
+
                 sub_category, _ = ProductSubCategory.objects.get_or_create(
                     category=category,
                     hs_code=hs_code_full,
@@ -110,7 +122,7 @@ class Command(BaseCommand):
             if transactions_to_create:
                 Transaction.objects.bulk_create(transactions_to_create, ignore_conflicts=True)
                 self.stdout.write(self.style.SUCCESS(
-                    f"✅ Ingested {len(transactions_to_create)} records successfully."
+                    f"[OK] Ingested {len(transactions_to_create)} records successfully."
                 ))
             else:
-                self.stdout.write(self.style.WARNING("⚠️ No valid records found to ingest."))
+                self.stdout.write(self.style.WARNING("[WARN] No valid records found to ingest."))

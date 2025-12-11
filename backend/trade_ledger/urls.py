@@ -1,7 +1,7 @@
 # trade_ledger/urls.py
 # trade_ledger/urls.py
 from django.urls import path
-from . import views  # ← This correctly imports trade_ledger/views.py
+from . import views  # <- This correctly imports trade_ledger/views.py
 
 urlpatterns = [
     path('explorer/', views.explorer_api, name='explorer_api'),
@@ -16,4 +16,9 @@ urlpatterns = [
     path('company/<str:company_name>/potential-partners/', views.potential_partners_api),
     path('company/<str:company_name>/network-influence/', views.network_influence_api),
     path('product-clusters/', views.product_clusters_api),
+    
+    # Link Prediction APIs
+    path('predict/sellers/<str:buyer_name>/', views.predict_sellers_api, name='predict_sellers'),
+    path('predict/buyers/<str:seller_name>/', views.predict_buyers_api, name='predict_buyers'),
+    path('predict/methods/', views.link_prediction_methods_api, name='link_prediction_methods'),
 ]

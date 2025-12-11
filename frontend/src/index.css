@@ -1,3 +1,146 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================
+   ZARAILINK DESIGN SYSTEM - CSS VARIABLES
+   ============================================ */
+
+:root {
+  /* Primary Colors */
+  --color-primary: #10b981;
+  --color-primary-hover: #059669;
+  --color-primary-light: #ecfdf5;
+  --color-primary-dark: #047857;
+  
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-hover: #f3f4f6;
+  
+  /* Text Colors */
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --text-inverse: #ffffff;
+  
+  /* Border Colors */
+  --border-primary: #e5e7eb;
+  --border-secondary: #d1d5db;
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  
+  /* Card & Component Backgrounds */
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --dropdown-bg: #ffffff;
+  --modal-bg: #ffffff;
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Input */
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-focus-border: #10b981;
+  
+  /* Transition */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* ============================================
+   DARK MODE VARIABLES
+   ============================================ */
+
+:root.dark {
+  /* Primary Colors - slightly adjusted for dark mode visibility */
+  --color-primary: #34d399;
+  --color-primary-hover: #10b981;
+  --color-primary-light: rgba(52, 211, 153, 0.15);
+  --color-primary-dark: #6ee7b7;
+  
+  /* Background Colors */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-hover: #334155;
+  
+  /* Text Colors */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-inverse: #0f172a;
+  
+  /* Border Colors */
+  --border-primary: #334155;
+  --border-secondary: #475569;
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+  
+  /* Status Colors - brighter for dark mode */
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+  
+  /* Card & Component Backgrounds */
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --dropdown-bg: #1e293b;
+  --modal-bg: #1e293b;
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  
+  /* Input */
+  --input-bg: #1e293b;
+  --input-border: #475569;
+  --input-focus-border: #34d399;
+}
+
+/* ============================================
+   GLOBAL STYLES WITH THEME SUPPORT
+   ============================================ */
+
+* {
+  transition: background-color var(--transition-normal),
+              border-color var(--transition-normal),
+              color var(--transition-normal);
+}
+
+body {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Scrollbar styling for dark mode */
+:root.dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+:root.dark ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+:root.dark ::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+}
+
+:root.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--border-secondary);
+}

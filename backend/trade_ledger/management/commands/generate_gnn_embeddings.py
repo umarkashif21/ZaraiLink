@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
         for company in companies:
             if company in model.wv:
-                embeddings[company] = model.wv[company].tolist()  # ✅ 64-dim list
+                embeddings[company] = model.wv[company].tolist()  # 64-dim list
             else:
                 embeddings[company] = np.random.rand(64).tolist()
 
@@ -48,14 +48,14 @@ class Command(BaseCommand):
             label = cluster_labels[i]
             company_tags[company] = TAGS[label % len(TAGS)] if label != -1 else "Other"
 
-        # Save to DB — PASS LIST DIRECTLY (NO json.dumps!)
+        # Save to DB - PASS LIST DIRECTLY (NO json.dumps!)
         self.stdout.write("Saving company embeddings...")
         with transaction.atomic():
             CompanyEmbedding.objects.all().delete()
             for company in companies:
                 CompanyEmbedding.objects.create(
                     company_name=company,
-                    embedding=embeddings[company],  # ✅ LIST, not JSON string
+                    embedding=embeddings[company],  # LIST, not JSON string
                     cluster_tag=company_tags[company],
                     pagerank=pagerank.get(company, 0.0),
                     degree=degree.get(company, 0)
@@ -69,7 +69,7 @@ class Command(BaseCommand):
         products = [n for n in G_pp.nodes() if n.startswith("product_")]
 
         if G_pp.number_of_edges() == 0:
-            self.stdout.write(self.style.WARNING("No product co-trade edges — skipping product embeddings"))
+            self.stdout.write(self.style.WARNING("No product co-trade edges - skipping product embeddings"))
             return
 
         node2vec_pp = Node2Vec(G_pp, dimensions=64, walk_length=20, num_walks=100, workers=4)
@@ -103,8 +103,8 @@ class Command(BaseCommand):
                 prod_id = int(prod_node.split("_")[1])
                 ProductEmbedding.objects.create(
                     product_item_id=prod_id,
-                    embedding=product_embeddings[prod_node],  # ✅ LIST, not JSON string
+                    embedding=product_embeddings[prod_node],  # LIST, not JSON string
                     cluster_tag=product_tags[prod_node]
                 )
 
-        self.stdout.write(self.style.SUCCESS("✅ GNN embeddings and clusters generated!"))
+        self.stdout.write(self.style.SUCCESS("[OK] GNN embeddings and clusters generated!"))

@@ -27,6 +27,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('api/subscriptions/', include('subscriptions.urls')),
-    path('api/', include('trade_ledger.urls')),  # ← Only this line for trade_ledger
+    path('api/', include('companies.urls')),  # Companies app (Find Suppliers/Buyers)
+    path('api/', include('trade_ledger.urls')),  # Trade Ledger app
     path("ckeditor5/", include('django_ckeditor_5.urls')),
 ]
