@@ -47,13 +47,13 @@
 .navbar-menu {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1.5rem; /* Increased gap for better spacing */
   flex: 1;
   margin-left: 3rem;
 }
 
 .nav-link {
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1rem; /* Slightly reduced horizontal padding to fit more items */
   color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
@@ -64,6 +64,7 @@
   border: none;
   cursor: pointer;
   font-family: inherit;
+  white-space: nowrap; /* Prevent wrapping */
 }
 
 .nav-link:hover {
@@ -80,6 +81,9 @@
 /* Dropdown */
 .nav-dropdown {
   position: relative;
+  height: 100%; /* Ensure full height for hover area */
+  display: flex;
+  align-items: center;
 }
 
 .dropdown-toggle {
@@ -96,20 +100,14 @@
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
-  min-width: 200px;
+  min-width: 220px; /* Increased min-width for better readability */
   padding: 0.5rem 0;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.2s;
   margin-top: 0.5rem;
+  /* Removed opacity/visibility transitions as Framer Motion handles it */
 }
 
-.nav-dropdown:hover .dropdown-content {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
+/* Removed hover effect since we use Framer Motion state */
+/* .nav-dropdown:hover .dropdown-content { ... } */
 
 .dropdown-content a {
   display: block;

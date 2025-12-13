@@ -96,7 +96,7 @@ class CompanyDetailSerializer(serializers.ModelSerializer):
         model = Company
         fields = [
             'id', 'name', 'legal_name', 'description', 'country', 'province', 
-            'district', 'address', 'website', 'contact_email', 'phone',
+            'district', 'address', 'market_sentiment', 'website', 'contact_email', 'phone',
             'year_established', 'number_of_employees', 'verification_status',
             'sector', 'company_role', 'company_type', 'products', 'key_contacts'
         ]

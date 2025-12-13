@@ -93,6 +93,7 @@ class Company(models.Model):
     province = models.CharField(max_length=100, blank=True)
     district = models.CharField(max_length=100, blank=True)
     address = models.TextField(blank=True)
+    market_sentiment = models.CharField(max_length=20, default='Neutral', blank=True)
     website = models.URLField(max_length=255, blank=True)
     contact_email = models.EmailField(max_length=255, blank=True)
     phone = models.CharField(max_length=50, blank=True)
@@ -296,3 +297,10 @@ class AdminAnnouncement(models.Model):
 
     def __str__(self):
         return self.title
+
+
+from auditlog.registry import auditlog
+auditlog.register(Company)
+auditlog.register(CompanyProduct)
+auditlog.register(KeyContact)
+

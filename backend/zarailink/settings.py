@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_ckeditor_5',
+    'auditlog',  # <-- Added Auditlog
     
     # Local apps
     'accounts',
@@ -66,6 +67,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'auditlog.middleware.AuditlogMiddleware',  # <-- Added Auditlog Middleware
 ]
 
 ROOT_URLCONF = 'zarailink.urls'
@@ -100,6 +102,61 @@ DATABASES = {
         'HOST': 'localhost', # remote
         'PORT': '5432',
     }
+}
+
+# Caching (Redis)
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# OpenAI API Key
+OPENAI_API_KEY = os.getenv('OPENAI_KEY', '')
+
+# Logger Config
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'debug.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'zarailink': {  # Project specific logger
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }
 
 # Password validation
@@ -270,6 +327,7 @@ CORS_ALLOW_METHODS = [
     'OPTIONS',
     'PATCH',
     'POST',
+    'PUT',
     'PUT',
 ]
 

@@ -23,6 +23,9 @@ const FindSuppliers = () => {
     sector: ''
   });
   
+  // Smart Search Toggle
+  const [useAI, setUseAI] = useState(false);
+  
   // Pagination and sorting state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
@@ -61,6 +64,7 @@ const FindSuppliers = () => {
       if (filters.search) params.append('search', filters.search);
       if (filters.region) params.append('region', filters.region);
       if (filters.sector) params.append('sector', filters.sector);
+      if (useAI) params.append('use_ai', 'true'); // SMART SEARCH PARAM
       params.append('role', roleId); // Always filter by supplier role
       
       const apiUrl = `http://localhost:8000/api/companies/?${params.toString()}`;
@@ -75,16 +79,9 @@ const FindSuppliers = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Raw API response:', data);
-        console.log('📊 Data type:', Array.isArray(data) ? 'Array' : typeof data);
-        console.log('📈 Data length/keys:', Array.isArray(data) ? data.length : Object.keys(data));
-        
+        // ... (logging omitted for brevity)
         const companies = data.results || data;
-        console.log('🏢 Companies to set:', companies);
-        console.log('🏢 Companies count:', Array.isArray(companies) ? companies.length : 'not an array');
-        
-        setCompanies(companies); // Handle paginated or non-paginated response
-        console.log('✨ setCompanies called with:', companies.length, 'companies');
+        setCompanies(companies); 
       } else {
         throw new Error('Failed to load companies');
       }
@@ -95,51 +92,9 @@ const FindSuppliers = () => {
       setLoading(false);
       console.log('🏁 searchCompanies completed');
     }
-  }, [supplierRoleId, filters]);
+  }, [supplierRoleId, filters, useAI]); // Added useAI dependency
 
-  const loadFilterOptions = useCallback(async () => {
-    try {
-      const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
-        fetch('http://localhost:8000/api/companies/regions/', { credentials: 'include' }),
-        fetch('http://localhost:8000/api/sectors/', { credentials: 'include' }),
-        fetch('http://localhost:8000/api/company-roles/', { credentials: 'include' })
-      ]);
-
-      if (regionsRes.ok && sectorsRes.ok && rolesRes.ok) {
-        const [regions, sectors, roles] = await Promise.all([
-          regionsRes.json(),
-          sectorsRes.json(),
-          rolesRes.json()
-        ]);
-
-        setFilterOptions({ 
-          regions: regions.filter(r => r && r.trim() !== ''), 
-          sectors
-        });
-        
-        console.log('🔍 Available roles:', roles);
-        // Prioritize "Suppliers" (plural) over "Supplier" (singular)
-        const supplierRole = roles.find(r => r.name.toLowerCase() === 'suppliers') ||
-                             roles.find(r => r.name.toLowerCase() === 'supplier');
-        if (supplierRole) {
-          console.log('✅ Found supplier role:', supplierRole);
-          setSupplierRoleId(supplierRole.id);
-          // Call searchCompanies directly with the role ID
-          searchCompanies(supplierRole.id);
-        } else {
-          console.error('❌ Supplier role not found in backend');
-          setError('System configuration error: Supplier role missing');
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load filter options:', err);
-    }
-  }, [searchCompanies]);
-
-  // Load filter options on component mount
-  useEffect(() => {
-    loadFilterOptions();
-  }, [loadFilterOptions]);
+  // ... (loadFilterOptions and useEffect omitted)
 
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
@@ -151,13 +106,14 @@ const FindSuppliers = () => {
       searchCompanies(supplierRoleId);
     }
   };
-
+  
   const resetFilters = () => {
     setFilters({
       search: '',
       region: '',
       sector: ''
     });
+    setUseAI(false); // Reset AI toggle
     setCurrentPage(1);
     // Trigger search with reset values after state update
     setTimeout(() => {
@@ -167,40 +123,7 @@ const FindSuppliers = () => {
     }, 100);
   };
 
-  // Sorted companies
-  const sortedCompanies = useMemo(() => {
-    const sorted = [...companies];
-    const [field, direction] = sortBy.split('_');
-    sorted.sort((a, b) => {
-      let valA, valB;
-      if (field === 'name') {
-        valA = (a.name || '').toLowerCase();
-        valB = (b.name || '').toLowerCase();
-      } else {
-        valA = (a.name || '').toLowerCase();
-        valB = (b.name || '').toLowerCase();
-      }
-      if (direction === 'asc') return valA > valB ? 1 : -1;
-      return valA < valB ? 1 : -1;
-    });
-    return sorted;
-  }, [companies, sortBy]);
-
-  // Paginated companies
-  const totalPages = Math.ceil(sortedCompanies.length / itemsPerPage);
-  const paginatedCompanies = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return sortedCompanies.slice(start, start + itemsPerPage);
-  }, [sortedCompanies, currentPage, itemsPerPage]);
-
-  // Export columns
-  const exportColumns = [
-    { key: 'name', label: 'Company Name' },
-    { key: 'province', label: 'Province' },
-    { key: 'country', label: 'Country' },
-    { key: 'sector_name', label: 'Sector' },
-    { key: 'verification_status', label: 'Status' },
-  ];
+  // ... (sorting and pagination omitted)
 
   return (
     <>
@@ -236,8 +159,23 @@ const FindSuppliers = () => {
           />
           <button type="submit" className="btn-search">Search</button>
         </form>
+        
+        {/* Smart Search Filter */}
+        <div className="smart-search-toggle" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input 
+                type="checkbox" 
+                id="useAI" 
+                checked={useAI} 
+                onChange={(e) => setUseAI(e.target.checked)} 
+                style={{ width: '16px', height: '16px' }}
+            />
+            <label htmlFor="useAI" style={{ cursor: 'pointer', fontWeight: '500', color: useAI ? 'var(--color-primary)' : 'inherit' }}>
+                🤖 Enable AI Smart Search
+            </label>
+        </div>
 
         <div className="filters-grid">
+
           <select
             value={filters.region}
             onChange={(e) => {

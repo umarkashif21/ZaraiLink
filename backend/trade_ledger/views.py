@@ -2,6 +2,7 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import cache_page
 import json
 from .services.explorer import get_explorer_companies
 from .services.company import get_company_overview_metrics
@@ -24,6 +25,7 @@ def _parse_date(date_str):
 # ----------------------------
 # EXPLORER (Enhanced with GNN Segment Tags)
 # ----------------------------
+@cache_page(60 * 15)  # Cache for 15 minutes
 def explorer_api(request):
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
@@ -62,6 +64,7 @@ def explorer_api(request):
 # ----------------------------
 # COMPANY PROFILE - OVERVIEW (Enhanced with Network Influence)
 # ----------------------------
+@cache_page(60 * 60)  # Cache for 1 hour
 def company_overview_api(request, company_name):
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
@@ -100,6 +103,7 @@ def company_overview_api(request, company_name):
 # ----------------------------
 # COMPANY PROFILE - PRODUCTS (Enhanced with Product Clusters)
 # ----------------------------
+@cache_page(60 * 60)  # Cache for 1 hour
 def company_products_api(request, company_name):
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
@@ -156,6 +160,7 @@ def company_products_api(request, company_name):
 # ----------------------------
 # COMPANY PROFILE - PARTNERS
 # ----------------------------
+@cache_page(60 * 60)  # Cache for 1 hour
 def company_partners_api(request, company_name):
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
@@ -185,7 +190,7 @@ def company_partners_api(request, company_name):
         date_from=date_from,
         date_to=date_to,
         country=country,
-        top_n=5
+        limit=5
     ))
 
     product_mix = {}
@@ -212,6 +217,7 @@ def company_partners_api(request, company_name):
 # ----------------------------
 # COMPANY PROFILE - TRENDS
 # ----------------------------
+@cache_page(60 * 60)  # Cache for 1 hour
 def company_trends_api(request, company_name):
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
@@ -245,6 +251,8 @@ def company_trends_api(request, company_name):
 # ----------------------------
 @csrf_exempt
 @require_http_methods(["POST"])
+# Compare companies is POST and highly variable, skipping cache or short cache?
+# Often POST is not cached by default by cache_page. Skipping.
 def compare_companies_api(request):
     try:
         data = json.loads(request.body)
@@ -273,6 +281,7 @@ def compare_companies_api(request):
 # GNN-SPECIFIC APIS
 # ============================
 
+@cache_page(60 * 60 * 24)  # Cache for 24 hours
 def similar_companies_api(request, company_name):
     """Explorer → Peer company recommendation"""
     try:
@@ -285,11 +294,13 @@ def similar_companies_api(request, company_name):
     return JsonResponse({"similar_companies": similar})
 
 
+@cache_page(60 * 60 * 24)  # Cache for 24 hours
 def potential_partners_api(request, company_name):
     """Overview → Link prediction (same as similar companies)"""
     return similar_companies_api(request, company_name)
 
 
+@cache_page(60 * 60 * 24)  # Cache for 24 hours
 def network_influence_api(request, company_name):
     """Overview → Centrality metrics"""
     try:
@@ -302,6 +313,7 @@ def network_influence_api(request, company_name):
         return JsonResponse({"pagerank": 0.0, "degree": 0})
 
 
+@cache_page(60 * 60 * 24)  # Cache for 24 hours
 def product_clusters_api(request):
     """Products → Latent category cards"""
     clusters = list(

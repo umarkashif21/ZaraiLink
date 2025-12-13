@@ -17,29 +17,11 @@
 
 # Part 1: Introduction & Overview
 
-See [part1_introduction.md](file:///C:/Users/hunai/.gemini/antigravity/brain/d1c6917b-ea91-492e-abd0-afe085646a0a/part1_introduction.md) for complete introduction including:
-- What is ZaraiLink?
-- Technology stack explained
-- Project structure
-- How the application works
-- Key concepts (databases, components, state)
-- Authentication flow overview
-
 **Quick Summary:** ZaraiLink is an agricultural trade intelligence platform built with React (frontend) and Django (backend), using PostgreSQL database. It helps businesses find trading partners, access trade data, get market intelligence, and unlock verified contacts using a token system.
 
 ---
 
 # Part 2: Database Schema
-
-See [part2_database.md](file:///C:/Users/hunai/.gemini/antigravity/brain/d1c6917b-ea91-492e-abd0-afe085646a0a/part2_database.md) for complete database documentation including:
-- Entity Relationship Diagrams
-- All 30+ models explained
-- Accounts App (User, UserAlertPreference)
-- Companies App (Company, Sector, CompanyProduct, KeyContact, KeyContactUnlock)
-- Trade Ledger App (TradeCompany, TradeProduct, TradePartner, TradeTrend)
-- Subscriptions App (SubscriptionPlan, RedeemCode, UserSubscription)
-- Market Intelligence App (Alert, NewsArticle, SavedAnalysis)
-- Relationship types (One-to-Many, One-to-One, Many-to-Many)
 
 **Key Models:**
 - **User** - Custom auth with email and token balance
@@ -52,17 +34,6 @@ See [part2_database.md](file:///C:/Users/hunai/.gemini/antigravity/brain/d1c6917
 
 # Part 3: Backend Architecture
 
-See [part3_backend.md](file:///C:/Users/hunai/.gemini/antigravity/brain/d1c6917b-ea91-492e-abd0-afe085646a0a/part3_backend.md) for complete backend documentation including:
-- Django project structure
-- Two-level URL routing system
-- ViewSets and API endpoints
-- Serializers for JSON conversion
-- Session-based authentication
-- Email verification flow
-- Custom actions (contact unlocking)
-- Statistics endpoints
-- Common patterns and best practices
-
 **Key Concepts:**
 - **ViewSet** - Handles CRUD operations
 - **Serializer** - Converts models ↔ JSON
@@ -72,17 +43,6 @@ See [part3_backend.md](file:///C:/Users/hunai/.gemini/antigravity/brain/d1c6917b
 ---
 
 # Part 4: Frontend Architecture
-
-See [part4_frontend.md](file:///C:/Users/hunai/.gemini/antigravity/brain/d1c6917b-ea91-492e-abd0-afe085646a0a/part4_frontend.md) for complete frontend documentation including:
-- React basics and components
-- Component hierarchy
-- React Router for navigation
-- State management with hooks (useState, useEffect)
-- Context API for global state (AuthContext)
-- API integration patterns
-- Protected routes
-- CSS organization
-- Complete component examples
 
 **Key Concepts:**
 - **Component** - Reusable UI piece
@@ -94,16 +54,6 @@ See [part4_frontend.md](file:///C:/Users/hunai/.gemini/antigravity/brain/d1c6917
 ---
 
 # Part 5: Data Flows & Key Features
-
-See [part5_dataflows.md](file:///C:/Users/hunai/.gemini/antigravity/brain/d1c6917b-ea91-492e-abd0-afe085646a0a/part5_dataflows.md) for complete data flow documentation including:
-- User login journey (complete sequence)
-- Finding suppliers with filters
-- Unlocking contacts with tokens
-- Email verification system
-- Token economy mechanics
-- Dynamic data visualization
-- Common patterns and best practices
-- Complete glossary
 
 **Key Flows:**
 1. **Login** - User → React → Django → Database → Session
@@ -2444,6 +2394,503 @@ const fetchData = async () => {
 
 if (error) return <ErrorDisplay message={error} />;
 ```
+
+---
+
+## UI/UX Improvements (Features 3-12)
+
+### Feature 3: Dark Mode Toggle
+
+**What is it?** A button that switches the entire website between light (white background) and dark (dark background) color themes.
+
+**Why is it useful?** 
+- Reduces eye strain in low-light conditions
+- Saves battery on OLED screens
+- Provides user preference accommodation
+
+**Implementation:**
+- **Context:** `frontend/src/context/ThemeContext.js` manages state and saves to `localStorage`.
+- **CSS:** `frontend/src/index.css` uses CSS variables (e.g., `--bg-primary`) that change based on `.dark` class.
+
+**Code Example (Theme Context):**
+```javascript
+const ThemeContext = createContext();
+
+export const ThemeProvider = ({ children }) => {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('zarailink-theme');
+    return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    localStorage.setItem('zarailink-theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
+  return (
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme: () => setIsDarkMode(p => !p) }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+```
+
+---
+
+### Feature 4: Loading Skeletons
+
+**What is it?** Animated gray shapes that appear while content is loading, mimicking the layout of the actual content.
+
+**Why is it useful?** 
+- Perceived performance is faster than spinning loaders.
+- Reduces layout shifts when data arrives.
+
+**Implementation:**
+- **Component:** `frontend/src/components/Common/Skeleton.js`
+- **Style:** `frontend/src/components/Common/Skeleton.css` with a shimmer animation keyframe.
+
+**Code Example:**
+```javascript
+// Skeleton Card
+export const SkeletonCard = () => (
+  <div className="skeleton-card">
+    <div className="skeleton-avatar" />
+    <div className="skeleton-text" style={{ width: '60%' }} />
+    <div className="skeleton-text" />
+  </div>
+);
+
+// CSS Shimmer
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+```
+
+---
+
+### Feature 5: Empty States with Illustrations
+
+**What is it?** Friendly illustrated messages displayed when a list is empty or search returns no results, rather than a blank screen.
+
+**Implementation:**
+- **Component:** `frontend/src/components/Common/EmptyState.js`
+- **Usage:** Checks if `data.length === 0` and renders component.
+
+**Code Example:**
+```javascript
+if (companies.length === 0 && !loading) {
+    return (
+        <EmptyState 
+            title="No companies found"
+            description="Try adjusting your filters or search terms."
+            actionLabel="Reset Filters"
+            onAction={resetFilters}
+        />
+    );
+}
+```
+
+---
+
+### Feature 6: Breadcrumb Navigation
+
+**What is it?** A navigation trail (e.g., "Home > Trade Directory > Company Profile") showing the user's current location.
+
+**Implementation:**
+- **Component:** `frontend/src/components/Common/Breadcrumb.js`
+- **Logic:** Splits `location.pathname`, maps segments to readable names, and renders links.
+
+---
+
+### Feature 7: Mobile Responsiveness
+
+**What is it?** The layout adapts to screen size (Phone, Tablet, Desktop) using CSS Media Queries.
+
+**Implementation:**
+- **Technique:** CSS Grid and Flexbox with `@media` breakpoints.
+- **Example:**
+```css
+/* Desktop: 3 columns */
+.grid { grid-template-columns: repeat(3, 1fr); }
+
+/* Mobile: 1 column */
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; }
+}
+```
+
+---
+
+### Feature 8: Toast Notifications
+
+**What is it?** Small popup messages (Success/Error) that appear in the corner and vanish automatically.
+
+**Implementation:**
+- **Hook:** `useToast()` provides `showSuccess()` and `showError()` methods.
+- **Provider:** `ToastProvider.js` manages the list of active toasts.
+
+**Code Example:**
+```javascript
+const { showSuccess } = useToast();
+const handleSave = () => {
+   saveData();
+   showSuccess("Saved successfully!");
+};
+```
+
+---
+
+### Feature 9: Search Improvements (Debounce)
+
+**What is it?** Delays search processing until the user stops typing for 300ms.
+
+**Why:** Prevents API overload (e.g., searching for "R", "Ri", "Ric", "Rice").
+
+**Implementation:**
+`frontend/src/hooks/useDebounce.js`
+
+```javascript
+const debouncedSearch = useDebounce(searchTerm, 300);
+useEffect(() => {
+    if (debouncedSearch) fetchResults(debouncedSearch);
+}, [debouncedSearch]);
+```
+
+---
+
+### Feature 10: Filter Persistence
+
+**What is it?** Remembers your filter selections (e.g., "Sector: Rice") even if you refresh the page.
+
+**Implementation:**
+Uses `localStorage` via `useFilterPersistence` hook.
+
+---
+
+### Feature 11: Pagination
+
+**What is it?** Breaks large lists into pages (1, 2, 3...) to improve load times.
+
+**Implementation:**
+- **Backend:** `PageNumberPagination` in DRF.
+- **Frontend:** `Pagination.js` component renders "Prev 1 2 3 Next" buttons.
+
+---
+
+### Feature 12: Sort Options
+
+**What is it?** Allows sorting lists by Name, Date, or Revenue.
+
+**Implementation:**
+`SortSelector.js` dropdown updates `ordering` query parameter.
+
+<!-- End of UI/UX Features -->
+
+---
+
+## New Features (Features 13-25)
+
+### Feature 13: Watchlist & Dedicated Page
+
+**What is it?** A personal "Favorites" list. Users can star companies to save them for later.
+
+**Components:**
+- **Button:** `WatchlistButton.js` (Star icon)
+- **Page:** `/watchlist` (Grid view of saved companies)
+- **Hook:** `useWatchlist.js` (Syncs with localStorage)
+
+**Visual Effect:**
+- Click Empty Star (☆) → Fills Yellow (★)
+- Company appears on Watchlist page immediately.
+
+---
+
+### Feature 14: Export to CSV/PDF
+
+**What is it?** Download company lists or reports.
+
+**Implementation:**
+- **Libraries:** `jspdf` (PDF generation), `jspdf-autotable` (PDF tables).
+- **Utility:** `frontend/src/utils/exportUtils.js` handles data formatting.
+
+**Code Usage:**
+```javascript
+<ExportButton 
+    data={companies} 
+    filename="suppliers_list" 
+/>
+```
+
+---
+
+### Feature 15: Data Visualization Charts
+
+**What is it?** Interactive charts to visualize trade volume, price trends, and market distribution.
+
+**Implementation:**
+- **Library:** `recharts`
+- **Components:** `TrendLineChart`, `DistributionPieChart`, `ComparisonBarChart`.
+
+**Example:**
+```javascript
+<TrendLineChart 
+    data={tradeHistory} 
+    xKey="date" 
+    yKey="volume" 
+    color="#10b981" 
+/>
+```
+
+---
+
+### Feature 16: Trade Flow Map (Ready)
+
+**What is it?** Infrastructure logic to visualize import/export routes on a map.
+*(Note: Visual component pending final map library selection).*
+
+---
+
+### Feature 18: Verification Badges
+
+**What is it?** Trust signals displayed on company profiles.
+
+**Types:**
+- ✅ **Verified:** Email + Phone confirmed.
+- 🏆 **Top Trader:** High trade volume (>100k units).
+- 💎 **Premium:** Paid subscriber.
+
+**Implementation:**
+`VerificationBadge.js` renders different icons/colors based on props.
+
+---
+
+### Feature 19: User Activity History
+
+**What is it?** Automatically logs "Last Viewed Companies" and "Recent Searches".
+
+**Why:** Helps users retrace their steps.
+
+**Code:**
+```javascript
+// useActivityHistory.js
+const logView = (company) => {
+    const history = getHistory();
+    history.unshift(company);
+    save(history.slice(0, 10)); // Keep last 10
+};
+```
+
+---
+
+### Feature 20: Private Company Notes
+
+**What is it?** A private text area on every company profile where users can jot down memos (e.g., "Discussed pricing on Monday").
+
+**Storage:** `localStorage` (key: `notes_{companyId}`).
+
+---
+
+### Feature 23: Share Profile
+
+**What is it?** A "Share" button opening a dropdown to copy link or share to WhatsApp/LinkedIn.
+
+**Visual:**
+Click Share → Dropdown appears → Select "Copy Link" → Toast "Link Copied!"
+
+<!-- End of New Features -->
+
+---
+
+## Security & Analytics (Features 33-37)
+
+### Feature 33: API Rate Limiting
+
+**What is it?** Prevents abuse by limiting how many requests a user can make in a minute.
+
+**Implementation:**
+- **Package:** `django_ratelimit`
+- **Decorator:** `@ratelimit(key='user', rate='100/m')` applied to views.
+
+### Feature 37: Audit Logging
+
+**What is it?** Tracks critical changes (e.g., who edited a company profile, who unlocked a contact).
+
+**Implementation:**
+- **Package:** `django-auditlog`
+- **Usage:** Registered in `admin.py`. Changes are visible in Django Admin > Activity Logs.
+
+---
+
+
+---
+
+# Part 6: AI & Smart Features Deep Dive
+
+This section explains the advanced Intelligence features of ZaraiLink in granular detail. We use a combination of **Generative AI (OpenAI)**, **Vector Databases (Redis Stack)**, and **Graph Algorithms** to provide smart insights.
+
+## 1. Smart Search (Vector Embeddings)
+
+### What is it?
+Standard search looks for exact keyword matches (e.g., "Rice" matches "Rice"). **Smart Search** understands *meaning*. It can find "Grain" when you search for "Rice" because they are semantically related.
+
+### How it Works (The Math):
+1. **Embeddings:** We send text (Company Description) to OpenAI's `text-embedding-3-small`.
+2. **Vector:** The AI returns a list of 1536 numbers (a vector) representing the *meaning* of that text.
+   - Example: `[0.12, -0.45, 0.88, ...]`
+3. **Indexing:** We store these vectors in **Redis** using an HNSW (Hierarchical Navigable Small World) index.
+4. **Searching:** When a user searches "Best grain supplier", we convert that query into a vector and mathematically find the "nearest neighbors" in Redis using Cosine Similarity.
+
+### Implementation Details:
+- **File:** `backend/utils/ai_service.py` (Generates Embeddings)
+- **File:** `backend/utils/redis_client.py` (Stores/Searches Vectors)
+
+**Code Logic:**
+```python
+# 1. Generate Embedding
+query_vector = client.embeddings.create(input="grain supplier").data[0].embedding
+
+# 2. Search Redis (KNN = K-Nearest Neighbors)
+results = redis_client.ft('idx:companies').search(
+    Query("*=>[KNN 5 @vector $vec AS score]")
+    .return_field("score")
+    .dialect(2),
+    {"vec": np.array(query_vector).tobytes()}
+)
+```
+
+---
+
+## 2. Recommendation Engine
+
+### What is it?
+"Netflix for Trade". It suggests companies you might be interested in based on what you have looked at before.
+
+### Logic (Content-Based Filtering):
+1. **Track History:** When you view a company (e.g., "Sialkot Rice Mills"), we verify its Sector ("Rice") and Description.
+2. **Average Vector:** If you view 3 Rice companies and 1 Cotton company, we calculate the *average* vector of your interests.
+3. **Similarity Search:** We query Redis for companies that are mathematically similar to your *average interest vector*, excluding ones you've already seen.
+
+**Key File:** `backend/market_intel/views.py` (`recommendations_api`)
+
+---
+
+## 3. Sentiment Analysis
+
+### What is it?
+AI analyzes market news and description text to determine if the outlook is **Positive**, **Negative**, or **Neutral**.
+
+### Process:
+1. **Input:** "Rice prices are skyrocketing due to high demand in Europe."
+2. **AI Analysis:** GPT-4o-mini analyzes the tone.
+3. **Output:** "Positive" (for sellers), "Negative" (for buyers).
+4. **UI:** Displays a colored badge (Green/Red) on the company profile.
+
+**Key File:** `backend/companies/management/commands/analyze_companies.py`
+
+<!-- End of AI Basics -->
+
+---
+
+## 4. Link Prediction (Graph Neural Networks)
+
+### What is it?
+This is the core "Intelligence" of ZaraiLink. It predicts *future* trading partners by analyzing the graph of *past* trades. It answers: "Who *should* you be trading with?"
+
+### The 5 Prediction Methods
+We use a "Bag of Models" approach, combining 5 different mathematical strategies to calculate a **Confidence Score (0-95%)**.
+
+| Method | Weight | Description | Analogy |
+|--------|--------|-------------|---------|
+| **1. Node2Vec** | 30% | Uses AI to learn the "structure" of a company's trading habits. | Like a "Personality Test". Finds companies with similar trade personalities. |
+| **2. Common Neighbors** | 20% | Finds companies that trade with your partners. | "Friend of a friend". If you both use Supplier X, you might like each other's other partners. |
+| **3. Product Co-Trade** | 25% | Matches companies trading the exact same HSN codes/products. | "Same Clique". Wheat importers benefit from knowing other wheat exporters. |
+| **4. Jaccard Coefficient** | 15% | Measures network overlap percentage. | "How much is our circle the same?" Higher overlap = stronger match. |
+| **5. Preferential Attachment** | 10% | Favors 'Hub' companies with many connections. | "Popular Kids". Busy hubs are likely good partners for everyone. |
+
+### Confidence Score Logic
+The final score is a weighted average of all 5 methods.
+- **70-95%**: High Confidence (Multiple methods agree).
+- **40-69%**: Medium Confidence.
+- **<40%**: Low Confidence.
+
+> **Note:** We cap scores at 95% because no prediction is 100% certain.
+
+---
+
+# Part 7: Performance & Optimizations
+
+This section details how we ensure ZaraiLink runs fast, even with millions of trade records.
+
+## 1. Redis Caching Strategy
+
+### What is it?
+Instead of calculating complex GNN embeddings or database queries every time, we save the result in **Redis** (RAM) for a set time.
+
+### Configuration
+- **Backend:** `django-redis`
+- **Location:** `backend/settings.py` -> `CACHES['default']`
+- **Decorator:** `@cache_page(timeout)`
+
+### Caching Levels:
+1. **15 Minutes:** Rapidly changing data (Market News, Stock Prices).
+2. **1 Hour:** Semi-static data (Search Results, Top Products).
+3. **24 Hours:** Heavy GNN Computations (Company Similarity Clusters).
+
+**Code Example:**
+```python
+@cache_page(60 * 15)  # Cache for 15 mins
+def get_market_news(request):
+    # API call to OpenAI...
+    return response
+```
+
+---
+
+## 2. Query Optimization
+
+### Problem
+Django's ORM is lazy, but can cause "N+1 Queries" (fetching 100 companies = 101 database calls).
+
+### Solution
+1. **`select_related`**: Joins tables in SQL (for ForeignKeys).
+   - *Example:* `.select_related('sector', 'company_role')`
+2. **`prefetch_related`**: Efficiently maps Many-to-Many relationships.
+   - *Example:* `.prefetch_related('products')`
+3. **`defer()` / `only()`**: Only load columns we need (skipping heavy text fields).
+   - *Example:* `Company.objects.defer('description', 'history')`
+
+---
+
+## 3. Code Splitting (Frontend)
+
+### Problem
+Loading the entire React app (5MB+) at once is slow.
+
+### Solution
+We use `React.lazy` and `Suspense` to load heavy components (like the Trade Intelligence dashboard and Charts) only when the user clicks on them.
+
+**Implementation:**
+```javascript
+// App.js
+const TradeIntelligence = React.lazy(() => import('./components/TradeIntelligence'));
+
+function App() {
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+        <Routes>
+            <Route path="/trade-intel" element={<TradeIntelligence />} />
+        </Routes>
+    </Suspense>
+  );
+}
+```
+
+<!-- End of Performance -->
+
+
+
 
 ---
 
