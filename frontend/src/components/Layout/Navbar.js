@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -10,6 +11,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // State for handling dropdown hover/click
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -17,6 +21,12 @@ const Navbar = () => {
 
   const isActive = (path) => {
     return location.pathname === path || location.pathname.startsWith(path);
+  };
+
+  const dropdownVariants = {
+    hidden: { opacity: 0, y: -10, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2, ease: "easeOut" } },
+    exit: { opacity: 0, y: -10, scale: 0.95, transition: { duration: 0.15, ease: "easeIn" } }
   };
 
   return (
@@ -37,25 +47,55 @@ const Navbar = () => {
             Home
           </Link>
           
-          <div className="nav-dropdown">
+          {/* Trade Directory Dropdown */}
+          <div 
+            className="nav-dropdown"
+            onMouseEnter={() => setActiveDropdown('directory')}
+            onMouseLeave={() => setActiveDropdown(null)}
+          >
             <button className={`nav-link dropdown-toggle ${isActive('/trade-directory') ? 'active' : ''}`}>
               Trade Directory ▼
             </button>
-            <div className="dropdown-content">
-              <Link to="/trade-directory/find-suppliers">Find Suppliers</Link>
-              <Link to="/trade-directory/find-buyers">Find Buyers</Link>
-            </div>
+            <AnimatePresence>
+              {activeDropdown === 'directory' && (
+                <motion.div 
+                  className="dropdown-content"
+                  variants={dropdownVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                >
+                  <Link to="/trade-directory/find-suppliers">Find Suppliers</Link>
+                  <Link to="/trade-directory/find-buyers">Find Buyers</Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          <div className="nav-dropdown">
+          {/* Trade Intelligence Dropdown */}
+          <div 
+            className="nav-dropdown"
+            onMouseEnter={() => setActiveDropdown('intelligence')}
+            onMouseLeave={() => setActiveDropdown(null)}
+          >
             <button className={`nav-link dropdown-toggle ${isActive('/trade-intelligence') ? 'active' : ''}`}>
               Trade Intelligence ▼
             </button>
-            <div className="dropdown-content">
-              <Link to="/trade-intelligence/ledger">Trade Ledger</Link>
-              <Link to="/trade-intelligence/pulse">Trade Pulse</Link>
-              <Link to="/trade-intelligence/lens">Trade Lens</Link>
-            </div>
+            <AnimatePresence>
+              {activeDropdown === 'intelligence' && (
+                <motion.div 
+                  className="dropdown-content"
+                  variants={dropdownVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                >
+                  <Link to="/trade-intelligence/ledger">Trade Ledger</Link>
+                  <Link to="/trade-intelligence/pulse">Trade Pulse</Link>
+                  <Link to="/trade-intelligence/lens">Trade Lens</Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <Link 
@@ -76,14 +116,16 @@ const Navbar = () => {
         {/* Right Section */}
         <div className="navbar-right">
           {/* Theme Toggle */}
-          <button 
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             className="theme-toggle" 
             onClick={toggleTheme}
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {isDarkMode ? '☀️' : '🌙'}
-          </button>
+          </motion.button>
 
           {/* Token Balance */}
           <div className="token-display">
@@ -92,7 +134,11 @@ const Navbar = () => {
           </div>
 
           {/* User Menu */}
-          <div className="user-menu">
+          <div 
+            className="user-menu"
+            onMouseEnter={() => setActiveDropdown('user')}
+            onMouseLeave={() => setActiveDropdown(null)}
+          >
             <button className="user-button">
               <div className="user-avatar">
                 {user?.name?.charAt(0)?.toUpperCase() || 'U'}
@@ -100,16 +146,26 @@ const Navbar = () => {
               <span className="user-name">{user?.name || user?.email}</span>
               <span className="dropdown-arrow">▼</span>
             </button>
-            <div className="user-dropdown">
-              <div className="user-info">
-                <strong>{user?.name || 'User'}</strong>
-                <span>{user?.email}</span>
-              </div>
-              <hr />
-              <button onClick={handleLogout} className="logout-button">
-                <span>🚪</span> Sign Out
-              </button>
-            </div>
+            <AnimatePresence>
+              {activeDropdown === 'user' && (
+                <motion.div 
+                  className="user-dropdown"
+                  variants={dropdownVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                >
+                  <div className="user-info">
+                    <strong>{user?.name || 'User'}</strong>
+                    <span>{user?.email}</span>
+                  </div>
+                  <hr />
+                  <button onClick={handleLogout} className="logout-button">
+                    <span>🚪</span> Sign Out
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

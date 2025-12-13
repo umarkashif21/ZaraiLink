@@ -217,3 +217,10 @@ class ProductEmbedding(models.Model):
 
     def __str__(self):
         return f"{self.product_item.name} → {self.cluster_tag}"
+
+
+from auditlog.registry import auditlog
+auditlog.register(Product)
+auditlog.register(ProductCategory)
+auditlog.register(ProductSubCategory)
+auditlog.register(ProductItem)

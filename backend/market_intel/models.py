@@ -89,3 +89,25 @@ class SavedAnalysis(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.alert.headline}"
+
+
+class UserInteraction(models.Model):
+    """Track user interactions for recommendations"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='interactions'
+    )
+    company = models.ForeignKey(
+        'companies.Company', 
+        on_delete=models.CASCADE,
+        related_name='user_interactions'
+    )
+    action = models.CharField(max_length=50, default='view')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = 'User Interaction'
+        verbose_name_plural = 'User Interactions'
+

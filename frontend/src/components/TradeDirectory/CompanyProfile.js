@@ -178,6 +178,15 @@ const CompanyProfile = () => {
             <span className={`status-badge ${company.verification_status}`}>
               {company.verification_status === 'verified' ? '✓ Verified' : 'Pending'}
             </span>
+            {company.market_sentiment && (
+               <span className="status-badge" style={{ 
+                   backgroundColor: company.market_sentiment === 'Positive' ? '#e6f4ea' : company.market_sentiment === 'Negative' ? '#fce8e6' : '#f1f3f4',
+                   color: company.market_sentiment === 'Positive' ? '#137333' : company.market_sentiment === 'Negative' ? '#c5221f' : '#202124',
+                   marginLeft: '0.5rem'
+               }}>
+                 {company.market_sentiment === 'Positive' ? '📈' : company.market_sentiment === 'Negative' ? '📉' : '😐'} {company.market_sentiment} Sentiment
+               </span>
+            )}
           </div>
         </div>
       </div>

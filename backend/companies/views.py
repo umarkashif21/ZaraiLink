@@ -27,6 +27,21 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'list':
             return CompanyListSerializer
         return CompanyDetailSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        # Record interaction for recommendation engine
+        if request.user.is_authenticated:
+            try:
+                from market_intel.models import UserInteraction
+                UserInteraction.objects.create(user=request.user, company=instance, action='view')
+            except Exception as e:
+                pass # Don't fail the request if logging fails
+            
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     
     def get_queryset(self):
         """Filter companies based on query params"""
@@ -39,22 +54,52 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         company_type = self.request.query_params.get('type', '').strip()
         role = self.request.query_params.get('role', '').strip()
         
-        if search:
-            queryset = queryset.filter(
-                Q(name__icontains=search) | Q(description__icontains=search)
-            )
-        if region:
-            queryset = queryset.filter(province=region)
-        if sector:
-            queryset = queryset.filter(sector_id=sector)
         if company_type:
             queryset = queryset.filter(company_type_id=company_type)
         if role:
             queryset = queryset.filter(company_role_id=role)
+            
+        # Smart Search Logic
+        use_ai = self.request.query_params.get('use_ai', 'false').lower() == 'true'
+        if search:
+            if use_ai:
+                from utils.ai_service import AIService
+                from utils.redis_client import RedisClient
+                from django.db.models import Case, When
+                
+                embedding = AIService.get_embedding(search)
+                smart_results = RedisClient.search(embedding)
+                
+                if smart_results:
+                    ids = [r['id'] for r in smart_results]
+                    preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids)])
+                    queryset = queryset.filter(id__in=ids).order_by(preserved)
+                else:
+                    # Fallback to standard search if no results or error
+                    queryset = queryset.filter(
+                        Q(name__icontains=search) | Q(description__icontains=search)
+                    )
+            else:
+                queryset = queryset.filter(
+                    Q(name__icontains=search) | Q(description__icontains=search)
+                )
         
-        return queryset.select_related(
-            'sector', 'company_role', 'company_type'
-        ).prefetch_related('products', 'key_contacts')
+        # Optimization: Defer heavy fields and avoid prefetching for list view
+        queryset = queryset.select_related('sector', 'company_role', 'company_type')
+
+        if self.action == 'list':
+            queryset = queryset.defer(
+                'legal_name', 'description', 'address', 'website', 
+                'contact_email', 'phone', 'logo_image', 'year_established', 
+                'number_of_employees', 'horeca_retail_info', 'ntn_number', 
+                'trade_license_number', 'has_trade_data', 'is_directory_profile', 
+                'created_at', 'updated_at'
+            )
+        else:
+            # Only prefetch for details
+            queryset = queryset.prefetch_related('products', 'key_contacts')
+
+        return queryset
     
     @action(detail=False, methods=['get'])
     def regions(self, request):

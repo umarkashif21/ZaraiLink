@@ -9,7 +9,7 @@ function App() {
 export default App;
 */
 
-import React from "react";
+import React, { Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -25,15 +25,24 @@ import FindSuppliers from "./components/TradeDirectory/FindSuppliers";
 import FindBuyers from "./components/TradeDirectory/FindBuyers";
 import CompanyProfile from "./components/TradeDirectory/CompanyProfile";
 import Subscription from "./components/Subscriptions/Subscription";
-import TradeLedger from "./components/TradeIntelligence/TradeLedger";
-import TradePulse from "./components/TradeIntelligence/TradePulse";
-import TradeLens from "./components/TradeIntelligence/TradeLens";
-import LinkPrediction from "./components/TradeIntelligence/LinkPrediction";
-import CompanyOverview from "./components/TradeIntelligence/CompanyOverview";
-import CompanyProducts from "./components/TradeIntelligence/CompanyProducts";
-import CompanyPartners from "./components/TradeIntelligence/CompanyPartners";
-import CompanyTrends from "./components/TradeIntelligence/CompanyTrends";
 import Watchlist from "./components/Watchlist/Watchlist";
+
+// Lazy Loaded Components (Code Splitting)
+const TradeLedger = React.lazy(() => import("./components/TradeIntelligence/TradeLedger"));
+const TradePulse = React.lazy(() => import("./components/TradeIntelligence/TradePulse"));
+const TradeLens = React.lazy(() => import("./components/TradeIntelligence/TradeLens"));
+const LinkPrediction = React.lazy(() => import("./components/TradeIntelligence/LinkPrediction"));
+const CompanyOverview = React.lazy(() => import("./components/TradeIntelligence/CompanyOverview"));
+const CompanyProducts = React.lazy(() => import("./components/TradeIntelligence/CompanyProducts"));
+const CompanyPartners = React.lazy(() => import("./components/TradeIntelligence/CompanyPartners"));
+const CompanyTrends = React.lazy(() => import("./components/TradeIntelligence/CompanyTrends"));
+
+// Loading Component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+  </div>
+);
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -79,166 +88,168 @@ function App() {
       <ToastProvider>
         <AuthProvider>
           <Router>
-            <Routes>
-              {/* Public Routes */}
-              <Route
-              path="/"
-              element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/signup"
-              element={
-                <PublicRoute>
-                  <Signup />
-                </PublicRoute>
-              }
-            />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/email-verification" element={<EmailVerification />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/verify-email/:token" element={<VerifyEmailSuccess />} />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Public Routes */}
+                <Route
+                  path="/"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/signup"
+                  element={
+                    <PublicRoute>
+                      <Signup />
+                    </PublicRoute>
+                  }
+                />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/email-verification" element={<EmailVerification />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
+                <Route path="/verify-email/:token" element={<VerifyEmailSuccess />} />
 
-            {/* Protected Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Trade Directory Routes */}
-            <Route
-              path="/trade-directory/find-suppliers"
-              element={
-                <ProtectedRoute>
-                  <FindSuppliers />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/trade-directory/find-buyers"
-              element={
-                <ProtectedRoute>
-                  <FindBuyers />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/trade-directory/company/:id"
-              element={
-                <ProtectedRoute>
-                  <CompanyProfile />
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Watchlist Route */}
-            <Route
-              path="/watchlist"
-              element={
-                <ProtectedRoute>
-                  <Watchlist />
-                </ProtectedRoute>
-              }
-            />
+                {/* Protected Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Trade Directory Routes */}
+                <Route
+                  path="/trade-directory/find-suppliers"
+                  element={
+                    <ProtectedRoute>
+                      <FindSuppliers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-directory/find-buyers"
+                  element={
+                    <ProtectedRoute>
+                      <FindBuyers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-directory/company/:id"
+                  element={
+                    <ProtectedRoute>
+                      <CompanyProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Watchlist Route */}
+                <Route
+                  path="/watchlist"
+                  element={
+                    <ProtectedRoute>
+                      <Watchlist />
+                    </ProtectedRoute>
+                  }
+                />
 
-            {/* Trade Intelligence Routes */}
-            <Route
-              path="/trade-intelligence/ledger"
-              element={
-                <ProtectedRoute>
-                  <TradeLedger />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/trade-intelligence/pulse"
-              element={
-                <ProtectedRoute>
-                  <TradePulse />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/trade-intelligence/lens"
-              element={
-                <ProtectedRoute>
-                  <TradeLens />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/trade-intelligence/link-prediction"
-              element={
-                <ProtectedRoute>
-                  <LinkPrediction />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/trade-intelligence/company/:id/overview"
-              element={
-                <ProtectedRoute>
-                  <CompanyOverview />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/trade-intelligence/company/:id/products"
-              element={
-                <ProtectedRoute>
-                  <CompanyProducts />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/trade-intelligence/company/:id/partners"
-              element={
-                <ProtectedRoute>
-                  <CompanyPartners />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/trade-intelligence/company/:id/trends"
-              element={
-                <ProtectedRoute>
-                  <CompanyTrends />
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Subscription Route */}
-            <Route
-              path="/subscription"
-              element={
-                <ProtectedRoute>
-                  <Subscription />
-                </ProtectedRoute>
-              }
-            />
+                {/* Trade Intelligence Routes */}
+                <Route
+                  path="/trade-intelligence/ledger"
+                  element={
+                    <ProtectedRoute>
+                      <TradeLedger />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/pulse"
+                  element={
+                    <ProtectedRoute>
+                      <TradePulse />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/lens"
+                  element={
+                    <ProtectedRoute>
+                      <TradeLens />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/link-prediction"
+                  element={
+                    <ProtectedRoute>
+                      <LinkPrediction />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/company/:id/overview"
+                  element={
+                    <ProtectedRoute>
+                      <CompanyOverview />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/company/:id/products"
+                  element={
+                    <ProtectedRoute>
+                      <CompanyProducts />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/company/:id/partners"
+                  element={
+                    <ProtectedRoute>
+                      <CompanyPartners />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/company/:id/trends"
+                  element={
+                    <ProtectedRoute>
+                      <CompanyTrends />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Subscription Route */}
+                <Route
+                  path="/subscription"
+                  element={
+                    <ProtectedRoute>
+                      <Subscription />
+                    </ProtectedRoute>
+                  }
+                />
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </ToastProvider>
-  </ThemeProvider>
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </Router>
+        </AuthProvider>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }
 
