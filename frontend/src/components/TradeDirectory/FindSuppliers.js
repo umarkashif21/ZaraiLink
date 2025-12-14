@@ -25,6 +25,7 @@ const FindSuppliers = () => {
   
   // Smart Search Toggle
   const [useAI, setUseAI] = useState(false);
+  const [aiFallback, setAiFallback] = useState(false);
   
   // Pagination and sorting state
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,7 +82,9 @@ const FindSuppliers = () => {
         const data = await response.json();
         // ... (logging omitted for brevity)
         const companies = data.results || data;
-        setCompanies(companies); 
+        setCompanies(companies);
+        // Track AI fallback state
+        setAiFallback(data.ai_fallback === true);
       } else {
         throw new Error('Failed to load companies');
       }
@@ -203,6 +206,7 @@ const FindSuppliers = () => {
   }, [supplierRoleId, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
+
     <>
       <Navbar />
       <div className="find-suppliers-container">
@@ -294,6 +298,24 @@ const FindSuppliers = () => {
           </button>
         </div>
       </div>
+
+      {/* AI Fallback Notice */}
+      {useAI && aiFallback && !loading && (
+        <div style={{
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffecb5',
+          borderRadius: '8px',
+          padding: '0.75rem 1rem',
+          marginBottom: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          color: '#856404'
+        }}>
+          <span>ℹ️</span>
+          <span>AI Smart Search is currently unavailable. Showing text search results instead.</span>
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (

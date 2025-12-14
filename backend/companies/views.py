@@ -42,10 +42,33 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    def list(self, request, *args, **kwargs):
+        """Override list to include AI fallback indicator in response"""
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response = self.get_paginated_response(serializer.data)
+            # Add fallback indicator to paginated response
+            if getattr(self, '_ai_fallback', False):
+                response.data['ai_fallback'] = True
+            return response
+
+        serializer = self.get_serializer(queryset, many=True)
+        data = {'results': serializer.data}
+        # Add fallback indicator to response
+        if getattr(self, '_ai_fallback', False):
+            data['ai_fallback'] = True
+        return Response(data)
+
     
     def get_queryset(self):
         """Filter companies based on query params"""
         queryset = self.queryset
+        
+        # Track AI fallback for response metadata
+        self._ai_fallback = False
         
         # Apply filters
         search = self.request.query_params.get('search', '').strip()
@@ -59,36 +82,65 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         if role:
             queryset = queryset.filter(company_role_id=role)
             
-        # Smart Search Logic
+        # Smart Search Logic - Uses GPT to intelligently match companies
         use_ai = self.request.query_params.get('use_ai', 'false').lower() == 'true'
         if search:
             if use_ai:
                 from utils.ai_service import AIService
-                from utils.redis_client import RedisClient
-                from django.db.models import Case, When
+                from django.db.models import Case, When, IntegerField
+                import logging
+                logger = logging.getLogger('zarailink')
                 
-                embedding = AIService.get_embedding(search)
-                smart_results = RedisClient.search(embedding)
-                
-                if smart_results:
-                    from django.db.models import IntegerField
-                    ids = []
-                    for r in smart_results:
-                        try:
-                            ids.append(int(r['id']))
-                        except (ValueError, TypeError):
-                            continue
-                            
-                    if ids:
-                        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids)], output_field=IntegerField())
-                        queryset = queryset.filter(id__in=ids).order_by(preserved)
+                try:
+                    # Get company data for GPT to analyze
+                    company_data = list(queryset.values('id', 'name', 'province', 'sector__name')[:100])
+                    logger.info(f"AI Search: Query='{search}', Companies available={len(company_data)}")
+                    
+                    company_data_formatted = [
+                        {
+                            'id': c['id'], 
+                            'name': c['name'], 
+                            'province': c.get('province', ''),
+                            'sector': c.get('sector__name', '')
+                        }
+                        for c in company_data
+                    ]
+                    
+                    # Use GPT-based smart search
+                    matching_ids = AIService.smart_search(search, company_data_formatted)
+                    logger.info(f"AI Search: GPT returned IDs={matching_ids}")
+                    
+                    if matching_ids:
+                        # Filter and preserve AI ordering
+                        valid_ids = list(queryset.filter(id__in=matching_ids).values_list('id', flat=True))
+                        logger.info(f"AI Search: Valid IDs after filter={valid_ids}")
+                        
+                        if valid_ids:
+                            # Preserve the order from AI search
+                            id_positions = {id_val: pos for pos, id_val in enumerate(matching_ids) if id_val in valid_ids}
+                            preserved = Case(
+                                *[When(pk=pk, then=pos) for pk, pos in id_positions.items()], 
+                                output_field=IntegerField()
+                            )
+                            queryset = queryset.filter(id__in=valid_ids).order_by(preserved)
+                        else:
+                            # No matches from AI - fallback to text search
+                            logger.warning("AI Search: No valid IDs found, using text fallback")
+                            self._ai_fallback = True
+                            queryset = queryset.filter(
+                                Q(name__icontains=search) | Q(description__icontains=search)
+                            )
                     else:
-                         # Fallback if IDs parsing failed
+                        # AI search returned no results - fallback to text search
+                        logger.warning("AI Search: GPT returned None/empty, using text fallback")
+                        self._ai_fallback = True
                         queryset = queryset.filter(
                             Q(name__icontains=search) | Q(description__icontains=search)
                         )
-                else:
-                    # Fallback to standard search if no results or error
+                except Exception as e:
+                    # Any error - fallback to text search
+                    logger.error(f"AI Search Error: {e}")
+                    self._ai_fallback = True
                     queryset = queryset.filter(
                         Q(name__icontains=search) | Q(description__icontains=search)
                     )
