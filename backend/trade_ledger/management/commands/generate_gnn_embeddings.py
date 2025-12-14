@@ -10,7 +10,29 @@ from trade_data.models import CompanyEmbedding, ProductEmbedding
 class Command(BaseCommand):
     help = 'Generates GNN embeddings and clusters from pre-built graphs'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--fast',
+            action='store_true',
+            help='Use faster parameters (less accurate but 5x faster)',
+        )
+
     def handle(self, *args, **options):
+        fast_mode = options.get('fast', False)
+        
+        # Parameters - balanced vs fast
+        if fast_mode:
+            self.stdout.write(self.style.WARNING("Running in FAST mode (reduced accuracy)"))
+            DIMENSIONS = 32
+            WALK_LENGTH = 10
+            NUM_WALKS = 30
+            WORKERS = 4
+        else:
+            DIMENSIONS = 32  # Reduced from 64 - still effective for similarity
+            WALK_LENGTH = 20  # Reduced from 30
+            NUM_WALKS = 80   # Reduced from 200 - biggest time saver
+            WORKERS = 4
+        
         # ================================
         # 1. COMPANY EMBEDDINGS
         # ================================
@@ -22,11 +44,11 @@ class Command(BaseCommand):
         self.stdout.write(f"       Combined company graph: {G_company.number_of_nodes()} nodes, {G_company.number_of_edges()} edges")
 
         # Node2Vec - walks
-        self.stdout.write(self.style.HTTP_INFO("[2/8] Generating random walks (Node2Vec)..."))
-        node2vec = Node2Vec(G_company, dimensions=64, walk_length=30, num_walks=200, workers=4)
+        self.stdout.write(self.style.HTTP_INFO(f"[2/8] Generating random walks (walks={NUM_WALKS}, length={WALK_LENGTH})..."))
+        node2vec = Node2Vec(G_company, dimensions=DIMENSIONS, walk_length=WALK_LENGTH, num_walks=NUM_WALKS, workers=WORKERS, quiet=True)
         
         # Node2Vec - train model
-        self.stdout.write(self.style.HTTP_INFO("[3/8] Training Word2Vec on walks (this takes 1-3 minutes)..."))
+        self.stdout.write(self.style.HTTP_INFO("[3/8] Training Word2Vec on walks..."))
         model = node2vec.fit(window=10, min_count=1, batch_words=4)
         self.stdout.write(self.style.SUCCESS("       Word2Vec training complete!"))
 
@@ -38,9 +60,9 @@ class Command(BaseCommand):
 
         for company in companies:
             if company in model.wv:
-                embeddings[company] = model.wv[company].tolist()  # 64-dim list
+                embeddings[company] = model.wv[company].tolist()
             else:
-                embeddings[company] = np.random.rand(64).tolist()
+                embeddings[company] = np.random.rand(DIMENSIONS).tolist()
         self.stdout.write(f"       Extracted embeddings for {len(companies)} companies")
 
         # Clustering
@@ -84,7 +106,8 @@ class Command(BaseCommand):
             return
 
         self.stdout.write("       Training product Node2Vec...")
-        node2vec_pp = Node2Vec(G_pp, dimensions=64, walk_length=20, num_walks=100, workers=4)
+        PROD_WALKS = 30 if fast_mode else 50
+        node2vec_pp = Node2Vec(G_pp, dimensions=DIMENSIONS, walk_length=15, num_walks=PROD_WALKS, workers=WORKERS, quiet=True)
         model_pp = node2vec_pp.fit(window=10, min_count=1, batch_words=4)
         self.stdout.write(self.style.SUCCESS("       Product Word2Vec training complete!"))
 
@@ -93,7 +116,7 @@ class Command(BaseCommand):
             if prod in model_pp.wv:
                 product_embeddings[prod] = model_pp.wv[prod].tolist()
             else:
-                product_embeddings[prod] = np.random.rand(64).tolist()
+                product_embeddings[prod] = np.random.rand(DIMENSIONS).tolist()
 
         # Clustering
         self.stdout.write(self.style.HTTP_INFO("[8/8] Clustering and saving products..."))
@@ -121,3 +144,4 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"       Saved {len(products)} product embeddings"))
 
         self.stdout.write(self.style.SUCCESS("\n[OK] GNN embeddings and clusters generated!"))
+
