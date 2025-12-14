@@ -106,40 +106,60 @@ print_header "BACKEND SETUP"
 
 cd backend
 
-# Virtual environment
+# Virtual environment - recreate if broken
+if [ -d ".venv" ]; then
+    # Check if venv is valid
+    if [ ! -f ".venv/bin/activate" ] || [ ! -f ".venv/bin/pip" ]; then
+        print_info "Existing venv appears broken, recreating..."
+        rm -rf .venv
+    fi
+fi
+
 if [ ! -d ".venv" ]; then
     print_info "Creating virtual environment..."
     python3 -m venv .venv
+    if [ $? -ne 0 ]; then
+        print_error "Failed to create virtual environment!"
+        exit 1
+    fi
     print_step "Virtual environment created"
 else
     print_skip "Virtual environment"
 fi
 
 # Activate virtual environment
-if [ -f ".venv/bin/activate" ]; then
-    source .venv/bin/activate
-    # Verify activation worked
-    if [[ "$VIRTUAL_ENV" == *".venv"* ]]; then
-        print_step "Virtual environment activated: $VIRTUAL_ENV"
-    else
-        print_error "Failed to activate virtual environment!"
-        exit 1
-    fi
-else
-    print_error "Virtual environment activation script not found!"
+print_info "Activating virtual environment..."
+source .venv/bin/activate
+
+# Verify activation worked by checking VIRTUAL_ENV and pip location
+if [[ -z "$VIRTUAL_ENV" ]]; then
+    print_error "Failed to activate virtual environment (VIRTUAL_ENV is empty)!"
+    print_error "Try deleting .venv and running this script again:"
+    print_error "  rm -rf .venv && ./setup_mac.sh"
     exit 1
 fi
 
-# Install Python dependencies
-# Use find to check for django instead of glob pattern
-if ! find .venv/lib -name "django" -type d 2>/dev/null | grep -q django; then
-    print_info "Installing Python dependencies..."
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    print_step "Python dependencies installed"
-else
-    print_skip "Python dependencies"
+# Double-check pip is from venv, not system
+VENV_PIP=".venv/bin/pip"
+if [ ! -f "$VENV_PIP" ]; then
+    print_error "Venv pip not found at $VENV_PIP!"
+    exit 1
 fi
+print_step "Virtual environment activated: $VIRTUAL_ENV"
+
+# ALWAYS install/upgrade dependencies to ensure all packages are present
+print_info "Installing Python dependencies (this may take a minute)..."
+.venv/bin/pip install --upgrade pip
+.venv/bin/pip install -r requirements.txt
+
+# Verify critical packages installed
+for pkg in django numpy pandas openpyxl; do
+    if ! .venv/bin/pip show $pkg &> /dev/null; then
+        print_error "Failed to install $pkg!"
+        exit 1
+    fi
+done
+print_step "Python dependencies installed and verified"
 
 # Environment file
 if [ ! -f ".env" ]; then
