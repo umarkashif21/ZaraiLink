@@ -237,6 +237,19 @@ print_info "Setting up company roles..."
 python manage.py setup_company_roles
 print_step "Company roles configured"
 
+# Load sample data for company comparison (if not already loaded)
+if python manage.py shell -c "from companies.models import Company; exit(0 if Company.objects.count() > 0 else 1)" 2>/dev/null; then
+    print_skip "Sample company data"
+else
+    if [ -f "load_data.py" ]; then
+        print_info "Loading sample company data..."
+        python load_data.py
+        print_step "Sample company data loaded"
+    else
+        print_info "No load_data.py found, skipping sample data"
+    fi
+fi
+
 # =============================================================================
 # DOCKER SERVICES (REDIS)
 # =============================================================================
@@ -247,7 +260,16 @@ if docker ps --format '{{.Names}}' | grep -q 'zarailink-redis'; then
     print_skip "Redis container"
 else
     print_info "Starting Redis container..."
-    docker-compose up -d
+    # Try new 'docker compose' syntax first, fall back to legacy 'docker-compose'
+    if docker compose version &> /dev/null; then
+        docker compose up -d
+    elif command -v docker-compose &> /dev/null; then
+        docker-compose up -d
+    else
+        print_error "Neither 'docker compose' nor 'docker-compose' is available!"
+        print_error "Please install Docker Compose: https://docs.docker.com/compose/install/"
+        exit 1
+    fi
     print_step "Redis container started"
 fi
 
