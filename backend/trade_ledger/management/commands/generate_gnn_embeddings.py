@@ -20,17 +20,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         fast_mode = options.get('fast', False)
         
-        # Parameters - balanced vs fast
+        # Parameters - full quality vs fast
         if fast_mode:
-            self.stdout.write(self.style.WARNING("Running in FAST mode (reduced accuracy)"))
+            self.stdout.write(self.style.WARNING("Running in FAST mode (reduced accuracy, 5x faster)"))
             DIMENSIONS = 32
             WALK_LENGTH = 10
             NUM_WALKS = 30
             WORKERS = 4
         else:
-            DIMENSIONS = 32  # Reduced from 64 - still effective for similarity
-            WALK_LENGTH = 20  # Reduced from 30
-            NUM_WALKS = 80   # Reduced from 200 - biggest time saver
+            # Original high-accuracy parameters
+            DIMENSIONS = 64   # Higher = more expressive embeddings
+            WALK_LENGTH = 30  # Longer walks capture more context
+            NUM_WALKS = 200   # More walks = better coverage
             WORKERS = 4
         
         # ================================
@@ -131,17 +132,29 @@ class Command(BaseCommand):
         else:
             product_tags = {prod: "Other" for prod in products}
 
-        # Save to DB — PASS LIST DIRECTLY
+        # Save to DB — only for products that exist in the database
+        from trade_data.models import ProductItem
+        existing_product_ids = set(ProductItem.objects.values_list('id', flat=True))
+        
+        saved_count = 0
+        skipped_count = 0
         with transaction.atomic():
             ProductEmbedding.objects.all().delete()
             for prod_node in products:
                 prod_id = int(prod_node.split("_")[1])
+                # Skip if product doesn't exist in database (graph from different data)
+                if prod_id not in existing_product_ids:
+                    skipped_count += 1
+                    continue
                 ProductEmbedding.objects.create(
                     product_item_id=prod_id,
                     embedding=product_embeddings[prod_node],  # LIST, not JSON string
                     cluster_tag=product_tags[prod_node]
                 )
-        self.stdout.write(self.style.SUCCESS(f"       Saved {len(products)} product embeddings"))
+                saved_count += 1
+        
+        if skipped_count > 0:
+            self.stdout.write(self.style.WARNING(f"       Skipped {skipped_count} products (not in database)"))
+        self.stdout.write(self.style.SUCCESS(f"       Saved {saved_count} product embeddings"))
 
         self.stdout.write(self.style.SUCCESS("\n[OK] GNN embeddings and clusters generated!"))
-

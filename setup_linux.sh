@@ -250,13 +250,28 @@ else
     fi
 fi
 
+# Import trade data (needed for GNN embeddings and Similar Companies)
+if python manage.py shell -c "from trade_data.models import Transaction; exit(0 if Transaction.objects.count() > 0 else 1)" 2>/dev/null; then
+    print_skip "Trade transaction data"
+else
+    if [ -f "../import_data_1year.xlsx" ]; then
+        print_info "Importing trade data (this may take a few minutes)..."
+        python manage.py ingest_trade --file ../import_data_1year.xlsx || {
+            print_info "Trade data import skipped (optional)"
+        }
+        print_step "Trade data imported"
+    else
+        print_info "No import_data_1year.xlsx found, skipping trade data import"
+    fi
+fi
+
 # Generate GNN embeddings for Similar Companies feature (if not already generated)
 if python manage.py shell -c "from trade_data.models import CompanyEmbedding; exit(0 if CompanyEmbedding.objects.count() > 0 else 1)" 2>/dev/null; then
     print_skip "GNN embeddings"
 else
     if [ -f "company_product_graph.graphml" ]; then
-        print_info "Generating GNN embeddings (this may take a minute)..."
-        python manage.py generate_gnn_embeddings 2>/dev/null || {
+        print_info "Generating GNN embeddings (this may take several minutes)..."
+        python manage.py generate_gnn_embeddings --fast || {
             print_info "GNN embedding generation skipped (optional feature)"
         }
         print_step "GNN embeddings generated"
