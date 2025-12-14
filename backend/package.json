@@ -1,0 +1,12 @@
+{
+  "name": "zarailink-pdf-generator",
+  "version": "1.0.0",
+  "description": "PDF generation for ZaraiLink using Puppeteer",
+  "main": "generate_comparison_pdf.js",
+  "dependencies": {
+    "puppeteer": "^24.33.0"
+  },
+  "scripts": {
+    "test": "node generate_comparison_pdf.js"
+  }
+}

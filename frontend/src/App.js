@@ -36,6 +36,7 @@ const CompanyOverview = React.lazy(() => import("./components/TradeIntelligence/
 const CompanyProducts = React.lazy(() => import("./components/TradeIntelligence/CompanyProducts"));
 const CompanyPartners = React.lazy(() => import("./components/TradeIntelligence/CompanyPartners"));
 const CompanyTrends = React.lazy(() => import("./components/TradeIntelligence/CompanyTrends"));
+const CompareCompanies = React.lazy(() => import("./components/TradeIntelligence/CompareCompanies"));
 
 // Loading Component
 const PageLoader = () => (
@@ -188,6 +189,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <TradeLens />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/compare"
+                  element={
+                    <ProtectedRoute>
+                      <CompareCompanies />
                     </ProtectedRoute>
                   }
                 />

@@ -72,7 +72,7 @@ const Navbar = () => {
             </AnimatePresence>
           </div>
 
-          {/* Trade Intelligence Dropdown */}
+          {/* Trade Intelligence Dropdown  */}
           <div 
             className="nav-dropdown"
             onMouseEnter={() => setActiveDropdown('intelligence')}
@@ -91,6 +91,8 @@ const Navbar = () => {
                   exit="exit"
                 >
                   <Link to="/trade-intelligence/ledger">Trade Ledger</Link>
+                  <Link to="/trade-intelligence/compare">Compare Companies</Link>
+                  <div className="dropdown-divider"></div>
                   <Link to="/trade-intelligence/pulse">Trade Pulse</Link>
                   <Link to="/trade-intelligence/lens">Trade Lens</Link>
                 </motion.div>

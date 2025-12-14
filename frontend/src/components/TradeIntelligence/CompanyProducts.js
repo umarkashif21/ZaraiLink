@@ -7,38 +7,35 @@ const CompanyProducts = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const loc = useLocation();
-  const [comp, setComp] = useState(null);
-  const [prods, setProds] = useState([]);
+  const [prods, setProds] = useState(null);
   const [load, setLoad] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Decode the company name from URL
+  const companyName = decodeURIComponent(id);
   const tab = loc.pathname.split('/').pop();
 
   useEffect(() => {
-    loadData();
     loadProds();
   }, [id]);
 
-  const loadData = async () => {
-    try {
-      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
-      if (res.ok) {
-        const data = await res.json();
-        setComp(data);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const loadProds = async () => {
+    setLoad(true);
+    setError(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/products/`);
+      // Use correct API endpoint: /api/company/{company_name}/products/
+      const res = await fetch(`http://localhost:8000/api/company/${id}/products/`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setProds(data);
+      } else {
+        setError('Could not load products');
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load products:', err);
+      setError('Failed to load products data');
     } finally {
       setLoad(false);
     }
@@ -79,50 +76,46 @@ const CompanyProducts = () => {
     <>
       <Navbar />
       <div className="company-detail-container">
-        {comp && (
-          <>
-            <div className="company-detail-header">
-              <h1>{comp.company.name}</h1>
-              <p>📍 {comp.company.province}, {comp.company.country}</p>
-              <div className="company-tags">
-                {comp.is_exporter && <span className="company-tag">Exporter</span>}
-                {comp.is_importer && <span className="company-tag">Importer</span>}
-              </div>
-            </div>
+        <div className="company-detail-header">
+          <h1>{companyName}</h1>
+          <p>📍 Trade Intelligence Profile</p>
+        </div>
 
-            <div className="tab-navigation">
-              <button
-                className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
-                onClick={() => navTab('overview')}
-              >
-                Overview
-              </button>
-              <button
-                className={`tab-button ${tab === 'products' ? 'active' : ''}`}
-                onClick={() => navTab('products')}
-              >
-                Products ({comp.total_products || 0})
-              </button>
-              <button
-                className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
-                onClick={() => navTab('partners')}
-              >
-                Partners ({comp.total_partners || 0})
-              </button>
-              <button
-                className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
-                onClick={() => navTab('trends')}
-              >
-                Trends
-              </button>
-            </div>
-          </>
-        )}
+        <div className="tab-navigation">
+          <button
+            className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
+            onClick={() => navTab('overview')}
+          >
+            Overview
+          </button>
+          <button
+            className={`tab-button ${tab === 'products' ? 'active' : ''}`}
+            onClick={() => navTab('products')}
+          >
+            Products
+          </button>
+          <button
+            className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
+            onClick={() => navTab('partners')}
+          >
+            Partners
+          </button>
+          <button
+            className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
+            onClick={() => navTab('trends')}
+          >
+            Trends
+          </button>
+        </div>
 
         <div className="tab-content">
           <h2>Product Performance</h2>
 
-          {prods.length === 0 ? (
+          {error ? (
+            <div className="empty-state">
+              <p>{error}</p>
+            </div>
+          ) : !prods || !prods.product_performance || prods.product_performance.length === 0 ? (
             <div className="empty-state">
               <p>No products found</p>
             </div>
@@ -138,7 +131,7 @@ const CompanyProducts = () => {
                 </tr>
               </thead>
               <tbody>
-                {prods.map((p, idx) => (
+                {prods.product_performance.map((p, idx) => (
                   <tr key={idx}>
                     <td>
                       <strong>{p.product_name}</strong>
@@ -173,7 +166,7 @@ const CompanyProducts = () => {
             </table>
           )}
 
-          {prods.length > 0 && (
+          {prods && prods.product_performance && prods.product_performance.length > 0 && (
             <div style={{ marginTop: '2rem' }}>
               <h3>Product Analysis Charts</h3>
               <p style={{ color: '#718096', marginTop: '1rem' }}>

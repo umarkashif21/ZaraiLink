@@ -301,9 +301,9 @@ const TradeLedger = () => {
         )}
 
         {load ? (
-          <div className="companies-grid">
-            {/* Skeleton loading cards */}
-            {[1,2,3,4,5,6,7,8].map(i => <SkeletonCard key={i} />)}
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <p>Loading companies...</p>
           </div>
         ) : comps.length === 0 ? (
           <EmptyState
@@ -314,67 +314,66 @@ const TradeLedger = () => {
           />
         ) : (
           <>
-            <div className="companies-grid">
-              {paginatedComps.map(c => (
-                <div
-                  key={c.id}
-                  className="company-card"
-                  onClick={() => onCompClick(c.company.name)}
-                >
-                  <div className="company-card-header">
-                    <div>
-                      <h3>{c.company.name}</h3>
-                      <p className="company-location">
-                        📍 {c.company.province || 'N/A'}, {c.company.country || 'N/A'}
-                      </p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <WatchlistButton
-                        isWatched={isInWatchlist(c.company.name)}
-                        onToggle={(e) => {
-                          e.stopPropagation();
-                          toggleWatchlist({ id: c.company.name, name: c.company.name });
-                        }}
-                        size="small"
-                      />
-                      {c.is_exporter && c.is_importer ? (
-                        <span className="company-badge">Both</span>
-                      ) : c.is_exporter ? (
-                        <span className="company-badge">Exporter</span>
-                      ) : (
-                        <span className="company-badge">Importer</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="company-stats">
-                    <div className="stat-item">
-                      <span className="stat-label">Est. Revenue</span>
-                      <span className="stat-value">
-                        {fmtCurr(c.estimated_revenue)}
-                      </span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">Trade Volume</span>
-                      <span className="stat-value">
-                        {fmtCurr(c.trade_volume)}
-                      </span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">Products</span>
-                      <span className="stat-value">{c.top_products?.length || 0}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">Active Since</span>
-                      <span className="stat-value">
+            <div className="trade-ledger-table-container">
+              <table className="trade-ledger-table">
+                <thead>
+                  <tr>
+                    <th>Company Name</th>
+                    <th>Country</th>
+                    <th>Trade Volume</th>
+                    <th>Company Type</th>
+                    <th>Products</th>
+                    <th>Active Since</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedComps.map(c => (
+                    <tr 
+                      key={c.id}
+                      onClick={() => onCompClick(c.company.name)}
+                      className="table-row-clickable"
+                    >
+                      <td>
+                        <div className="company-name-cell">
+                          <strong>{c.company.name}</strong>
+                          {c.company.province && (
+                            <span className="company-location-sub">
+                              📍 {c.company.province}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>{c.company.country || 'N/A'}</td>
+                      <td><strong>{fmtCurr(c.trade_volume)}</strong></td>
+                      <td>
+                        {c.is_exporter && c.is_importer ? (
+                          <span className="company-badge badge-both">Both</span>
+                        ) : c.is_exporter ? (
+                          <span className="company-badge badge-exporter">Exporter</span>
+                        ) : (
+                          <span className="company-badge badge-importer">Importer</span>
+                        )}
+                      </td>
+                      <td>{c.top_products?.length || 0}</td>
+                      <td>
                         {c.active_since 
                           ? new Date(c.active_since).getFullYear()
                           : 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <WatchlistButton
+                          isWatched={isInWatchlist(c.company.name)}
+                          onToggle={() => {
+                            toggleWatchlist({ id: c.company.name, name: c.company.name });
+                          }}
+                          size="small"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
             
             {/* Pagination */}
