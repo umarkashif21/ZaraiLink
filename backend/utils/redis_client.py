@@ -75,27 +75,87 @@ class RedisClient:
     @classmethod
     def search(cls, query_embedding, top_k=5):
         r = cls.get_connection()
-        if not r or query_embedding is None:
-            return []
+        
+        # If Redis available, use it
+        if r and query_embedding is not None:
+            from redis.commands.search.query import Query
             
-        from redis.commands.search.query import Query
+            INDEX_NAME = "idx:companies"
+            query = (
+                Query(f"*=>[KNN {top_k} @embedding $vec AS score]")
+                .sort_by("score")
+                .return_fields("id", "score", "name")
+                .dialect(2)
+            )
+            params = {"vec": np.array(query_embedding, dtype=np.float32).tobytes()}
+            
+            try:
+                res = r.ft(INDEX_NAME).search(query, params)
+                # doc.id is like "company:123", we want "123"
+                return [{'id': doc.id.split(':')[-1], 'score': doc.score, 'name': doc.name} for doc in res.docs]
+            except Exception as e:
+                logger.warning(f"Redis Search failed, falling back to text search: {e}")
         
-        INDEX_NAME = "idx:companies"
-        query = (
-            Query(f"*=>[KNN {top_k} @embedding $vec AS score]")
-            .sort_by("score")
-            .return_fields("id", "score", "name")
-            .dialect(2)
-        )
-        params = {"vec": np.array(query_embedding, dtype=np.float32).tobytes()}
-        
+        # NOTE: In-memory fallback disabled because CompanyEmbedding stores 64-dim GNN embeddings
+        # which are incompatible with 1536-dim OpenAI embeddings. Return empty to trigger text search.
+        logger.info("AI vector search unavailable (Redis down). Using text search fallback.")
+        return []
+    
+    @classmethod
+    def _inmemory_search(cls, query_embedding, top_k=5):
+        """Fallback in-memory vector search using database embeddings."""
         try:
-            res = r.ft(INDEX_NAME).search(query, params)
-            # doc.id is like "company:123", we want "123"
-            return [{'id': doc.id.split(':')[-1], 'score': doc.score, 'name': doc.name} for doc in res.docs]
+            from trade_data.models import CompanyEmbedding
+            from companies.models import Company
+            from sklearn.metrics.pairwise import cosine_similarity
+            
+            # Get all embeddings from database
+            all_embeddings = list(CompanyEmbedding.objects.all().values('company_name', 'embedding'))
+            if not all_embeddings:
+                logger.warning("No company embeddings found in database")
+                return []
+            
+            # Build vectors matrix
+            names = []
+            vectors = []
+            for emb in all_embeddings:
+                names.append(emb['company_name'])
+                vectors.append(emb['embedding'])
+            
+            vectors = np.array(vectors)
+            query_vec = np.array(query_embedding).reshape(1, -1)
+            
+            # Compute similarities
+            similarities = cosine_similarity(query_vec, vectors)[0]
+            top_indices = np.argsort(similarities)[-top_k:][::-1]
+            
+            # Get company IDs from Company model
+            results = []
+            for i in top_indices:
+                company_name = names[i]
+                # Try to find matching company ID
+                company = Company.objects.filter(name__icontains=company_name).first()
+                if company:
+                    results.append({
+                        'id': str(company.id),
+                        'score': float(similarities[i]),
+                        'name': company_name
+                    })
+                else:
+                    # Use name as fallback if no Company match
+                    results.append({
+                        'id': company_name,  # Use name as ID for fallback
+                        'score': float(similarities[i]),
+                        'name': company_name
+                    })
+            
+            logger.info(f"In-memory search found {len(results)} results")
+            return results
+            
         except Exception as e:
-            logger.error(f"Redis Search failed: {e}")
+            logger.error(f"In-memory search failed: {e}")
             return []
+
 
     @classmethod
     def get_vector(cls, key_prefix, object_id):

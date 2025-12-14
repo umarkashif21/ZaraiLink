@@ -104,16 +104,39 @@ DATABASES = {
     }
 }
 
-# Caching (Redis)
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/0",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+# Caching Configuration
+# Try Redis first, fall back to local memory cache if Redis unavailable
+import socket
+
+def is_redis_available():
+    """Check if Redis is running"""
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex(('127.0.0.1', 6379))
+        sock.close()
+        return result == 0
+    except:
+        return False
+
+if is_redis_available():
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://127.0.0.1:6379/0",
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
         }
     }
-}
+else:
+    # Fallback to local memory cache when Redis is not available
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
+        }
+    }
 
 # OpenAI API Key
 OPENAI_API_KEY = os.getenv('OPENAI_KEY', '')

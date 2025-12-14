@@ -16,16 +16,26 @@ def get_similar_companies(company_name, top_k=4):
     target_vec = get_company_embedding(company_name)
     if target_vec is None:
         return []
-
-    all_companies = CompanyEmbedding.objects.exclude(company_name=company_name)
-    if not all_companies:
+    
+    target_dim = len(target_vec)
+    
+    # Get all companies except target, filter for matching embedding dimensions
+    all_embeddings = list(CompanyEmbedding.objects.exclude(company_name=company_name))
+    
+    # Filter to only embeddings with matching dimensions
+    valid_companies = []
+    names = []
+    vectors = []
+    
+    for c in all_embeddings:
+        if isinstance(c.embedding, list) and len(c.embedding) == target_dim:
+            valid_companies.append(c)
+            names.append(c.company_name)
+            vectors.append(c.embedding)
+    
+    if not vectors:
         return []
-
-    names, vectors = [], []
-    for c in all_companies:
-        names.append(c.company_name)
-        vectors.append(c.embedding)
-
+    
     vectors = np.array(vectors)
     similarities = cosine_similarity([target_vec], vectors)[0]
     top_indices = np.argsort(similarities)[-top_k:][::-1]
@@ -34,8 +44,8 @@ def get_similar_companies(company_name, top_k=4):
         {
             "company_name": names[i],
             "similarity": float(similarities[i]),
-            "segment_tag": all_companies[int(i)].cluster_tag,
-            "total_volume_mt": None  # Optional: join with classical metrics later
+            "segment_tag": valid_companies[i].cluster_tag,
+            "total_volume_mt": None
         }
         for i in top_indices
     ]

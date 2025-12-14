@@ -281,7 +281,8 @@ def compare_companies_api(request):
 # GNN-SPECIFIC APIS
 # ============================
 
-@cache_page(60 * 60 * 24)  # Cache for 24 hours
+# NOTE: @cache_page disabled - requires Redis. Re-enable when Redis is available.
+# @cache_page(60 * 60 * 24)  # Cache for 24 hours
 def similar_companies_api(request, company_name):
     """Explorer → Peer company recommendation"""
     try:
@@ -294,13 +295,15 @@ def similar_companies_api(request, company_name):
     return JsonResponse({"similar_companies": similar})
 
 
-@cache_page(60 * 60 * 24)  # Cache for 24 hours
+# NOTE: @cache_page disabled - requires Redis
+# @cache_page(60 * 60 * 24)  # Cache for 24 hours
 def potential_partners_api(request, company_name):
     """Overview → Link prediction (same as similar companies)"""
     return similar_companies_api(request, company_name)
 
 
-@cache_page(60 * 60 * 24)  # Cache for 24 hours
+# NOTE: @cache_page disabled - requires Redis
+# @cache_page(60 * 60 * 24)  # Cache for 24 hours
 def network_influence_api(request, company_name):
     """Overview → Centrality metrics"""
     try:
