@@ -292,12 +292,7 @@ def compare_companies_api(request):
 # NOTE: @cache_page disabled - requires Redis. Re-enable when Redis is available.
 # @cache_page(60 * 60 * 24)  # Cache for 24 hours
 def similar_companies_api(request, company_name):
-    """Explorer → Peer company recommendation"""
-    try:
-        emb = CompanyEmbedding.objects.get(company_name=company_name)
-    except CompanyEmbedding.DoesNotExist:
-        return JsonResponse({"similar_companies": []})
-
+    """Explorer → Peer company recommendation (uses fuzzy matching for company names)"""
     from .services.gnn import get_similar_companies
     similar = get_similar_companies(company_name, top_k=4)
     return JsonResponse({"similar_companies": similar})
