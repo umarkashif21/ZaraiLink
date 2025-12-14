@@ -233,6 +233,22 @@ else
     fi
 fi
 
+# Build GNN graphs from trade data (needed for Similar Companies)
+TRANSACTIONS_COUNT=$(python manage.py shell -c "from trade_data.models import Transaction; print(Transaction.objects.count())" 2>/dev/null)
+if [ "$TRANSACTIONS_COUNT" -gt 0 ] 2>/dev/null; then
+    if [ ! -f "company_product_graph.graphml" ] || [ "../import_data_1year.xlsx" -nt "company_product_graph.graphml" ]; then
+        print_info "Building GNN graphs from trade data..."
+        python manage.py build_gnn_graphs || {
+            print_info "Graph building skipped (optional feature)"
+        }
+        print_step "GNN graphs built"
+    else
+        print_skip "GNN graphs"
+    fi
+else
+    print_info "No trade data found, skipping graph building"
+fi
+
 # Generate GNN embeddings for Similar Companies feature (if not already generated)
 if python manage.py shell -c "from trade_data.models import CompanyEmbedding; exit(0 if CompanyEmbedding.objects.count() > 0 else 1)" 2>/dev/null; then
     print_skip "GNN embeddings"
