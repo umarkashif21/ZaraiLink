@@ -32,9 +32,19 @@ const CompanyProfile = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [unlockedContactData, setUnlockedContactData] = useState(null);
 
+  // Similar Companies State
+  const [similarCompanies, setSimilarCompanies] = useState([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+
   useEffect(() => {
     loadCompanyData();
   }, [id]);
+
+  useEffect(() => {
+    if (activeTab === 'similar' && company?.name) {
+      loadSimilarCompanies();
+    }
+  }, [activeTab]);
 
   const loadCompanyData = async () => {
     setLoading(true);
@@ -58,6 +68,22 @@ const CompanyProfile = () => {
       console.error('Load error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSimilarCompanies = async () => {
+    if (!company || similarCompanies.length > 0) return;
+    setLoadingSimilar(true);
+    try {
+      const response = await fetch(`http://localhost:8000/api/company/${encodeURIComponent(company.name)}/similar/`);
+      if (response.ok) {
+        const data = await response.json();
+        setSimilarCompanies(data.similar_companies || []);
+      }
+    } catch (err) {
+      console.error('Failed to load similar companies', err);
+    } finally {
+      setLoadingSimilar(false);
     }
   };
 
@@ -211,6 +237,12 @@ const CompanyProfile = () => {
         >
           Key Contacts ({company.key_contacts?.length || 0})
         </button>
+        <button
+          className={`tab ${activeTab === 'similar' ? 'active' : ''}`}
+          onClick={() => setActiveTab('similar')}
+        >
+          Similar Companies
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -361,6 +393,63 @@ const CompanyProfile = () => {
             ) : (
               <div className="no-data">
                 <p>No key contacts listed for this company</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'similar' && (
+          <div className="similar-tab">
+            {loadingSimilar ? (
+               <div className="loading-container" style={{ padding: '2rem' }}>
+                <div className="spinner"></div>
+                <p>Finding similar companies...</p>
+              </div>
+            ) : similarCompanies.length > 0 ? (
+              <div className="products-grid">
+                {similarCompanies.map((sim, idx) => (
+                  <div key={idx} className="product-card" style={{ borderTop: '4px solid #1a73e8' }}>
+                     <div style={{ padding: '1rem' }}>
+                       <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>{sim.company_name}</h4>
+                       
+                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                         <span style={{ 
+                           backgroundColor: '#e8f0fe', 
+                           color: '#1967d2', 
+                           padding: '2px 8px', 
+                           borderRadius: '4px', 
+                           fontSize: '0.875rem', 
+                           fontWeight: '500' 
+                         }}>
+                           {(sim.similarity * 100).toFixed(1)}% Match
+                         </span>
+                         {sim.segment_tag && (
+                           <span style={{ 
+                             backgroundColor: '#e6f4ea', 
+                             color: '#137333', 
+                             padding: '2px 8px', 
+                             borderRadius: '4px', 
+                             fontSize: '0.8rem' 
+                           }}>
+                             {sim.segment_tag}
+                           </span>
+                         )}
+                       </div>
+
+                       <button 
+                         onClick={() => window.location.href = `/trade-directory/find-suppliers?search=${encodeURIComponent(sim.company_name)}`}
+                         className="btn-primary"
+                         style={{ width: '100%', padding: '0.5rem', fontSize: '0.9rem' }}
+                       >
+                         View Profile
+                       </button>
+                     </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+                <div className="no-data">
+                <p>No similar companies found based on trade patterns.</p>
               </div>
             )}
           </div>

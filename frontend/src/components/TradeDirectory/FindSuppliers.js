@@ -123,7 +123,84 @@ const FindSuppliers = () => {
     }, 100);
   };
 
-  // ... (sorting and pagination omitted)
+  // Sorted companies
+  const sortedCompanies = useMemo(() => {
+    const sorted = [...companies];
+    const [field, direction] = sortBy.split('_');
+    sorted.sort((a, b) => {
+      const valA = (a.name || '').toLowerCase();
+      const valB = (b.name || '').toLowerCase();
+      if (direction === 'asc') return valA > valB ? 1 : -1;
+      return valA < valB ? 1 : -1;
+    });
+    return sorted;
+  }, [companies, sortBy]);
+
+  // Paginated companies
+  const totalPages = Math.ceil(sortedCompanies.length / itemsPerPage);
+  const paginatedCompanies = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sortedCompanies.slice(start, start + itemsPerPage);
+  }, [sortedCompanies, currentPage, itemsPerPage]);
+
+  // Export columns
+  const exportColumns = [
+    { key: 'name', label: 'Company Name' },
+    { key: 'province', label: 'Province' },
+    { key: 'sector_name', label: 'Sector' },
+    { key: 'verification_status', label: 'Status' },
+  ];
+
+  // Load filter options
+  const loadFilterOptions = useCallback(async () => {
+    try {
+      const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
+        fetch('http://localhost:8000/api/companies/regions/'),
+        fetch('http://localhost:8000/api/sectors/'),
+        fetch('http://localhost:8000/api/company-roles/')
+      ]);
+
+      if (regionsRes.ok) {
+        const regionsData = await regionsRes.json();
+        setFilterOptions(prev => ({
+          ...prev,
+          regions: regionsData.filter(r => r && r.trim() !== '')
+        }));
+      }
+      if (sectorsRes.ok) {
+        const sectorsData = await sectorsRes.json();
+        setFilterOptions(prev => ({
+          ...prev,
+          sectors: sectorsData
+        }));
+      }
+      
+      if (rolesRes.ok) {
+        const roles = await rolesRes.json();
+        const supplierRole = roles.find(r => r.name.toLowerCase() === 'suppliers') ||
+                            roles.find(r => r.name.toLowerCase() === 'supplier');
+        if (supplierRole) {
+          setSupplierRoleId(supplierRole.id);
+        } else {
+          setError('System configuration error: Supplier role missing');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load filter options', err);
+    }
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    loadFilterOptions();
+  }, [loadFilterOptions]);
+
+  // Trigger search when supplier role ID is available
+  useEffect(() => {
+    if (supplierRoleId) {
+      searchCompanies(supplierRoleId);
+    }
+  }, [supplierRoleId, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>

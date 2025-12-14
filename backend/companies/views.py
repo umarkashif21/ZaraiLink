@@ -71,9 +71,22 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                 smart_results = RedisClient.search(embedding)
                 
                 if smart_results:
-                    ids = [r['id'] for r in smart_results]
-                    preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids)])
-                    queryset = queryset.filter(id__in=ids).order_by(preserved)
+                    from django.db.models import IntegerField
+                    ids = []
+                    for r in smart_results:
+                        try:
+                            ids.append(int(r['id']))
+                        except (ValueError, TypeError):
+                            continue
+                            
+                    if ids:
+                        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids)], output_field=IntegerField())
+                        queryset = queryset.filter(id__in=ids).order_by(preserved)
+                    else:
+                         # Fallback if IDs parsing failed
+                        queryset = queryset.filter(
+                            Q(name__icontains=search) | Q(description__icontains=search)
+                        )
                 else:
                     # Fallback to standard search if no results or error
                     queryset = queryset.filter(
@@ -145,7 +158,7 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
         # Check if already unlocked
         already_unlocked = KeyContactUnlock.objects.filter(
             user=user, 
-            key_contact=contact
+            key_contact=contact 
         ).exists()
         
         if already_unlocked:
