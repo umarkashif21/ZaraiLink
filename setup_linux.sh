@@ -74,6 +74,14 @@ fi
 PYTHON_VERSION=$(python3 --version 2>&1 | cut -d' ' -f2)
 print_step "Python found: $PYTHON_VERSION"
 
+# Check python3-venv package (required on Ubuntu)
+if ! python3 -m venv --help &> /dev/null; then
+    print_error "python3-venv is not installed."
+    echo -e "${YELLOW}  Try: sudo apt install python3-venv${NC}"
+    exit 1
+fi
+print_step "python3-venv module available"
+
 # Check Node.js
 if ! command -v node &> /dev/null; then
     print_error "Node.js is not installed."
@@ -136,14 +144,26 @@ else
 fi
 
 # Activate virtual environment
-source .venv/bin/activate
-print_step "Virtual environment activated"
+if [ -f ".venv/bin/activate" ]; then
+    source .venv/bin/activate
+    # Verify activation worked
+    if [[ "$VIRTUAL_ENV" == *".venv"* ]]; then
+        print_step "Virtual environment activated: $VIRTUAL_ENV"
+    else
+        print_error "Failed to activate virtual environment!"
+        exit 1
+    fi
+else
+    print_error "Virtual environment activation script not found!"
+    exit 1
+fi
 
 # Install Python dependencies
-if [ ! -f ".venv/lib/python"*"/site-packages/django/__init__.py" ]; then
+# Use find to check for django instead of glob pattern
+if ! find .venv/lib -name "django" -type d 2>/dev/null | grep -q django; then
     print_info "Installing Python dependencies..."
-    pip install --upgrade pip -q
-    pip install -r requirements.txt -q
+    pip install --upgrade pip
+    pip install -r requirements.txt
     print_step "Python dependencies installed"
 else
     print_skip "Python dependencies"
@@ -154,8 +174,8 @@ if [ ! -f ".env" ]; then
     print_info "Creating .env file..."
     cp .env.example .env
     
-    # Generate SECRET_KEY
-    SECRET_KEY=$(python3 -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
+    # Generate SECRET_KEY (use 'python' since venv is activated)
+    SECRET_KEY=$(python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
     
     # Update SECRET_KEY in .env (GNU sed syntax)
     sed -i "s|SECRET_KEY=.*|SECRET_KEY=$SECRET_KEY|g" .env
