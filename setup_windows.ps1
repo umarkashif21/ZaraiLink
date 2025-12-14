@@ -206,6 +206,74 @@ Print-Info "Setting up company roles..."
 python manage.py setup_company_roles
 Print-Step "Company roles configured"
 
+# Load sample data for company comparison (if not already loaded)
+$companyCount = python manage.py shell -c "from companies.models import Company; print(Company.objects.count())" 2>$null
+if ([int]$companyCount -gt 0) {
+    Print-Skip "Sample company data"
+} else {
+    if (Test-Path "load_data.py") {
+        Print-Info "Loading sample company data..."
+        python load_data.py
+        Print-Step "Sample company data loaded"
+    } else {
+        Print-Info "No load_data.py found, skipping sample data"
+    }
+}
+
+# Import trade data (needed for GNN embeddings and Similar Companies)
+$transactionCount = python manage.py shell -c "from trade_data.models import Transaction; print(Transaction.objects.count())" 2>$null
+if ([int]$transactionCount -gt 0) {
+    Print-Skip "Trade transaction data"
+} else {
+    if (Test-Path "..\import_data_1year.xlsx") {
+        Print-Info "Importing trade data (this may take a few minutes)..."
+        try {
+            python manage.py ingest_trade --file ..\import_data_1year.xlsx
+            Print-Step "Trade data imported"
+        } catch {
+            Print-Info "Trade data import skipped (optional)"
+        }
+    } else {
+        Print-Info "No import_data_1year.xlsx found, skipping trade data import"
+    }
+}
+
+# Build GNN graphs from trade data (needed for Similar Companies)
+$transactionCount = python manage.py shell -c "from trade_data.models import Transaction; print(Transaction.objects.count())" 2>$null
+if ([int]$transactionCount -gt 0) {
+    if (-not (Test-Path "company_product_graph.graphml")) {
+        Print-Info "Building GNN graphs from trade data..."
+        try {
+            python manage.py build_gnn_graphs
+            Print-Step "GNN graphs built"
+        } catch {
+            Print-Info "Graph building skipped (optional feature)"
+        }
+    } else {
+        Print-Skip "GNN graphs"
+    }
+} else {
+    Print-Info "No trade data found, skipping graph building"
+}
+
+# Generate GNN embeddings for Similar Companies feature (if not already generated)
+$embeddingCount = python manage.py shell -c "from trade_data.models import CompanyEmbedding; print(CompanyEmbedding.objects.count())" 2>$null
+if ([int]$embeddingCount -gt 0) {
+    Print-Skip "GNN embeddings"
+} else {
+    if (Test-Path "company_product_graph.graphml") {
+        Print-Info "Generating GNN embeddings (this may take several minutes)..."
+        try {
+            python manage.py generate_gnn_embeddings --fast
+            Print-Step "GNN embeddings generated"
+        } catch {
+            Print-Info "GNN embedding generation skipped (optional feature)"
+        }
+    } else {
+        Print-Info "No graph files found, skipping GNN embeddings"
+    }
+}
+
 # =============================================================================
 # DOCKER SERVICES (REDIS)
 # =============================================================================
