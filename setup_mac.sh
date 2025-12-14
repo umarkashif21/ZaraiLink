@@ -218,6 +218,21 @@ else
     fi
 fi
 
+# Generate GNN embeddings for Similar Companies feature (if not already generated)
+if python manage.py shell -c "from trade_data.models import CompanyEmbedding; exit(0 if CompanyEmbedding.objects.count() > 0 else 1)" 2>/dev/null; then
+    print_skip "GNN embeddings"
+else
+    if [ -f "company_product_graph.graphml" ]; then
+        print_info "Generating GNN embeddings (this may take a minute)..."
+        python manage.py generate_gnn_embeddings 2>/dev/null || {
+            print_info "GNN embedding generation skipped (optional feature)"
+        }
+        print_step "GNN embeddings generated"
+    else
+        print_info "No graph files found, skipping GNN embeddings"
+    fi
+fi
+
 # =============================================================================
 # DOCKER SERVICES (REDIS)
 # =============================================================================
