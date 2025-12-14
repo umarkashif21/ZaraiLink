@@ -7,38 +7,35 @@ const CompanyPartners = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const loc = useLocation();
-  const [comp, setComp] = useState(null);
-  const [parts, setParts] = useState([]);
+  const [parts, setParts] = useState(null);
   const [load, setLoad] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Decode the company name from URL
+  const companyName = decodeURIComponent(id);
   const tab = loc.pathname.split('/').pop();
 
   useEffect(() => {
-    loadData();
     loadParts();
   }, [id]);
 
-  const loadData = async () => {
-    try {
-      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
-      if (res.ok) {
-        const data = await res.json();
-        setComp(data);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const loadParts = async () => {
+    setLoad(true);
+    setError(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/partners/`);
+      // Use correct API endpoint: /api/company/{company_name}/partners/
+      const res = await fetch(`http://localhost:8000/api/company/${id}/partners/`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setParts(data);
+      } else {
+        setError('Could not load partners');
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load partners:', err);
+      setError('Failed to load partners data');
     } finally {
       setLoad(false);
     }
@@ -58,19 +55,9 @@ const CompanyPartners = () => {
     }).format(v);
   };
 
-  const topExps = () => {
-    return parts
-      .filter(p => p.is_export)
-      .sort((a, b) => parseFloat(b.trade_volume) - parseFloat(a.trade_volume))
-      .slice(0, 5);
-  };
-
-  const topPorts = () => {
-    return parts
-      .filter(p => p.port_name)
-      .sort((a, b) => parseFloat(b.trade_volume) - parseFloat(a.trade_volume))
-      .slice(0, 5);
-  };
+  // Get top partners from API response
+  const topPartners = parts?.top_partners || [];
+  const tradeByCountry = parts?.trade_volume_by_country || [];
 
   if (load) {
     return (
@@ -88,146 +75,121 @@ const CompanyPartners = () => {
     <>
       <Navbar />
       <div className="company-detail-container">
-        {comp && (
-          <>
-            <div className="company-detail-header">
-              <h1>{comp.company.name}</h1>
-              <p>📍 {comp.company.province}, {comp.company.country}</p>
-              <div className="company-tags">
-                {comp.is_exporter && <span className="company-tag">Exporter</span>}
-                {comp.is_importer && <span className="company-tag">Importer</span>}
-              </div>
-            </div>
+        <div className="company-detail-header">
+          <h1>{companyName}</h1>
+          <p>📍 Trade Intelligence Profile</p>
+        </div>
 
-            <div className="tab-navigation">
-              <button
-                className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
-                onClick={() => navTab('overview')}
-              >
-                Overview
-              </button>
-              <button
-                className={`tab-button ${tab === 'products' ? 'active' : ''}`}
-                onClick={() => navTab('products')}
-              >
-                Products ({comp.total_products || 0})
-              </button>
-              <button
-                className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
-                onClick={() => navTab('partners')}
-              >
-                Partners ({comp.total_partners || 0})
-              </button>
-              <button
-                className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
-                onClick={() => navTab('trends')}
-              >
-                Trends
-              </button>
-            </div>
-          </>
-        )}
+        <div className="tab-navigation">
+          <button
+            className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
+            onClick={() => navTab('overview')}
+          >
+            Overview
+          </button>
+          <button
+            className={`tab-button ${tab === 'products' ? 'active' : ''}`}
+            onClick={() => navTab('products')}
+          >
+            Products
+          </button>
+          <button
+            className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
+            onClick={() => navTab('partners')}
+          >
+            Partners
+          </button>
+          <button
+            className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
+            onClick={() => navTab('trends')}
+          >
+            Trends
+          </button>
+        </div>
 
         <div className="tab-content">
           <h2>Partner Network</h2>
 
-          {comp && (
-            <div className="info-cards-grid">
-              <div className="info-card">
-                <h4>Partner Diversity Score</h4>
-                <div className="info-card-value">{comp.partner_diversity_score || 0}/100</div>
-              </div>
-              <div className="info-card">
-                <h4>Total Partner Countries</h4>
-                <div className="info-card-value">{comp.total_partners || 0}</div>
-              </div>
-              <div className="info-card">
-                <h4>Export Partners</h4>
-                <div className="info-card-value">
-                  {parts.filter(p => p.is_export).length}
+          {error ? (
+            <div className="empty-state">
+              <p>{error}</p>
+            </div>
+          ) : (
+            <>
+              <div className="info-cards-grid">
+                <div className="info-card">
+                  <h4>Top Partners</h4>
+                  <div className="info-card-value">{topPartners.length}</div>
+                </div>
+                <div className="info-card">
+                  <h4>Countries</h4>
+                  <div className="info-card-value">{tradeByCountry.length}</div>
                 </div>
               </div>
-              <div className="info-card">
-                <h4>Import Partners</h4>
-                <div className="info-card-value">
-                  {parts.filter(p => !p.is_export).length}
+
+              <div style={{ marginTop: '2rem' }}>
+                <h3>Top Partners</h3>
+                {topPartners.length > 0 ? (
+                  <div className="partners-grid">
+                    {topPartners.map((p, idx) => (
+                      <div key={idx} className="partner-card">
+                        <div className="partner-country">{p.partner}</div>
+                        <div className="partner-volume">
+                          {fmtCurr(p.total_volume)}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: '#718096', marginTop: '0.5rem' }}>
+                          {p.transaction_count} transactions
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: '#718096', marginTop: '1rem' }}>No partners found</p>
+                )}
+              </div>
+
+              <div style={{ marginTop: '2rem' }}>
+                <h3>Trade Volume by Country</h3>
+                {tradeByCountry.length > 0 ? (
+                  <div className="partners-grid">
+                    {tradeByCountry.map((c, idx) => (
+                      <div key={idx} className="partner-card">
+                        <div className="partner-country">{c.country}</div>
+                        <div className="partner-volume">
+                          {fmtCurr(c.total_volume)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: '#718096', marginTop: '1rem' }}>No country data available</p>
+                )}
+              </div>
+
+              {topPartners.length > 0 && (
+                <div style={{ marginTop: '2rem' }}>
+                  <h3>All Partners</h3>
+                  <table className="products-table" style={{ marginTop: '1rem' }}>
+                    <thead>
+                      <tr>
+                        <th>Partner</th>
+                        <th>Trade Volume</th>
+                        <th>Transactions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topPartners.map((p, idx) => (
+                        <tr key={idx}>
+                          <td><strong>{p.partner}</strong></td>
+                          <td>{fmtCurr(p.total_volume)}</td>
+                          <td>{p.transaction_count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              </div>
-            </div>
-          )}
-
-          <div style={{ marginTop: '2rem' }}>
-            <h3>Top Exporting Countries</h3>
-            {topExps().length > 0 ? (
-              <div className="partners-grid">
-                {topExps().map((p, idx) => (
-                  <div key={idx} className="partner-card">
-                    <div className="partner-country">{p.country}</div>
-                    <div className="partner-volume">
-                      {fmtCurr(p.trade_volume)}
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: '#718096', marginTop: '0.5rem' }}>
-                      {parseFloat(p.percentage_share).toFixed(1)}% of total
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ color: '#718096', marginTop: '1rem' }}>No export partners found</p>
-            )}
-          </div>
-
-          <div style={{ marginTop: '2rem' }}>
-            <h3>Top Ports of Entry</h3>
-            {topPorts().length > 0 ? (
-              <div className="partners-grid">
-                {topPorts().map((p, idx) => (
-                  <div key={idx} className="partner-card">
-                    <div className="partner-country">{p.port_name}</div>
-                    <div style={{ fontSize: '0.9rem', color: '#718096', marginTop: '0.3rem' }}>
-                      {p.country}
-                    </div>
-                    <div className="partner-volume" style={{ marginTop: '0.5rem' }}>
-                      {fmtCurr(p.trade_volume)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ color: '#718096', marginTop: '1rem' }}>No port information available</p>
-            )}
-          </div>
-
-          {parts.length > 0 && (
-            <div style={{ marginTop: '2rem' }}>
-              <h3>All Partners</h3>
-              <table className="products-table" style={{ marginTop: '1rem' }}>
-                <thead>
-                  <tr>
-                    <th>Country</th>
-                    <th>Port</th>
-                    <th>Type</th>
-                    <th>Trade Volume</th>
-                    <th>Share</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {parts.map((p, idx) => (
-                    <tr key={idx}>
-                      <td><strong>{p.country}</strong></td>
-                      <td>{p.port_name || 'N/A'}</td>
-                      <td>
-                        <span className={`growth-badge ${p.is_export ? 'positive' : 'negative'}`}>
-                          {p.is_export ? 'Export' : 'Import'}
-                        </span>
-                      </td>
-                      <td>{fmtCurr(p.trade_volume)}</td>
-                      <td>{parseFloat(p.percentage_share).toFixed(2)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -236,3 +198,4 @@ const CompanyPartners = () => {
 };
 
 export default CompanyPartners;
+

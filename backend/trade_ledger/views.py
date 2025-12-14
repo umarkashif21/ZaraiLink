@@ -251,9 +251,9 @@ def company_trends_api(request, company_name):
 # ----------------------------
 @csrf_exempt
 @require_http_methods(["POST"])
-# Compare companies is POST and highly variable, skipping cache or short cache?
-# Often POST is not cached by default by cache_page. Skipping.
 def compare_companies_api(request):
+    from .services.compare import get_company_comparison_metrics, get_dummy_comparison_data
+    
     try:
         data = json.loads(request.body)
         company_names = data.get('companies', [])
@@ -264,17 +264,25 @@ def compare_companies_api(request):
     except:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    if len(company_names) < 2 or len(company_names) > 4:
-        return JsonResponse({"error": "Select 2-4 companies"}, status=400)
+    if len(company_names) < 2:
+        return JsonResponse({"error": "Select at least 2 companies"}, status=400)
 
-    metrics = get_company_comparison_metrics(
-        company_names=company_names,
-        direction=direction,
-        date_from=date_from,
-        date_to=date_to,
-        country=country
-    )
-    return JsonResponse(metrics)
+    # Use dummy data for testing (change to False when real data is available)
+    use_dummy = True
+    
+    if use_dummy:
+        result = get_dummy_comparison_data(company_names)
+    else:
+        metrics = get_company_comparison_metrics(
+            company_names=company_names,
+            direction=direction,
+            date_from=date_from,
+            date_to=date_to,
+            country=country
+        )
+        result = metrics
+    
+    return JsonResponse(result)
 
 
 # ============================

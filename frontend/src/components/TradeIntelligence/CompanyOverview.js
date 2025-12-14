@@ -9,7 +9,10 @@ const CompanyOverview = () => {
   const loc = useLocation();
   const [comp, setComp] = useState(null);
   const [load, setLoad] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Decode the company name from URL
+  const companyName = decodeURIComponent(id);
   const tab = loc.pathname.split('/').pop();
 
   useEffect(() => {
@@ -17,14 +20,22 @@ const CompanyOverview = () => {
   }, [id]);
 
   const loadComp = async () => {
+    setLoad(true);
+    setError(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
+      // Use correct API endpoint: /api/company/{company_name}/overview/
+      const res = await fetch(`http://localhost:8000/api/company/${id}/overview/`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setComp(data);
+      } else {
+        setError('Company not found');
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load company:', err);
+      setError('Failed to load company data');
     } finally {
       setLoad(false);
     }
@@ -56,12 +67,20 @@ const CompanyOverview = () => {
     );
   }
 
-  if (!comp) {
+  if (!comp || error) {
     return (
       <>
         <Navbar />
         <div className="empty-state">
-          <h2>Company not found</h2>
+          <h2>{error || 'Company not found'}</h2>
+          <p>The company "{companyName}" could not be loaded.</p>
+          <button 
+            onClick={() => navigate('/trade-intelligence/ledger')}
+            className="btn-primary"
+            style={{ marginTop: '1rem' }}
+          >
+            Back to Trade Ledger
+          </button>
         </div>
       </>
     );
@@ -72,12 +91,12 @@ const CompanyOverview = () => {
       <Navbar />
       <div className="company-detail-container">
         <div className="company-detail-header">
-          <h1>{comp.company.name}</h1>
-          <p>📍 {comp.company.province}, {comp.company.country}</p>
+          <h1>{companyName}</h1>
+          <p>📍 Trade Intelligence Profile</p>
           <div className="company-tags">
-            {comp.is_exporter && <span className="company-tag">Exporter</span>}
-            {comp.is_importer && <span className="company-tag">Importer</span>}
-            {comp.company.sector && <span className="company-tag">{comp.company.sector.name}</span>}
+            {comp.reputation_tags && comp.reputation_tags.map((tag, idx) => (
+              <span key={idx} className="company-tag">{tag}</span>
+            ))}
           </div>
         </div>
 
@@ -113,23 +132,43 @@ const CompanyOverview = () => {
           
           <div className="info-cards-grid">
             <div className="info-card">
-              <h4>Estimated Revenue</h4>
-              <div className="info-card-value">{fmtCurr(comp.estimated_revenue)}</div>
-            </div>
-            <div className="info-card">
               <h4>Trade Volume</h4>
-              <div className="info-card-value">{fmtCurr(comp.trade_volume)}</div>
+              <div className="info-card-value">{fmtCurr(comp.total_volume)}</div>
             </div>
             <div className="info-card">
-              <h4>Partner Diversity Score</h4>
-              <div className="info-card-value">{comp.partner_diversity_score || 0}/100</div>
+              <h4>Average Price</h4>
+              <div className="info-card-value">{fmtCurr(comp.avg_price)}</div>
             </div>
             <div className="info-card">
-              <h4>Active Since</h4>
-              <div className="info-card-value">
-                {comp.active_since ? new Date(comp.active_since).getFullYear() : 'N/A'}
+              <h4>Total Transactions</h4>
+              <div className="info-card-value">{comp.total_transactions || 0}</div>
+            </div>
+            <div className="info-card">
+              <h4>YoY Growth</h4>
+              <div className="info-card-value" style={{
+                color: (comp.yoy_growth || 0) >= 0 ? '#22c55e' : '#ef4444'
+              }}>
+                {comp.yoy_growth !== null && comp.yoy_growth !== undefined 
+                  ? `${comp.yoy_growth >= 0 ? '+' : ''}${comp.yoy_growth.toFixed(1)}%`
+                  : 'N/A'}
               </div>
             </div>
+            {comp.network_influence && (
+              <>
+                <div className="info-card">
+                  <h4>Network Influence</h4>
+                  <div className="info-card-value">
+                    {(comp.network_influence.pagerank * 100).toFixed(2)}%
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: '#718096' }}>PageRank Score</p>
+                </div>
+                <div className="info-card">
+                  <h4>Network Connections</h4>
+                  <div className="info-card-value">{comp.network_influence.degree}</div>
+                  <p style={{ fontSize: '0.8rem', color: '#718096' }}>Trade Partners</p>
+                </div>
+              </>
+            )}
           </div>
 
           <div style={{ marginTop: '2rem' }}>

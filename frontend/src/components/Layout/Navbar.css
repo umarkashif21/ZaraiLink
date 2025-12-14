@@ -123,6 +123,12 @@
   color: var(--color-primary);
 }
 
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-primary);
+  margin: 0.5rem 0;
+}
+
 /* Right Section */
 .navbar-right {
   display: flex;

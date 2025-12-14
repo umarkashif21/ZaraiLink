@@ -30,6 +30,8 @@ def get_trade_volume_by_country(company_name, direction='import', **filters):
     )
 
 def get_partner_trends(company_name, direction='import', top_n=5, **filters):
+    # Remove 'limit' from filters to avoid duplicate keyword argument
+    filters.pop('limit', None)
     top_partners = get_top_partners(company_name, direction, limit=top_n, **filters)
     partner_names = [p['partner'] for p in top_partners]
     if not partner_names:

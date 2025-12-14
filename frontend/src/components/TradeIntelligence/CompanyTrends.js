@@ -7,38 +7,35 @@ const CompanyTrends = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const loc = useLocation();
-  const [comp, setComp] = useState(null);
-  const [trds, setTrds] = useState([]);
+  const [trds, setTrds] = useState(null);
   const [load, setLoad] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Decode the company name from URL
+  const companyName = decodeURIComponent(id);
   const tab = loc.pathname.split('/').pop();
 
   useEffect(() => {
-    loadData();
     loadTrds();
   }, [id]);
 
-  const loadData = async () => {
-    try {
-      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/`);
-      if (res.ok) {
-        const data = await res.json();
-        setComp(data);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const loadTrds = async () => {
+    setLoad(true);
+    setError(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/trade-ledger/companies/${id}/trends/`);
+      // Use correct API endpoint: /api/company/{company_name}/trends/
+      const res = await fetch(`http://localhost:8000/api/company/${id}/trends/`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setTrds(data);
+      } else {
+        setError('Could not load trends');
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load trends:', err);
+      setError('Failed to load trends data');
     } finally {
       setLoad(false);
     }
@@ -58,36 +55,9 @@ const CompanyTrends = () => {
     }).format(v);
   };
 
-  const recTrds = () => {
-    return [...trds]
-      .sort((a, b) => {
-        if (b.year !== a.year) return b.year - a.year;
-        return b.month - a.month;
-      })
-      .slice(0, 12);
-  };
-
-  const qGrowth = () => {
-    const qs = {};
-    trds.forEach(t => {
-      const q = Math.ceil(t.month / 3);
-      const k = `${t.year}-Q${q}`;
-      if (!qs[k]) {
-        qs[k] = { count: 0, total: 0, year: t.year, q };
-      }
-      if (t.yoy_volume_growth !== null) {
-        qs[k].count += 1;
-        qs[k].total += parseFloat(t.yoy_volume_growth);
-      }
-    });
-
-    return Object.entries(qs)
-      .map(([k, d]) => ({
-        label: k,
-        growth: d.count > 0 ? (d.total / d.count).toFixed(2) : 0
-      }))
-      .slice(-8);
-  };
+  // Get data from API response
+  const volumePriceTrend = trds?.volume_price_trend || [];
+  const quarterlyVolume = trds?.quarterly_volume || [];
 
   if (load) {
     return (
@@ -105,57 +75,53 @@ const CompanyTrends = () => {
     <>
       <Navbar />
       <div className="company-detail-container">
-        {comp && (
-          <>
-            <div className="company-detail-header">
-              <h1>{comp.company.name}</h1>
-              <p>📍 {comp.company.province}, {comp.company.country}</p>
-              <div className="company-tags">
-                {comp.is_exporter && <span className="company-tag">Exporter</span>}
-                {comp.is_importer && <span className="company-tag">Importer</span>}
-              </div>
-            </div>
+        <div className="company-detail-header">
+          <h1>{companyName}</h1>
+          <p>📍 Trade Intelligence Profile</p>
+        </div>
 
-            <div className="tab-navigation">
-              <button
-                className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
-                onClick={() => navTab('overview')}
-              >
-                Overview
-              </button>
-              <button
-                className={`tab-button ${tab === 'products' ? 'active' : ''}`}
-                onClick={() => navTab('products')}
-              >
-                Products ({comp.total_products || 0})
-              </button>
-              <button
-                className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
-                onClick={() => navTab('partners')}
-              >
-                Partners ({comp.total_partners || 0})
-              </button>
-              <button
-                className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
-                onClick={() => navTab('trends')}
-              >
-                Trends
-              </button>
-            </div>
-          </>
-        )}
+        <div className="tab-navigation">
+          <button
+            className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
+            onClick={() => navTab('overview')}
+          >
+            Overview
+          </button>
+          <button
+            className={`tab-button ${tab === 'products' ? 'active' : ''}`}
+            onClick={() => navTab('products')}
+          >
+            Products
+          </button>
+          <button
+            className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
+            onClick={() => navTab('partners')}
+          >
+            Partners
+          </button>
+          <button
+            className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
+            onClick={() => navTab('trends')}
+          >
+            Trends
+          </button>
+        </div>
 
         <div className="tab-content">
           <h2>Trade Trends & Analytics</h2>
 
-          {trds.length === 0 ? (
+          {error ? (
+            <div className="empty-state">
+              <p>{error}</p>
+            </div>
+          ) : !volumePriceTrend || volumePriceTrend.length === 0 ? (
             <div className="empty-state">
               <p>No trend data available</p>
             </div>
           ) : (
             <>
               <div style={{ marginTop: '2rem' }}>
-                <h3>Monthly Volume vs Avg Price (Recent 12 Months)</h3>
+                <h3>Monthly Volume vs Avg Price (Recent Data)</h3>
                 <table className="products-table" style={{ marginTop: '1rem' }}>
                   <thead>
                     <tr>
@@ -168,7 +134,7 @@ const CompanyTrends = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {recTrds().map((t, idx) => (
+                    {volumePriceTrend.map((t, idx) => (
                       <tr key={idx}>
                         <td>
                           <strong>{t.month_name} {t.year}</strong>
@@ -205,13 +171,15 @@ const CompanyTrends = () => {
               <div style={{ marginTop: '2rem' }}>
                 <h3>YoY Volume Growth By Quarter</h3>
                 <div className="info-cards-grid" style={{ marginTop: '1rem' }}>
-                  {qGrowth().map((q, idx) => (
+                  {quarterlyVolume.map((q, idx) => (
                     <div key={idx} className="info-card">
-                      <h4>{q.label}</h4>
+                      <h4>{q.year}-Q{q.quarter}</h4>
                       <div className="info-card-value" style={{
-                        color: parseFloat(q.growth) >= 0 ? '#22c55e' : '#ef4444'
+                        color: parseFloat(q.yoy_growth || 0) >= 0 ? '#22c55e' : '#ef4444'
                       }}>
-                        {parseFloat(q.growth) >= 0 ? '+' : ''}{q.growth}%
+                        {q.yoy_growth !== null && q.yoy_growth !== undefined
+                          ? `${parseFloat(q.yoy_growth) >= 0 ? '+' : ''}${parseFloat(q.yoy_growth).toFixed(2)}%`
+                          : 'N/A'}
                       </div>
                     </div>
                   ))}
@@ -235,3 +203,4 @@ const CompanyTrends = () => {
 };
 
 export default CompanyTrends;
+

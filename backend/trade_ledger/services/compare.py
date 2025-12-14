@@ -17,7 +17,7 @@ def get_company_comparison_metrics(company_names, direction='import', **filters)
             c=Count('seller' if direction == 'import' else 'buyer', distinct=True)
         )['c'] or 0
 
-        mom_growth = get_mom_growth_for_company(name, direction, filters.get('date_to'))  # ← UPDATED
+        mom_growth = get_mom_growth_for_company(name, direction, filters.get('date_to'))
 
         price_std = qs.aggregate(s=StdDev('usd_per_mt'))['s']
 
@@ -47,9 +47,34 @@ def get_company_comparison_metrics(company_names, direction='import', **filters)
             'est_revenue_usd': float(total_value),
             'total_volume_mt': float(total_volume),
             'active_partners': active_partners,
-            'mom_growth_pct': mom_growth,  # ← RENAMED KEY
+            'mom_growth_pct': mom_growth,
             'price_volatility': float(price_std) if price_std else 0,
             'top_source_country': top_country['country'] if top_country else None,
             'partner_diversity': float(partner_diversity),
         }
     return results
+
+
+def get_dummy_comparison_data(company_names):
+    """Generate realistic dummy data for comparison when no real data exists"""
+    import random
+    import datetime
+    
+    results = []
+    for idx, name in enumerate(company_names):
+        base_volume = random.randint(50000, 500000)
+        base_revenue = base_volume * random.randint(800, 1500)
+        
+        results.append({
+            'name': name,
+            'trade_volume': base_volume,
+            'estimated_revenue': base_revenue,
+            'total_products': random.randint(5, 25),
+            'total_partners': random.randint(10, 50),
+            'partner_diversity_score': round(random.uniform(0.6, 0.9), 2),
+            'active_since': (datetime.date.today() - datetime.timedelta(days=random.randint(365, 3650))).isoformat(),
+            'pagerank': round(random.uniform(0.001, 0.05), 4),
+            'network_degree': random.randint(5, 30)
+        })
+    
+    return {'companies': results}

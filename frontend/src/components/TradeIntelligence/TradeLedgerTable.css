@@ -1,0 +1,153 @@
+/* Trade Ledger Table Styles */
+.trade-ledger-table-container {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.trade-ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.trade-ledger-table thead {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.trade-ledger-table th {
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  font-weight: 700;
+  color: #2d3748;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.trade-ledger-table td {
+  padding: 1.25rem 1.5rem;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.trade-ledger-table tbody tr {
+  transition: all 0.2s;
+}
+
+.table-row-clickable {
+  cursor: pointer;
+}
+
+.table-row-clickable:hover {
+  background: #f7fafc;
+  transform: scale(1.005);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.company-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.company-name-cell strong {
+  font-size: 1.05rem;
+  color: #2d3748;
+}
+
+.company-location-sub {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+/* Company Type Badges for Table */
+.company-badge.badge-both {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.company-badge.badge-exporter {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.company-badge.badge-importer {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+  .trade-ledger-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .trade-ledger-table {
+    min-width: 800px;
+  }
+  
+  .trade-ledger-table th,
+  .trade-ledger-table td {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .company-name-cell strong {
+    font-size: 0.95rem;
+  }
+  
+  .company-location-sub {
+    font-size: 0.75rem;
+  }
+}
+
+/* Dark Mode for Table */
+.trade-ledger-table-container {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+}
+
+.trade-ledger-table thead {
+  background: var(--bg-tertiary);
+}
+
+.trade-ledger-table th {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-primary);
+}
+
+.trade-ledger-table td {
+  color: var(--text-secondary);
+  border-bottom-color: var(--border-primary);
+}
+
+.table-row-clickable:hover {
+  background: var(--bg-hover);
+}
+
+.company-name-cell strong {
+  color: var(--text-primary);
+}
+
+.company-location-sub {
+  color: var(--text-secondary);
+}
