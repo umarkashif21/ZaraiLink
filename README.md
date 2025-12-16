@@ -13,7 +13,7 @@
 5. [Part 5: Data Flows & Key Features](#part-5-data-flows--key-features)
 6. [Part 6: AI & Smart Features](#part-6-ai--smart-features-deep-dive)
 7. [Part 7: Performance & Optimizations](#part-7-performance--optimizations)
-8. [Part 8: Developer Operations](#part-8-developer-operations--technical-reference)
+8. [Part 8: Developer Operations (Docker, Tests, APIs)](#part-8-developer-operations--technical-reference)
 9. [Part 9: Trade Data & Link Prediction Algorithms](#part-9-trade-data--link-prediction-algorithms)
 10. [Part 10: Custom Hooks & Frontend Utilities](#part-10-custom-hooks--frontend-utilities)
 11. [AI Features & Capabilities Deep Dive](#ai-features--capabilities-deep-dive)
@@ -3410,6 +3410,39 @@ python manage.py generate_gnn_embeddings
 | CompareCompanies | `frontend/src/components/TradeIntelligence/CompareCompanies.js` |
 | LinkPrediction | `frontend/src/components/TradeIntelligence/LinkPrediction.js` |
 | CompanyOverview | `frontend/src/components/TradeIntelligence/CompanyOverview.js` |
+
+---
+
+---
+
+## 8.10 Docker Deployment & CI/CD (New)
+
+ZaraiLink is fully containerized for development and production.
+
+### Architecture
+- **Services:** Frontend (React), Backend (Django), Database (Postgres 14), Cache (Redis 7).
+- **Network:** `zarailink-net` (internal bridge).
+- **Volumes:** `postgres_data` (persists DB).
+
+### Running with Docker Compose
+```bash
+# Start all services
+docker-compose up --build
+
+# Run in background
+docker-compose up -d
+```
+
+### Access Points
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:8000
+- **Admin Panel:** http://localhost:8000/admin
+
+### Automated Testing (CI/CD)
+The project includes a GitHub Actions workflow `.github/workflows/ci.yml` that runs on every push to `main`.
+
+- **Backend Job:** Installs Python 3.10, runs `pytest`.
+- **Frontend Job:** Installs Node 18, runs `npm test`.
 
 ---
 
