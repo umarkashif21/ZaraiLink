@@ -16,4 +16,5 @@ urlpatterns = [
     path('sectors/', SectorListView.as_view(), name='sectors'),
     path('company-types/', CompanyTypeListView.as_view(), name='company-types'),
     path('company-roles/', CompanyRoleListView.as_view(), name='company-roles'),
+    
 ]

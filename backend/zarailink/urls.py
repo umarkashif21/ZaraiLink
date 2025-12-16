@@ -28,5 +28,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('api/subscriptions/', include('subscriptions.urls')),
     path('api/', include('trade_ledger.urls')),  # ← Only this line for trade_ledger
+    path("companies/", include("companies.urls")),
     path("ckeditor5/", include('django_ckeditor_5.urls')),
 ]

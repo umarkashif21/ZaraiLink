@@ -9,150 +9,161 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--file',
+            "--file",
             type=str,
-            default=r'C:\Users\Dell\Desktop\zarailink\companies.xlsx',
-            help='Path to the Excel file (default: companies.xlsx in project root)'
+            default=r"C:\Users\ibrahim\Desktop\Zarailink\companies.xlsx",
+            help="Path to the Excel file",
         )
         parser.add_argument(
-            '--sheet',
+            "--sheet",
             type=str,
-            default=0,  # First sheet by default
-            help='Sheet name or index (default: 0 for first sheet)'
+            default=0,
+            help="Sheet name or index (default: 0 for first sheet)",
         )
 
     def handle(self, *args, **options):
-        file_path = options['file']
-        sheet_name = options['sheet']
+        file_path = options["file"]
+        sheet_name = options["sheet"]
 
-        self.stdout.write(f"Reading Excel file: {file_path}")
+        # Convert any excel cell -> safe string (never None)
+        def safe_str(val, default="N/A"):
+            if pd.isna(val):
+                return default
+            s = str(val).strip()
+            return s if s else default
+
+        def safe_int(val, default=None):
+            try:
+                if pd.isna(val):
+                    return default
+                return int(val)
+            except Exception:
+                return default
+
+        self.stdout.write(self.style.WARNING(f"Reading Excel file: {file_path}"))
 
         try:
-            # Read Excel file
             df = pd.read_excel(file_path, sheet_name=sheet_name)
-            self.stdout.write(f"✓ Loaded {len(df)} rows from Excel")
+            self.stdout.write(self.style.SUCCESS(f"✓ Loaded {len(df)} rows from Excel"))
         except FileNotFoundError:
             raise CommandError(f"File not found: {file_path}")
         except Exception as e:
             raise CommandError(f"Error reading Excel file: {str(e)}")
 
-        # Define column mapping (Excel column name → field name)
-        # Adjust these based on your actual Excel column names
-        column_mapping = {
-            'Company Name': 'name',
-            'Company Email': 'email',  # Not in Company model, but used for info
-            'Contact details/Numbers': 'landline_numbers',
-            'Sector': 'sector_name',
-            'Country': 'country',
-            'Year established': 'year_established',
-            'Number of employees': 'number_of_employees',
-            'Website': 'website',
-            'Contact Level': 'contact_level',  # Used to determine role (Supplier/Buyer)
-            'Description': 'description',
-        }
-
-        # Check for required columns
-        for excel_col in column_mapping.keys():
-            if excel_col not in df.columns:
-                self.stdout.write(self.style.WARNING(f"⚠ Missing column: {excel_col}"))
+        # expected columns (based on what you showed)
+        expected_columns = [
+            "Company role",
+            "Company type",
+            "Company Name",
+            "Country",
+            "Year_established",
+            "Number of employees",
+            "Website",
+            "Email",
+            "Landline Numbers",
+            "Address",
+            "Description",
+            "Sector",
+        ]
+        for c in expected_columns:
+            if c not in df.columns:
+                self.stdout.write(self.style.WARNING(f"⚠ Missing column in Excel: {c}"))
 
         created_count = 0
+        updated_count = 0
         skipped_count = 0
         error_count = 0
 
+        company_field_names = {f.name for f in Company._meta.fields}
+
         with transaction.atomic():
             for idx, row in df.iterrows():
+                row_number = idx + 2  # excel row number-ish (header assumed row 1)
+
                 try:
-                    # Extract data from row
-                    company_name = row.get('Company Name', '').strip()
+                    company_name = safe_str(row.get("Company Name", ""), default="").strip()
                     if not company_name:
-                        self.stdout.write(self.style.WARNING(f"Row {idx + 2}: Skipped (no company name)"))
                         skipped_count += 1
+                        self.stdout.write(self.style.WARNING(f"Row {row_number}: Skipped (no Company Name)"))
                         continue
 
-                    sector_name = row.get('Sector', '').strip() or 'Unknown'
-                    country = row.get('Country', '').strip() or 'Unknown'
-                    year_established = row.get('Year established')
-                    number_of_employees = row.get('Number of employees')
-                    website = row.get('Website', '').strip() or None
-                    landline_numbers = row.get('Contact details/Numbers', '').strip() or None
-                    description = row.get('Description', '').strip() or None
-                    contact_level = row.get('Contact Level', '').strip().lower()
+                    # Normalize role/type/sector/country
+                    role_name = safe_str(row.get("Company role", "Buyer"), default="Buyer")
+                    # optional: singularize Buyers/Suppliers
+                    if role_name.lower() in ("buyers", "buyer"):
+                        role_name = "Buyer"
+                    elif role_name.lower() in ("suppliers", "supplier"):
+                        role_name = "Supplier"
 
-                    # Convert year to int if valid
-                    try:
-                        year_established = int(year_established) if pd.notna(year_established) else None
-                    except (ValueError, TypeError):
-                        year_established = None
+                    type_name = safe_str(row.get("Company type", "Unknown"), default="Unknown")
+                    sector_name = safe_str(row.get("Sector", "Unknown"), default="Unknown")
+                    country = safe_str(row.get("Country", "Unknown"), default="Unknown")
 
-                    # Determine company role based on contact level
-                    # Assuming: "supplier" in contact level → Supplier role
-                    #           otherwise → Buyer role
-                    if 'supplier' in contact_level:
-                        role_name = 'Supplier'
-                        type_name = 'Sugar Mill'
-                    else:
-                        role_name = 'Buyer'
-                        # Determine buyer type based on sector or other field
-                        if 'pharma' in sector_name.lower():
-                            type_name = 'Pharmaceuticals'
-                        elif 'confect' in sector_name.lower():
-                            type_name = 'Confectionary'
-                        else:
-                            type_name = 'Confectionary'  # Default buyer type
+                    # These may be empty in excel -> force placeholders so DB never gets NULL
+                    website = safe_str(row.get("Website", ""), default="N/A")
+                    email = safe_str(row.get("Email", ""), default="N/A")
+                    description = safe_str(row.get("Description", ""), default="N/A")
+                    address = safe_str(row.get("Address", ""), default=country)
 
-                    # Get or create Sector
+                    landline_numbers = safe_str(row.get("Landline Numbers", ""), default="N/A")
+
+                    year_established = safe_int(row.get("Year_established"), default=None)
+                    num_employees = row.get("Number of employees")
+                    num_employees_str = safe_str(num_employees, default="N/A")
+
+                    # Get/Create lookup tables
                     sector, _ = Sector.objects.get_or_create(name=sector_name)
-
-                    # Get or create CompanyRole
                     company_role, _ = CompanyRole.objects.get_or_create(name=role_name)
-
-                    # Get or create CompanyType
                     company_type, _ = CompanyType.objects.get_or_create(name=type_name)
 
-                    # Create or update Company
+                    defaults = {
+                        "country": country,
+                        "sector": sector,
+                        "company_role": company_role,
+                        "company_type": company_type,
+                    }
+
+                    # Only set fields that actually exist in your Company model
+                    if "year_established" in company_field_names:
+                        defaults["year_established"] = year_established
+                    if "number_of_employees" in company_field_names:
+                        defaults["number_of_employees"] = num_employees_str
+                    if "website" in company_field_names:
+                        defaults["website"] = website
+                    if "email" in company_field_names:
+                        defaults["email"] = email
+                    if "address" in company_field_names:
+                        defaults["address"] = address
+                    if "description" in company_field_names:
+                        defaults["description"] = description
+                    if "landline_numbers" in company_field_names:
+                        defaults["landline_numbers"] = landline_numbers
+
                     company, created = Company.objects.update_or_create(
                         name=company_name,
-                        defaults={
-                            'country': country,
-                            'year_established': year_established,
-                            'number_of_employees': str(number_of_employees) if pd.notna(number_of_employees) else None,
-                            'website': website,
-                            'address': f"{country}",  # Placeholder: use country as address if no address field
-                            'description': description,
-                            'landline_numbers': landline_numbers,
-                            'sector': sector,
-                            'company_role': company_role,
-                            'company_type': company_type,
-                        }
+                        defaults=defaults,
                     )
 
                     if created:
+                        created_count += 1
                         self.stdout.write(
                             self.style.SUCCESS(
-                                f"Row {idx + 2}: ✓ Created '{company_name}' "
+                                f"Row {row_number}: ✓ Created '{company_name}' "
                                 f"(Role: {role_name}, Type: {type_name}, Sector: {sector_name})"
                             )
                         )
-                        created_count += 1
                     else:
-                        self.stdout.write(
-                            self.style.SUCCESS(
-                                f"Row {idx + 2}: ✓ Updated '{company_name}'"
-                            )
-                        )
-                        created_count += 1
+                        updated_count += 1
+                        self.stdout.write(self.style.SUCCESS(f"Row {row_number}: ✓ Updated '{company_name}'"))
 
                 except Exception as e:
                     error_count += 1
-                    self.stdout.write(
-                        self.style.ERROR(f"Row {idx + 2}: ✗ Error: {str(e)}")
-                    )
+                    self.stdout.write(self.style.ERROR(f"Row {row_number}: ✗ Error: {str(e)}"))
 
-        # Summary
         self.stdout.write(self.style.SUCCESS("\n" + "=" * 60))
-        self.stdout.write(self.style.SUCCESS(f"Import Complete!"))
-        self.stdout.write(self.style.SUCCESS(f"  Created/Updated: {created_count}"))
+        self.stdout.write(self.style.SUCCESS("Import Complete!"))
+        self.stdout.write(self.style.SUCCESS(f"  Created: {created_count}"))
+        self.stdout.write(self.style.SUCCESS(f"  Updated: {updated_count}"))
         self.stdout.write(self.style.WARNING(f"  Skipped: {skipped_count}"))
         if error_count > 0:
             self.stdout.write(self.style.ERROR(f"  Errors: {error_count}"))
