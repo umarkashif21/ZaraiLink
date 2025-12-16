@@ -56,10 +56,10 @@ const Dashboard = () => {
             <div className="stat-icon">🤝</div>
             <div className="stat-content">
               <h3>Connect</h3>
-              <p>Business Partners</p>
+              <p>AI Partner Match</p>
             </div>
             <button 
-              onClick={() => navigate('/trade-directory/find-suppliers')}
+              onClick={() => navigate('/trade-intelligence/link-prediction')}
               className="stat-action"
             >
               Explore →

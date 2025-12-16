@@ -44,7 +44,7 @@ def get_mom_growth_for_company(company_name, direction='import', date_to=None):
     ).aggregate(v=Sum('qty_mt'))['v'] or 0
 
     if prior_month_vol == 0:
-        return None if last_month_vol == 0 else float('inf')
+        return None # Avoid infinite growth
     return round(((last_month_vol - prior_month_vol) / prior_month_vol) * 100, 2)
 
 def get_company_overview_metrics(company_name, direction='import', **filters):
@@ -71,6 +71,15 @@ def get_company_overview_metrics(company_name, direction='import', **filters):
         .annotate(vol=Sum('qty_mt'))
         .order_by('-vol')[:3]
     )
+    
+    # Calculate share_pct
+    top_products_list = []
+    vol_denom = float(total_volume) if total_volume else 1.0
+    
+    for p in top_products:
+        p_vol = float(p['vol'])
+        p['share_pct'] = round((p_vol / vol_denom) * 100, 1)
+        top_products_list.append(p)
 
     top_countries = (
         qs.values('country')
@@ -82,7 +91,7 @@ def get_company_overview_metrics(company_name, direction='import', **filters):
         'est_revenue_usd': float(total_value),
         'total_volume_mt': float(total_volume),
         'active_partners': active_partners,
-        'mom_growth_pct': mom_growth,  # ← renamed from yoy_growth_pct
-        'top_products': list(top_products),
+        'mom_growth_pct': mom_growth,
+        'top_products': top_products_list,
         'top_countries': list(top_countries),
     }

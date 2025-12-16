@@ -6,11 +6,13 @@ from django.views.decorators.cache import cache_page
 import json
 from .services.explorer import get_explorer_companies
 from .services.company import get_company_overview_metrics
-from .services.products import get_company_product_performance, get_avg_price_trend_monthly, get_volume_share
+from .services.products import get_company_product_performance, get_avg_price_trend_monthly, get_volume_share, get_co_traded_products, get_product_clusters
 from .services.partners import get_top_partners, get_trade_volume_by_country, get_partner_trends, get_product_mix_per_partner
 from .services.trends import get_volume_price_monthly, get_yoy_growth_by_quarter
 from .services.compare import get_company_comparison_metrics
-from trade_data.models import CompanyEmbedding, ProductEmbedding  # For GNN data
+from trade_data.models import CompanyEmbedding, ProductEmbedding, Transaction  # Added Transaction here
+# from django.views.decorators.cache import cache_page # Disable caching for debugging
+
 
 def _parse_date(date_str):
     if not date_str:
@@ -35,7 +37,8 @@ def explorer_api(request):
     product_subcategory_id = request.GET.get('product_subcategory_id')
     product_item_id = request.GET.get('product_item_id')
     search_query = request.GET.get('search')
-    limit = min(int(request.GET.get('limit', 100)), 1000)
+    # Increased default limit to 1000 to cover all companies (currently ~710)
+    limit = min(int(request.GET.get('limit', 1000)), 5000)
 
     companies = get_explorer_companies(
         direction=direction,
@@ -62,10 +65,14 @@ def explorer_api(request):
 
 
 # ----------------------------
-# COMPANY PROFILE - OVERVIEW (Enhanced with Network Influence)
+# COMPANY PROFILE - OVERVIEW (Enhanced with Network Influence & Similar Companies)
 # ----------------------------
 @cache_page(60 * 60)  # Cache for 1 hour
 def company_overview_api(request, company_name):
+    from .services.gnn import get_similar_companies
+    from trade_data.models import Transaction
+    from django.db.models import Sum
+    
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
     date_to = _parse_date(request.GET.get('date_to'))
@@ -96,6 +103,57 @@ def company_overview_api(request, company_name):
     except CompanyEmbedding.DoesNotExist:
         metrics['network_influence'] = {'pagerank': 0.0, 'degree': 0}
         metrics['reputation_tags'] = ["Other"]
+    
+    # Add Similar Companies from GNN embeddings
+    try:
+        similar_companies = get_similar_companies(company_name, top_k=4)
+        # get_similar_companies returns a list directly, not a dict
+        metrics['similar_companies'] = similar_companies if isinstance(similar_companies, list) else []
+    except Exception as e:
+        print(f"Error getting similar companies: {e}")
+        metrics['similar_companies'] = []
+    
+    # Add country distribution for charts (formatted for Recharts)
+    company_field = 'buyer' if direction == 'import' else 'seller'
+    country_dist_qs = (
+        Transaction.objects.filter(**{company_field: company_name})
+        .values('country')
+        .annotate(volume=Sum('qty_mt'), value=Sum('usd'))
+        .order_by('-volume')[:10]
+    )
+    metrics['country_distribution'] = [
+        {
+            'name': row['country'] or 'Unknown',
+            'volume': float(row['volume'] or 0),
+            'value': float(row['value'] or 0)
+        }
+        for row in country_dist_qs
+    ]
+    
+    # Map 'top_products' from service to 'products' for frontend compatibility
+    # Frontend expects: comp.products and comp.total_products
+    if 'top_products' in metrics:
+        # Transform top_products to match frontend expectations
+        metrics['products'] = [
+            {
+                'name': p.get('name'),
+                'product_name': p.get('name'),
+                'vol': float(p.get('vol', 0)),
+                'volume': float(p.get('vol', 0)),
+                'share_pct': p.get('share_pct'),
+                'subcat': p.get('subcat'),
+                'cat': p.get('cat'),
+            }
+            for p in metrics['top_products']
+        ]
+        metrics['total_products'] = len(metrics['top_products'])
+    else:
+        metrics['products'] = []
+        metrics['total_products'] = 0
+    
+    # Also add total_volume and total_partners for frontend
+    metrics['total_volume'] = metrics.get('total_volume_mt', 0)
+    metrics['total_partners'] = metrics.get('active_partners', 0)
 
     return JsonResponse(metrics)
 
@@ -103,7 +161,7 @@ def company_overview_api(request, company_name):
 # ----------------------------
 # COMPANY PROFILE - PRODUCTS (Enhanced with Product Clusters)
 # ----------------------------
-@cache_page(60 * 60)  # Cache for 1 hour
+# @cache_page(60 * 60)  # Cache for 1 hour
 def company_products_api(request, company_name):
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
@@ -126,34 +184,39 @@ def company_products_api(request, company_name):
         country=country
     ))
 
-    # Avg price trend for top product
+    # Avg price trend for top product & Co-Trade Network
     top_product = performance[0] if performance else None
     price_trend = []
+    co_trade_network = []
+    
     if top_product:
         try:
-            from trade_data.models import ProductItem
-            item = ProductItem.objects.get(name=top_product['product_name'])
+            # Use product_id directly
+            pid = top_product['product_id']
             price_trend = list(get_avg_price_trend_monthly(
                 company_name=company_name,
-                product_item_id=item.id,
+                product_item_id=pid,
                 direction=direction,
                 date_from=date_from,
                 date_to=date_to,
                 country=country
             ))
-        except:
-            pass
+            
+            # Co-Trade Network
+            co_trade_network = get_co_traded_products(pid, top_k=5)
+            
+        except Exception as e:
+            print(f"Error fetching product analytics: {e}")
 
-    # Add product clusters
-    product_clusters = list(
-        ProductEmbedding.objects.values_list('cluster_tag', flat=True).distinct()
-    )
+    # Add AI Clusters
+    product_clusters = get_product_clusters(company_name, direction)
 
     return JsonResponse({
         "product_performance": performance,
         "avg_price_trend": price_trend,
         "volume_share": volume_share,
-        "product_clusters": product_clusters
+        "product_clusters": product_clusters,
+        "co_trade_network": co_trade_network
     })
 
 
@@ -217,7 +280,7 @@ def company_partners_api(request, company_name):
 # ----------------------------
 # COMPANY PROFILE - TRENDS
 # ----------------------------
-@cache_page(60 * 60)  # Cache for 1 hour
+# @cache_page(60 * 60)  # Cache for 1 hour
 def company_trends_api(request, company_name):
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
@@ -252,7 +315,7 @@ def company_trends_api(request, company_name):
 @csrf_exempt
 @require_http_methods(["POST"])
 def compare_companies_api(request):
-    from .services.compare import get_company_comparison_metrics, get_dummy_comparison_data
+    from .services.compare import get_company_comparison_metrics
     
     try:
         data = json.loads(request.body)
@@ -267,21 +330,25 @@ def compare_companies_api(request):
     if len(company_names) < 2:
         return JsonResponse({"error": "Select at least 2 companies"}, status=400)
 
-    # Use dummy data for testing (change to False when real data is available)
-    use_dummy = True
+    # Use real data from transactions - service now returns standardized keys
+    metrics = get_company_comparison_metrics(
+        company_names=company_names,
+        direction=direction,
+        date_from=date_from,
+        date_to=date_to,
+        country=country
+    )
     
-    if use_dummy:
-        result = get_dummy_comparison_data(company_names)
-    else:
-        metrics = get_company_comparison_metrics(
-            company_names=company_names,
-            direction=direction,
-            date_from=date_from,
-            date_to=date_to,
-            country=country
-        )
-        result = metrics
+    # Transform to frontend-expected format
+    companies_data = []
+    for name, data in metrics.items():
+        # Inject name into the data object
+        data_with_name = data.copy()
+        data_with_name['name'] = name
+        companies_data.append(data_with_name)
     
+    result = {'companies': companies_data}
+
     return JsonResponse(result)
 
 
@@ -290,7 +357,7 @@ def compare_companies_api(request):
 # ============================
 
 # NOTE: @cache_page disabled - requires Redis. Re-enable when Redis is available.
-# @cache_page(60 * 60 * 24)  # Cache for 24 hours
+# # @cache_page(60 * 60 * 24)  # Cache for 24 hours
 def similar_companies_api(request, company_name):
     """Explorer → Peer company recommendation (uses fuzzy matching for company names)"""
     from .services.gnn import get_similar_companies
@@ -299,14 +366,14 @@ def similar_companies_api(request, company_name):
 
 
 # NOTE: @cache_page disabled - requires Redis
-# @cache_page(60 * 60 * 24)  # Cache for 24 hours
+# # @cache_page(60 * 60 * 24)  # Cache for 24 hours
 def potential_partners_api(request, company_name):
     """Overview → Link prediction (same as similar companies)"""
     return similar_companies_api(request, company_name)
 
 
 # NOTE: @cache_page disabled - requires Redis
-# @cache_page(60 * 60 * 24)  # Cache for 24 hours
+# # @cache_page(60 * 60 * 24)  # Cache for 24 hours
 def network_influence_api(request, company_name):
     """Overview → Centrality metrics"""
     try:

@@ -82,13 +82,37 @@ def get_product_clusters():
     )
 
 def get_network_influence(company_name):
-    """Get centrality metrics for a company."""
+    """Get centrality metrics for a company, including Combined Influence Score."""
+    from django.db.models import Max
+    
     try:
         emb = CompanyEmbedding.objects.get(company_name=company_name)
+        
+        # Calculate Global Maxima (Ideally cache this)
+        stats = CompanyEmbedding.objects.aggregate(max_pr=Max('pagerank'), max_deg=Max('degree'))
+        max_pr = stats['max_pr'] or 1.0
+        max_deg = stats['max_deg'] or 1.0
+        
+        pagerank = float(emb.pagerank)
+        degree = emb.degree
+        
+        # Combined Score: 50% Normalized PageRank + 50% Normalized Degree
+        # Scale 0-100
+        norm_pr = pagerank / max_pr if max_pr > 0 else 0
+        norm_deg = degree / max_deg if max_deg > 0 else 0
+        
+        combined_score = (0.5 * norm_pr + 0.5 * norm_deg) * 100
+        
         return {
-            "pagerank": float(emb.pagerank),
-            "degree": emb.degree,
-            "influence_percentile": None  # Optional: compute from all companies
+            "pagerank": pagerank,
+            "degree": degree,
+            "influence_percentile": None, # Kept generic or implement quantile logic if needed
+            "combined_score": round(combined_score, 1)
         }
     except CompanyEmbedding.DoesNotExist:
-        return {"pagerank": 0.0, "degree": 0, "influence_percentile": 0}
+        return {
+            "pagerank": 0.0, 
+            "degree": 0, 
+            "influence_percentile": 0, 
+            "combined_score": 0.0
+        }

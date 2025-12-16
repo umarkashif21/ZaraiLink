@@ -25,8 +25,8 @@ def get_trade_volume_by_country(company_name, direction='import', **filters):
 
     return (
         qs.values('country')
-        .annotate(volume_mt=Sum('qty_mt'))
-        .order_by('-volume_mt')
+        .annotate(total_volume=Sum('qty_mt'))
+        .order_by('-total_volume')
     )
 
 def get_partner_trends(company_name, direction='import', top_n=5, **filters):
