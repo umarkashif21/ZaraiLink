@@ -3888,88 +3888,88 @@ Visual architecture of the AI subsystems.
 #### 1. Smart Search (Semantic Search)
 ```mermaid
 graph LR
-    A[User Query: "Rice"] -->|POST /api/search| B[Backend API]
-    B -->|Text String| C[OpenAI API (text-embedding-ada-002)]
-    C -->|Vector [0.01, -0.2...]| B
-    B -->|KNN Search| D[(Redis Vector Store)]
-    D -->|Top-k IDs| B
-    B -->|Hydrate IDs| E[(PostgreSQL)]
-    E -->|JSON Response| A
+    A["User Query: 'Rice'"] -->|"POST /api/search"| B[Backend API]
+    B -->|"Text String"| C["OpenAI API (text-embedding-ada-002)"]
+    C -->|"Vector [0.01, -0.2...]"| B
+    B -->|"KNN Search"| D[(Redis Vector Store)]
+    D -->|"Top-k IDs"| B
+    B -->|"Hydrate IDs"| E[(PostgreSQL)]
+    E -->|"JSON Response"| A
 ```
 
 #### 2. Link Prediction (Ensemble Engine)
 ```mermaid
 graph TD
-    A[Cron Job / On-Demand] -->|Load Data| B[NetworkX Graph Builder]
+    A["Cron Job / On-Demand"] -->|"Load Data"| B["NetworkX Graph Builder"]
     B --> C{Ensemble Models}
-    C -->|Algorithm 1| D[Node2Vec Sim]
-    C -->|Algorithm 2| E[Common Neighbors]
-    C -->|Algorithm 3| F[Product Co-Trade]
-    C -->|Algorithm 4| G[Jaccard Index]
-    C -->|Algorithm 5| H[Pref. Attachment]
+    C -->|"Algorithm 1"| D["Node2Vec Sim"]
+    C -->|"Algorithm 2"| E["Common Neighbors"]
+    C -->|"Algorithm 3"| F["Product Co-Trade"]
+    C -->|"Algorithm 4"| G["Jaccard Index"]
+    C -->|"Algorithm 5"| H["Pref. Attachment"]
     
-    D & E & F & G & H --> I[Weighted Aggregator]
-    I -->|Scale & Cap (95%)| J[Final Confidence Score]
-    J -->|Cache Results| K[(Redis)]
+    D & E & F & G & H --> I["Weighted Aggregator"]
+    I -->|"Scale & Cap (95%)"| J["Final Confidence Score"]
+    J -->|"Cache Results"| K[(Redis)]
 ```
 
 #### 3. Similar Companies (GNN Embeddings)
 ```mermaid
 graph LR
-    A[Trade Ledger Data] -->|Build Graph| B[NetworkX Graph]
-    B -->|Random Walks (p=1, q=1)| C[Walk Corpus]
-    C -->|Word2Vec Skip-Gram| D[Gensim Model]
-    D -->|64-dim Vector| E[CompanyEmbedding Table]
+    A["Trade Ledger Data"] -->|"Build Graph"| B["NetworkX Graph"]
+    B -->|"Random Walks (p=1, q=1)"| C["Walk Corpus"]
+    C -->|"Word2Vec Skip-Gram"| D["Gensim Model"]
+    D -->|"64-dim Vector"| E["CompanyEmbedding Table"]
     
-    U[User Request] -->|Target Company| F[Get Embedding]
-    F -->|Cosine Sim| E
-    E -->|Sorted List| U
+    U["User Request"] -->|"Target Company"| F["Get Embedding"]
+    F -->|"Cosine Sim"| E
+    E -->|"Sorted List"| U
 ```
 
 #### 4. Network Influence (Centrality)
 ```mermaid
 graph TD
-    A[Transaction History] -->|Aggregation| B[Weighted DiGraph]
-    B --> C[PageRank Algorithm]
-    B --> D[Degree Centrality]
+    A["Transaction History"] -->|"Aggregation"| B["Weighted DiGraph"]
+    B --> C["PageRank Algorithm"]
+    B --> D["Degree Centrality"]
     
-    C -->|Score A| E[Normalizer (0-100)]
-    D -->|Score B| E
+    C -->|"Score A"| E["Normalizer (0-100)"]
+    D -->|"Score B"| E
     
-    E -->|Combined Influence| F[Company Profile Badge]
+    E -->|"Combined Influence"| F["Company Profile Badge"]
 ```
 
 #### 5. Market Sentiment (LLM Integration)
 ```mermaid
 graph LR
-    A[News Crawler] -->|Raw Text| B[Text Cleaner]
-    B -->|Prompt Construction| C[GPT-4o-mini]
-    C -->|JSON Output| D[Sentiment Parser]
-    D -->|Store Score| E[(Database)]
-    E -->|Display Trend| F[Frontend Chart]
+    A["News Crawler"] -->|"Raw Text"| B["Text Cleaner"]
+    B -->|"Prompt Construction"| C["GPT-4o-mini"]
+    C -->|"JSON Output"| D["Sentiment Parser"]
+    D -->|"Store Score"| E[("Database")]
+    E -->|"Display Trend"| F["Frontend Chart"]
 ```
 
 #### 6. Product Clustering (Unsupervised Learning)
 ```mermaid
 graph TD
-    A[Product List] -->|Names/Desc| B[OpenAI Embeddings]
-    B -->|High-Dim Vectors| C[UMAP Reduction]
-    C -->|Low-Dim Vectors| D[HDBSCAN]
-    D -->|Cluster IDs| E[Tag Assignment]
+    A["Product List"] -->|"Names/Desc"| B["OpenAI Embeddings"]
+    B -->|"High-Dim Vectors"| C["UMAP Reduction"]
+    C -->|"Low-Dim Vectors"| D["HDBSCAN"]
+    D -->|"Cluster IDs"| E["Tag Assignment"]
     
-    E -->|Cluster 1| F["Sugar & Derivatives"]
-    E -->|Cluster 2| G["Heavy Machinery"]
+    E -->|"Cluster 1"| F["Sugar & Derivatives"]
+    E -->|"Cluster 2"| G["Heavy Machinery"]
 ```
 
 #### 7. Partner Recommendation (Hybrid RecSys)
 ```mermaid
 graph LR
-    A[User Activity Log] -->|Viewed Sectors| B[User Interest Profile]
-    C[Similar Companies] -->|Candidate Set| D[Filter Engine]
+    A["User Activity Log"] -->|"Viewed Sectors"| B["User Interest Profile"]
+    C["Similar Companies"] -->|"Candidate Set"| D["Filter Engine"]
     
     B --> D
-    D -->|Rank by Interest| E[Top Recommendations]
-    E -->|Render| F[Dashboard Widget]
+    D -->|"Rank by Interest"| E["Top Recommendations"]
+    E -->|"Render"| F["Dashboard Widget"]
 ```
 
 ---
