@@ -2998,7 +2998,43 @@ You've learned:
 
 # Part 8: Developer Operations & Technical Reference
 
+# Part 8: Developer Operations & Technical Reference
+
 This section documents infrastructure, tooling, and technical details for developers working on ZaraiLink.
+
+---
+
+## 8.0 Data Ingestion & ETL Pipeline
+
+Before running the app or building GNN graphs, you **MUST** ingest the raw data. The project uses a two-stage ETL (Extract, Transform, Load) process.
+
+### Stage 1: Static Data (Companies & Contacts)
+**Script:** `load_data.py` (Root Directory)
+**Input Files:** `companies.xlsx`, `keycontacts.xlsx`
+
+This script handles the complex logic of:
+1.  **Normalization:** Cleaning company names, sectors, and roles.
+2.  **Deduplication:** Merging duplicate company entries.
+3.  **Atomic Linking:** Connecting Contacts to Companies transactionally.
+
+**Usage:**
+```bash
+# Must be run from project root
+python load_data.py
+```
+
+### Stage 2: Transaction Data (Trade History)
+**Command:** `ingest_trade`
+**Input File:** `import_data_1year.xlsx` (600MB+ dataset)
+
+This management command processes the massive trade ledger.
+- **Product Hierarchy Creation:** Automatically generates `Product` -> `Category` -> `Item` hierarchy from HS Codes.
+- **Lazy Foreign Keys:** Links `buyer` and `seller` text fields to Company models if they exist.
+
+**Usage:**
+```bash
+python backend/manage.py ingest_trade --file import_data_1year.xlsx
+```
 
 ---
 
@@ -3076,12 +3112,20 @@ ZaraiLink includes custom Django management commands for data processing and GNN
 
 ### Required Execution Order
 
-```bash
-# Step 1: Build the graph files first
-python manage.py build_gnn_graphs
+Failure to follow this order will result in empty GNN graphs.
 
-# Step 2: Generate embeddings from the graphs
-python manage.py generate_gnn_embeddings
+```bash
+# Step 1: Ingest Static Data (Companies/Contacts)
+python load_data.py
+
+# Step 2: Ingest Trade Transactions
+python backend/manage.py ingest_trade --file import_data_1year.xlsx
+
+# Step 3: Build GNN Graphs (Depends on Transactions)
+python backend/manage.py build_gnn_graphs
+
+# Step 4: Generate Embeddings (Depends on Graphs)
+python backend/manage.py generate_gnn_embeddings
 ```
 
 ### Command Details
