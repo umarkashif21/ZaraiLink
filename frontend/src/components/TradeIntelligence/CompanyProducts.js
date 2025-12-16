@@ -266,7 +266,7 @@ const CompanyProducts = () => {
                       volume: parseFloat(p.volume) || 0,
                       value: (parseFloat(p.avg_price) || 0) * (parseFloat(p.volume) || 0),
                     }))}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    margin={{ top: 40, right: 30, left: 20, bottom: 60 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis 
@@ -306,40 +306,66 @@ const CompanyProducts = () => {
           {prods && prods.volume_share && prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).length > 0 && (
             <div style={{ marginTop: '4rem' }}>
               <h3>Volume by Category</h3>
-              <div style={{ width: '100%', height: 350, marginTop: '2rem' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                    <Pie
-                      data={prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).slice(0, 8).map((item) => ({
-                        name: item.category || item.product_name || 'Unknown',
-                        value: parseFloat(item.volume) || parseFloat(item.share) || 0,
-                      }))}
-                      cx="40%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                        const RADIAN = Math.PI / 180;
-                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                        return percent > 0.1 ? (
-                          <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={11}>
-                            {(percent * 100).toFixed(0)}%
-                          </text>
-                        ) : null;
-                      }}
-                      outerRadius={120}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).slice(0, 8).map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'][index % 8]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => `${new Intl.NumberFormat('en-US').format(value)} MT`} />
-                    <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ paddingLeft: '20px' }} />
-                  </PieChart>
-                </ResponsiveContainer>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                {/* Chart */}
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                      <Pie
+                        data={prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).slice(0, 8).map((item) => ({
+                          name: item.category || item.product_name || 'Unknown',
+                          value: parseFloat(item.volume) || parseFloat(item.share) || 0,
+                        }))}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                          const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                          const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
+                          const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
+                          return percent > 0.05 ? (
+                            <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11}>
+                              {(percent * 100).toFixed(0)}%
+                            </text>
+                          ) : null;
+                        }}
+                        outerRadius={120}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).slice(0, 8).map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'][index % 8]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => `${new Intl.NumberFormat('en-US').format(value)} MT`} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Custom Legend */}
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: '1rem', 
+                  justifyContent: 'center', 
+                  marginTop: '1rem',
+                  maxWidth: '100%' 
+                }}>
+                  {prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).slice(0, 8).map((item, index) => (
+                    <div key={index} style={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem', color: '#4a5568' }}>
+                      <div style={{ 
+                        width: '12px', 
+                        height: '12px', 
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'][index % 8],
+                        borderRadius: '2px',
+                        marginRight: '8px'
+                      }}></div>
+                      <span>
+                        {item.category || item.product_name || 'Unknown'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
