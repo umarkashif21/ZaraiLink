@@ -26,7 +26,7 @@ class Command(BaseCommand):
             DIMENSIONS = 32
             WALK_LENGTH = 10
             NUM_WALKS = 30
-            WORKERS = 4
+            WORKERS = 1
         else:
             # Original high-accuracy parameters
             DIMENSIONS = 64   # Higher = more expressive embeddings
@@ -37,9 +37,8 @@ class Command(BaseCommand):
         # ================================
         # 1. COMPANY EMBEDDINGS
         # ================================
-        self.stdout.write(self.style.HTTP_INFO("[1/8] Loading Company–Product and Company–Company graphs..."))
         G_cp = nx.read_graphml("company_product_graph.graphml")
-        G_cc = nx.read_graphml("company_company_graph.graphml")
+        G_cc = nx.read_graphml("buyer_seller_graph.graphml")
 
         G_company = nx.compose(G_cp, G_cc)
         self.stdout.write(f"       Combined company graph: {G_company.number_of_nodes()} nodes, {G_company.number_of_edges()} edges")
@@ -50,7 +49,7 @@ class Command(BaseCommand):
         
         # Node2Vec - train model
         self.stdout.write(self.style.HTTP_INFO("[3/8] Training Word2Vec on walks..."))
-        model = node2vec.fit(window=10, min_count=1, batch_words=4)
+        model = node2vec.fit(window=10, min_count=1, batch_words=4, workers=WORKERS)
         self.stdout.write(self.style.SUCCESS("       Word2Vec training complete!"))
 
         self.stdout.write(self.style.HTTP_INFO("[4/8] Extracting company embeddings..."))
@@ -109,7 +108,7 @@ class Command(BaseCommand):
         self.stdout.write("       Training product Node2Vec...")
         PROD_WALKS = 30 if fast_mode else 50
         node2vec_pp = Node2Vec(G_pp, dimensions=DIMENSIONS, walk_length=15, num_walks=PROD_WALKS, workers=WORKERS, quiet=True)
-        model_pp = node2vec_pp.fit(window=10, min_count=1, batch_words=4)
+        model_pp = node2vec_pp.fit(window=10, min_count=1, batch_words=4, workers=WORKERS)
         self.stdout.write(self.style.SUCCESS("       Product Word2Vec training complete!"))
 
         product_embeddings = {}

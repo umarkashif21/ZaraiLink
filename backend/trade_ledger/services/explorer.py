@@ -41,7 +41,6 @@ def get_explorer_companies(
     # Handle 'both' direction to get all unique companies
     if direction == 'both':
         # Get all unique company names from both buyer and seller columns
-        from collections import defaultdict
         company_stats = defaultdict(lambda: {
             'total_volume': 0, 'total_value': 0, 'avg_price': 0.0, 
             'transaction_count': 0, 'active_partners': set(), 
