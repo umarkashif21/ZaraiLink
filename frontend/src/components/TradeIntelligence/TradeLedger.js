@@ -10,6 +10,7 @@ import Breadcrumb from '../Common/Breadcrumb';
 import WatchlistButton from '../Common/WatchlistButton';
 import useWatchlist from '../../hooks/useWatchlist';
 import useDebounce from '../../hooks/useDebounce';
+import { isNA, formatCurrency, formatPercent } from '../../utils/formatUtils';
 import './TradeIntelligence.css';
 
 const TradeLedger = () => {
@@ -28,6 +29,9 @@ const TradeLedger = () => {
   
   // Watchlist hook
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
+  
+  // Hide N/A filter
+  const [hideNA, setHideNA] = useState(false);
   
   const [filts, setFilts] = useState({
     country: '',
@@ -68,46 +72,64 @@ const TradeLedger = () => {
     setLoad(true);
     try {
       const p = new URLSearchParams();
-      p.append('direction', 'import'); // Default to import
+      p.append('direction', 'both'); // Show all companies (buyers + sellers)
       if (filts.country) p.append('country', filts.country);
       if (filts.dateFrom) p.append('date_from', filts.dateFrom);
       if (filts.dateTo) p.append('date_to', filts.dateTo);
-      p.append('limit', '50');
+      p.append('limit', '1000'); // Get all companies (currently ~710)
 
-      // Use the explorer API which exists
+      // Use the explorer API which pulls from import_data_1year.xlsx
       const res = await fetch(`http://localhost:8000/api/explorer/?${p}`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        // Transform explorer data to match expected format
-        const transformedComps = (data.results || []).map((item, idx) => ({
-          id: idx + 1,
-          company: {
-            name: item.company,
-            province: '',
-            country: ''
-          },
-          estimated_revenue: item.avg_price * item.total_volume,
-          trade_volume: item.total_volume,
-          is_exporter: false,
-          is_importer: true,
-          active_since: null,
-          top_products: [],
-          segment_tag: item.segment_tag || 'Other'
-        }));
-        setComps(transformedComps);
-      }
-
-      // Stats calculation from the loaded companies
-      if (filts.product) {
-        // For now, just set basic stats
-        setStats({
-          avg_price: 0,
-          avg_yoy_growth: 0,
-          total_volume: 0,
-          total_companies: 0
+        // Transform explorer data - parse all numeric strings to actual numbers
+        const transformedComps = (data.results || []).map((item, idx) => {
+          const volume = parseFloat(item.total_volume) || 0;
+          const avgPrice = parseFloat(item.avg_price) || 0;
+          const totalValue = parseFloat(item.total_value) || (avgPrice * volume);
+          const yoyGrowth = item.yoy_growth !== null && item.yoy_growth !== undefined 
+            ? parseFloat(item.yoy_growth) 
+            : null;
+          
+          return {
+            id: idx + 1,
+            company: {
+              name: item.company,
+              province: '',
+              country: item.country || ''
+            },
+            estimated_revenue: totalValue,
+            trade_volume: volume,
+            is_exporter: false,
+            is_importer: true,
+            active_since: item.first_trade,
+            top_products: item.top_products || [],
+            segment_tag: item.segment_tag || 'Other',
+            yoy_growth: !isNaN(yoyGrowth) ? yoyGrowth : null,
+            transaction_count: parseInt(item.transaction_count) || 0,
+            avg_price: avgPrice,
+          };
         });
-      } else {
-        setStats(null);
+        setComps(transformedComps);
+        
+        // Calculate global stats from all companies
+        const totalVolume = transformedComps.reduce((sum, c) => sum + c.trade_volume, 0);
+        const totalRevenue = transformedComps.reduce((sum, c) => sum + c.estimated_revenue, 0);
+        const avgPrice = transformedComps.length > 0 
+          ? transformedComps.reduce((sum, c) => sum + c.avg_price, 0) / transformedComps.length 
+          : 0;
+        const validGrowth = transformedComps.filter(c => c.yoy_growth !== null && !isNaN(c.yoy_growth));
+        const avgYoyGrowth = validGrowth.length > 0
+          ? validGrowth.reduce((sum, c) => sum + c.yoy_growth, 0) / validGrowth.length
+          : null;
+        
+        setStats({
+          avg_price: avgPrice,
+          avg_yoy_growth: avgYoyGrowth,
+          total_volume: totalVolume,
+          total_companies: transformedComps.length,
+          total_value: totalRevenue,
+        });
       }
     } catch (err) {
       console.error('Failed to load companies:', err);
@@ -127,7 +149,7 @@ const TradeLedger = () => {
   };
 
   const fmtCurr = (v) => {
-    if (!v) return 'N/A';
+    if (!v) return '';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -137,13 +159,26 @@ const TradeLedger = () => {
   };
 
   const fmtPct = (v) => {
-    if (v === null || v === undefined) return 'N/A';
-    return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+    if (v === null || v === undefined) return '';
+    const num = typeof v === 'number' ? v : parseFloat(v);
+    if (isNaN(num)) return '';
+    return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
   };
 
-  // Sorted data
+  // Sorted and filtered data
   const sortedComps = useMemo(() => {
-    const sorted = [...comps];
+    let sorted = [...comps];
+    
+    // Filter out N/A entries if hideNA is enabled
+    if (hideNA) {
+      sorted = sorted.filter(c => {
+        // Keep companies that have at least volume > 0 and a country
+        return c.trade_volume > 0 && 
+               c.company.country !== 'N/A' && 
+               c.company.country !== '';
+      });
+    }
+    
     const [field, direction] = sortBy.split('_');
     sorted.sort((a, b) => {
       let valA, valB;
@@ -164,7 +199,7 @@ const TradeLedger = () => {
       return valA < valB ? 1 : -1;
     });
     return sorted;
-  }, [comps, sortBy]);
+  }, [comps, sortBy, hideNA]);
 
   // Paginated data
   const totalPages = Math.ceil(sortedComps.length / itemsPerPage);
@@ -173,20 +208,26 @@ const TradeLedger = () => {
     return sortedComps.slice(start, start + itemsPerPage);
   }, [sortedComps, currentPage, itemsPerPage]);
 
-  // Export columns
+  // Export columns - enhanced with new data fields
   const exportColumns = [
     { key: 'company.name', label: 'Company Name' },
-    { key: 'estimated_revenue', label: 'Est. Revenue' },
-    { key: 'trade_volume', label: 'Trade Volume' },
+    { key: 'company.country', label: 'Country' },
+    { key: 'trade_volume', label: 'Trade Volume (MT)' },
+    { key: 'estimated_revenue', label: 'Total Value (USD)' },
+    { key: 'yoy_growth', label: 'YoY Growth %' },
+    { key: 'top_products_str', label: 'Top Products' },
     { key: 'segment_tag', label: 'Segment' },
   ];
 
   // Format data for export
   const exportData = comps.map(c => ({
     'company.name': c.company.name,
+    'company.country': c.company.country || '',
+    trade_volume: typeof c.trade_volume === 'number' ? c.trade_volume.toFixed(2) : '',
     estimated_revenue: fmtCurr(c.estimated_revenue),
-    trade_volume: fmtCurr(c.trade_volume),
-    segment_tag: c.segment_tag,
+    yoy_growth: c.yoy_growth !== null && c.yoy_growth !== undefined && !isNaN(c.yoy_growth) ? fmtPct(c.yoy_growth) : '',
+    top_products_str: c.top_products?.join(', ') || '',
+    segment_tag: c.segment_tag || '',
   }));
   return (
     <>
@@ -264,39 +305,56 @@ const TradeLedger = () => {
                 onChange={(e) => onFiltChange('dateTo', e.target.value)}
               />
             </div>
+            
+            <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
+              <input
+                type="checkbox"
+                id="hideNA"
+                checked={hideNA}
+                onChange={(e) => setHideNA(e.target.checked)}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <label htmlFor="hideNA" style={{ cursor: 'pointer', fontWeight: 'normal' }}>
+                Hide entries with missing data
+              </label>
+            </div>
           </div>
         </div>
 
-        {stats && filts.product && (
+        {stats && (
           <div className="metrics-row">
-            <div className="metric-card">
-              <h3>Average Price</h3>
-              <div className="metric-value">{fmtCurr(stats.avg_price)}</div>
-              <p className="metric-subtext">Across all companies</p>
-            </div>
-            <div className="metric-card">
-              <h3>YoY Growth</h3>
-              <div className="metric-value" style={{
-                color: stats.avg_yoy_growth >= 0 ? '#22c55e' : '#ef4444'
-              }}>
-                {fmtPct(stats.avg_yoy_growth)}
-              </div>
-              <p className="metric-subtext">Year-over-year</p>
-            </div>
-            <div className="metric-card">
-              <h3>Total Volume</h3>
-              <div className="metric-value">
-                {stats.total_volume 
-                  ? new Intl.NumberFormat('en-US').format(stats.total_volume) 
-                  : 'N/A'}
-              </div>
-              <p className="metric-subtext">Combined volume</p>
-            </div>
             <div className="metric-card">
               <h3>Total Companies</h3>
               <div className="metric-value">{stats.total_companies || comps.length}</div>
-              <p className="metric-subtext">In this category</p>
+              <p className="metric-subtext">In current view</p>
             </div>
+            {stats.total_volume > 0 && (
+              <div className="metric-card">
+                <h3>Total Volume</h3>
+                <div className="metric-value">
+                  {new Intl.NumberFormat('en-US', {maximumFractionDigits: 0}).format(stats.total_volume)} MT
+                </div>
+                <p className="metric-subtext">Combined volume</p>
+              </div>
+            )}
+            {stats.total_value > 0 && (
+              <div className="metric-card">
+                <h3>Total Value</h3>
+                <div className="metric-value">{fmtCurr(stats.total_value)}</div>
+                <p className="metric-subtext">Trade value (USD)</p>
+              </div>
+            )}
+            {stats.avg_yoy_growth !== null && stats.avg_yoy_growth !== undefined && !isNaN(stats.avg_yoy_growth) && (
+              <div className="metric-card">
+                <h3>Avg YoY Growth</h3>
+                <div className="metric-value" style={{
+                  color: stats.avg_yoy_growth >= 0 ? '#22c55e' : '#ef4444'
+                }}>
+                  {fmtPct(stats.avg_yoy_growth)}
+                </div>
+                <p className="metric-subtext">Year-over-year</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -321,9 +379,9 @@ const TradeLedger = () => {
                     <th>Company Name</th>
                     <th>Country</th>
                     <th>Trade Volume</th>
-                    <th>Company Type</th>
-                    <th>Products</th>
-                    <th>Active Since</th>
+                    <th>YoY Growth</th>
+                    <th>Top Products</th>
+                    <th>Segment</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -344,22 +402,31 @@ const TradeLedger = () => {
                           )}
                         </div>
                       </td>
-                      <td>{c.company.country || 'N/A'}</td>
-                      <td><strong>{fmtCurr(c.trade_volume)}</strong></td>
+                      <td>{c.company.country && c.company.country !== 'N/A' ? c.company.country : ''}</td>
+                      <td><strong>{c.trade_volume > 0 ? fmtCurr(c.trade_volume) : ''}</strong></td>
                       <td>
-                        {c.is_exporter && c.is_importer ? (
-                          <span className="company-badge badge-both">Both</span>
-                        ) : c.is_exporter ? (
-                          <span className="company-badge badge-exporter">Exporter</span>
-                        ) : (
-                          <span className="company-badge badge-importer">Importer</span>
-                        )}
+                        {c.yoy_growth !== null && c.yoy_growth !== undefined && !isNaN(c.yoy_growth) ? (
+                          <span className={`growth-badge ${c.yoy_growth >= 0 ? 'positive' : 'negative'}`}>
+                            {fmtPct(c.yoy_growth)}
+                          </span>
+                        ) : null}
                       </td>
-                      <td>{c.top_products?.length || 0}</td>
                       <td>
-                        {c.active_since 
-                          ? new Date(c.active_since).getFullYear()
-                          : 'N/A'}
+                        {c.top_products && c.top_products.length > 0 ? (
+                          <div className="products-cell">
+                            {c.top_products.slice(0, 2).map((prod, idx) => (
+                              <span key={idx} className="product-pill">{prod}</span>
+                            ))}
+                            {c.top_products.length > 2 && (
+                              <span className="more-products">+{c.top_products.length - 2}</span>
+                            )}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td>
+                        {c.segment_tag && c.segment_tag !== 'Other' ? (
+                          <span className="segment-badge">{c.segment_tag}</span>
+                        ) : null}
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
                         <WatchlistButton

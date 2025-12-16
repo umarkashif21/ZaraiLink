@@ -24,7 +24,7 @@ const LinkPrediction = () => {
 
   // Load company suggestions
   useEffect(() => {
-    fetch('http://localhost:8000/api/explorer/?direction=import&limit=100', { credentials: 'include' })
+    fetch('http://localhost:8000/api/explorer/?direction=import&limit=1000', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         const companies = data.results?.map(c => c.company) || [];

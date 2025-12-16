@@ -943,3 +943,59 @@
 .company-location-sub {
   color: var(--text-secondary);
 }
+
+/* Product Pills and Segment Badges */
+.products-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 200px;
+}
+
+.product-pill {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.more-products {
+  background: #f5f5f5;
+  color: #757575;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.segment-badge {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1565c0;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Dark mode for new elements */
+[data-theme="dark"] .product-pill {
+  background: rgba(46, 125, 50, 0.2);
+  color: #81c784;
+}
+
+[data-theme="dark"] .more-products {
+  background: rgba(255, 255, 255, 0.1);
+  color: #bdbdbd;
+}
+
+[data-theme="dark"] .segment-badge {
+  background: rgba(21, 101, 192, 0.2);
+  color: #64b5f6;
+}

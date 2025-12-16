@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import Navbar from '../Layout/Navbar';
 import './TradeIntelligence.css';
 
@@ -20,7 +21,7 @@ const CompareCompanies = () => {
   const loadCompanies = async () => {
     setLoadingCompanies(true);
     try {
-      const res = await fetch('http://localhost:8000/api/explorer/', {
+      const res = await fetch('http://localhost:8000/api/explorer/?direction=both&limit=1000', {
         credentials: 'include'
       });
       if (res.ok) {
@@ -78,37 +79,100 @@ const CompareCompanies = () => {
   };
 
   const handleExportPDF = async () => {
-    const validCompanies = selectedCompanies.filter(c => c.trim() !== '');
-    
     try {
-      const res = await fetch('http://localhost:8000/api/export-comparison-pdf/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          companies: validCompanies,
-          comparison_data: comparisonData 
-        })
+      setLoading(true);
+      // Dynamic imports
+      const { default: jsPDF } = await import('jspdf');
+      const { default: html2canvas } = await import('html2canvas');
+      const { default: autoTable } = await import('jspdf-autotable');
+      
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      
+      // -- HEADER --
+      doc.setFontSize(18);
+      doc.setTextColor(44, 62, 80);
+      doc.text('Company Comparison Report', pageWidth / 2, 20, { align: 'center' });
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 26, { align: 'center' });
+
+      // -- DATA PREPARATION --
+      const companyNames = selectedCompanies.filter(c => c);
+      const metrics = [
+        { label: 'Trade Volume', key: 'trade_volume', fmt: val => val ? `$${val.toLocaleString()}` : '' },
+        { label: 'Estimated Revenue', key: 'estimated_revenue', fmt: val => val ? `$${val.toLocaleString()}` : '' },
+        { label: 'Total Products', key: 'total_products', fmt: val => val || '' },
+        { label: 'Total Partners', key: 'total_partners', fmt: val => val || '' },
+        { label: 'Partner Diversity', key: 'partner_diversity_score', fmt: val => val ? val.toFixed(2) : '' },
+        { label: 'Active Since', key: 'active_since', fmt: val => val ? new Date(val).getFullYear() : '' },
+        { label: 'PageRank', key: 'pagerank', fmt: val => val ? val.toFixed(4) : '' },
+        { label: 'Network Degree', key: 'network_degree', fmt: val => val || '' },
+      ];
+
+      const tableBody = metrics.map(m => {
+        const row = [m.label];
+        comparisonData.companies.forEach(comp => {
+          row.push(m.fmt(comp[m.key]));
+        });
+        return row;
       });
 
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `company-comparison-${Date.now()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else {
-        setError('Failed to generate PDF');
-      }
+      // -- RENDER TABLE --
+      autoTable(doc, {
+        head: [['Metric', ...companyNames]],
+        body: tableBody,
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 3 },
+        alternateRowStyles: { fillColor: [240, 253, 250] },
+      });
+
+      let finalY = doc.lastAutoTable.finalY + 10;
+
+      // -- CHARTS --
+      // Helper to capture chart
+      const addChartToDoc = async (elementId, title) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          if (finalY > 250) { // New page if near bottom
+             doc.addPage();
+             finalY = 20;
+          }
+          
+          doc.setFontSize(14);
+          doc.setTextColor(0);
+          doc.text(title, 14, finalY);
+          finalY += 5;
+
+          const canvas = await html2canvas(element, {
+            scale: 2, // 2 is sufficient for embedded small charts
+            useCORS: true,
+            logging: false
+          });
+          
+          const imgData = canvas.toDataURL('image/png');
+          const imgWidth = pageWidth - 28; // Margins
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          
+          doc.addImage(imgData, 'PNG', 14, finalY, imgWidth, imgHeight);
+          finalY += imgHeight + 10;
+        }
+      };
+
+      await addChartToDoc('chart-volume', 'Trade Volume Comparison');
+      await addChartToDoc('chart-partners', 'Partners & Products Comparison');
+
+      // Save
+      doc.save(`comparison_report_${Date.now()}.pdf`);
+      
     } catch (err) {
       console.error('PDF export error:', err);
-      setError('Failed to export PDF');
+      setError('Failed to export PDF.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -232,7 +296,7 @@ const CompareCompanies = () => {
                         <td><strong>Trade Volume</strong></td>
                         {comparisonData.companies?.map((comp, idx) => (
                           <td key={idx}>
-                            ${comp.trade_volume?.toLocaleString() || 'N/A'}
+                            {comp.trade_volume > 0 ? `$${comp.trade_volume.toLocaleString()}` : ''}
                           </td>
                         ))}
                       </tr>
@@ -240,27 +304,27 @@ const CompareCompanies = () => {
                         <td><strong>Estimated Revenue</strong></td>
                         {comparisonData.companies?.map((comp, idx) => (
                           <td key={idx}>
-                            ${comp.estimated_revenue?.toLocaleString() || 'N/A'}
+                            {comp.estimated_revenue > 0 ? `$${comp.estimated_revenue.toLocaleString()}` : ''}
                           </td>
                         ))}
                       </tr>
                       <tr>
                         <td><strong>Total Products</strong></td>
                         {comparisonData.companies?.map((comp, idx) => (
-                          <td key={idx}>{comp.total_products || 0}</td>
+                          <td key={idx}>{comp.total_products > 0 ? comp.total_products : ''}</td>
                         ))}
                       </tr>
                       <tr>
                         <td><strong>Total Partners</strong></td>
                         {comparisonData.companies?.map((comp, idx) => (
-                          <td key={idx}>{comp.total_partners || 0}</td>
+                          <td key={idx}>{comp.total_partners > 0 ? comp.total_partners : ''}</td>
                         ))}
                       </tr>
                       <tr>
                         <td><strong>Partner Diversity</strong></td>
                         {comparisonData.companies?.map((comp, idx) => (
                           <td key={idx}>
-                            {comp.partner_diversity_score?.toFixed(2) || 'N/A'}
+                            {comp.partner_diversity_score > 0 ? comp.partner_diversity_score.toFixed(2) : ''}
                           </td>
                         ))}
                       </tr>
@@ -268,7 +332,7 @@ const CompareCompanies = () => {
                         <td><strong>Active Since</strong></td>
                         {comparisonData.companies?.map((comp, idx) => (
                           <td key={idx}>
-                            {comp.active_since ? new Date(comp.active_since).getFullYear() : 'N/A'}
+                            {comp.active_since ? new Date(comp.active_since).getFullYear() : ''}
                           </td>
                         ))}
                       </tr>
@@ -280,17 +344,83 @@ const CompareCompanies = () => {
                 <div className="info-cards-grid">
                   {comparisonData.companies?.map((comp, idx) => (
                     <div key={idx} className="info-card">
-                      <h4>{selectedCompanies[idx]}</h4>
+                      <h4>{selectedCompanies.filter(c => c)[idx]}</h4>
                       <div style={{ marginTop: '1rem' }}>
-                        <div style={{ marginBottom: '0.5rem' }}>
-                          <strong>PageRank:</strong> {comp.pagerank?.toFixed(4) || 'N/A'}
-                        </div>
-                        <div>
-                          <strong>Network Degree:</strong> {comp.network_degree || 'N/A'}
-                        </div>
+                        {typeof comp.pagerank === 'number' && comp.pagerank > 0 && (
+                          <div style={{ marginBottom: '0.5rem' }}>
+                            <strong>PageRank:</strong> {comp.pagerank.toFixed(4)}
+                          </div>
+                        )}
+                        {comp.network_degree > 0 && (
+                          <div>
+                            <strong>Network Degree:</strong> {comp.network_degree}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Trade Volume Comparison Chart */}
+                <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Trade Volume Comparison</h4>
+                <div id="chart-volume" style={{ width: '100%', height: 350, marginTop: '1rem', background: '#fff' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={comparisonData.companies?.map((comp, idx) => ({
+                        name: selectedCompanies.filter(c => c)[idx]?.substring(0, 15) + (selectedCompanies.filter(c => c)[idx]?.length > 15 ? '...' : ''),
+                        volume: parseFloat(comp.trade_volume) || 0,
+                        revenue: parseFloat(comp.estimated_revenue) || 0,
+                        partners: parseInt(comp.total_partners) || 0,
+                        products: parseInt(comp.total_products) || 0
+                      })) || []}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                      <XAxis 
+                        dataKey="name" 
+                        angle={-15} 
+                        textAnchor="end" 
+                        interval={0}
+                        tick={{ fontSize: 11 }}
+                        height={60}
+                      />
+                      <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
+                      <Tooltip 
+                        formatter={(value, name) => [
+                          name === 'volume' 
+                            ? `${new Intl.NumberFormat('en-US').format(value)} MT`
+                            : `$${new Intl.NumberFormat('en-US').format(value)}`,
+                          name === 'volume' ? 'Trade Volume' : 'Revenue'
+                        ]}
+                      />
+                      <Legend />
+                      <Bar dataKey="volume" fill="#10b981" name="Trade Volume (MT)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="revenue" fill="#3b82f6" name="Revenue (USD)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Partners & Products Comparison */}
+                <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Partners & Products Comparison</h4>
+                <div id="chart-partners" style={{ width: '100%', height: 300, marginTop: '1rem', background: '#fff' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={comparisonData.companies?.map((comp, idx) => ({
+                        name: selectedCompanies.filter(c => c)[idx]?.substring(0, 20),
+                        partners: parseInt(comp.total_partners) || 0,
+                        products: parseInt(comp.total_products) || 0
+                      })) || []}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="partners" fill="#f59e0b" name="Partners" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="products" fill="#8b5cf6" name="Products" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
