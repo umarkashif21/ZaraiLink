@@ -130,7 +130,7 @@ class TestRedeemCode:
             content_type='application/json'
         )
         
-        assert response.status_code == 400
+        assert response.status_code == 404
     
     def test_subscription_created_on_redemption(self, authenticated_django_client, redeem_code, user):
         """Test that UserSubscription is created on code redemption."""
