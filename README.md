@@ -14,10 +14,11 @@
 6. [Part 6: AI & Smart Features](#part-6-ai--smart-features-deep-dive)
 7. [Part 7: Performance & Optimizations](#part-7-performance--optimizations)
 8. [Part 8: Developer Operations](#part-8-developer-operations--technical-reference)
-9. [Part 9: Trade Data & GNN Embeddings](#part-9-trade-data-app--gnn-embeddings)
-10. [Part 10: Custom Hooks & Utilities](#part-10-custom-hooks--frontend-utilities)
-11. [Appendix A: Complete File Reference](#appendix-a-complete-file-reference)
-12. [Glossary](#glossary)
+9. [Part 9: Trade Data & Link Prediction Algorithms](#part-9-trade-data--link-prediction-algorithms)
+10. [Part 10: Custom Hooks & Frontend Utilities](#part-10-custom-hooks--frontend-utilities)
+11. [AI Features & Capabilities Deep Dive](#ai-features--capabilities-deep-dive)
+12. [Appendix A: Complete File Reference](#appendix-a-complete-file-reference)
+13. [Glossary](#glossary)
 
 ---
 
@@ -195,7 +196,11 @@ graph TB
 | **React** | Build user interface | Fast, interactive, reusable components |
 | **Django** | Handle business logic | Built-in auth, admin panel, security |
 | **PostgreSQL** | Store data | Handles complex relationships well |
-| **REST API** | Communication | Standard, well-understood protocol |
+| **Redis** | Caching & Fast Retreival | Reduces DB load, speeds up repeated API calls |
+| **GNN (Graph Neural Net)** | AI Recommendations | Powers "Similar Companies" & Link Prediction |
+| **Scikit-Learn** | Logic & Metrics | Cosine Similarity for vector comparisons |
+| **Puppeteer** | PDF Generation | High-fidelity export of dashboard views |
+| **AuditLog** | Security & Tracking | Tracks all changes to sensitive models |
 
 ### For Complete Beginners
 
@@ -911,6 +916,21 @@ urlpatterns = [
 ]
 ```
 
+### Middleware & Security Layer
+ZaraiLink uses a robust middleware chain in `settings.py` to handle security, sessions, and auditing:
+
+1.  **SecurityMiddleware**: Enforces SSL/TLS (in production).
+2.  **CorsMiddleware**: Allows React frontend (port 3000) to communicate with Django (port 8000).
+3.  **AuditlogMiddleware**: Automatically tracks changes to sensitive models (e.g., Company updates).
+4.  **SessionMiddleware**: Manages user sessions via secure cookies.
+
+### Logging System
+The system uses a custom logging configuration to track errors and debug info:
+- **Console Handler**: Outputs `DEBUG` level logs to terminal during development.
+- **File Handler**: Writes `ERROR` level occurrences to `debug.log`.
+- **ZaraiLink Logger**: Project-specific logger for tracing business logic flow.
+```
+
 **What this means:**
 - `/admin/*` → Django admin panel
 - `/accounts/*` → Forward to accounts app
@@ -1357,6 +1377,21 @@ frontend/src/
 │   └── TradeIntelligence/    # Trade ledger
 └── services/
     └── api.js                # API calls (future)
+
+### Advanced Frontend Features
+The `App.js` includes performance and UX optimizations:
+
+1.  **Lazy Loading (Code Splitting):**
+    Heavy components are loaded only when needed using `React.lazy()` and `Suspense`:
+    ```javascript
+    const TradeLedger = React.lazy(() => import("./components/TradeIntelligence/TradeLedger"));
+    ```
+
+2.  **Toast Notifications:**
+    A global `ToastProvider` wraps the app to show success/error messages anywhere without prop drilling.
+
+3.  **Protected Routes:**
+    The `<ProtectedRoute>` wrapper checks `AuthContext` before rendering sensitive pages, redirecting unauthenticated users to Login.
 ```
 
 ---
@@ -2734,94 +2769,100 @@ Click Share → Dropdown appears → Select "Copy Link" → Toast "Link Copied!"
 
 # Part 6: AI & Smart Features Deep Dive
 
-This section explains the advanced Intelligence features of ZaraiLink in granular detail. We use a combination of **Generative AI (OpenAI)**, **Vector Databases (Redis Stack)**, and **Graph Algorithms** to provide smart insights.
+ZaraiLink's intelligence layer is powered by a **Graph Neural Network (GNN)** pipeline that analyzes trade relationships to generate embeddings, predict partners, and calculate influence scores.
 
-## 1. Smart Search (Vector Embeddings)
+## 1. GNN Embeddings (Node2Vec)
 
-### What is it?
-Standard search looks for exact keyword matches (e.g., "Rice" matches "Rice"). **Smart Search** understands *meaning*. It can find "Grain" when you search for "Rice" because they are semantically related.
+### Concept
+We transform the trade network (Companies ↔ Products ↔ Partners) into a 64-dimensional vector space. Companies with similar trading patterns end up close together in this space.
 
-### How it Works (The Math):
-1. **Embeddings:** We send text (Company Description) to OpenAI's `text-embedding-3-small`.
-2. **Vector:** The AI returns a list of 1536 numbers (a vector) representing the *meaning* of that text.
-   - Example: `[0.12, -0.45, 0.88, ...]`
-3. **Indexing:** We store these vectors in **Redis** using an HNSW (Hierarchical Navigable Small World) index.
-4. **Searching:** When a user searches "Best grain supplier", we convert that query into a vector and mathematically find the "nearest neighbors" in Redis using Cosine Similarity.
+### Implementation Checklist
+- **Pipeline:** `Transaction` Data → `NetworkX` Graph → `Node2Vec` Algorithm → `CompanyEmbedding` Model.
+- **File:** `backend/trade_ledger/management/commands/generate_gnn_embeddings.py`
+- **Model:** `CompanyEmbedding` (stores 64-float vector + cluster tag).
 
-### Implementation Details:
-- **File:** `backend/utils/ai_service.py` (Generates Embeddings)
-- **File:** `backend/utils/redis_client.py` (Stores/Searches Vectors)
+### Logic Flow
+1. **Graph Construction:** Transactions are converted into a graph where nodes are Companies and edges are trade volumes.
+2. **Random Walks:** The `node2vec` algorithm performs biased random walks to sample neighborhoods.
+3. **Vector Generation:** Skip-gram model learns embeddings from these walks.
+4. **Clustering:** HDBSCAN clusters these vectors to assign **Segment Tags** (e.g., "High-Volume Rice Trader").
 
-**Code Logic:**
 ```python
-# 1. Generate Embedding
-query_vector = client.embeddings.create(input="grain supplier").data[0].embedding
-
-# 2. Search Redis (KNN = K-Nearest Neighbors)
-results = redis_client.ft('idx:companies').search(
-    Query("*=>[KNN 5 @vector $vec AS score]")
-    .return_field("score")
-    .dialect(2),
-    {"vec": np.array(query_vector).tobytes()}
-)
+# gnn.py (Simplified)
+def get_company_embedding(company_name):
+    # Tries exact match, then case-insensitive, then fuzzy match
+    emb = CompanyEmbedding.objects.get(company_name=company_name)
+    return np.array(emb.embedding)
 ```
 
 ---
 
-## 2. Recommendation Engine
+## 2. Link Prediction Engine (The "Brain")
 
-### What is it?
-"Netflix for Trade". It suggests companies you might be interested in based on what you have looked at before.
+This engine predicts *future* trading partners by analyzing the graph structure. It uses a **Weighted Ensemble** of 5 distinct algorithms.
 
-### Logic (Content-Based Filtering):
-1. **Track History:** When you view a company (e.g., "Sialkot Rice Mills"), we verify its Sector ("Rice") and Description.
-2. **Average Vector:** If you view 3 Rice companies and 1 Cotton company, we calculate the *average* vector of your interests.
-3. **Similarity Search:** We query Redis for companies that are mathematically similar to your *average interest vector*, excluding ones you've already seen.
+**File:** `backend/trade_ledger/services/link_prediction.py`
 
-**Key File:** `backend/market_intel/views.py` (`recommendations_api`)
+### The 5 Algorithms
+
+| Method | Weight | Logic | Code Insight |
+|--------|--------|-------|--------------|
+| **Node2Vec** | 30% | Cosine similarity of GNN vectors. | `cosine_similarity(vec_a, vec_b)` |
+| **Product Co-Trade** | 25% | Companies trading the same products. | `Count('product_item_id')` |
+| **Common Neighbors** | 20% | "Friend of a friend" logic. | `intersection(neighbors_a, neighbors_b)` |
+| **Jaccard Index** | 15% | Network overlap ratio. | `len(inter) / len(union)` |
+| **Preferential Attachment** | 10% | Favors high-degree "Hub" nodes. | `degree(a) * degree(b)` |
+
+### Combined Confidence Score
+The final score (0-95%) is calculated by aggregating weighted scores and applying a **coverage penalty** mechanism.
+
+```python
+# link_prediction.py
+METHOD_WEIGHTS = {
+    'node2vec': 0.30,
+    'common_neighbors': 0.20,
+    'product_cotrade': 0.25,
+    'jaccard': 0.15,
+    'preferential_attachment': 0.10
+}
+
+def predict_combined(entity, top_k=10):
+    # 1. Run all 5 methods
+    # 2. Key-wise summation of weighted scores
+    # 3. Apply Penalties (if only 1 method found a match, reduce confidence)
+    # 4. Cap at 95% (MAX_CONFIDENCE)
+    return sorted_results
+```
 
 ---
 
-## 3. Sentiment Analysis
+## 3. Network Influence & Reputation
 
-### What is it?
-AI analyzes market news and description text to determine if the outlook is **Positive**, **Negative**, or **Neutral**.
+We calculate "Influence Scores" to identify market leaders.
 
-### Process:
-1. **Input:** "Rice prices are skyrocketing due to high demand in Europe."
-2. **AI Analysis:** GPT-4o-mini analyzes the tone.
-3. **Output:** "Positive" (for sellers), "Negative" (for buyers).
-4. **UI:** Displays a colored badge (Green/Red) on the company profile.
+**Metrics:**
+- **PageRank:** Recursive influence (Trading with big players makes you big).
+- **Degree Centrality:** Number of direct trading partners.
+- **Combined Score:** 50% PageRank + 50% Degree (Normalized 0-100).
 
-**Key File:** `backend/companies/management/commands/analyze_companies.py`
-
-<!-- End of AI Basics -->
+**API Endpoint:** `/api/trade-ledger/network-influence/<name>/`
 
 ---
 
-## 4. Link Prediction (Graph Neural Networks)
+## 4. Smart Search & Similarity
 
-### What is it?
-This is the core "Intelligence" of ZaraiLink. It predicts *future* trading partners by analyzing the graph of *past* trades. It answers: "Who *should* you be trading with?"
+**Use Case:** "Find companies similar to Sialkot Rice Mills."
 
-### The 5 Prediction Methods
-We use a "Bag of Models" approach, combining 5 different mathematical strategies to calculate a **Confidence Score (0-95%)**.
+**Logic:**
+1. Fetch target company's embedding.
+2. Calculate Cosine Similarity against *all* other company embeddings.
+3. Return top-k matches with their `segment_tag`.
 
-| Method | Weight | Description | Analogy |
-|--------|--------|-------------|---------|
-| **1. Node2Vec** | 30% | Uses AI to learn the "structure" of a company's trading habits. | Like a "Personality Test". Finds companies with similar trade personalities. |
-| **2. Common Neighbors** | 20% | Finds companies that trade with your partners. | "Friend of a friend". If you both use Supplier X, you might like each other's other partners. |
-| **3. Product Co-Trade** | 25% | Matches companies trading the exact same HSN codes/products. | "Same Clique". Wheat importers benefit from knowing other wheat exporters. |
-| **4. Jaccard Coefficient** | 15% | Measures network overlap percentage. | "How much is our circle the same?" Higher overlap = stronger match. |
-| **5. Preferential Attachment** | 10% | Favors 'Hub' companies with many connections. | "Popular Kids". Busy hubs are likely good partners for everyone. |
-
-### Confidence Score Logic
-The final score is a weighted average of all 5 methods.
-- **70-95%**: High Confidence (Multiple methods agree).
-- **40-69%**: Medium Confidence.
-- **<40%**: Low Confidence.
-
-> **Note:** We cap scores at 95% because no prediction is 100% certain.
+```python
+# gnn.py
+similarities = cosine_similarity([target_vec], all_vectors)[0]
+top_indices = np.argsort(similarities)[-top_k:][::-1]
+```
 
 ---
 
@@ -2837,6 +2878,7 @@ Instead of calculating complex GNN embeddings or database queries every time, we
 ### Configuration
 - **Backend:** `django-redis`
 - **Location:** `backend/settings.py` -> `CACHES['default']`
+- **Fallback:** Automatically switches to `LocMemCache` if Redis is unreachable (dev-friendly).
 - **Decorator:** `@cache_page(timeout)`
 
 ### Caching Levels:
@@ -3217,7 +3259,7 @@ METHOD_WEIGHTS = {
 | **Common Neighbors** | Count shared connections | Dense networks |
 | **Product Co-Trade** | Overlap of traded HSN codes | Industry matching |
 | **Jaccard** | |A ∩ B| / |A ∪ B| | Sparse graphs |
-| **Preferential Attachment** | degree(A) × degree(B) | Hub discovery |
+| **Preferential Attachment** | degree(A) × degree(B) | Hub connectivity bias |
 
 ### Confidence Score
 
@@ -3706,6 +3748,22 @@ Provides:
 ---
 
 **End of Part 10: Custom Hooks & Frontend Utilities**
+
+---
+
+# Part 11: AI Features & Capabilities Matrix
+
+This section provides a consolidated view of all AI-driven features, their architectural implementation, and verification steps.
+
+| Feature | Status | Type | Mechanism (Algorithm) | Data Flow | Testing / Verification |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Smart Search** | ✅ Active | Full-Stack | **OpenAI Embeddings** + **Cosine Similarity** | Search Input → `embeddings.create` → Redis KNN Search → Results | 1. Search for "Grain" <br> 2. Verify results involve "Rice" companies (not just keyword matches). |
+| **Link Prediction** | ✅ Active | Backend | **Ensemble (5 Models)**: Node2Vec, Common Neighbors, Product Co-Trade, Jaccard, Pref. Attachment | `predict_combined(buyer)` → weighted averge of 5 methods → Top-k Sellers | 1. GET `/api/predict-sellers/ABC Corp/` <br> 2. Check `confidence_score` > 70% in JSON. |
+| **Similar Companies** | ✅ Active | Full-Stack | **Node2Vec Embeddings** + **Cosine Similarity** | Company Profile → `get_embedding` → Vector Compare → Top-k Matches | 1. Open Company Profile. <br> 2. Click "Similar Companies" tab. <br> 3. Verify list makes industry sense. |
+| **Network Influence** | ✅ Active | Backend | **PageRank** + **Degree Centrality** | Trade Graph construction → `nx.pagerank` → `nx.degree` → Normalization (0-100) | 1. Check "Influence Score" badge on profile. <br> 2. High-volume traders should have score > 80. |
+| **Market Sentiment** | 🟡 Beta | Backend | **GPT-4o-mini** (Zero-shot classification) | News Text → LLM Prompt ("Analyze sentiment...") → Positive/Negative Label | 1. Run `analyze_companies` command. <br> 2. Check `sentiment_score` field in DB. |
+| **Product Clustering** | ✅ Active | Backend | **HDBSCAN Clustering** | Product Embeddings → HDBSCAN → Cluster ID Assignment | 1. View Product details. <br> 2. Verify "Cluster Tag" (e.g., "Sugar Derivatives") is present. |
+| **Partner Recommendation** | ✅ Active | Frontend | **Content-Based Filtering** | User History (Viewed Sectors) → Average User Vector → Similar Company Search | 1. View 5 "Textile" companies. <br> 2. Go to Dashboard. <br> 3. "Recommended for You" should show Textiles. |
 
 ---
 
