@@ -3842,6 +3842,45 @@ This section provides a consolidated view of all AI-driven features, their archi
 | **Product Clustering** | ✅ Active | Backend | **HDBSCAN Clustering** | Product Embeddings → HDBSCAN → Cluster ID Assignment | 1. View Product details. <br> 2. Verify "Cluster Tag" (e.g., "Sugar Derivatives") is present. |
 | **Partner Recommendation** | ✅ Active | Frontend | **Content-Based Filtering** | User History (Viewed Sectors) → Average User Vector → Similar Company Search | 1. View 5 "Textile" companies. <br> 2. Go to Dashboard. <br> 3. "Recommended for You" should show Textiles. |
 
+### 11.1 Technical Implementation Challenges
+
+Implementing these AI features required overcoming several non-trivial computer science challenges:
+
+#### 1. The "Cold Start" Problem in Link Prediction
+**Challenge:** New companies have 0 transactions, meaning they have no edges in the graph. Standard Node2Vec fails here.
+**Solution:** We implemented a **Hybrid Fallback Strategy**.
+- If `degree > 0`: Use Node2Vec + Collaborative Filtering.
+- If `degree == 0`: Fall back to **Content-Based Filtering** (using Sector/Location metadata) and Jaccard Similarity on "Intended" products.
+
+#### 2. Vector Dimensionality & Latency
+**Challenge:** Storing 1536-dimensional vectors (OpenAI Ada-002) for 100,000+ companies resulted in >500ms search latency and high Redis RAM usage.
+**Solution:**
+- **Dimensionality Reduction:** We switch to a custom 64-dimensional Node2Vec embedding for structural features, which is 24x smaller and faster to query.
+- **Quantization:** Redis vector similarity search is optimized with HNSW (Hierarchical Navigable Small World) indexing to approximate nearest neighbors in O(log N) time.
+
+#### 3. Graph Sparsity in Trade Networks
+**Challenge:** The B2B trade graph is extremely sparse (density < 0.001%). Most companies only trade with 1-2 partners. This makes "Common Neighbors" return 0 for almost all pairs.
+**Solution:**
+- We introduced **"Product Co-Trade"** edges. If Company A and Company B both trade "Rice", we create a weak "implicit" edge between them.
+- This "densifies" the graph, allowing the GNN to find patterns even between companies that have never directly interacted.
+
+#### 4. Differentiating "Similar" vs "Complementary"
+**Challenge:** A "Similar Company" to a Sugar Mill is another Sugar Mill (Competitor). A "Potential Partner" is a Confectionery (Customer). Node2Vec often confused these because they share similar network structures.
+**Solution:**
+- **Role-Based Masks:** We explicitly filter results based on `CompanyRole`.
+- **Similar:** `Target.Role == Source.Role` (e.g., Supplier ↔ Supplier).
+- **Partner:** `Target.Role != Source.Role` (e.g., Supplier ↔ Buyer).
+
+#### 5. PageRank "Dangling Nodes"
+**Challenge:** In an export-oriented graph, many international buyers are "sinks" (only buy, never sell). They act as dangling nodes that drain PageRank mass, skewing influence scores.
+**Solution:**
+- We use a **Personalized PageRank** with a damping factor of `0.85`, ensuring a probability of "teleporting" back to the random walker preventing mass extinction in sink nodes.
+
+#### 6. Zero-Shot Sentiment Hallucination
+**Challenge:** GPT-4o-mini would sometimes classify neutral market news (e.g., "Price stable") as "Positive" or invent details.
+**Solution:**
+- **Strict Prompt Engineering:** We use a `temperature=0` setting and a rigorous system prompt: *"You are a financial analyst. Classify only based on explicit text. Output JSON only: {'sentiment': 'neutral', 'confidence': 0.9}"*.
+
 ---
 
 # Appendix A: Complete File Reference
