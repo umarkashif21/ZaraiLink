@@ -1,4 +1,3 @@
-# conftest.py - Pytest fixtures and configuration for ZaraiLink testing
 """
 Central configuration for pytest fixtures used across all apps.
 
@@ -17,9 +16,9 @@ from rest_framework.test import APIClient
 User = get_user_model()
 
 
-# ============================================================
-# DATABASE FIXTURES
-# ============================================================
+
+
+
 
 @pytest.fixture
 def db_access_without_rollback_and_truncate(request, django_db_setup, django_db_blocker):
@@ -32,9 +31,9 @@ def db_access_without_rollback_and_truncate(request, django_db_setup, django_db_
     django_db_blocker.restore()
 
 
-# ============================================================
-# USER FIXTURES
-# ============================================================
+
+
+
 
 @pytest.fixture
 def create_user(db):
@@ -50,7 +49,7 @@ def create_user(db):
         password='testpass123',
         first_name='Test',
         last_name='User',
-        username=None,  # Username is nullable in User model
+        username=None,  
         email_verified=True,
         token_balance=10,
         **kwargs
@@ -104,9 +103,9 @@ def admin_user(db):
     )
 
 
-# ============================================================
-# CLIENT FIXTURES
-# ============================================================
+
+
+
 
 @pytest.fixture
 def api_client():
@@ -141,9 +140,9 @@ def authenticated_django_client(django_client, user):
     return django_client
 
 
-# ============================================================
-# COMPANY FIXTURES
-# ============================================================
+
+
+
 
 @pytest.fixture
 def create_sector(db):
@@ -204,7 +203,7 @@ def create_company(db, create_sector, create_company_role, create_company_type):
         verification_status='verified',
         **kwargs
     ):
-        # Get or create default related objects
+        
         sector = kwargs.pop('sector', None) or create_sector()
         company_role = kwargs.pop('company_role', None) or kwargs.pop('role', None) or create_company_role()
         company_type = kwargs.pop('company_type', None) or create_company_type()
@@ -276,9 +275,9 @@ def key_contact(create_key_contact):
     return create_key_contact()
 
 
-# ============================================================
-# SUBSCRIPTION FIXTURES
-# ============================================================
+
+
+
 
 @pytest.fixture
 def create_subscription_plan(db):
@@ -331,9 +330,9 @@ def redeem_code(create_redeem_code):
     return create_redeem_code()
 
 
-# ============================================================
-# TRADE DATA FIXTURES
-# ============================================================
+
+
+
 
 @pytest.fixture
 def create_transaction(db, supplier_company, buyer_company):
@@ -363,9 +362,9 @@ def create_transaction(db, supplier_company, buyer_company):
     return _create_transaction
 
 
-# ============================================================
-# UTILITY FUNCTIONS
-# ============================================================
+
+
+
 
 def assert_status_code(response, expected_code):
     """Assert response status code with helpful error message."""

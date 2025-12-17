@@ -2,10 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 const WATCHLIST_KEY = 'zarailink-watchlist';
 
-/**
- * Custom hook for managing company watchlist
- * Stores data in localStorage
- */
+
 const useWatchlist = () => {
   const [watchlist, setWatchlist] = useState(() => {
     try {
@@ -16,7 +13,7 @@ const useWatchlist = () => {
     }
   });
 
-  // Persist to localStorage
+  
   useEffect(() => {
     localStorage.setItem(WATCHLIST_KEY, JSON.stringify(watchlist));
   }, [watchlist]);
@@ -24,7 +21,7 @@ const useWatchlist = () => {
   const addToWatchlist = useCallback((company) => {
     setWatchlist(prev => {
       if (prev.find(c => c.id === company.id || c.name === company.name)) {
-        return prev; // Already exists
+        return prev; 
       }
       return [...prev, { 
         ...company, 

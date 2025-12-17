@@ -38,17 +38,17 @@ def redeem_code(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        # Find the code
+        
         code = RedeemCode.objects.select_for_update().get(code=code_str)
         
-        # Validate that the code belongs to the selected plan
+        
         if plan_id and code.plan.id != plan_id:
             return Response({
                 'status': 'error',
                 'message': f'This code is for "{code.plan.plan_name}", not the selected plan'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Attempt to redeem
+        
         success, message = code.redeem(request.user)
         
         if success:

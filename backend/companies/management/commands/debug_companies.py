@@ -9,28 +9,28 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('=== DEBUGGING COMPANY VISIBILITY ===\n')
         
-        # Check all companies
+        
         self.stdout.write('1. COMPANY COUNT:')
         total = Company.objects.count()
         verified = Company.objects.filter(verification_status='verified').count()
         self.stdout.write(f'   Total: {total}')
         self.stdout.write(f'   Verified: {verified}\n')
         
-        # Check roles
+        
         self.stdout.write('2. COMPANY ROLES:')
         roles = CompanyRole.objects.all()
         for role in roles:
             count = Company.objects.filter(company_role=role, verification_status='verified').count()
             self.stdout.write(f'   {role.name} (ID: {role.id}): {count} verified companies')
         
-        # Check first few companies
+        
         self.stdout.write('\n3. SAMPLE COMPANIES:')
         sample_companies = Company.objects.filter(verification_status='verified')[:5]
         for comp in sample_companies:
             role_name = comp.company_role.name if comp.company_role else 'NO ROLE'
             self.stdout.write(f'   - {comp.name}: status={comp.verification_status}, role={role_name}')
         
-        # Check API viewset queryset
+        
         self.stdout.write('\n4. API QUERYSET TEST:')        
         from companies.views import CompanyViewSet
         viewset = CompanyViewSet()

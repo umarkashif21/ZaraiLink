@@ -31,7 +31,7 @@ class UserRegisterForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        # Split name into first_name and last_name
+        
         name_parts = self.cleaned_data.get('name', '').strip().split(' ', 1)
         user.first_name = name_parts[0] if len(name_parts) > 0 else ''
         user.last_name = name_parts[1] if len(name_parts) > 1 else ''
@@ -39,7 +39,7 @@ class UserRegisterForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         user.country = self.cleaned_data.get('country', '')
 
-        # Set user as inactive until email is verified
+        
         user.is_active = False
 
         if commit:

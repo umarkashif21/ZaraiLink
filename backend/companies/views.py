@@ -31,13 +31,13 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         
-        # Record interaction for recommendation engine
+        
         if request.user.is_authenticated:
             try:
                 from market_intel.models import UserInteraction
                 UserInteraction.objects.create(user=request.user, company=instance, action='view')
             except Exception as e:
-                pass # Don't fail the request if logging fails
+                pass 
             
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
@@ -50,14 +50,14 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             response = self.get_paginated_response(serializer.data)
-            # Add fallback indicator to paginated response
+            
             if getattr(self, '_ai_fallback', False):
                 response.data['ai_fallback'] = True
             return response
 
         serializer = self.get_serializer(queryset, many=True)
         data = {'results': serializer.data}
-        # Add fallback indicator to response
+        
         if getattr(self, '_ai_fallback', False):
             data['ai_fallback'] = True
         return Response(data)
@@ -67,10 +67,10 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         """Filter companies based on query params"""
         queryset = self.queryset
         
-        # Track AI fallback for response metadata
+        
         self._ai_fallback = False
         
-        # Apply filters
+        
         search = self.request.query_params.get('search', '').strip()
         region = self.request.query_params.get('region', '').strip()
         sector = self.request.query_params.get('sector', '').strip()
@@ -82,7 +82,7 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         if role:
             queryset = queryset.filter(company_role_id=role)
             
-        # Smart Search Logic - Uses GPT to intelligently match companies
+        
         use_ai = self.request.query_params.get('use_ai', 'false').lower() == 'true'
         if search:
             if use_ai:
@@ -92,7 +92,7 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                 logger = logging.getLogger('zarailink')
                 
                 try:
-                    # Get company data for GPT to analyze
+                    
                     company_data = list(queryset.values('id', 'name', 'province', 'sector__name')[:100])
                     logger.info(f"AI Search: Query='{search}', Companies available={len(company_data)}")
                     
@@ -106,17 +106,17 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                         for c in company_data
                     ]
                     
-                    # Use GPT-based smart search
+                    
                     matching_ids = AIService.smart_search(search, company_data_formatted)
                     logger.info(f"AI Search: GPT returned IDs={matching_ids}")
                     
                     if matching_ids:
-                        # Filter and preserve AI ordering
+                        
                         valid_ids = list(queryset.filter(id__in=matching_ids).values_list('id', flat=True))
                         logger.info(f"AI Search: Valid IDs after filter={valid_ids}")
                         
                         if valid_ids:
-                            # Preserve the order from AI search
+                            
                             id_positions = {id_val: pos for pos, id_val in enumerate(matching_ids) if id_val in valid_ids}
                             preserved = Case(
                                 *[When(pk=pk, then=pos) for pk, pos in id_positions.items()], 
@@ -124,21 +124,21 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                             )
                             queryset = queryset.filter(id__in=valid_ids).order_by(preserved)
                         else:
-                            # No matches from AI - fallback to text search
+                            
                             logger.warning("AI Search: No valid IDs found, using text fallback")
                             self._ai_fallback = True
                             queryset = queryset.filter(
                                 Q(name__icontains=search) | Q(description__icontains=search)
                             )
                     else:
-                        # AI search returned no results - fallback to text search
+                        
                         logger.warning("AI Search: GPT returned None/empty, using text fallback")
                         self._ai_fallback = True
                         queryset = queryset.filter(
                             Q(name__icontains=search) | Q(description__icontains=search)
                         )
                 except Exception as e:
-                    # Any error - fallback to text search
+                    
                     logger.error(f"AI Search Error: {e}")
                     self._ai_fallback = True
                     queryset = queryset.filter(
@@ -149,7 +149,7 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                     Q(name__icontains=search) | Q(description__icontains=search)
                 )
         
-        # Optimization: Defer heavy fields and avoid prefetching for list view
+        
         queryset = queryset.select_related('sector', 'company_role', 'company_type')
 
         if self.action == 'list':
@@ -161,7 +161,7 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                 'created_at', 'updated_at'
             )
         else:
-            # Only prefetch for details
+            
             queryset = queryset.prefetch_related('products', 'key_contacts')
 
         return queryset
@@ -207,7 +207,7 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
         contact = self.get_object()
         user = request.user
         
-        # Check if already unlocked
+        
         already_unlocked = KeyContactUnlock.objects.filter(
             user=user, 
             key_contact=contact 
@@ -220,9 +220,9 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
                 'contact': KeyContactSerializer(contact, context={'request': request}).data
             })
         
-        # Check if public (free)
+        
         if contact.is_public:
-            # Create unlock record but don't charge
+            
             KeyContactUnlock.objects.create(user=user, key_contact=contact)
             return Response({
                 'status': 'success',
@@ -232,7 +232,7 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
                 'contact': KeyContactSerializer(contact, context={'request': request}).data
             })
         
-        # Check token balance
+        
         if not user.has_tokens(1):
             return Response({
                 'status': 'insufficient_tokens',
@@ -241,7 +241,7 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
                 'required': 1
             }, status=status.HTTP_402_PAYMENT_REQUIRED)
         
-        # Deduct token and unlock
+        
         success = user.deduct_tokens(1)
         if success:
             KeyContactUnlock.objects.create(user=user, key_contact=contact)

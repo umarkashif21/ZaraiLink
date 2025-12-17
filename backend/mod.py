@@ -1,42 +1,40 @@
-# backend/app/models.py
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-# ======================
-# USERS
-# ======================
+
+
+
 class User(AbstractUser):
     tokens = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-# ======================
-# COMPANY STRUCTURE
-# ======================
+
+
+
 class CompanyRole(models.Model):
-    name = models.CharField(max_length=50, unique=True)  # Supplier / Buyer / Both
+    name = models.CharField(max_length=50, unique=True)  
 
     def __str__(self):
         return self.name
 
 
 class CompanyType(models.Model):
-    name = models.CharField(max_length=100, unique=True)  # Sugar Mill, Ethanol Producer, etc.
+    name = models.CharField(max_length=100, unique=True)  
 
     def __str__(self):
         return self.name
 
 
 class Sector(models.Model):
-    name = models.CharField(max_length=100, unique=True)  # Sugar, Ethanol, Pharma, etc.
+    name = models.CharField(max_length=100, unique=True)  
 
     def __str__(self):
         return self.name
 
-# ======================
-# COMPANIES
-# ======================
+
+
+
 class Company(models.Model):
     name = models.CharField(max_length=255)
     country = models.CharField(max_length=100)
@@ -58,9 +56,9 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
-# ======================
-# PRODUCTS
-# ======================
+
+
+
 class Product(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=255)
@@ -75,9 +73,9 @@ class Product(models.Model):
     def __str__(self):
         return f"{self.name} ({self.company.name})"
 
-# ======================
-# KEY CONTACTS
-# ======================
+
+
+
 class KeyContact(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='key_contacts')
     name = models.CharField(max_length=255)
@@ -92,9 +90,9 @@ class KeyContact(models.Model):
     def __str__(self):
         return f"{self.name} ({self.company.name})"
 
-# ======================
-# KEY CONTACT UNLOCKS
-# ======================
+
+
+
 class KeyContactUnlock(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='unlocked_contacts')
     key_contact = models.ForeignKey(KeyContact, on_delete=models.CASCADE, related_name='unlock_history')
@@ -106,9 +104,9 @@ class KeyContactUnlock(models.Model):
     def __str__(self):
         return f"{self.user.username} unlocked {self.key_contact.name}"
 
-# ======================
-# USER TOKENS (Optional)
-# ======================
+
+
+
 class UserToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tokens_history')
     tokens_available = models.IntegerField()

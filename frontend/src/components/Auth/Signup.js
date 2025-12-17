@@ -85,13 +85,13 @@ export default function Signup() {
       const data = await response.json();
 
       if (response.ok) {
-        // Navigate to Email Verification page and pass email state
+        
         navigate("/verify-email", { state: { email } });
       } else {
-        // Handle validation errors from backend
+        
         if (data.errors) {
           const backendErrors = {};
-          // Map Django form errors to our state
+          
           if (data.errors.email) backendErrors.email = data.errors.email[0];
           if (data.errors.password1) backendErrors.password = data.errors.password1[0];
           if (data.errors.password2) backendErrors.confirmPassword = data.errors.password2[0];
@@ -112,7 +112,7 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex flex-col">
-      {/* Navbar */}
+      {}
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <div className="text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
         <div>
@@ -125,7 +125,7 @@ export default function Signup() {
         </div>
       </nav>
 
-      {/* Main Content */}
+      {}
       <div className="flex-1 flex flex-col md:flex-row items-center justify-center px-6 py-10 space-y-10 md:space-y-0 md:space-x-10">
         <form
           onSubmit={handleSubmit}
@@ -138,7 +138,7 @@ export default function Signup() {
             Optimize Data. Empower Tomorrow. Get Started Now.
           </p>
 
-          {/* Name */}
+          {}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Name</label>
             <input
@@ -150,7 +150,7 @@ export default function Signup() {
             {errors.name && <p className="text-red-600 text-sm">{errors.name}</p>}
           </div>
 
-          {/* Email */}
+          {}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Work Email</label>
             <input
@@ -162,7 +162,7 @@ export default function Signup() {
             {errors.email && <p className="text-red-600 text-sm">{errors.email}</p>}
           </div>
 
-          {/* Password */}
+          {}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Password</label>
             <input
@@ -187,7 +187,7 @@ export default function Signup() {
             {errors.password && <p className="text-red-600 text-sm">{errors.password}</p>}
           </div>
 
-          {/* Confirm Password */}
+          {}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Confirm Password</label>
             <input
@@ -199,7 +199,7 @@ export default function Signup() {
             {errors.confirmPassword && <p className="text-red-600 text-sm">{errors.confirmPassword}</p>}
           </div>
 
-          {/* Country */}
+          {}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Country of Residence</label>
             <select
@@ -217,7 +217,7 @@ export default function Signup() {
             {errors.country && <p className="text-red-600 text-sm">{errors.country}</p>}
           </div>
 
-          {/* Terms */}
+          {}
           <p className="text-gray-600 text-sm text-center">
             By signing up you agree to our{" "}
             <span className="text-[#1A4D2E] font-medium hover:underline cursor-pointer">
@@ -229,14 +229,14 @@ export default function Signup() {
             </span>
           </p>
 
-          {/* General Error Message */}
+          {}
           {errors.general && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
               {errors.general}
             </div>
           )}
 
-          {/* Submit */}
+          {}
           <button
             type="submit"
             disabled={loading}

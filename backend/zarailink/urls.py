@@ -14,7 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# zarailink/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
@@ -27,8 +27,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('api/subscriptions/', include('subscriptions.urls')),
-    path('api/market-intel/', include('market_intel.urls')), # Recommendation Engine
-    path('api/', include('companies.urls')),  # Companies app (Find Suppliers/Buyers)
-    path('api/', include('trade_ledger.urls')),  # Trade Ledger app
+    path('api/market-intel/', include('market_intel.urls')), 
+    path('api/', include('companies.urls')),  
+    path('api/', include('trade_ledger.urls')),  
     path("ckeditor5/", include('django_ckeditor_5.urls')),
 ]

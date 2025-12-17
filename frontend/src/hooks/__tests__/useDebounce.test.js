@@ -1,8 +1,8 @@
-// src/hooks/__tests__/useDebounce.test.js
+
 import { renderHook, act } from '@testing-library/react';
 import { useState, useEffect } from 'react';
 
-// Simple useDebounce hook implementation for testing
+
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 

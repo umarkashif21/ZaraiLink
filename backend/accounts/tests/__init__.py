@@ -1,4 +1,3 @@
-# accounts/tests/__init__.py
 """
 Account app test package.
 

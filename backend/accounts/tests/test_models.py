@@ -1,4 +1,3 @@
-# accounts/tests/test_models.py
 """
 Unit tests for the accounts app models.
 
@@ -61,7 +60,7 @@ class TestUserModel:
         user = create_user()
         
         assert user.verification_token is not None
-        assert len(str(user.verification_token)) == 36  # UUID format
+        assert len(str(user.verification_token)) == 36  
     
     def test_is_verification_token_valid_for_new_user(self, create_user):
         """Test token is valid for newly created unverified user."""
@@ -77,7 +76,7 @@ class TestUserModel:
         """Test token expires after 24 hours."""
         user = create_user(email_verified=False)
         
-        # Manually set token creation to 25 hours ago
+        
         user.token_created_at = timezone.now() - timedelta(hours=25)
         user.save()
         
@@ -134,7 +133,7 @@ class TestUserTokenManagement:
         result = user.deduct_tokens(5)
         
         assert result is False
-        assert user.token_balance == 2  # Unchanged
+        assert user.token_balance == 2  
     
     def test_add_tokens(self, create_user):
         """Test adding tokens to balance."""

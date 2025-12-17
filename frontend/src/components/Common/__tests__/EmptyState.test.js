@@ -1,9 +1,9 @@
-// src/components/Common/__tests__/EmptyState.test.js
+
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// EmptyState component for testing
+
 const EmptyState = ({ 
   title = 'No results found',
   message = 'Try adjusting your search or filters.',

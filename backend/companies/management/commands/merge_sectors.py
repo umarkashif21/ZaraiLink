@@ -7,20 +7,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            # Get both sectors
+            
             correct_sector = Sector.objects.get(id=4, name='Confectionery')
             duplicate_sector = Sector.objects.get(id=3, name='Confectionary')
             
-            # Move all companies from duplicate to correct
+            
             companies_moved = Company.objects.filter(sector=duplicate_sector).update(sector=correct_sector)
             
             self.stdout.write(f'Moved {companies_moved} companies from "Confectionary" to "Confectionery"')
             
-            # Delete duplicate
+            
             duplicate_sector.delete()
             self.stdout.write(self.style.SUCCESS('✓ Deleted duplicate sector: Confectionary'))
             
-            # Verify
+            
             remaining_sectors = Sector.objects.filter(name__icontains='confection')
             self.stdout.write(f'\nRemaining Confection* sectors: {remaining_sectors.count()}')
             for sector in remaining_sectors:

@@ -1,4 +1,3 @@
-
 import os
 import sys
 import json
@@ -13,7 +12,7 @@ django.setup()
 from trade_ledger.views import company_products_api, company_trends_api
 
 COMPANY = "Abbott Laboratories Pakistan Ltd"
-# Monkey patch request
+
 request = HttpRequest()
 request.method = 'GET'
 request.GET['direction'] = 'import'
@@ -22,7 +21,7 @@ request.META['SERVER_PORT'] = '80'
 
 print(f"DEBUGGING VIEW for: {COMPANY}")
 
-# 1. Company Products API
+
 response = company_products_api(request, COMPANY)
 print(f"Products Status: {response.status_code}")
 if response.status_code == 200:
@@ -37,7 +36,7 @@ if response.status_code == 200:
     else:
         print("No product_performance found.")
 
-# 2. Company Trends API
+
 response_trends = company_trends_api(request, COMPANY)
 print(f"Trends Status: {response_trends.status_code}")
 if response_trends.status_code == 200:

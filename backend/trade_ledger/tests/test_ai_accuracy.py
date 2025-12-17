@@ -1,4 +1,3 @@
-# trade_ledger/tests/test_ai_accuracy.py
 """
 AI/ML Prediction Accuracy and Realism Tests
 
@@ -38,16 +37,14 @@ class TestConfidenceScoreRealism:
             results = predict_sellers_combined('AnyBuyer', top_k=20)
             
             for result in results:
-                # Handle different result structures
+                
                 if isinstance(result, dict):
                     confidence = result.get('final_confidence') or result.get('confidence') or result.get('score', 0)
                 else:
                     confidence = getattr(result, 'confidence', 0) if hasattr(result, 'confidence') else 0
                 
-                assert confidence <= MAX_CONFIDENCE_SCORE, \
-                    f"Confidence {confidence} exceeds max allowed {MAX_CONFIDENCE_SCORE}"
-                assert confidence <= 0.95, \
-                    f"Confidence {confidence} exceeds 95% - this is unrealistic for predictions"
+                assert confidence <= MAX_CONFIDENCE_SCORE,                    f"Confidence {confidence} exceeds max allowed {MAX_CONFIDENCE_SCORE}"
+                assert confidence <= 0.95,                    f"Confidence {confidence} exceeds 95% - this is unrealistic for predictions"
         except Exception as e:
             pytest.skip(f"Could not test: {e}")
     
@@ -69,7 +66,7 @@ class TestConfidenceScoreRealism:
                     score = 0
                 scores.append(score)
             
-            # Check that scores are not all identical
+            
             if len(set(scores)) > 1:
                 variance = stdev(scores)
                 assert variance > 0, "All predictions have identical scores - likely a bug"
@@ -94,8 +91,7 @@ class TestConfidenceScoreRealism:
                     score = 0
                 
                 if prev_score is not None:
-                    assert score <= prev_score, \
-                        f"Results not sorted by confidence: {score} came after {prev_score}"
+                    assert score <= prev_score,                        f"Results not sorted by confidence: {score} came after {prev_score}"
                 prev_score = score
         except Exception as e:
             pytest.skip(f"Could not test: {e}")
@@ -116,23 +112,22 @@ class TestPredictionDataBasis:
         """New companies without history should have lower prediction confidence."""
         from trade_ledger.services.link_prediction import predict_sellers_combined
         
-        # Use a clearly non-existent company name
+        
         fake_company = 'CompanyThatDefinitelyDoesNotExist12345XYZ'
         
         try:
             results = predict_sellers_combined(fake_company, top_k=5)
             
             if results:
-                # If results exist for unknown company, verify low confidence
+                
                 for result in results:
                     if isinstance(result, dict):
                         confidence = result.get('final_confidence') or result.get('confidence') or result.get('score', 0)
-                        # For unknown companies, confidence should be modest
-                        # (based on general patterns, not specific history)
-                        assert confidence < 0.8, \
-                            f"Unknown company got suspiciously high confidence: {confidence}"
+                        
+                        
+                        assert confidence < 0.8,                            f"Unknown company got suspiciously high confidence: {confidence}"
         except Exception:
-            pass  # Expected that unknown companies may error
+            pass  
     
     def test_method_scores_correlate_with_data_availability(self):
         """Individual method scores should reflect data availability."""
@@ -141,22 +136,22 @@ class TestPredictionDataBasis:
             predict_sellers_common_neighbors
         )
         
-        # Node2Vec requires embeddings - should fail or return low scores without them
-        # Common Neighbors requires graph structure
+        
+        
         
         try:
             node2vec_results = predict_sellers_node2vec('TestBuyer', top_k=5)
             cn_results = predict_sellers_common_neighbors('TestBuyer', top_k=5)
             
-            # Just verify they return different results (different methodologies)
-            # This shows the system is actually using different algorithms
+            
+            
             if node2vec_results and cn_results:
-                # Results should not be identical
+                
                 n2v_names = set(r.get('company', r.get('name', '')) if isinstance(r, dict) else '' for r in node2vec_results[:3])
                 cn_names = set(r.get('company', r.get('name', '')) if isinstance(r, dict) else '' for r in cn_results[:3])
                 
-                # At least some variation expected between methods
-                # (complete overlap is suspicious but not necessarily wrong)
+                
+                
                 pass
         except Exception as e:
             pytest.skip(f"Could not test: {e}")
@@ -174,25 +169,25 @@ class TestSimilarCompaniesSemantics:
     
     def test_similar_companies_share_sector(self, create_company, create_sector):
         """Test that similar companies tend to be in the same sector."""
-        # This is a soft assertion - similar companies SHOULD have sector overlap
-        # but it's not always guaranteed
+        
+        
         
         rice_sector = create_sector(name='Rice Trade')
         company = create_company(name='Rice Trader Test', sector=rice_sector)
         
-        # The API would ideally return companies in similar sectors
+        
         url = f'/api/company/{company.name}/similar/'
         
-        # This test documents the expected behavior
-        # Actual API call would need a client fixture
+        
+        
         pass
     
     def test_similar_companies_share_country_or_products(self, create_company):
         """Test that similar companies share country or products."""
         company = create_company(name='Regional Trader', country='Pakistan')
         
-        # Similar companies should have some attribute overlap
-        # This is behavioral documentation
+        
+        
         pass
 
 
@@ -216,7 +211,7 @@ class TestPredictionConsistency:
             results1 = predict_sellers_combined(buyer_name, top_k=5)
             results2 = predict_sellers_combined(buyer_name, top_k=5)
             
-            # Results should be identical for same input
+            
             if results1 and results2:
                 names1 = [r.get('company', r.get('name', '')) if isinstance(r, dict) else '' for r in results1]
                 names2 = [r.get('company', r.get('name', '')) if isinstance(r, dict) else '' for r in results2]
@@ -256,12 +251,12 @@ class TestEdgeCaseHandling:
         
         try:
             results = predict_sellers_combined('', top_k=5)
-            # Should either return empty list or raise meaningful error
+            
             assert isinstance(results, list)
         except ValueError:
-            pass  # Expected for empty input
+            pass  
         except Exception as e:
-            # Other exceptions should have meaningful messages
+            
             assert str(e) != "", "Exception should have error message"
     
     def test_special_characters_in_name(self):
@@ -273,8 +268,8 @@ class TestEdgeCaseHandling:
             "Company (Private) Limited",
             "Company/Subsidiary",
             "Company & Partners",
-            "شركة",  # Arabic
-            "公司",  # Chinese
+            "شركة",  
+            "公司",  
         ]
         
         for name in special_names:
@@ -282,19 +277,19 @@ class TestEdgeCaseHandling:
                 results = predict_sellers_combined(name, top_k=3)
                 assert isinstance(results, list)
             except Exception:
-                pass  # Graceful failure is acceptable
+                pass  
     
     def test_very_long_company_name(self):
         """Test prediction with extremely long company name."""
         from trade_ledger.services.link_prediction import predict_sellers_combined
         
-        long_name = "A" * 500  # 500 character name
+        long_name = "A" * 500  
         
         try:
             results = predict_sellers_combined(long_name, top_k=3)
             assert isinstance(results, list)
         except Exception:
-            pass  # Graceful failure is acceptable
+            pass  
     
     def test_null_handling(self):
         """Test prediction handles None gracefully."""
@@ -302,10 +297,10 @@ class TestEdgeCaseHandling:
         
         try:
             results = predict_sellers_combined(None, top_k=5)
-            # API may return list or dict depending on implementation
+            
             assert isinstance(results, (list, dict))
         except (TypeError, ValueError):
-            pass  # Expected for None input
+            pass  
 
 
 @pytest.mark.django_db
@@ -324,8 +319,7 @@ class TestIndividualMethodAccuracy:
             for result in results:
                 if isinstance(result, dict):
                     score = result.get('score', result.get('confidence', 0))
-                    assert 0.0 <= score <= 1.0, \
-                        f"Jaccard score {score} outside valid range [0,1]"
+                    assert 0.0 <= score <= 1.0,                        f"Jaccard score {score} outside valid range [0,1]"
         except Exception:
             pass
     
@@ -339,9 +333,8 @@ class TestIndividualMethodAccuracy:
             for result in results:
                 if isinstance(result, dict):
                     score = result.get('score', result.get('confidence', 0))
-                    # After normalization, should be in [0, MAX_CONFIDENCE]
-                    assert score <= 1.0, \
-                        f"Preferential Attachment score {score} not properly normalized"
+                    
+                    assert score <= 1.0,                        f"Preferential Attachment score {score} not properly normalized"
         except Exception:
             pass
     
@@ -354,14 +347,13 @@ class TestIndividualMethodAccuracy:
             
             for result in results:
                 if isinstance(result, dict):
-                    # Combined results should have 'scores' breakdown
+                    
                     if 'scores' in result:
                         scores = result['scores']
                         expected_keys = ['node2vec', 'common_neighbors', 'product', 'jaccard', 'preferential']
                         for key in expected_keys:
                             if key in scores:
-                                assert 0.0 <= scores[key] <= 1.0, \
-                                    f"Component score {key}={scores[key]} out of range"
+                                assert 0.0 <= scores[key] <= 1.0,                                    f"Component score {key}={scores[key]} out of range"
         except Exception:
             pass
 
@@ -381,8 +373,7 @@ class TestRankingQuality:
             
             for i, result in enumerate(results, start=1):
                 if isinstance(result, dict) and 'rank' in result:
-                    assert result['rank'] == i, \
-                        f"Rank {result['rank']} should be {i}"
+                    assert result['rank'] == i,                        f"Rank {result['rank']} should be {i}"
         except Exception:
             pass
     
@@ -404,7 +395,7 @@ class TestRankingQuality:
                     key=lambda r: r.get('rank', 999) if isinstance(r, dict) else 999
                 )
                 
-                # Top of both lists should be the same company
+                
                 if sorted_by_confidence and sorted_by_rank:
                     top_confidence = sorted_by_confidence[0]
                     top_rank = sorted_by_rank[0]

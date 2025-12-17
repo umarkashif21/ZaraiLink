@@ -1,4 +1,3 @@
-# inspect_all_graphs.py
 import networkx as nx
 
 GRAPHS = {
@@ -19,12 +18,12 @@ def inspect_graph(name, path):
         print(f"✅ Nodes: {G.number_of_nodes()}")
         print(f"✅ Edges: {G.number_of_edges()}")
         
-        # Sample nodes
+        
         print("\n📌 Sample Nodes (first 5):")
         for i, node in enumerate(list(G.nodes())[:5]):
             print(f"  {i+1}. {node}")
         
-        # Sample edges with weights
+        
         print("\n🔗 Sample Edges (first 5):")
         for i, (u, v, data) in enumerate(list(G.edges(data=True))[:5]):
             weight = data.get('weight', 'N/A')

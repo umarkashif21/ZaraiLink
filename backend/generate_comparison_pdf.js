@@ -11,15 +11,15 @@ async function generateComparisonPDF(companies, comparisonData, outputPath) {
   try {
     const page = await browser.newPage();
     
-    // Generate HTML content
+    
     const htmlContent = generateHTMLTemplate(companies, comparisonData);
     
-    // Set content and wait for rendering
+    
     await page.setContent(htmlContent, {
       waitUntil: 'networkidle0'
     });
 
-    // Generate PDF
+    
     await page.pdf({
       path: outputPath,
       format: 'A4',

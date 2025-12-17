@@ -1,9 +1,9 @@
-// src/components/Common/__tests__/VerificationBadge.test.js
+
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// VerificationBadge component for testing
+
 const VerificationBadge = ({ status = 'unverified', size = 'normal' }) => {
   const statusConfig = {
     verified: {

@@ -17,7 +17,7 @@ from trade_ledger.models import (
     TradePartner, TradeTrend
 )
 
-# Sample data
+
 PARTNER_COUNTRIES = [
     ('UAE', ['Jebel Ali', 'Dubai Port', 'Abu Dhabi Port']),
     ('Saudi Arabia', ['Jeddah Islamic Port', 'King Abdullah Port', 'Dammam Port']),
@@ -100,7 +100,7 @@ def generate_trade_companies():
     """Generate TradeCompany entries"""
     print("\nGenerating trade companies...")
     
-    # Get or create companies in the Company model first
+    
     companies = []
     for name, sector_name, is_exporter, is_importer in COMPANY_REFERENCES:
         company, created = Company.objects.get_or_create(
@@ -114,7 +114,7 @@ def generate_trade_companies():
             }
         )
         
-        # Create TradeCompany
+        
         trade_company, tc_created = TradeCompany.objects.get_or_create(
             company=company,
             defaults={
@@ -136,14 +136,14 @@ def generate_trade_products(companies):
     print("\nGenerating trade products...")
     
     categories = {
-        'Rice': [1, 2],  # Basmati, Non-Basmati
-        'Fruits': [3, 4, 9],  # Kinnow, Mango, Dates
-        'Fruits & Vegetables': [3, 4, 5, 6],  # Kinnow, Mango, Potato, Onion
-        'Vegetables': [5, 6],  # Potato, Onion
+        'Rice': [1, 2],  
+        'Fruits': [3, 4, 9],  
+        'Fruits & Vegetables': [3, 4, 5, 6],  
+        'Vegetables': [5, 6],  
         'Cotton': [7],
-        'Grains': [8, 2],  # Wheat, Rice
+        'Grains': [8, 2],  
         'Dry Fruits': [9],
-        'Mixed': [1, 3, 5, 8, 10],  # Various
+        'Mixed': [1, 3, 5, 8, 10],  
     }
     
     all_products = []
@@ -216,23 +216,23 @@ def generate_trade_trends(companies, products):
         if not company_products:
             continue
         
-        # Generate data for each month of the past 2 years
+        
         for months_ago in range(24):
             trend_date = current_date - timedelta(days=30 * months_ago)
             month = trend_date.month
             year = trend_date.year
             
-            # Create trends for 1-2 products per month
+            
             for product in random.sample(company_products, min(2, len(company_products))):
-                base_volume = float(product.volume) / 12  # Monthly from annual
+                base_volume = float(product.volume) / 12  
                 base_price = float(product.avg_price)
                 
-                # Add seasonal variation
+                
                 seasonal_factor = 1 + 0.2 * random.uniform(-1, 1)
                 volume = Decimal(base_volume * seasonal_factor)
                 price = Decimal(base_price * (1 + 0.1 * random.uniform(-1, 1)))
                 
-                # Calculate YoY growth
+                
                 yoy_vol_growth = Decimal(random.uniform(-10, 25)) if months_ago < 12 else None
                 yoy_price_growth = Decimal(random.uniform(-5, 15)) if months_ago < 12 else None
                 
@@ -258,13 +258,13 @@ def main():
     print("TRADE LEDGER FIXTURE DATA GENERATOR")
     print("=" * 60)
     
-    # Clear existing data
+    
     clear_existing_data()
     
-    # Create product categories first
+    
     create_product_categories()
     
-    # Generate data
+    
     companies = generate_trade_companies()
     products = generate_trade_products(companies)
     partners = generate_trade_partners(companies)

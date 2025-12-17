@@ -4,9 +4,7 @@ import 'driver.js/dist/driver.css';
 
 const ONBOARDING_KEY = 'zarailink-onboarding-completed';
 
-/**
- * Hook for onboarding tour functionality
- */
+
 const useOnboardingTour = () => {
   const driverRef = useRef(null);
 
@@ -92,13 +90,13 @@ const useOnboardingTour = () => {
     localStorage.removeItem(ONBOARDING_KEY);
   }, []);
 
-  // Auto-start tour for first-time users
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       if (shouldShowTour()) {
         startTour();
       }
-    }, 1500); // Delay to let page load
+    }, 1500); 
 
     return () => {
       clearTimeout(timer);

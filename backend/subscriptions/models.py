@@ -147,7 +147,7 @@ class RedeemCode(models.Model):
     @staticmethod
     def generate_code(length=12):
         """Generate a random alphanumeric code"""
-        # Use uppercase letters and digits, exclude ambiguous characters (0, O, I, 1)
+        
         chars = string.ascii_uppercase + string.digits
         chars = chars.replace('0', '').replace('O', '').replace('I', '').replace('1', '')
         return ''.join(secrets.choice(chars) for _ in range(length))
@@ -164,19 +164,19 @@ class RedeemCode(models.Model):
             self.save()
             return False, "Code has expired"
         
-        # Mark as redeemed
+        
         self.status = 'redeemed'
         self.redeemed_by = user
         self.redeemed_at = timezone.now()
         self.save()
         
-        # Add tokens to user
+        
         user.add_tokens(self.plan.tokens_included)
         
-        # Create UserSubscription record
+        
         from datetime import timedelta
         
-        # Determine billing cycle from plan name
+        
         plan_name_lower = self.plan.plan_name.lower()
         if 'annual' in plan_name_lower or 'yearly' in plan_name_lower:
             billing_cycle = 'yearly'

@@ -14,26 +14,26 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env file
+
 load_dotenv(BASE_DIR / '.env')
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/  
 
-# SECURITY WARNING: keep the secret key used in production secret!
+
+
+
 SECRET_KEY = os.getenv('SECRET_KEY', '')
 
-# SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
-# Application definition
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -43,13 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    # Third-party apps
+    
     'rest_framework',
     'corsheaders',
     'django_ckeditor_5',
-    'auditlog',  # <-- Added Auditlog
+    'auditlog',  
     
-    # Local apps
+    
     'accounts',
     'subscriptions',
     'companies',
@@ -61,13 +61,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # CORS - must be before CommonMiddleware
+    'corsheaders.middleware.CorsMiddleware',  
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'auditlog.middleware.AuditlogMiddleware',  # <-- Added Auditlog Middleware
+    'auditlog.middleware.AuditlogMiddleware',  
 ]
 
 ROOT_URLCONF = 'zarailink.urls'
@@ -75,7 +75,7 @@ ROOT_URLCONF = 'zarailink.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'accounts' / 'templates'],  # <-- ADD THIS
+        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'accounts' / 'templates'],  
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -90,22 +90,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'zarailink.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases  
+
+
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql', # 'postgresql_psycopg2'
+        'ENGINE': 'django.db.backends.postgresql', 
         'NAME': 'zarailink',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'localhost', # remote
+        'HOST': 'localhost', 
         'PORT': '5432',
     }
 }
 
-# Caching Configuration
-# Try Redis first, fall back to local memory cache if Redis unavailable
+
+
 import socket
 
 def is_redis_available():
@@ -130,7 +130,7 @@ if is_redis_available():
         }
     }
 else:
-    # Fallback to local memory cache when Redis is not available
+    
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -138,10 +138,10 @@ else:
         }
     }
 
-# OpenAI API Key
+
 OPENAI_API_KEY = os.getenv('OPENAI_KEY', '')
 
-# Logger Config
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -174,7 +174,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'zarailink': {  # Project specific logger
+        'zarailink': {  
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -182,8 +182,8 @@ LOGGING = {
     },
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators  
+
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -201,17 +201,17 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# === ADD THESE AUTH SETTINGS ===
-AUTH_USER_MODEL = 'accounts.User'  # <-- Tell Django to use your custom User
 
-# Optional: Where to redirect after login (not strictly needed for API)
+AUTH_USER_MODEL = 'accounts.User'  
+
+
 LOGIN_REDIRECT_URL = '/dashboard'
 LOGOUT_REDIRECT_URL = '/login'
-# ==============================
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/  
+
+
+
 
 LANGUAGE_CODE = 'en-us'
 
@@ -222,23 +222,23 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/  
+
+
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Additional locations for static files in development
+
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
 
-# Media files (user uploads)
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# CKEditor 5 Settings
+
 customColorPalette = [
     {'color': 'hsl(4, 90%, 58%)', 'label': 'Red'},
     {'color': 'hsl(340, 82%, 52%)', 'label': 'Pink'},
@@ -308,33 +308,33 @@ CKEDITOR_5_CONFIGS = {
     }
 }
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field  
+
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# === EMAIL CONFIGURATION (Gmail SMTP) ===
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')  # Your Gmail address
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')  # Your Gmail app password
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')  
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')  
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', 'ninjacombo99@gmail.com')
 
-# Frontend URL for verification links
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-# =========================================
 
-# === CORS SETTINGS (Allow React frontend to access API) ===
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+
+
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",      # React development server
-    "http://127.0.0.1:3000",      # Same as localhost but different origin for browsers
+    "http://localhost:3000",      
+    "http://127.0.0.1:3000",      
     "http://localhost:4000",
     "http://127.0.0.1:4000",
 ]
-CORS_ALLOW_CREDENTIALS = True  # Allow cookies for session auth
+CORS_ALLOW_CREDENTIALS = True  
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -356,23 +356,23 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
-# CSRF Settings for cross-origin requests
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:4000",
     "http://127.0.0.1:4000",
 ]
-CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF cookie
+CSRF_COOKIE_HTTPONLY = False  
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SECURE = False  
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_AGE = 1209600  
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-# ==========================================================
+

@@ -1,4 +1,3 @@
-# companies/tests/__init__.py
 """
 Companies app test package.
 

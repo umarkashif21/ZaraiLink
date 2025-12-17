@@ -1,4 +1,3 @@
-# trade_ledger/tests/__init__.py
 """
 Trade Ledger app test package.
 

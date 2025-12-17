@@ -5,11 +5,11 @@ from .models import User, UserAlertPreference
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    # Based on the User model:
-    # It inherits from AbstractUser.
-    # Fields: email (USERNAME_FIELD), phone_number, is_email_verified, token_balance, bio, job_title, country
-    # There is NO 'name' field. AbstractUser has 'first_name' and 'last_name'.
-    # There is NO 'is_verified' field. It is 'is_email_verified'.
+    
+    
+    
+    
+    
     
     list_display = ('email', 'first_name', 'last_name', 'email_verified', 'token_balance', 'is_staff', 'date_joined')
     list_filter = ('is_staff', 'is_superuser', 'email_verified', 'date_joined')
@@ -33,7 +33,7 @@ class UserAdmin(BaseUserAdmin):
     
     readonly_fields = ('date_joined', 'last_login')
     
-    # Custom admin actions
+    
     actions = ['add_100_tokens', 'add_1000_tokens', 'verify_users']
     
     @admin.action(description='Add 100 tokens to selected users')

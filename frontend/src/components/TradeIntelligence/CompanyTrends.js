@@ -13,7 +13,7 @@ const CompanyTrends = () => {
   const [load, setLoad] = useState(true);
   const [error, setError] = useState(null);
 
-  // Decode the company name from URL
+  
   const companyName = decodeURIComponent(id);
   const tab = loc.pathname.split('/').pop();
 
@@ -25,7 +25,7 @@ const CompanyTrends = () => {
     setLoad(true);
     setError(null);
     try {
-      // Use correct API endpoint: /api/company/{company_name}/trends/
+      
       const res = await fetch(`http://localhost:8000/api/company/${id}/trends/?_t=${new Date().getTime()}`, {
         credentials: 'include'
       });
@@ -57,7 +57,7 @@ const CompanyTrends = () => {
     }).format(v);
   };
 
-  // Get data from API response
+  
   const volumePriceTrend = trds?.volume_price_trend || [];
   const quarterlyVolume = trds?.quarterly_volume || [];
 
@@ -192,7 +192,7 @@ const CompanyTrends = () => {
                 </table>
               </div>
 
-              {/* Hide YoY section if no valid data */}
+              {}
               {quarterlyVolume.filter(q => q.yoy_growth !== null && q.yoy_growth !== undefined && !isNaN(parseFloat(q.yoy_growth))).length > 0 && (
                 <div style={{ marginTop: '2rem' }}>
                   <h3>YoY Volume Growth By Quarter</h3>
@@ -211,7 +211,7 @@ const CompanyTrends = () => {
                 </div>
               )}
 
-              {/* Interactive Volume/Price Chart */}
+              {}
               {volumePriceTrend.filter(t => t.month && (parseFloat(t.volume) > 0 || parseFloat(t.avg_price) > 0)).length > 0 && (
                 <div style={{ marginTop: '2rem' }}>
                   <h3>Volume & Price Trend Over Time</h3>
@@ -284,7 +284,7 @@ const CompanyTrends = () => {
                 </div>
               )}
               
-              {/* Quarter YoY Growth Line Chart */}
+              {}
               {quarterlyVolume.filter(q => q.quarter && parseFloat(q.vol) > 0).length > 0 && (
                 <div style={{ marginTop: '2rem' }}>
                   <h3>Quarterly Volume Trend</h3>

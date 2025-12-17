@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in on mount
+  
   useEffect(() => {
     checkAuthStatus();
   }, []);
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await fetch('http://localhost:8000/accounts/api/check-auth/', {
         method: 'GET',
-        credentials: 'include', // Include cookies
+        credentials: 'include', 
       });
 
       if (response.ok) {
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies
+        credentials: 'include', 
         body: JSON.stringify({ email, password }),
       });
 
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     isAuthenticated: !!user,
-    refreshUser: checkAuthStatus, // Allow components to refresh user data
+    refreshUser: checkAuthStatus, 
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,7 +1,7 @@
 import React from 'react';
 import './EmptyState.css';
 
-// SVG Illustrations as components
+
 const NoDataIllustration = () => (
   <svg width="200" height="160" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
     <ellipse cx="100" cy="145" rx="80" ry="10" fill="var(--bg-tertiary)" />
@@ -52,7 +52,7 @@ const WatchlistIllustration = () => (
   </svg>
 );
 
-// Illustration map
+
 const illustrations = {
   'no-data': NoDataIllustration,
   'search': SearchIllustration,
@@ -104,7 +104,7 @@ const EmptyState = ({
   );
 };
 
-// Pre-configured empty states
+
 export const NoCompaniesFound = ({ onReset }) => (
   <EmptyState
     type="company"

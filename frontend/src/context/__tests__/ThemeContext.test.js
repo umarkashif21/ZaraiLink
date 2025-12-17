@@ -1,9 +1,9 @@
-// src/context/__tests__/ThemeContext.test.js
+
 import React, { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// Simplified ThemeContext for testing without localStorage mocking
+
 const ThemeContext = React.createContext();
 
 const ThemeProvider = ({ children, initialDark = false }) => {
@@ -22,7 +22,7 @@ const ThemeProvider = ({ children, initialDark = false }) => {
 
 const useTheme = () => React.useContext(ThemeContext);
 
-// Test component
+
 const TestComponent = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   return (
@@ -89,7 +89,7 @@ describe('ThemeContext', () => {
       </ThemeProvider>
     );
     
-    // Light -> Dark -> Light
+    
     fireEvent.click(screen.getByTestId('toggle-btn'));
     expect(screen.getByTestId('theme-status')).toHaveTextContent('Dark');
     

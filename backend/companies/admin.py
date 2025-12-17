@@ -6,7 +6,7 @@ from .models import (
     CompanyProduct, KeyContact, KeyContactUnlock
 )
 
-# Custom form with CKEditor 5
+
 class CompanyAdminForm(forms.ModelForm):
     description = forms.CharField(widget=CKEditor5Widget(config_name='extends'), required=False)
     
@@ -15,12 +15,12 @@ class CompanyAdminForm(forms.ModelForm):
         fields = '__all__'
 
 
-# Inline admin for KeyContactUnlock - manage unlocks within KeyContact admin
+
 class KeyContactUnlockInline(admin.TabularInline):
     model = KeyContactUnlock
     extra = 0
     readonly_fields = ('user', 'unlocked_at')
-    can_delete = True  # Allow admins to remove unlocks
+    can_delete = True  
     verbose_name = 'Contact Unlock'
     verbose_name_plural = 'Contact Unlocks (Users who unlocked this contact)'
 
@@ -47,13 +47,13 @@ class CompanyTypeAdmin(admin.ModelAdmin):
 class CompanyAdmin(admin.ModelAdmin):
     form = CompanyAdminForm
     list_display = ('name', 'sector', 'company_role', 'verification_status', 'created_at')
-    # Removed 'has_trade_data' as it was not in the models.py I viewed (it had is_verified, etc)
-    # Let's re-verify Company model fields from the file I viewed.
-    # Fields: name, legal_name, sector, company_role, company_type, description, 
-    # email, phone, website, address, district, province, country,
-    # year_established, number_of_employees, annual_revenue,
-    # verification_status, is_directory_profile, created_at, updated_at.
-    # 'has_trade_data' is NOT in the model.
+    
+    
+    
+    
+    
+    
+    
     
     list_filter = ('verification_status', 'is_directory_profile', 'sector', 'company_role')
     search_fields = ('name', 'legal_name', 'contact_email', 'website')
@@ -96,7 +96,7 @@ class KeyContactAdmin(admin.ModelAdmin):
     list_filter = ('is_public', 'company')
     search_fields = ('name', 'designation', 'company__name', 'email', 'phone')
     readonly_fields = ('unlock_count', 'created_at', 'updated_at')
-    inlines = [KeyContactUnlockInline]  # Show unlocks inline
+    inlines = [KeyContactUnlockInline]  
     
     fieldsets = (
         ('Contact Information', {
@@ -122,9 +122,9 @@ class KeyContactAdmin(admin.ModelAdmin):
 
 @admin.register(KeyContactUnlock)
 class KeyContactUnlockAdmin(admin.ModelAdmin):
-    # Error said: 'list_display[0]' refers to 'contact', which is not a callable...
-    # Model has: key_contact (ForeignKey), user, unlocked_at
-    # So it should be 'key_contact', not 'contact'
+    
+    
+    
     list_display = ('key_contact', 'user', 'unlocked_at')
     list_filter = ('unlocked_at',)
     search_fields = ('key_contact__name', 'user__email')
@@ -132,5 +132,5 @@ class KeyContactUnlockAdmin(admin.ModelAdmin):
     date_hierarchy = 'unlocked_at'
 
 
-# Register Image model
+
 admin.site.register(Image)

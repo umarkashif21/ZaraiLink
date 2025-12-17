@@ -24,9 +24,9 @@ class Command(BaseCommand):
         if wipe:
             self.stdout.write(self.style.WARNING("Wiping existing transactions..."))
             Transaction.objects.all().delete()
-            # Optionally wipe products if you want a clean slate, but let's keep them if they are good.
-            # ProductItem.objects.all().delete() 
-            # ...
+            
+            
+            
             self.stdout.write(self.style.SUCCESS(f"Deleted existing transactions"))
         
         self.stdout.write(f"Reading {file_path}...")
@@ -37,7 +37,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"Error reading Excel: {e}"))
             return
 
-        # Create/Get Root Product
+        
         root_product, _ = Product.objects.get_or_create(
             name="General Trade",
             defaults={"hs_code": "000000"}
@@ -67,7 +67,7 @@ class Command(BaseCommand):
                 cache_key = (cat_name, sub_name, item_name)
                 
                 if cache_key not in product_item_cache:
-                    # Category
+                    
                     category = ProductCategory.objects.filter(name=cat_name).first()
                     if not category:
                         category = ProductCategory.objects.create(
@@ -76,7 +76,7 @@ class Command(BaseCommand):
                             hs_code=uuid.uuid4().hex[:10]
                         )
                     
-                    # SubCategory
+                    
                     sub_cat = ProductSubCategory.objects.filter(name=sub_name, category=category).first()
                     if not sub_cat:
                         sub_cat = ProductSubCategory.objects.create(
@@ -85,7 +85,7 @@ class Command(BaseCommand):
                             hs_code=uuid.uuid4().hex[:10]
                         )
                     
-                    # Item
+                    
                     item = ProductItem.objects.filter(name=item_name, sub_category=sub_cat).first()
                     if not item:
                         item = ProductItem.objects.create(

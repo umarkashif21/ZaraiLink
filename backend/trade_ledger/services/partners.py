@@ -1,4 +1,3 @@
- # services/partners.py
 from django.db.models import Sum, Avg, Count, F
 from trade_data.models import Transaction
 from django.db.models.functions import TruncMonth, TruncQuarter
@@ -30,7 +29,7 @@ def get_trade_volume_by_country(company_name, direction='import', **filters):
     )
 
 def get_partner_trends(company_name, direction='import', top_n=5, **filters):
-    # Remove 'limit' from filters to avoid duplicate keyword argument
+    
     filters.pop('limit', None)
     top_partners = get_top_partners(company_name, direction, limit=top_n, **filters)
     partner_names = [p['partner'] for p in top_partners]

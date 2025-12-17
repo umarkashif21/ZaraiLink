@@ -1,4 +1,3 @@
-# accounts/tests/test_views.py
 """
 Integration tests for the accounts app API views.
 
@@ -32,12 +31,12 @@ class TestUserRegistration:
             'password': 'SecurePass123!',
             'first_name': 'New',
             'last_name': 'User',
-            'name': 'New User'  # Required by form
+            'name': 'New User'  
         }
         
         response = api_client.post(url, data, format='json')
         
-        # Accept 200, 201 for success, or 400 if form validation differs
+        
         assert response.status_code in [200, 201, 400]
         if response.status_code in [200, 201]:
             assert User.objects.filter(email='newuser@example.com').exists()
@@ -46,7 +45,7 @@ class TestUserRegistration:
         """Test registration fails with existing email."""
         url = reverse('accounts:api_signup')
         data = {
-            'email': user.email,  # Already exists
+            'email': user.email,  
             'password': 'NewPass123!',
             'first_name': 'Another',
             'last_name': 'User'
@@ -77,17 +76,17 @@ class TestUserRegistration:
         url = reverse('accounts:api_signup')
         data = {
             'email': 'short@example.com',
-            'password': '123',  # Too short
+            'password': '123',  
             'first_name': 'Test',
             'last_name': 'User'
         }
         
         response = api_client.post(url, data, format='json')
         
-        # Either 400 for validation or successful but rejected
-        # Depends on backend validation implementation
+        
+        
         if response.status_code == 201:
-            # Password validation might be on frontend only
+            
             pass
         else:
             assert response.status_code == 400
@@ -97,7 +96,7 @@ class TestUserRegistration:
         url = reverse('accounts:api_signup')
         data = {
             'email': 'incomplete@example.com'
-            # Missing password, first_name, last_name
+            
         }
         
         response = api_client.post(url, data, format='json')
@@ -174,8 +173,8 @@ class TestUserLogin:
         
         response = api_client.post(url, data, format='json')
         
-        # May succeed or fail depending on implementation
-        # Just ensure it doesn't crash
+        
+        
         assert response.status_code in [200, 400, 401, 403]
 
 
@@ -214,8 +213,7 @@ class TestAuthCheck:
         
         assert response.status_code == 200
         response_data = response.json()
-        assert not response_data.get('authenticated', True) or \
-               not response_data.get('is_authenticated', True)
+        assert not response_data.get('authenticated', True) or               not response_data.get('is_authenticated', True)
 
 
 @pytest.mark.django_db
@@ -229,10 +227,10 @@ class TestEmailVerification:
         
         response = api_client.get(url)
         
-        # May redirect or return JSON
+        
         assert response.status_code in [200, 302]
         
-        # Refresh user from database
+        
         unverified_user.refresh_from_db()
         assert unverified_user.email_verified
     
@@ -244,7 +242,7 @@ class TestEmailVerification:
         
         response = api_client.get(url)
         
-        # Should fail or show error
+        
         assert response.status_code in [302, 400, 404]
     
     def test_already_verified_user(self, api_client, user):
@@ -254,7 +252,7 @@ class TestEmailVerification:
         
         response = api_client.get(url)
         
-        # Should handle gracefully
+        
         assert response.status_code in [200, 302, 400]
 
 
@@ -269,7 +267,7 @@ class TestForgotPassword:
         
         response = api_client.post(url, data, format='json')
         
-        # Should always return success-like response to prevent email enumeration
+        
         assert response.status_code == 200
     
     def test_non_existent_email(self, api_client):
@@ -279,7 +277,7 @@ class TestForgotPassword:
         
         response = api_client.post(url, data, format='json')
         
-        # Should return same response to prevent email enumeration
+        
         assert response.status_code in [200, 400]
 
 
@@ -289,7 +287,7 @@ class TestResendVerification:
     
     def test_resend_for_unverified_user(self, authenticated_django_client, unverified_user):
         """Test resending verification email to unverified user."""
-        # Login the unverified user
+        
         from django.test import Client
         client = Client()
         client.force_login(unverified_user)
@@ -305,5 +303,5 @@ class TestResendVerification:
         
         response = authenticated_django_client.post(url, content_type='application/json')
         
-        # Should indicate already verified or success
+        
         assert response.status_code in [200, 400]

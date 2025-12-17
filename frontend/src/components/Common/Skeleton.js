@@ -1,7 +1,7 @@
 import React from 'react';
 import './Skeleton.css';
 
-// Base Skeleton Component
+
 export const Skeleton = ({ 
   width, 
   height, 
@@ -22,7 +22,7 @@ export const Skeleton = ({
   );
 };
 
-// Text Skeleton
+
 export const SkeletonText = ({ 
   lines = 3, 
   size = 'normal',
@@ -41,12 +41,12 @@ export const SkeletonText = ({
   );
 };
 
-// Avatar Skeleton
+
 export const SkeletonAvatar = ({ size = 'normal' }) => {
   return <div className={`skeleton skeleton-avatar ${size}`} />;
 };
 
-// Button Skeleton
+
 export const SkeletonButton = ({ width }) => {
   return (
     <div 
@@ -56,7 +56,7 @@ export const SkeletonButton = ({ width }) => {
   );
 };
 
-// Image Skeleton
+
 export const SkeletonImage = ({ height, variant = 'default' }) => {
   return (
     <div 
@@ -66,7 +66,7 @@ export const SkeletonImage = ({ height, variant = 'default' }) => {
   );
 };
 
-// Card Skeleton
+
 export const SkeletonCard = ({ showImage = false, lines = 3 }) => {
   return (
     <div className="skeleton-card">
@@ -85,7 +85,7 @@ export const SkeletonCard = ({ showImage = false, lines = 3 }) => {
   );
 };
 
-// Table Row Skeleton
+
 export const SkeletonTableRow = ({ columns = 4 }) => {
   return (
     <div className="skeleton-table-row">
@@ -99,7 +99,7 @@ export const SkeletonTableRow = ({ columns = 4 }) => {
   );
 };
 
-// Table Skeleton
+
 export const SkeletonTable = ({ rows = 5, columns = 4 }) => {
   return (
     <div className="skeleton-table">
@@ -110,7 +110,7 @@ export const SkeletonTable = ({ rows = 5, columns = 4 }) => {
   );
 };
 
-// Stat Skeleton
+
 export const SkeletonStat = () => {
   return (
     <div className="skeleton-stat">
@@ -120,7 +120,7 @@ export const SkeletonStat = () => {
   );
 };
 
-// Stats Grid Skeleton
+
 export const SkeletonStats = ({ count = 4 }) => {
   return (
     <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
@@ -131,7 +131,7 @@ export const SkeletonStats = ({ count = 4 }) => {
   );
 };
 
-// Card Grid Skeleton
+
 export const SkeletonCardGrid = ({ count = 6, showImage = false }) => {
   return (
     <div className="skeleton-grid">
@@ -142,7 +142,7 @@ export const SkeletonCardGrid = ({ count = 6, showImage = false }) => {
   );
 };
 
-// Company Card Skeleton (specific for this project)
+
 export const SkeletonCompanyCard = () => {
   return (
     <div className="skeleton-card">
@@ -168,7 +168,7 @@ export const SkeletonCompanyCard = () => {
   );
 };
 
-// Page Loading Skeleton
+
 export const SkeletonPage = () => {
   return (
     <div style={{ padding: '2rem' }}>

@@ -1,4 +1,4 @@
-/* Common Index - Export all common components */
+
 
 export { default as Skeleton, SkeletonText, SkeletonCard, SkeletonTable } from './Skeleton';
 export { default as EmptyState, NoCompaniesFound, NoSearchResults, ErrorState } from './EmptyState';

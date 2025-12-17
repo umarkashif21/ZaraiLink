@@ -18,7 +18,7 @@ print("=" * 60)
 print(f"LINK PREDICTION TEST FOR: {buyer}")
 print("=" * 60)
 
-# Test each method
+
 print("\n1. NODE2VEC SIMILARITY:")
 result = predict_sellers_node2vec(buyer, top_k=5)
 if result.get('error'):

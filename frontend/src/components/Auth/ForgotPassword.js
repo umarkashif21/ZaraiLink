@@ -5,10 +5,10 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(''); // For success/error messages
-  const [showSuccess, setShowSuccess] = useState(false); // To conditionally render success screen
+  const [message, setMessage] = useState(''); 
+  const [showSuccess, setShowSuccess] = useState(false); 
 
-  const navigate = useNavigate(); // For navigation after submission
+  const navigate = useNavigate(); 
 
   const validate = () => {
     const newErrors = {};
@@ -25,7 +25,7 @@ const ForgotPassword = () => {
     setLoading(true);
     setMessage('');
 
-    // Simulate API call to send password reset email
+    
     console.log('Sending password reset email to:', email);
     setTimeout(() => {
       setLoading(false);
@@ -34,7 +34,7 @@ const ForgotPassword = () => {
     }, 1500);
   };
 
-  // Logo-only navbar
+  
   const Navbar = () => (
     <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
       <div className="text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>

@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Setting up company roles...')
         
-        # Create company roles
+        
         buyers, _ = CompanyRole.objects.get_or_create(
             name='Buyers',
             defaults={'description': 'Companies that purchase products'}
@@ -27,7 +27,7 @@ class Command(BaseCommand):
         )
         self.stdout.write(self.style.SUCCESS(f'✓ Created/Found: {both.name} (ID: {both.id})'))
         
-        # Assign companies without roles to 'Both' by default
+        
         companies_without_role = Company.objects.filter(company_role__isnull=True)
         count = companies_without_role.count()
         
@@ -38,7 +38,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write('\n✓ All companies already have roles assigned')
         
-        # Display summary
+        
         self.stdout.write('\n' + '='*50)
         self.stdout.write('SUMMARY:')
         self.stdout.write(f'  Buyers: {Company.objects.filter(company_role=buyers).count()} companies')

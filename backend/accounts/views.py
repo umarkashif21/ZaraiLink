@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout
 from django.contrib import messages
 from .forms import UserRegisterForm
 
-# --- NEW API IMPORTS ---
+
 import json
 from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
@@ -21,7 +21,7 @@ from django.utils.html import strip_tags
 User = get_user_model()
 
 
-# Optional: Keep your existing HTML views (e.g., for testing)
+
 def register_view(request):
     print("Incoming")
     if request.method == "POST":
@@ -43,7 +43,7 @@ def api_signup(request):
     try:
         print("Here1", settings.DEFAULT_FROM_EMAIL)
         data = json.loads(request.body)
-        print(f"Received signup data: {data}")  # Debug logging
+        print(f"Received signup data: {data}")  
         form = UserRegisterForm({
             "name": data.get("name", ""),
             "email": data.get("email", ""),
@@ -56,23 +56,23 @@ def api_signup(request):
             print("Here3")
             user = form.save()
 
-            # Send verification email
+            
             verification_url = request.build_absolute_uri(
                 f"/accounts/api/verify-email/{user.verification_token}/"
             )
 
-            # Create HTML email content
+            
             html_content = f"""
             <!DOCTYPE html>
             <html>
             <head>
                 <style>
-                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                    .header {{ background-color: #1A4D2E; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }}
-                    .content {{ background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; }}
-                    .button {{ display: inline-block; padding: 12px 30px; background-color: #1A4D2E; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
-                    .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+                    body {  font-family: Arial, sans-serif; line-height: 1.6; color: #333; } 
+                    .container {  max-width: 600px; margin: 0 auto; padding: 20px; } 
+                    .header {  background-color: #1A4D2E; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; } 
+                    .content {  background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; } 
+                    .button {  display: inline-block; padding: 12px 30px; background-color: #1A4D2E; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; } 
+                    .footer {  text-align: center; padding: 20px; color: #666; font-size: 12px; } 
                 </style>
             </head>
             <body>
@@ -101,7 +101,7 @@ def api_signup(request):
             </html>
             """
 
-            # Plain text version
+            
             text_content = f"""
             Welcome to ZaraiLink!
 
@@ -121,7 +121,7 @@ def api_signup(request):
             Optimize Data. Empower Tomorrow.
             """
 
-            # Send email with both HTML and plain text versions
+            
             try:
                 email = EmailMultiAlternatives(
                     subject="Verify your ZaraiLink Account",
@@ -134,7 +134,7 @@ def api_signup(request):
                 print(f"Verification email sent to {user.email}")
             except Exception as email_error:
                 print(f"Failed to send verification email: {email_error}")
-                # Continue anyway - user is created, they can resend verification later
+                
 
             return JsonResponse({
                 "success": True,
@@ -143,10 +143,10 @@ def api_signup(request):
             })
         else:
             print("Here4")
-            print(f"Form errors: {form.errors}")  # Debug logging
+            print(f"Form errors: {form.errors}")  
             return JsonResponse({"errors": form.errors}, status=400)
     except Exception as e:
-        print(f"Signup exception: {str(e)}")  # Debug logging
+        print(f"Signup exception: {str(e)}")  
         import traceback
         traceback.print_exc()
         return JsonResponse({"error": "Invalid request", "details": str(e)}, status=400)
@@ -161,7 +161,7 @@ def api_login(request):
         email = data.get("email")
         password = data.get("password")
 
-        # Try to get the user first to check email verification
+        
         try:
             user_check = User.objects.get(email=email)
             if not user_check.email_verified:
@@ -257,26 +257,26 @@ def api_verify_email(request, token):
         user = User.objects.get(verification_token=token)
 
         if user.email_verified:
-            # Redirect to frontend with success message
+            
             frontend_url = f"{settings.FRONTEND_URL}/verify-email/{token}?status=already_verified"
             return HttpResponseRedirect(frontend_url)
 
         if not user.is_verification_token_valid():
-            # Redirect to frontend with expired message
+            
             frontend_url = f"{settings.FRONTEND_URL}/verify-email/{token}?status=expired"
             return HttpResponseRedirect(frontend_url)
 
-        # Mark email as verified and activate user
+        
         user.email_verified = True
         user.is_active = True
         user.save(update_fields=['email_verified', 'is_active'])
 
-        # Redirect to frontend with success message
+        
         frontend_url = f"{settings.FRONTEND_URL}/verify-email/{token}?status=verified"
         return HttpResponseRedirect(frontend_url)
 
     except User.DoesNotExist:
-        # Redirect to frontend with error message
+        
         frontend_url = f"{settings.FRONTEND_URL}/verify-email/{token}?status=invalid"
         return HttpResponseRedirect(frontend_url)
 
@@ -305,26 +305,26 @@ def api_resend_verification(request):
                     "already_verified": True
                 }, status=400)
 
-            # Generate new token
+            
             user.regenerate_verification_token()
 
-            # Send new verification email
+            
             verification_url = request.build_absolute_uri(
                 f"/accounts/api/verify-email/{user.verification_token}/"
             )
 
-            # Create HTML email content
+            
             html_content = f"""
             <!DOCTYPE html>
             <html>
             <head>
                 <style>
-                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                    .header {{ background-color: #1A4D2E; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }}
-                    .content {{ background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; }}
-                    .button {{ display: inline-block; padding: 12px 30px; background-color: #1A4D2E; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
-                    .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+                    body {  font-family: Arial, sans-serif; line-height: 1.6; color: #333; } 
+                    .container {  max-width: 600px; margin: 0 auto; padding: 20px; } 
+                    .header {  background-color: #1A4D2E; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; } 
+                    .content {  background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; } 
+                    .button {  display: inline-block; padding: 12px 30px; background-color: #1A4D2E; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; } 
+                    .footer {  text-align: center; padding: 20px; color: #666; font-size: 12px; } 
                 </style>
             </head>
             <body>
@@ -353,7 +353,7 @@ def api_resend_verification(request):
             </html>
             """
 
-            # Plain text version
+            
             text_content = f"""
             ZaraiLink Email Verification
 
@@ -373,7 +373,7 @@ def api_resend_verification(request):
             Optimize Data. Empower Tomorrow.
             """
 
-            # Send email with both HTML and plain text versions
+            
             try:
                 email = EmailMultiAlternatives(
                     subject="Verify your ZaraiLink Account",
@@ -386,7 +386,7 @@ def api_resend_verification(request):
                 print(f"Verification email resent to {user.email}")
             except Exception as email_error:
                 print(f"Failed to resend verification email: {email_error}")
-                # Continue anyway
+                
 
             return JsonResponse({
                 "success": True,
@@ -394,7 +394,7 @@ def api_resend_verification(request):
             })
 
         except User.DoesNotExist:
-            # Don't reveal if email exists or not for security
+            
             return JsonResponse({
                 "success": True,
                 "message": "If that email is registered, a verification email has been sent."

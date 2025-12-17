@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Fixing company data...')
         
-        # 1. Verify ALL companies
+        
         unverified_count = Company.objects.exclude(verification_status='verified').count()
         if unverified_count > 0:
             self.stdout.write(f'Found {unverified_count} unverified companies. Verifying...')
@@ -17,7 +17,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write('✓ All companies already verified')
         
-        # 2. Change "Unknown" to "Confectionary"
+        
         try:
             unknown_sector = Sector.objects.get(name='Unknown')
             unknown_sector.name = 'Confectionary'
@@ -27,7 +27,7 @@ class Command(BaseCommand):
         except Sector.DoesNotExist:
             self.stdout.write(self.style.WARNING('⚠ "Unknown" sector not found'))
         
-        # Summary
+        
         total_companies = Company.objects.count()
         verified_companies = Company.objects.filter(verification_status='verified').count()
         

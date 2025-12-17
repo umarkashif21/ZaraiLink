@@ -1,4 +1,3 @@
-# services/explorer.py
 from django.db.models import Sum, Avg, Count, Q, F, Max, Min
 from django.db.models.functions import ExtractYear
 from trade_data.models import Transaction
@@ -24,7 +23,7 @@ def get_explorer_companies(
     """
     base_qs = Transaction.objects.all()
     
-    # Apply date and product filters (NOT direction-based company filter)
+    
     if date_from:
         base_qs = base_qs.filter(reporting_date__gte=date_from)
     if date_to:
@@ -38,9 +37,9 @@ def get_explorer_companies(
     elif product_category_id:
         base_qs = base_qs.filter(product_item__sub_category__category_id=product_category_id)
 
-    # Handle 'both' direction to get all unique companies
+    
     if direction == 'both':
-        # Get all unique company names from both buyer and seller columns
+        
         company_stats = defaultdict(lambda: {
             'total_volume': 0, 'total_value': 0, 'avg_price': 0.0, 
             'transaction_count': 0, 'active_partners': set(), 
@@ -61,7 +60,7 @@ def get_explorer_companies(
                     if cs['last_trade'] is None or tx['reporting_date'] > cs['last_trade']:
                         cs['last_trade'] = tx['reporting_date']
         
-        # Convert to list format
+        
         companies = []
         for name, stats in company_stats.items():
             companies.append({
@@ -75,18 +74,18 @@ def get_explorer_companies(
                 'last_trade': stats['last_trade'],
             })
         
-        # Sort by volume and limit
+        
         companies.sort(key=lambda x: x['total_volume'], reverse=True)
         if search_query:
             companies = [c for c in companies if search_query.lower() in c['company'].lower()]
         companies = companies[:limit]
         
     else:
-        # Original logic for import/export
+        
         company_field = 'buyer' if direction == 'import' else 'seller'
         counterparty_field = 'seller' if direction == 'import' else 'buyer'
 
-        # Main aggregation
+        
         qs = (
             base_qs.values(company=F(company_field))
             .annotate(
@@ -107,17 +106,17 @@ def get_explorer_companies(
         companies = list(qs[:limit])
 
     
-    # Enrich with country, products, and YoY growth
+    
     company_names = [c['company'] for c in companies]
     
-    # For 'both' direction, we need different enrichment logic since company_field isn't applicable
+    
     if direction == 'both':
-        # For 'both', get country from transactions where company is buyer OR seller
+        
         company_countries = {}
         company_products = defaultdict(list)
         
         for comp_name in company_names:
-            # Get primary country
+            
             country_row = (
                 base_qs.filter(Q(buyer=comp_name) | Q(seller=comp_name))
                 .values('country')
@@ -127,7 +126,7 @@ def get_explorer_companies(
             )
             company_countries[comp_name] = country_row['country'] if country_row else 'N/A'
             
-            # Get top products
+            
             prods = (
                 base_qs.filter(Q(buyer=comp_name) | Q(seller=comp_name))
                 .values(product_name=F('product_item__name'))
@@ -136,17 +135,17 @@ def get_explorer_companies(
             )
             company_products[comp_name] = [p['product_name'] for p in prods if p['product_name']]
         
-        # Merge data (skip YoY for 'both' to keep it simple)
+        
         for c in companies:
             comp = c['company']
             c['country'] = company_countries.get(comp, 'N/A')
             c['top_products'] = company_products.get(comp, [])
-            c['yoy_growth'] = None  # Not computed for 'both' direction
+            c['yoy_growth'] = None  
             c['total_value'] = float(c['total_value']) if c['total_value'] else 0
         
     else:
-        # Original enrichment logic for import/export
-        # Get primary country per company (most common trading country)
+        
+        
         country_data = (
             base_qs.filter(**{f'{company_field}__in': company_names})
             .values(company=F(company_field), country_name=F('country'))
@@ -159,7 +158,7 @@ def get_explorer_companies(
             if comp not in company_countries:
                 company_countries[comp] = row['country_name']
         
-        # Get top products per company (up to 3)
+        
         product_data = (
             base_qs.filter(**{f'{company_field}__in': company_names})
             .values(company=F(company_field), product_name=F('product_item__name'))
@@ -172,7 +171,7 @@ def get_explorer_companies(
             if len(company_products[comp]) < 3 and row['product_name']:
                 company_products[comp].append(row['product_name'])
         
-        # Calculate YoY growth (compare current year volume to previous year)
+        
         current_year = datetime.now().year
         prev_year = current_year - 1
         
@@ -194,13 +193,13 @@ def get_explorer_companies(
             .values_list('company', 'volume')
         )
         
-        # Merge data
+        
         for c in companies:
             comp = c['company']
             c['country'] = company_countries.get(comp, 'N/A')
             c['top_products'] = company_products.get(comp, [])
             
-            # Calculate YoY growth
+            
             curr = current_year_volume.get(comp, 0) or 0
             prev = prev_year_volume.get(comp, 0) or 0
             if prev > 0:
@@ -208,7 +207,7 @@ def get_explorer_companies(
             else:
                 c['yoy_growth'] = None
             
-            # Format total value
+            
             c['total_value'] = float(c['total_value']) if c['total_value'] else 0
     
     return companies

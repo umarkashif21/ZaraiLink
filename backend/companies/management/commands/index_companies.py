@@ -24,7 +24,7 @@ class Command(BaseCommand):
             if company.sector:
                 text += f"Sector: {company.sector.name}. "
             if company.description:
-                text += f"{company.description[:500]}" # Limit description
+                text += f"{company.description[:500]}" 
             
             embedding = AIService.get_embedding(text)
             if embedding:
@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 count += 1
                 if count % 10 == 0:
                     self.stdout.write(f"Indexed {count}/{total}")
-                # Rate limit slightly to avoid spamming OpenAI
+                
                 time.sleep(0.1)
             else:
                 self.stdout.write(self.style.WARNING(f"Failed to generate embedding for {company.name}"))
