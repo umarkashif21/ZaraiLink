@@ -48,7 +48,7 @@ const VerificationBadge = ({
   );
 };
 
-// Multiple badges display
+
 export const VerificationBadges = ({ 
   verificationStatus, 
   isTopTrader = false,

@@ -68,7 +68,7 @@ class RedeemCodeAdmin(admin.ModelAdmin):
         )
     status_badge.short_description = 'Status'
     
-    # Custom admin actions
+    
     actions = [
         'generate_codes_500', 'generate_codes_5k', 'generate_codes_15k',
         'generate_codes_6k_annual', 'generate_codes_60k_annual', 'generate_codes_900k_annual'
@@ -116,7 +116,7 @@ class RedeemCodeAdmin(admin.ModelAdmin):
                 )
                 codes.append(code)
             
-            # Create a message with all generated codes
+            
             codes_display = ', '.join(codes[:5]) + '...' if len(codes) > 5 else ', '.join(codes)
             self.message_user(
                 request,

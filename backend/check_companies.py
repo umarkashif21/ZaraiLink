@@ -6,13 +6,13 @@ django.setup()
 from companies.models import Company
 from django.db.models import Count
 
-# Check verification status
+
 print("=== Verification Status Distribution ===")
 stats = Company.objects.values('verification_status').annotate(count=Count('id'))
 for s in stats:
     print(f"  {s['verification_status']}: {s['count']}")
 
-# Check suppliers with verification status
+
 print("\n=== Suppliers by Verification Status ===")
 suppliers = Company.objects.filter(company_role__name__icontains='supplier')
 for s in suppliers.values('verification_status').annotate(count=Count('id')):

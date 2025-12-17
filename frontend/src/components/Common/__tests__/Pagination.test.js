@@ -1,9 +1,9 @@
-// src/components/Common/__tests__/Pagination.test.js
+
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// Pagination component for testing
+
 const Pagination = ({ 
   currentPage, 
   totalPages, 

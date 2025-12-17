@@ -1,4 +1,3 @@
-
 import os
 import sys
 import django
@@ -18,7 +17,7 @@ COMPANY = "Abbott Laboratories Pakistan Ltd"
 
 print(f"DEBUGGING COMPANY: {COMPANY}")
 
-# 1. Date Range
+
 qs = Transaction.objects.filter(buyer=COMPANY)
 agg = qs.aggregate(min_date=Min('reporting_date'), max_date=Max('reporting_date'), count=models.Count('id'))
 print(f"Date Range (Import): {agg['min_date']} to {agg['max_date']} (Count: {agg['count']})")
@@ -29,7 +28,7 @@ if not agg['count']:
     agg = qs.aggregate(min_date=Min('reporting_date'), max_date=Max('reporting_date'), count=models.Count('id'))
     print(f"Date Range (Export): {agg['min_date']} to {agg['max_date']} (Count: {agg['count']})")
 
-# 2. Check Product Performance
+
 prods = get_company_product_performance(COMPANY, direction='import')
 if not prods:
      prods = get_company_product_performance(COMPANY, direction='export')
@@ -43,7 +42,7 @@ if prods:
 else:
     print("No products found.")
 
-# 3. Check Trends
+
 trends = get_volume_price_monthly(COMPANY, direction='import')
 if not trends:
     trends = get_volume_price_monthly(COMPANY, direction='export')

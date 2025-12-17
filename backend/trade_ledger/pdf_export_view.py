@@ -1,5 +1,3 @@
-# Add this to the END of trade_ledger/views.py
-
 import subprocess
 import tempfile
 import os
@@ -22,28 +20,28 @@ def export_comparison_pdf(request):
         if len(companies) < 2:
             return JsonResponse({'error': 'At least 2 companies required'}, status=400)
         
-        # Create temporary file for PDF
+        
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
             pdf_path = tmp_file.name
         
-        # Call Node.js script to generate PDF
+        
         script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'generate_comparison_pdf.js')
         
-        # Prepare data for Node script
+        
         node_input = json.dumps({
             'companies': companies,
             'comparisonData': comparison_data,
             'outputPath': pdf_path
         })
         
-        # Run Node.js script
+        
         result = subprocess.run(
             ['node', '-e', f"""
-const {{ generateComparisonPDF }} = require('{script_path.replace(os.sep, '/')}');
+const {{  generateComparisonPDF }}  = require('{script_path.replace(os.sep, '/')}');
 const data = {node_input};
 generateComparisonPDF(data.companies, data.comparisonData, data.outputPath)
     .then(() => process.exit(0))
-    .catch((err) => {{ console.error(err); process.exit(1); }});
+    .catch((err) => {{  console.error(err); process.exit(1); }} );
             """],
             capture_output=True,
             text=True,
@@ -54,7 +52,7 @@ generateComparisonPDF(data.companies, data.comparisonData, data.outputPath)
             print(f"PDF generation error: {result.stderr}")
             return JsonResponse({'error': 'PDF generation failed'}, status=500)
         
-        # Return PDF file
+        
         if os.path.exists(pdf_path):
             response = FileResponse(
                 open(pdf_path, 'rb'),
@@ -62,7 +60,7 @@ generateComparisonPDF(data.companies, data.comparisonData, data.outputPath)
             )
             response['Content-Disposition'] = f'attachment; filename="company-comparison-{companies[0][:20]}.pdf"'
             
-            # Schedule file cleanup (will be deleted after response is sent)
+            
             def cleanup():
                 try:
                     os.unlink(pdf_path)

@@ -51,7 +51,7 @@ class AIService:
             logger.warning("OpenAI API Key not set. Cannot perform smart search.")
             return None
         
-        # Prepare company summary for GPT (limit to first 100 companies for token efficiency)
+        
         company_summary = "\n".join([
             f"ID:{c['id']} | {c['name']} | {c.get('province', 'N/A')} | {c.get('sector', 'N/A')}"
             for c in company_data[:100]
@@ -86,17 +86,17 @@ If no companies match: []"""
             
             result = response.choices[0].message.content.strip()
             
-            # Strip markdown code blocks if present (GPT sometimes wraps in ```json ... ```)
+            
             if result.startswith('```'):
-                # Remove opening ```json or ``` and closing ```
+                
                 lines = result.split('\n')
                 if lines[0].startswith('```'):
-                    lines = lines[1:]  # Remove first line
+                    lines = lines[1:]  
                 if lines and lines[-1].strip() == '```':
-                    lines = lines[:-1]  # Remove last line
+                    lines = lines[:-1]  
                 result = '\n'.join(lines).strip()
             
-            # Parse JSON array of IDs
+            
             try:
                 ids = json.loads(result)
                 if isinstance(ids, list):

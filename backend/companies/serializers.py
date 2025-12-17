@@ -61,11 +61,11 @@ class KeyContactSerializer(serializers.ModelSerializer):
         """Hide sensitive fields if not unlocked"""
         data = super().to_representation(instance)
         
-        # If public or unlocked, show everything
+        
         if instance.is_public or data['is_unlocked']:
             return data
         
-        # Otherwise, hide sensitive info
+        
         data['phone'] = "🔒 Locked"
         data['email'] = "🔒 Locked"
         data['whatsapp'] = "🔒 Locked"

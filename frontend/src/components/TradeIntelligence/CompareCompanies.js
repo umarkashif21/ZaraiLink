@@ -13,7 +13,7 @@ const CompareCompanies = () => {
   const [loadingCompanies, setLoadingCompanies] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch available companies on mount
+  
   useEffect(() => {
     loadCompanies();
   }, []);
@@ -27,7 +27,7 @@ const CompareCompanies = () => {
       if (res.ok) {
         const data = await res.json();
         const companyNames = (data.results || []).map(item => item.company).sort();
-        setCompanies([...new Set(companyNames)]); // Remove duplicates
+        setCompanies([...new Set(companyNames)]); 
       }
     } catch (err) {
       console.error('Failed to load companies:', err);
@@ -81,7 +81,7 @@ const CompareCompanies = () => {
   const handleExportPDF = async () => {
     try {
       setLoading(true);
-      // Dynamic imports
+      
       const { default: jsPDF } = await import('jspdf');
       const { default: html2canvas } = await import('html2canvas');
       const { default: autoTable } = await import('jspdf-autotable');
@@ -89,7 +89,7 @@ const CompareCompanies = () => {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       
-      // -- HEADER --
+      
       doc.setFontSize(18);
       doc.setTextColor(44, 62, 80);
       doc.text('Company Comparison Report', pageWidth / 2, 20, { align: 'center' });
@@ -98,7 +98,7 @@ const CompareCompanies = () => {
       doc.setTextColor(100);
       doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 26, { align: 'center' });
 
-      // -- DATA PREPARATION --
+      
       const companyNames = selectedCompanies.filter(c => c);
       const metrics = [
         { label: 'Trade Volume', key: 'trade_volume', fmt: val => val ? `$${val.toLocaleString()}` : '' },
@@ -119,7 +119,7 @@ const CompareCompanies = () => {
         return row;
       });
 
-      // -- RENDER TABLE --
+      
       autoTable(doc, {
         head: [['Metric', ...companyNames]],
         body: tableBody,
@@ -132,12 +132,12 @@ const CompareCompanies = () => {
 
       let finalY = doc.lastAutoTable.finalY + 10;
 
-      // -- CHARTS --
-      // Helper to capture chart
+      
+      
       const addChartToDoc = async (elementId, title) => {
         const element = document.getElementById(elementId);
         if (element) {
-          if (finalY > 250) { // New page if near bottom
+          if (finalY > 250) { 
              doc.addPage();
              finalY = 20;
           }
@@ -148,13 +148,13 @@ const CompareCompanies = () => {
           finalY += 5;
 
           const canvas = await html2canvas(element, {
-            scale: 2, // 2 is sufficient for embedded small charts
+            scale: 2, 
             useCORS: true,
             logging: false
           });
           
           const imgData = canvas.toDataURL('image/png');
-          const imgWidth = pageWidth - 28; // Margins
+          const imgWidth = pageWidth - 28; 
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
           
           doc.addImage(imgData, 'PNG', 14, finalY, imgWidth, imgHeight);
@@ -165,7 +165,7 @@ const CompareCompanies = () => {
       await addChartToDoc('chart-volume', 'Trade Volume Comparison');
       await addChartToDoc('chart-partners', 'Partners & Products Comparison');
 
-      // Save
+      
       doc.save(`comparison_report_${Date.now()}.pdf`);
       
     } catch (err) {
@@ -361,7 +361,7 @@ const CompareCompanies = () => {
                   ))}
                 </div>
 
-                {/* Trade Volume Comparison Chart */}
+                {}
                 <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Trade Volume Comparison</h4>
                 <div id="chart-volume" style={{ width: '100%', height: 350, marginTop: '1rem', background: '#fff' }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -400,7 +400,7 @@ const CompareCompanies = () => {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Partners & Products Comparison */}
+                {}
                 <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Partners & Products Comparison</h4>
                 <div id="chart-partners" style={{ width: '100%', height: 300, marginTop: '1rem', background: '#fff' }}>
                   <ResponsiveContainer width="100%" height="100%">

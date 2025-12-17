@@ -20,12 +20,12 @@ class HsToProductMap(models.Model):
 
 
 
-# -------------------
-# Product hierarchy
-# -------------------
+
+
+
 class Product(models.Model):
-    name = models.CharField(max_length=1000)         # e.g., "Sugar"
-    hs_code = models.CharField(max_length=10, unique=True)  # e.g., "17"
+    name = models.CharField(max_length=1000)         
+    hs_code = models.CharField(max_length=10, unique=True)  
 
     def __str__(self):
         return f"{self.name} ({self.hs_code})"
@@ -33,8 +33,8 @@ class Product(models.Model):
 
 class ProductCategory(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="categories")
-    name = models.CharField(max_length=1000)         # e.g., "Other sugars"
-    hs_code = models.CharField(max_length=10, unique=True)  # e.g., "17.02"
+    name = models.CharField(max_length=1000)         
+    hs_code = models.CharField(max_length=10, unique=True)  
 
     def __str__(self):
         return f"{self.name} ({self.hs_code})"
@@ -42,8 +42,8 @@ class ProductCategory(models.Model):
 
 class ProductSubCategory(models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, related_name="sub_categories")
-    name = models.CharField(max_length=1000)         # e.g., "Glucose and glucose syrup"
-    hs_code = models.CharField(max_length=50, unique=True)  # e.g., "1702.3000"
+    name = models.CharField(max_length=1000)         
+    hs_code = models.CharField(max_length=50, unique=True)  
 
     def __str__(self):
         return f"{self.name} ({self.hs_code})"
@@ -51,22 +51,22 @@ class ProductSubCategory(models.Model):
 
 class ProductItem(models.Model):
     sub_category = models.ForeignKey(ProductSubCategory, on_delete=models.CASCADE, related_name="items")
-    name = models.CharField(max_length=1000)         # e.g., "Dextrose Anhydrous"
+    name = models.CharField(max_length=1000)         
 
     def __str__(self):
         return self.name
 
 
-# -------------------
-# Transaction model
-# -------------------
+
+
+
 class Transaction(models.Model):
     """Raw import/export transaction records"""
     id = models.BigAutoField(primary_key=True)
     source_file = models.CharField(max_length=500)
     tx_reference = models.CharField(max_length=500)
     reporting_date = models.DateField()  
-    hs_code = models.CharField(max_length=50)  # keep raw HS code for reference
+    hs_code = models.CharField(max_length=50)  
     product_item = models.ForeignKey(ProductItem, on_delete=models.SET_NULL, null=True, blank=True)
     buyer = models.CharField(max_length=500)
     seller = models.CharField(max_length=500)
@@ -185,12 +185,12 @@ class AggCompanyMonthProduct(models.Model):
     
 
 
-#GNN EMBEDDINGS
+
 
 
 class CompanyEmbedding(models.Model):
     company_name = models.CharField(max_length=500, unique=True)
-    embedding = models.JSONField()  # ✅ Built-in JSONField (works with PostgreSQL)
+    embedding = models.JSONField()  
     cluster_tag = models.CharField(max_length=100, blank=True)
     pagerank = models.FloatField(default=0.0)
     degree = models.IntegerField(default=0)
@@ -206,7 +206,7 @@ class CompanyEmbedding(models.Model):
 
 class ProductEmbedding(models.Model):
     product_item = models.ForeignKey(ProductItem, on_delete=models.CASCADE)
-    embedding = models.JSONField()  # ✅ Built-in JSONField
+    embedding = models.JSONField()  
     cluster_tag = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

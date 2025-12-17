@@ -23,28 +23,28 @@ const FindBuyers = () => {
     sector: ''
   });
   
-  // Smart Search Toggle
+  
   const [useAI, setUseAI] = useState(false);
   const [aiFallback, setAiFallback] = useState(false);
   
-  // Pagination and sorting state
+  
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
   const [sortBy, setSortBy] = useState('name_asc');
   
-  // Watchlist hook
+  
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
   
-  // Debounce search
+  
   const debouncedSearch = useDebounce(filters.search, 300);
   
-  // Filter options loaded from backend
+  
   const [filterOptions, setFilterOptions] = useState({
     regions: [],
     sectors: []
   });
   
-  // State for buyer role ID
+  
   const [buyerRoleId, setBuyerRoleId] = useState(null);
 
   const searchCompanies = useCallback(async (roleIdToUse) => {
@@ -119,7 +119,7 @@ const FindBuyers = () => {
     }, 100);
   };
 
-  // Sorted companies
+  
   const sortedCompanies = useMemo(() => {
     const sorted = [...companies];
     const [field, direction] = sortBy.split('_');
@@ -132,14 +132,14 @@ const FindBuyers = () => {
     return sorted;
   }, [companies, sortBy]);
 
-  // Paginated companies
+  
   const totalPages = Math.ceil(sortedCompanies.length / itemsPerPage);
   const paginatedCompanies = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return sortedCompanies.slice(start, start + itemsPerPage);
   }, [sortedCompanies, currentPage, itemsPerPage]);
 
-  // Export columns
+  
   const exportColumns = [
     { key: 'name', label: 'Company Name' },
     { key: 'province', label: 'Province' },
@@ -147,7 +147,7 @@ const FindBuyers = () => {
     { key: 'verification_status', label: 'Status' },
   ];
 
-  // Load filter options
+  
   const loadFilterOptions = useCallback(async () => {
     try {
       const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
@@ -186,17 +186,17 @@ const FindBuyers = () => {
     }
   }, []);
 
-  // Initial load
+  
   useEffect(() => {
     loadFilterOptions();
   }, [loadFilterOptions]);
 
-  // Trigger search when buyer role ID is available
+  
   useEffect(() => {
     if (buyerRoleId) {
       searchCompanies(buyerRoleId);
     }
-  }, [buyerRoleId, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [buyerRoleId, debouncedSearch]); 
 
   return (
 
@@ -221,7 +221,7 @@ const FindBuyers = () => {
         </div>
       </div>
 
-      {/* Filters Section */}
+      {}
       <div className="filters-section">
         <form onSubmit={handleSearch} className="search-bar">
           <input
@@ -234,7 +234,7 @@ const FindBuyers = () => {
           <button type="submit" className="btn-search">Search</button>
         </form>
         
-        {/* Smart Search Filter */}
+        {}
         <div className="smart-search-toggle" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <input 
                 type="checkbox" 
@@ -290,7 +290,7 @@ const FindBuyers = () => {
         </div>
       </div>
 
-      {/* AI Fallback Notice */}
+      {}
       {useAI && aiFallback && !loading && (
         <div style={{
           backgroundColor: '#fff3cd',
@@ -308,7 +308,7 @@ const FindBuyers = () => {
         </div>
       )}
 
-      {/* Error Message */}
+      {}
       {error && (
         <div className="error-message">
           <span>⚠️</span>
@@ -316,7 +316,7 @@ const FindBuyers = () => {
         </div>
       )}
 
-      {/* Loading State */}
+      {}
       {loading && (
         <div className="companies-section">
           <div className="companies-grid">
@@ -325,7 +325,7 @@ const FindBuyers = () => {
         </div>
       )}
 
-      {/* Companies Grid */}
+      {}
       {!loading && !error && (
         <div className="companies-section">
           <div className="results-header">
@@ -387,7 +387,7 @@ const FindBuyers = () => {
                 ))}
               </div>
               
-              {/* Pagination */}
+              {}
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

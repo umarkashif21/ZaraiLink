@@ -1,11 +1,10 @@
-
 import os
 import django
 import sys
 import json
 from django.http import HttpRequest
 
-# Setup Django environment
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zarailink.settings')
 django.setup()
@@ -19,8 +18,8 @@ def debug_view():
     request = HttpRequest()
     request.method = 'GET'
     
-    # Simulate GET params
-    # direction='export' is assumed based on previous script finding 59 seller txs
+    
+    
     request.GET['direction'] = 'export'
     request.META['SERVER_NAME'] = 'localhost'
     request.META['SERVER_PORT'] = '8000' 

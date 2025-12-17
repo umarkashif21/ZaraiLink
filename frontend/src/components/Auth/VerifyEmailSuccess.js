@@ -5,15 +5,15 @@ export default function VerifyEmailSuccess() {
   const { token } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState("verifying"); // verifying, success, error, expired
+  const [status, setStatus] = useState("verifying"); 
   const [message, setMessage] = useState("Verifying your email...");
 
   useEffect(() => {
-    // Check if we have a status from the query parameter (backend redirect)
+    
     const queryStatus = searchParams.get('status');
 
     if (queryStatus) {
-      // Backend has already processed the verification
+      
       switch (queryStatus) {
         case 'verified':
           setStatus("success");
@@ -38,7 +38,7 @@ export default function VerifyEmailSuccess() {
           setMessage("Unknown verification status.");
       }
     } else {
-      // No query parameter, shouldn't happen with new backend
+      
       setStatus("error");
       setMessage("Verification link is invalid.");
     }
@@ -46,12 +46,12 @@ export default function VerifyEmailSuccess() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex flex-col">
-      {/* Navbar */}
+      {}
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <div className="text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
       </nav>
 
-      {/* Main Content */}
+      {}
       <div className="flex-1 flex items-center justify-center px-6 py-10">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-10 space-y-8">
           {status === "verifying" && (

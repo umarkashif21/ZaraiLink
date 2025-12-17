@@ -14,7 +14,7 @@ const Watchlist = () => {
   const [sortBy, setSortBy] = useState('date_desc');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter watchlist by search term
+  
   const filteredWatchlist = useMemo(() => {
     if (!searchTerm) return watchlist;
     return watchlist.filter(item => 
@@ -22,7 +22,7 @@ const Watchlist = () => {
     );
   }, [watchlist, searchTerm]);
 
-  // Sort watchlist
+  
   const sortedWatchlist = useMemo(() => {
     const sorted = [...filteredWatchlist];
     const [field, direction] = sortBy.split('_');
@@ -47,13 +47,13 @@ const Watchlist = () => {
     return sorted;
   }, [filteredWatchlist, sortBy]);
 
-  // Export columns
+  
   const exportColumns = [
     { key: 'name', label: 'Company Name' },
     { key: 'addedAt', label: 'Added Date' },
   ];
 
-  // Format date
+  
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -63,9 +63,9 @@ const Watchlist = () => {
     });
   };
 
-  // Handle company click
+  
   const handleCompanyClick = (companyId) => {
-    // Try to navigate to company profile
+    
     navigate(`/trade-intelligence/company/${encodeURIComponent(companyId)}/overview`);
   };
 

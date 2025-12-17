@@ -6,7 +6,7 @@ import './TradeIntelligence.css';
 const LinkPrediction = () => {
   const navigate = useNavigate();
   const [companyName, setCompanyName] = useState('');
-  const [predictionType, setPredictionType] = useState('sellers'); // 'sellers' or 'buyers'
+  const [predictionType, setPredictionType] = useState('sellers'); 
   const [method, setMethod] = useState('combined');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ const LinkPrediction = () => {
   const [methods, setMethods] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
 
-  // Load available methods
+  
   useEffect(() => {
     fetch('http://localhost:8000/api/predict/methods/', { credentials: 'include' })
       .then(res => res.json())
@@ -22,7 +22,7 @@ const LinkPrediction = () => {
       .catch(err => console.error('Failed to load methods:', err));
   }, []);
 
-  // Load company suggestions
+  
   useEffect(() => {
     fetch('http://localhost:8000/api/explorer/?direction=import&limit=1000', { credentials: 'include' })
       .then(res => res.json())
@@ -65,22 +65,22 @@ const LinkPrediction = () => {
 
   const getScorePercentage = (score) => {
     if (typeof score === 'number') {
-      // Backend now returns normalized 0-1 scores
-      // Clamp to 0-1 range and convert to percentage
+      
+      
       const normalizedScore = Math.min(1, Math.max(0, score));
       return normalizedScore * 100;
     }
     return 0;
   };
 
-  // Get confidence tier based on score (0-1)
+  
   const getConfidenceTier = (score) => {
     if (score >= 0.7) return { label: 'High', color: '#22c55e', bgColor: '#dcfce7' };
     if (score >= 0.4) return { label: 'Medium', color: '#f59e0b', bgColor: '#fef3c7' };
     return { label: 'Low', color: '#6b7280', bgColor: '#f3f4f6' };
   };
 
-  // Get ranking suffix (1st, 2nd, 3rd, etc.)
+  
   const getRankLabel = (rank) => {
     if (rank === 1) return '1st';
     if (rank === 2) return '2nd';
@@ -97,7 +97,7 @@ const LinkPrediction = () => {
           <p>Discover potential trading partners using AI-powered predictions</p>
         </div>
 
-        {/* Controls Section */}
+        {}
         <div className="filters-section">
           <div className="filters-grid">
             <div className="filter-group">
@@ -152,7 +152,7 @@ const LinkPrediction = () => {
           </div>
         </div>
 
-        {/* Method Description */}
+        {}
         {method && methods.length > 0 && (
           <div className="metrics-row" style={{ marginBottom: '20px' }}>
             <div className="metric-card" style={{ flex: 1 }}>
@@ -164,7 +164,7 @@ const LinkPrediction = () => {
           </div>
         )}
 
-        {/* Error Message */}
+        {}
         {error && (
           <div className="empty-state" style={{ background: '#fee2e2', color: '#dc2626' }}>
             <h2>⚠️ Error</h2>
@@ -172,7 +172,7 @@ const LinkPrediction = () => {
           </div>
         )}
 
-        {/* Loading State */}
+        {}
         {loading && (
           <div className="loading-container">
             <div className="spinner"></div>
@@ -180,7 +180,7 @@ const LinkPrediction = () => {
           </div>
         )}
 
-        {/* Results */}
+        {}
         {!loading && results.length > 0 && (
           <div className="companies-section">
             <div className="results-header">
@@ -286,7 +286,7 @@ const LinkPrediction = () => {
           </div>
         )}
 
-        {/* No Results */}
+        {}
         {!loading && !error && results.length === 0 && companyName && (
           <div className="empty-state">
             <h2>No predictions yet</h2>

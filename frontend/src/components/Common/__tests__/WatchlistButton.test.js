@@ -1,10 +1,10 @@
-// src/components/Common/__tests__/WatchlistButton.test.js
+
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// Component under test (inline for testing)
+
 const WatchlistButton = ({ 
   isWatched, 
   onToggle, 

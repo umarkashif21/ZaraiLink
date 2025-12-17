@@ -41,24 +41,24 @@ class User(AbstractUser):
     bio = models.CharField(max_length=500, default="", blank=True, verbose_name=_("Bio"))
     country = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Country"))
 
-    # Email verification fields
+    
     email_verified = models.BooleanField(default=False, verbose_name=_("Email Verified"))
     verification_token = models.UUIDField(
         default=uuid.uuid4,
         editable=False,
         unique=True,
-        db_column='email_verification_token'  # Match database column name
+        db_column='email_verification_token'  
     )
     token_created_at = models.DateTimeField(default=timezone.now)
 
-    # New fields for enhanced schema
+    
     phone_number = models.CharField(max_length=30, blank=True, null=True, verbose_name=_("Phone Number"))
     job_title = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Job Title"))
     
-    # Token balance for contact unlocking
+    
     token_balance = models.IntegerField(default=0, verbose_name=_("Token Balance"))
 
-    # Custom manager for email-based authentication
+    
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
@@ -85,7 +85,7 @@ class User(AbstractUser):
         self.token_created_at = timezone.now()
         self.save(update_fields=['verification_token', 'token_created_at'])
     
-    # Token management methods
+    
     def has_tokens(self, amount=1):
         """Check if user has enough tokens"""
         return self.token_balance >= amount

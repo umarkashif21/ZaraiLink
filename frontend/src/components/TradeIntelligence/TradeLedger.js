@@ -20,17 +20,17 @@ const TradeLedger = () => {
   const [load, setLoad] = useState(true);
   const [stats, setStats] = useState(null);
   
-  // Pagination state
+  
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
   
-  // Sorting state
+  
   const [sortBy, setSortBy] = useState('name_asc');
   
-  // Watchlist hook
+  
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
   
-  // Hide N/A filter
+  
   const [hideNA, setHideNA] = useState(false);
   
   const [filts, setFilts] = useState({
@@ -41,7 +41,7 @@ const TradeLedger = () => {
     dateTo: ''
   });
   
-  // Debounce country filter
+  
   const debouncedCountry = useDebounce(filts.country, 300);
 
   useEffect(() => {
@@ -55,11 +55,11 @@ const TradeLedger = () => {
 
   const loadCats = async () => {
     try {
-      // Use product-clusters endpoint which exists in trade_ledger
+      
       const res = await fetch('http://localhost:8000/api/product-clusters/', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        // Convert clusters to category-like format
+        
         const categories = data.clusters ? data.clusters.map((name, idx) => ({ id: idx + 1, name })) : [];
         setCats(categories);
       }
@@ -72,17 +72,17 @@ const TradeLedger = () => {
     setLoad(true);
     try {
       const p = new URLSearchParams();
-      p.append('direction', 'both'); // Show all companies (buyers + sellers)
+      p.append('direction', 'both'); 
       if (filts.country) p.append('country', filts.country);
       if (filts.dateFrom) p.append('date_from', filts.dateFrom);
       if (filts.dateTo) p.append('date_to', filts.dateTo);
-      p.append('limit', '1000'); // Get all companies (currently ~710)
+      p.append('limit', '1000'); 
 
-      // Use the explorer API which pulls from import_data_1year.xlsx
+      
       const res = await fetch(`http://localhost:8000/api/explorer/?${p}`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        // Transform explorer data - parse all numeric strings to actual numbers
+        
         const transformedComps = (data.results || []).map((item, idx) => {
           const volume = parseFloat(item.total_volume) || 0;
           const avgPrice = parseFloat(item.avg_price) || 0;
@@ -112,7 +112,7 @@ const TradeLedger = () => {
         });
         setComps(transformedComps);
         
-        // Calculate global stats from all companies
+        
         const totalVolume = transformedComps.reduce((sum, c) => sum + c.trade_volume, 0);
         const totalRevenue = transformedComps.reduce((sum, c) => sum + c.estimated_revenue, 0);
         const avgPrice = transformedComps.length > 0 
@@ -143,7 +143,7 @@ const TradeLedger = () => {
   };
 
   const onCompClick = (companyName) => {
-    // Use the company name for navigation, URL encoded for safety
+    
     const encodedName = encodeURIComponent(companyName);
     navigate(`/trade-intelligence/company/${encodedName}/overview`);
   };
@@ -165,14 +165,14 @@ const TradeLedger = () => {
     return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
   };
 
-  // Sorted and filtered data
+  
   const sortedComps = useMemo(() => {
     let sorted = [...comps];
     
-    // Filter out N/A entries if hideNA is enabled
+    
     if (hideNA) {
       sorted = sorted.filter(c => {
-        // Keep companies that have at least volume > 0 and a country
+        
         return c.trade_volume > 0 && 
                c.company.country !== 'N/A' && 
                c.company.country !== '';
@@ -201,14 +201,14 @@ const TradeLedger = () => {
     return sorted;
   }, [comps, sortBy, hideNA]);
 
-  // Paginated data
+  
   const totalPages = Math.ceil(sortedComps.length / itemsPerPage);
   const paginatedComps = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return sortedComps.slice(start, start + itemsPerPage);
   }, [sortedComps, currentPage, itemsPerPage]);
 
-  // Export columns - enhanced with new data fields
+  
   const exportColumns = [
     { key: 'company.name', label: 'Company Name' },
     { key: 'company.country', label: 'Country' },
@@ -219,7 +219,7 @@ const TradeLedger = () => {
     { key: 'segment_tag', label: 'Segment' },
   ];
 
-  // Format data for export
+  
   const exportData = comps.map(c => ({
     'company.name': c.company.name,
     'company.country': c.company.country || '',
@@ -443,7 +443,7 @@ const TradeLedger = () => {
               </table>
             </div>
             
-            {/* Pagination */}
+            {}
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

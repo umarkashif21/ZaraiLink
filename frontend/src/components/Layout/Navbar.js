@@ -11,7 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // State for handling dropdown hover/click
+  
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   const handleLogout = async () => {
@@ -32,13 +32,13 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        {/* Logo */}
+        {}
         <Link to="/dashboard" className="navbar-logo">
           <span className="logo-icon">🌾</span>
           <span className="logo-text">ZaraiLink</span>
         </Link>
 
-        {/* Navigation Links */}
+        {}
         <div className="navbar-menu">
           <Link 
             to="/dashboard" 
@@ -47,7 +47,7 @@ const Navbar = () => {
             Home
           </Link>
           
-          {/* Trade Directory Dropdown */}
+          {}
           <div 
             className="nav-dropdown"
             onMouseEnter={() => setActiveDropdown('directory')}
@@ -72,7 +72,7 @@ const Navbar = () => {
             </AnimatePresence>
           </div>
 
-          {/* Trade Intelligence Dropdown  */}
+          {}
           <div 
             className="nav-dropdown"
             onMouseEnter={() => setActiveDropdown('intelligence')}
@@ -115,9 +115,9 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Right Section */}
+        {}
         <div className="navbar-right">
-          {/* Theme Toggle */}
+          {}
           <motion.button 
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -129,13 +129,13 @@ const Navbar = () => {
             {isDarkMode ? '☀️' : '🌙'}
           </motion.button>
 
-          {/* Token Balance */}
+          {}
           <div className="token-display">
             <span className="token-icon">💎</span>
             <span className="token-count">{tokenBalance || 0}</span>
           </div>
 
-          {/* User Menu */}
+          {}
           <div 
             className="user-menu"
             onMouseEnter={() => setActiveDropdown('user')}

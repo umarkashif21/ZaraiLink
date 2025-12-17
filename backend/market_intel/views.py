@@ -15,15 +15,15 @@ def recommendations_api(request):
     """Generate recommendations based on user history"""
     user = request.user
     
-    # Get last 5 viewed companies
+    
     interactions = UserInteraction.objects.filter(user=user, action='view').select_related('company').order_by('-timestamp')[:5]
     
     if not interactions.exists():
-        # Fallback: Return some random verified companies or empty
-        # For now return empty, frontend can show "Explore more to get recommendations"
+        
+        
         return Response([])
     
-    # Get embeddings
+    
     vectors = []
     seen_ids = set()
     for i in interactions:
@@ -35,16 +35,16 @@ def recommendations_api(request):
     if not vectors:
         return Response([])
     
-    # Average vector
+    
     try:
         avg_vector = np.mean(vectors, axis=0)
     except:
         return Response([])
     
-    # Search
+    
     results = RedisClient.search(avg_vector, top_k=10)
     
-    # Exclude seen companies
+    
     recommendations = []
     for res in results:
         if res['id'] not in seen_ids:

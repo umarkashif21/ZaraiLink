@@ -23,50 +23,50 @@ const FindSuppliers = () => {
     sector: ''
   });
   
-  // Smart Search Toggle
+  
   const [useAI, setUseAI] = useState(false);
   const [aiFallback, setAiFallback] = useState(false);
   
-  // Pagination and sorting state
+  
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
   const [sortBy, setSortBy] = useState('name_asc');
   
-  // Watchlist hook
+  
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
   
-  // Debounce search
+  
   const debouncedSearch = useDebounce(filters.search, 300);
   
-  // Filter options loaded from backend
+  
   const [filterOptions, setFilterOptions] = useState({
     regions: [],
     sectors: []
   });
   
-  // State for supplier role ID
+  
   const [supplierRoleId, setSupplierRoleId] = useState(null);
 
   const searchCompanies = useCallback(async (roleIdToUse) => {
-    // Use passed roleId or fall back to state
+    
     const roleId = roleIdToUse || supplierRoleId;
     console.log('🔍 searchCompanies called with roleId:', roleId);
     if (!roleId) {
       console.log('❌ No roleId, exiting');
-      return; // Don't search without supplier role
+      return; 
     }
     
     setLoading(true);
     setError(null);
 
     try {
-      // Build query params
+      
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
       if (filters.region) params.append('region', filters.region);
       if (filters.sector) params.append('sector', filters.sector);
-      if (useAI) params.append('use_ai', 'true'); // SMART SEARCH PARAM
-      params.append('role', roleId); // Always filter by supplier role
+      if (useAI) params.append('use_ai', 'true'); 
+      params.append('role', roleId); 
       
       const apiUrl = `http://localhost:8000/api/companies/?${params.toString()}`;
       console.log('📡 Fetching from:', apiUrl);
@@ -80,10 +80,10 @@ const FindSuppliers = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // ... (logging omitted for brevity)
+        
         const companies = data.results || data;
         setCompanies(companies);
-        // Track AI fallback state
+        
         setAiFallback(data.ai_fallback === true);
       } else {
         throw new Error('Failed to load companies');
@@ -95,9 +95,9 @@ const FindSuppliers = () => {
       setLoading(false);
       console.log('🏁 searchCompanies completed');
     }
-  }, [supplierRoleId, filters, useAI]); // Added useAI dependency
+  }, [supplierRoleId, filters, useAI]); 
 
-  // ... (loadFilterOptions and useEffect omitted)
+  
 
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
@@ -116,9 +116,9 @@ const FindSuppliers = () => {
       region: '',
       sector: ''
     });
-    setUseAI(false); // Reset AI toggle
+    setUseAI(false); 
     setCurrentPage(1);
-    // Trigger search with reset values after state update
+    
     setTimeout(() => {
       if (supplierRoleId) {
         searchCompanies(supplierRoleId);
@@ -126,7 +126,7 @@ const FindSuppliers = () => {
     }, 100);
   };
 
-  // Sorted companies
+  
   const sortedCompanies = useMemo(() => {
     const sorted = [...companies];
     const [field, direction] = sortBy.split('_');
@@ -139,14 +139,14 @@ const FindSuppliers = () => {
     return sorted;
   }, [companies, sortBy]);
 
-  // Paginated companies
+  
   const totalPages = Math.ceil(sortedCompanies.length / itemsPerPage);
   const paginatedCompanies = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return sortedCompanies.slice(start, start + itemsPerPage);
   }, [sortedCompanies, currentPage, itemsPerPage]);
 
-  // Export columns
+  
   const exportColumns = [
     { key: 'name', label: 'Company Name' },
     { key: 'province', label: 'Province' },
@@ -154,7 +154,7 @@ const FindSuppliers = () => {
     { key: 'verification_status', label: 'Status' },
   ];
 
-  // Load filter options
+  
   const loadFilterOptions = useCallback(async () => {
     try {
       const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
@@ -193,17 +193,17 @@ const FindSuppliers = () => {
     }
   }, []);
 
-  // Initial load
+  
   useEffect(() => {
     loadFilterOptions();
   }, [loadFilterOptions]);
 
-  // Trigger search when supplier role ID is available
+  
   useEffect(() => {
     if (supplierRoleId) {
       searchCompanies(supplierRoleId);
     }
-  }, [supplierRoleId, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [supplierRoleId, debouncedSearch]); 
 
   return (
 
@@ -228,7 +228,7 @@ const FindSuppliers = () => {
         </div>
       </div>
 
-      {/* Filters Section */}
+      {}
       <div className="filters-section">
         <form onSubmit={handleSearch} className="search-bar">
           <input
@@ -241,7 +241,7 @@ const FindSuppliers = () => {
           <button type="submit" className="btn-search">Search</button>
         </form>
         
-        {/* Smart Search Filter */}
+        {}
         <div className="smart-search-toggle" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <input 
                 type="checkbox" 
@@ -261,7 +261,7 @@ const FindSuppliers = () => {
             value={filters.region}
             onChange={(e) => {
               handleFilterChange('region', e.target.value);
-              // Auto-trigger search after state update
+              
               setTimeout(() => {
                 if (supplierRoleId) searchCompanies(supplierRoleId);
               }, 100);
@@ -278,7 +278,7 @@ const FindSuppliers = () => {
             value={filters.sector}
             onChange={(e) => {
               handleFilterChange('sector', e.target.value);
-              // Auto-trigger search after state update
+              
               setTimeout(() => {
                 if (supplierRoleId) searchCompanies(supplierRoleId);
               }, 100);
@@ -299,7 +299,7 @@ const FindSuppliers = () => {
         </div>
       </div>
 
-      {/* AI Fallback Notice */}
+      {}
       {useAI && aiFallback && !loading && (
         <div style={{
           backgroundColor: '#fff3cd',
@@ -317,7 +317,7 @@ const FindSuppliers = () => {
         </div>
       )}
 
-      {/* Error Message */}
+      {}
       {error && (
         <div className="error-message">
           <span>⚠️</span>
@@ -325,7 +325,7 @@ const FindSuppliers = () => {
         </div>
       )}
 
-      {/* Loading State - now with skeletons */}
+      {}
       {loading && (
         <div className="companies-section">
           <div className="companies-grid">
@@ -334,7 +334,7 @@ const FindSuppliers = () => {
         </div>
       )}
 
-      {/* Companies Grid */}
+      {}
       {!loading && !error && (
         <div className="companies-section">
           <div className="results-header">
@@ -396,7 +396,7 @@ const FindSuppliers = () => {
                 ))}
               </div>
               
-              {/* Pagination */}
+              {}
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

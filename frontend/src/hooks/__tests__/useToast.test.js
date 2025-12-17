@@ -1,7 +1,7 @@
-// src/hooks/__tests__/useToast.test.js
+
 import { renderHook, act } from '@testing-library/react';
 
-// Mock react-hot-toast
+
 jest.mock('react-hot-toast', () => ({
   __esModule: true,
   default: {
@@ -20,7 +20,7 @@ jest.mock('react-hot-toast', () => ({
 
 import toast from 'react-hot-toast';
 
-// Simplified useToast hook for testing
+
 const useToast = () => {
   const showSuccess = (message, options = {}) => {
     return toast.success(message, { duration: 4000, ...options });

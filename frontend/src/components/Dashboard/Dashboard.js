@@ -14,7 +14,7 @@ const Dashboard = () => {
       <Navbar />
       
       <div className="dashboard-container">
-        {/* Hero Section */}
+        {}
         <div className="hero-section">
           <h1>Welcome back, {user?.name || user?.email?.split('@')[0]}! 👋</h1>
           <p className="hero-subtitle">

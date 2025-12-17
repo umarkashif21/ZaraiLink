@@ -1,4 +1,3 @@
-# companies/tests/test_views.py
 """
 Integration tests for the companies app API views.
 
@@ -19,7 +18,7 @@ class TestCompanyViewSet:
     
     def test_list_all_companies(self, api_client, create_company):
         """Test listing all companies."""
-        # Create some test companies
+        
         create_company(name='Company A', country='Pakistan')
         create_company(name='Company B', country='India')
         create_company(name='Company C', country='China')
@@ -30,7 +29,7 @@ class TestCompanyViewSet:
         assert response.status_code == 200
         data = response.json()
         
-        # Check if response is paginated or direct list
+        
         if isinstance(data, dict) and 'results' in data:
             companies = data['results']
         else:
@@ -54,7 +53,7 @@ class TestCompanyViewSet:
         else:
             companies = data
         
-        # Check that our Pakistan company is in results and no India filter test company
+        
         company_names = [c['name'] for c in companies]
         assert pak_company.name in company_names or len([c for c in companies if c.get('country') == 'Pakistan']) > 0
     
@@ -125,7 +124,7 @@ class TestCompanyViewSet:
     
     def test_pagination(self, api_client, create_company):
         """Test pagination with many companies."""
-        # Create 15 companies to test pagination
+        
         for i in range(15):
             create_company(name=f'Company {i}')
         
@@ -179,17 +178,17 @@ class TestKeyContactViewSet:
         
         initial_balance = user.token_balance
         
-        # Attempt to unlock contact
+        
         url = f'/api/key-contacts/{contact.id}/unlock/'
         response = authenticated_client.post(url)
         
-        # Check if endpoint exists and handles request
+        
         if response.status_code == 404:
             pytest.skip("Unlock endpoint not implemented at expected URL")
         
         assert response.status_code in [200, 201]
         
-        # Verify token was deducted
+        
         user.refresh_from_db()
         assert user.token_balance < initial_balance
     
@@ -204,7 +203,7 @@ class TestKeyContactViewSet:
         if response.status_code == 404:
             pytest.skip("Unlock endpoint not implemented at expected URL")
         
-        # Should fail with insufficient tokens
+        
         assert response.status_code in [400, 402, 403]
     
     def test_already_unlocked_contact(self, authenticated_client, user, create_company, create_key_contact):
@@ -214,21 +213,21 @@ class TestKeyContactViewSet:
         company = create_company(name='Already Unlocked Co')
         contact = create_key_contact(company_obj=company, name='Unlocked Contact')
         
-        # Create unlock record
+        
         KeyContactUnlock.objects.create(user=user, key_contact=contact)
         
         initial_balance = user.token_balance
         
-        # Attempt to unlock again
+        
         url = f'/api/key-contacts/{contact.id}/unlock/'
         response = authenticated_client.post(url)
         
         if response.status_code == 404:
             pytest.skip("Unlock endpoint not implemented at expected URL")
         
-        # Should succeed without deducting tokens
+        
         user.refresh_from_db()
-        # Token balance should be same (no double charge) or slightly less if re-unlock is charged
+        
         assert user.token_balance >= initial_balance - 1
 
 

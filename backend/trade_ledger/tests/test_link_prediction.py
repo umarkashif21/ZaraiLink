@@ -1,4 +1,3 @@
-# trade_ledger/tests/test_link_prediction.py
 """
 Unit tests for the Link Prediction service.
 
@@ -21,12 +20,12 @@ class TestLinkPredictionMethods:
         """Test Node2Vec prediction returns a list of results."""
         from trade_ledger.services.link_prediction import predict_sellers_node2vec
         
-        # This may return empty if no embeddings, but should not error
+        
         try:
             results = predict_sellers_node2vec('TestBuyer', top_k=5)
             assert isinstance(results, list)
         except Exception as e:
-            # May fail if no graph data, but should be handled gracefully
+            
             assert 'not found' in str(e).lower() or 'no data' in str(e).lower() or True
     
     def test_predict_sellers_common_neighbors_returns_list(self):
@@ -37,7 +36,7 @@ class TestLinkPredictionMethods:
             results = predict_sellers_common_neighbors('TestBuyer', top_k=5)
             assert isinstance(results, list)
         except Exception:
-            pass  # May fail without graph data
+            pass  
     
     def test_predict_sellers_by_product_returns_list(self):
         """Test Product Co-Trade prediction returns a list."""
@@ -103,7 +102,7 @@ class TestConfidenceScoreBounds:
         """Test confidence scaling respects MAX_CONFIDENCE_SCORE (95%)."""
         from trade_ledger.services.link_prediction import scale_confidence, MAX_CONFIDENCE_SCORE
         
-        # Test with maximum input
+        
         scaled = scale_confidence(1.0, max_val=1.0)
         
         assert scaled <= MAX_CONFIDENCE_SCORE
@@ -137,14 +136,14 @@ class TestGraphLoading:
         try:
             graph = load_buyer_seller_graph()
             
-            # Should return a networkx graph or None
+            
             if graph is not None:
                 import networkx as nx
                 assert isinstance(graph, nx.Graph) or isinstance(graph, nx.DiGraph)
         except FileNotFoundError:
-            pass  # GraphML file may not exist in test environment
+            pass  
         except Exception as e:
-            # Other errors should be documented
+            
             pytest.skip(f"Graph loading failed: {e}")
     
     def test_get_all_buyers(self):

@@ -17,7 +17,7 @@ const CompanyProducts = () => {
   const [load, setLoad] = useState(true);
   const [error, setError] = useState(null);
 
-  // Decode the company name from URL
+  
   const companyName = decodeURIComponent(id);
   const tab = loc.pathname.split('/').pop();
 
@@ -29,14 +29,14 @@ const CompanyProducts = () => {
     setLoad(true);
     setError(null);
     try {
-      // Use correct API endpoint: /api/company/{company_name}/products/
-      // Cache buster
+      
+      
       const res = await fetch(`http://localhost:8000/api/company/${id}/products/?direction=${direction}&date_from=${dateFrom}&date_to=${dateTo}&_t=${new Date().getTime()}`, {
         credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
-        // Normalize volume key to handle backend variations
+        
         if (data.product_performance) {
             data.product_performance = data.product_performance.map(p => ({
                 ...p,
@@ -224,7 +224,7 @@ const CompanyProducts = () => {
             </table>
           )}
 
-          {/* Section 2: Avg Price Trend */}
+          {}
           {prods && prods.avg_price_trend && (
             <div style={{ marginTop: '2rem' }}>
               <h3>Avg Price Trend (Monthly)</h3>
@@ -302,12 +302,12 @@ const CompanyProducts = () => {
             </div>
           )}
           
-          {/* Category Breakdown */}
+          {}
           {prods && prods.volume_share && prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).length > 0 && (
             <div style={{ marginTop: '4rem' }}>
               <h3>Volume by Category</h3>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {/* Chart */}
+                {}
                 <div style={{ width: '100%', height: 300 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
@@ -342,7 +342,7 @@ const CompanyProducts = () => {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Custom Legend */}
+                {}
                 <div style={{ 
                   display: 'flex', 
                   flexWrap: 'wrap', 
@@ -370,7 +370,7 @@ const CompanyProducts = () => {
             </div>
           )}
 
-          {/* Section 4: Co-Trade Network */}
+          {}
           {prods && prods.co_trade_network && prods.co_trade_network.length > 0 && (
             <div style={{ marginTop: '2rem' }}>
               <h3>Product Co-Trade Network (GNN)</h3>
@@ -394,7 +394,7 @@ const CompanyProducts = () => {
                     </marker>
                   </defs>
                   
-                  {/* Edges */}
+                  {}
                   {prods.co_trade_network.slice(0, 5).map((_, idx) => {
                     const angle = (idx * (360 / Math.min(prods.co_trade_network.length, 5))) * (Math.PI / 180);
                     const x = 300 + 160 * Math.cos(angle);
@@ -411,13 +411,13 @@ const CompanyProducts = () => {
                     );
                   })}
                   
-                  {/* Central Node */}
+                  {}
                   <circle cx="300" cy="225" r="60" fill="#3b82f6" />
                   <text x="300" y="225" dy=".3em" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold">
                     {(prods.product_performance?.[0]?.product_name || 'Primary').substring(0, 10)}
                   </text>
                   
-                  {/* Satellite Nodes */}
+                  {}
                   {prods.co_trade_network.slice(0, 5).map((p, idx) => {
                     const angle = (idx * (360 / Math.min(prods.co_trade_network.length, 5))) * (Math.PI / 180);
                     const x = 300 + 160 * Math.cos(angle);
@@ -439,7 +439,7 @@ const CompanyProducts = () => {
             </div>
           )}
 
-          {/* Section 5: Latent Clusters */}
+          {}
           {prods && prods.product_clusters && (
             <div style={{ marginTop: '2rem' }}>
               <h3>Product Latent Clusters (GNN)</h3>

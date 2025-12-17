@@ -20,11 +20,11 @@ const CompanyProfile = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Unlock state
+  
   const [selectedContact, setSelectedContact] = useState(null);
   const [unlocking, setUnlocking] = useState(false);
 
-  // Modal states
+  
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showInsufficientTokensModal, setShowInsufficientTokensModal] = useState(false);
@@ -32,7 +32,7 @@ const CompanyProfile = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [unlockedContactData, setUnlockedContactData] = useState(null);
 
-  // Similar Companies State
+  
   const [similarCompanies, setSimilarCompanies] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
 
@@ -88,7 +88,7 @@ const CompanyProfile = () => {
   };
 
   const handleUnlockClick = (contact) => {
-    // Don't unlock if already unlocked or public
+    
     if (contact.is_unlocked || contact.is_public) {
       return;
     }
@@ -97,7 +97,7 @@ const CompanyProfile = () => {
     setShowConfirmModal(true);
   };
 
-  // Helper to get CSRF token
+  
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -134,15 +134,15 @@ const CompanyProfile = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Success - update user balance and show success modal
-        await refreshUser(); // Refresh token balance
+        
+        await refreshUser(); 
         setUnlockedContactData(data.contact);
         setShowSuccessModal(true);
         
-        // Reload company data to update contact statuses
+        
         setTimeout(() => loadCompanyData(), 500);
       } else {
-        // Check for specific error statuses
+        
         if (data.status === 'insufficient_tokens' || response.status === 402) {
           setShowInsufficientTokensModal(true);
         } else {
@@ -188,7 +188,7 @@ const CompanyProfile = () => {
     <>
       <Navbar />
       <div className="company-profile-container">
-      {/* Header */}
+      {}
       <div className="profile-header">
         <div className="header-content">
           <div>
@@ -217,7 +217,7 @@ const CompanyProfile = () => {
         </div>
       </div>
 
-      {/* Tabs */}
+      {}
       <div className="profile-tabs">
         <button
           className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
@@ -245,7 +245,7 @@ const CompanyProfile = () => {
         </button>
       </div>
 
-      {/* Tab Content */}
+      {}
       <div className="tab-content">
         {activeTab === 'overview' && (
           <div className="overview-tab">
@@ -456,7 +456,7 @@ const CompanyProfile = () => {
         )}
       </div>
 
-      {/* Modals */}
+      {}
       <UnlockConfirmModal
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}

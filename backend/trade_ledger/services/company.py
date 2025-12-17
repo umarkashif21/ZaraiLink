@@ -1,4 +1,3 @@
-# services/company.py
 from django.db.models import Sum, Avg, Count, F
 from datetime import date, timedelta
 from trade_data.models import Transaction
@@ -13,17 +12,17 @@ def get_mom_growth_for_company(company_name, direction='import', date_to=None):
     if date_to is None:
         date_to = date.today()
 
-    # Get first day of current month
+    
     if date_to.day == 1:
-        # If today is the 1st, last full month is previous month
+        
         last_month_end = date_to.replace(day=1) - timedelta(days=1)
     else:
         last_month_end = date_to.replace(day=1) - timedelta(days=1)
 
-    # First day of last month
+    
     last_month_start = last_month_end.replace(day=1)
 
-    # First day of month before last
+    
     prior_month_end = last_month_start - timedelta(days=1)
     prior_month_start = prior_month_end.replace(day=1)
 
@@ -33,22 +32,22 @@ def get_mom_growth_for_company(company_name, direction='import', date_to=None):
     else:
         base_qs = base_qs.filter(seller=company_name)
 
-    # Volume in last full month
+    
     last_month_vol = base_qs.filter(
         reporting_date__range=[last_month_start, last_month_end]
     ).aggregate(v=Sum('qty_mt'))['v'] or 0
 
-    # Volume in prior full month
+    
     prior_month_vol = base_qs.filter(
         reporting_date__range=[prior_month_start, prior_month_end]
     ).aggregate(v=Sum('qty_mt'))['v'] or 0
 
     if prior_month_vol == 0:
-        return None # Avoid infinite growth
+        return None 
     return round(((last_month_vol - prior_month_vol) / prior_month_vol) * 100, 2)
 
 def get_company_overview_metrics(company_name, direction='import', **filters):
-    from datetime import timedelta  # needed for timedelta
+    from datetime import timedelta  
 
     qs = Transaction.objects.all()
     qs = apply_transaction_filters(qs, direction=direction, company_name=company_name, **filters)
@@ -72,7 +71,7 @@ def get_company_overview_metrics(company_name, direction='import', **filters):
         .order_by('-vol')[:3]
     )
     
-    # Calculate share_pct
+    
     top_products_list = []
     vol_denom = float(total_volume) if total_volume else 1.0
     

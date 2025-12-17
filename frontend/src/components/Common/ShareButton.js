@@ -17,7 +17,7 @@ const ShareButton = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      // Fallback for older browsers
+      
       const textArea = document.createElement('textarea');
       textArea.value = shareUrl;
       document.body.appendChild(textArea);
@@ -46,13 +46,13 @@ const ShareButton = ({
     setIsOpen(false);
   };
 
-  // Use Web Share API if available
+  
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({ title, url: shareUrl });
       } catch (err) {
-        // User cancelled or error
+        
       }
     }
   };

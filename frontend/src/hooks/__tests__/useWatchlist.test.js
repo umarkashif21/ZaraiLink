@@ -1,8 +1,8 @@
-// src/hooks/__tests__/useWatchlist.test.js
+
 import { renderHook, act } from '@testing-library/react';
 import { useState } from 'react';
 
-// Mock the useWatchlist hook without external localStorage mocking
+
 const useWatchlist = () => {
   const [watchlist, setWatchlist] = useState([]);
 

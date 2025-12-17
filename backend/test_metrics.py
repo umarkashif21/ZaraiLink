@@ -11,13 +11,13 @@ print("=" * 50)
 print("TESTING STATIC METRICS")
 print("=" * 50)
 
-# Test 1: Explorer
+
 print("\n1. Explorer Service - Top 5 Companies:")
 results = get_explorer_companies(direction='import', limit=5)
 for r in results:
     print(f"   - {r['company']}: {float(r['total_volume']):.2f} MT, Partners: {r['active_partners']}")
 
-# Test 2: Company Overview
+
 if results:
     company_name = results[0]['company']
     print(f"\n2. Company Overview for '{company_name}':")
@@ -27,7 +27,7 @@ if results:
     print(f"   - Active Partners: {metrics['active_partners']}")
     print(f"   - MoM Growth: {metrics['mom_growth_pct']}%")
 
-    # Test 3: GNN Similar Companies
+    
     print(f"\n3. Similar Companies (GNN):")
     similar = get_similar_companies(company_name, top_k=3)
     if similar:
@@ -36,7 +36,7 @@ if results:
     else:
         print("   No similar companies found (company may not have embedding)")
     
-    # Test 4: Network Influence
+    
     print(f"\n4. Network Influence (GNN):")
     influence = get_network_influence(company_name)
     print(f"   - PageRank: {influence['pagerank']:.6f}")

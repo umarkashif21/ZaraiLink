@@ -3,7 +3,7 @@ import django
 import sys
 import json
 
-# Setup Django Environment
+
 sys.path.append(os.getcwd())
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zarailink.settings')
 django.setup()
@@ -28,7 +28,7 @@ def debug_compare():
     companies_data = []
     for name in companies:
         try:
-             # Mimic view logic
+             
             cm = metrics.get(name, {})
             pagerank = 0.0
             degree = 0

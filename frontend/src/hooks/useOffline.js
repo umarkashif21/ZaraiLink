@@ -3,9 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 const CACHE_NAME = 'zarailink-offline-v1';
 const OFFLINE_KEY = 'zarailink-offline-data';
 
-/**
- * Hook for offline mode functionality
- */
+
 const useOffline = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [cachedData, setCachedData] = useState(() => {
@@ -59,7 +57,7 @@ const useOffline = () => {
     localStorage.removeItem(OFFLINE_KEY);
   }, []);
 
-  // Check if specific data is available offline
+  
   const hasOfflineData = useCallback((key) => {
     return !!cachedData[key];
   }, [cachedData]);

@@ -13,10 +13,10 @@ const ToastProvider = ({ children }) => {
         reverseOrder={false}
         gutter={12}
         containerStyle={{
-          top: 80, // Below navbar
+          top: 80, 
         }}
         toastOptions={{
-          // Default options for all toasts
+          
           duration: 4000,
           style: {
             background: isDarkMode ? '#1e293b' : '#ffffff',
@@ -31,7 +31,7 @@ const ToastProvider = ({ children }) => {
             fontWeight: 500,
             maxWidth: '400px',
           },
-          // Specific options by type
+          
           success: {
             iconTheme: {
               primary: '#10b981',

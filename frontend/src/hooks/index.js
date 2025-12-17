@@ -1,4 +1,4 @@
-/* Hooks Index - Export all custom hooks */
+
 
 export { default as useDebounce, useDebouncedCallback } from './useDebounce';
 export { default as useFilterPersistence } from './useFilterPersistence';

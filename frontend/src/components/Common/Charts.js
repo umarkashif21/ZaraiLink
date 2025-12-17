@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 import './Charts.css';
 
-// Color palette
+
 const COLORS = {
   primary: '#10b981',
   secondary: '#3b82f6',
@@ -36,7 +36,7 @@ const CHART_COLORS = [
   COLORS.cyan,
 ];
 
-// Line Chart Component
+
 export const TrendLineChart = ({
   data,
   lines = [{ key: 'value', color: COLORS.primary, name: 'Value' }],
@@ -89,7 +89,7 @@ export const TrendLineChart = ({
   );
 };
 
-// Bar Chart Component
+
 export const ComparisonBarChart = ({
   data,
   bars = [{ key: 'value', color: COLORS.primary, name: 'Value' }],
@@ -146,7 +146,7 @@ export const ComparisonBarChart = ({
   );
 };
 
-// Pie Chart Component
+
 export const DistributionPieChart = ({
   data,
   dataKey = 'value',
@@ -195,7 +195,7 @@ export const DistributionPieChart = ({
   );
 };
 
-// Stats Card Component
+
 export const StatsCard = ({ title, value, change, icon, trend = 'neutral' }) => {
   const trendColors = {
     up: 'var(--color-success)',

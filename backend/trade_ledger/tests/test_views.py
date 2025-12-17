@@ -1,4 +1,3 @@
-# trade_ledger/tests/test_views.py
 """
 Integration tests for the trade_ledger app API views.
 
@@ -53,7 +52,7 @@ class TestExplorerAPI:
         url = '/api/explorer/?start_date=invalid-date'
         response = api_client.get(url)
         
-        # Should either return 400 or handle gracefully
+        
         assert response.status_code in [200, 400]
 
 
@@ -70,7 +69,7 @@ class TestCompanyOverviewAPI:
         
         assert response.status_code == 200
         data = response.json()
-        # API returns overview data directly, not wrapped in a key
+        
         assert isinstance(data, dict)
     
     def test_nonexistent_company_overview(self, api_client):
@@ -78,7 +77,7 @@ class TestCompanyOverviewAPI:
         url = '/api/company/NonExistentCompany12345/overview/'
         response = api_client.get(url)
         
-        # Should return 404 or empty data
+        
         assert response.status_code in [200, 404]
 
 
@@ -91,8 +90,8 @@ class TestCompanyProductsAPI:
         from companies.models import CompanyProduct
         
         company = create_company(name='Products Test Co')
-        # Note: CompanyProduct may not have hs_code field in some setups
-        # This test verifies the API endpoint works
+        
+        
         
         url = f'/api/company/{company.name}/products/'
         response = api_client.get(url)
@@ -149,7 +148,7 @@ class TestCompareCompaniesAPI:
         url = '/api/compare/'
         response = api_client.post(url, {'companies': [company1.name, company2.name]}, format='json')
         
-        assert response.status_code in [200, 400]  # 200 success or 400 not enough data
+        assert response.status_code in [200, 400]  
     
     def test_compare_multiple_companies(self, api_client, create_company):
         """Test comparing multiple companies."""
@@ -160,7 +159,7 @@ class TestCompareCompaniesAPI:
         url = '/api/compare/'
         response = api_client.post(url, {'companies': [company1.name, company2.name, company3.name]}, format='json')
         
-        assert response.status_code in [200, 400]  # 200 success or 400 not enough data
+        assert response.status_code in [200, 400]  
 
 
 @pytest.mark.django_db
@@ -250,6 +249,6 @@ class TestLinkPredictionAPIs:
         assert response.status_code == 200
         data = response.json()
         
-        # Should include all available methods
+        
         methods = data.get('methods', data)
         assert isinstance(methods, (list, dict))

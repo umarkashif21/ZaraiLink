@@ -12,17 +12,17 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check localStorage first
+    
     const saved = localStorage.getItem('zarailink-theme');
     if (saved) {
       return saved === 'dark';
     }
-    // Check system preference
+    
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
   useEffect(() => {
-    // Update document class and localStorage when theme changes
+    
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('zarailink-theme', 'dark');
@@ -32,7 +32,7 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [isDarkMode]);
 
-  // Listen for system theme changes
+  
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {

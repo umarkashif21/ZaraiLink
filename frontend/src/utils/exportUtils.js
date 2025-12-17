@@ -1,8 +1,6 @@
-/**
- * Export utilities for CSV and PDF generation
- */
 
-// Helper to get nested value from object using dot notation (e.g., 'company.name')
+
+
 const getNestedValue = (obj, path) => {
   if (!path) return '';
   const keys = path.split('.');
@@ -14,11 +12,11 @@ const getNestedValue = (obj, path) => {
   return value;
 };
 
-// Convert data array to CSV string
+
 export const convertToCSV = (data, columns) => {
   if (!data || data.length === 0) return '';
   
-  // Get column headers
+  
   const headers = columns 
     ? columns.map(col => col.label || col.key)
     : Object.keys(data[0]);
@@ -27,14 +25,14 @@ export const convertToCSV = (data, columns) => {
     ? columns.map(col => col.key)
     : Object.keys(data[0]);
   
-  // Create CSV rows
+  
   const csvRows = [
     headers.join(','),
     ...data.map(row => 
       keys.map(key => {
-        // Support nested keys like 'company.name'
+        
         const value = key.includes('.') ? getNestedValue(row, key) : row[key];
-        // Handle values with commas or quotes
+        
         if (value === null || value === undefined) return '';
         const stringValue = String(value);
         if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
@@ -48,7 +46,7 @@ export const convertToCSV = (data, columns) => {
   return csvRows.join('\n');
 };
 
-// Download CSV file
+
 export const downloadCSV = (data, columns, filename = 'export') => {
   try {
     if (!data || data.length === 0) {
@@ -60,7 +58,7 @@ export const downloadCSV = (data, columns, filename = 'export') => {
     const link = document.createElement('a');
     
     if (navigator.msSaveBlob) {
-      // IE 10+
+      
       navigator.msSaveBlob(blob, `${filename}.csv`);
     } else {
       link.href = URL.createObjectURL(blob);
@@ -75,7 +73,7 @@ export const downloadCSV = (data, columns, filename = 'export') => {
   }
 };
 
-// Generate and download PDF
+
 export const downloadPDF = async (data, columns, options = {}) => {
   try {
     if (!data || data.length === 0) {
@@ -96,12 +94,12 @@ export const downloadPDF = async (data, columns, options = {}) => {
     
     const doc = new jsPDF(orientation, 'mm', pageSize);
     
-    // Add title
+    
     doc.setFontSize(18);
-    doc.setTextColor(16, 185, 129); // Primary green color
+    doc.setTextColor(16, 185, 129); 
     doc.text(title, 14, 20);
     
-    // Add subtitle if provided
+    
     let startY = 28;
     if (subtitle) {
       doc.setFontSize(12);
@@ -110,26 +108,26 @@ export const downloadPDF = async (data, columns, options = {}) => {
       startY += 8;
     }
     
-    // Add date
+    
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.text(`Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 14, startY);
     startY += 10;
     
-    // Prepare table data
+    
     const headers = columns ? columns.map(col => col.label || col.key) : Object.keys(data[0] || {});
     const keys = columns ? columns.map(col => col.key) : Object.keys(data[0] || {});
     
     const tableData = data.map(row => 
       keys.map(key => {
-        // Support nested keys like 'company.name'
+        
         const value = key.includes('.') ? getNestedValue(row, key) : row[key];
         if (value === null || value === undefined) return '';
         return String(value);
       })
     );
     
-    // Generate table using autoTable function
+    
     autoTable(doc, {
       head: [headers],
       body: tableData,
@@ -148,7 +146,7 @@ export const downloadPDF = async (data, columns, options = {}) => {
       },
       margin: { left: 14, right: 14 },
       didDrawPage: (data) => {
-        // Add page numbers
+        
         const pageCount = doc.internal.getNumberOfPages();
         doc.setFontSize(8);
         doc.setTextColor(150);
@@ -160,14 +158,14 @@ export const downloadPDF = async (data, columns, options = {}) => {
       },
     });
     
-    // Save PDF
+    
     doc.save(`${filename}.pdf`);
   } catch (error) {
     console.error('PDF export failed:', error);
   }
 };
 
-// Format data for export (handles nested objects, dates, etc.)
+
 export const formatDataForExport = (data, formatters = {}) => {
   if (!data || !Array.isArray(data)) return [];
   
@@ -179,7 +177,7 @@ export const formatDataForExport = (data, formatters = {}) => {
       } else if (value instanceof Date) {
         formatted[key] = value.toLocaleDateString();
       } else if (typeof value === 'object' && value !== null) {
-        // For nested objects, try to extract common display values
+        
         if (value.name) {
           formatted[key] = value.name;
         } else {
@@ -193,7 +191,7 @@ export const formatDataForExport = (data, formatters = {}) => {
   });
 };
 
-// Helper to flatten nested data for export
+
 export const flattenDataForExport = (data, keyMappings = {}) => {
   if (!data || !Array.isArray(data)) return [];
   

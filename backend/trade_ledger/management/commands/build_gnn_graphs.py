@@ -11,7 +11,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Loading import transactions...")
 
-        # Load all required fields
         transactions = Transaction.objects.values(
             'buyer', 'seller', 'country', 'qty_mt',
             'product_item_id', 'reporting_date'
@@ -23,18 +22,13 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("No transactions found!"))
             return
 
-        # Drop rows with missing product
         df = df.dropna(subset=['product_item_id'])
         df['product_item_id'] = df['product_item_id'].astype(int)
 
-        # Ensure reporting date is datetime
         df['reporting_date'] = pd.to_datetime(df['reporting_date'])
 
         self.stdout.write(f"Loaded {len(df)} transactions.")
 
-        # ============================================================
-        # 1. Company-Product Graph
-        # ============================================================
         self.stdout.write("Building Company-Product graph...")
         G_company_product = nx.Graph()
 
@@ -43,7 +37,6 @@ class Command(BaseCommand):
             product = f"product_{row['product_item_id']}"
             weight = float(row['qty_mt']) if row['qty_mt'] else 0.0
 
-            # Add node types
             G_company_product.add_node(company, type="company")
             G_company_product.add_node(product, type="product")
 
@@ -55,9 +48,6 @@ class Command(BaseCommand):
         nx.write_graphml(G_company_product, "company_product_graph.graphml")
         self.stdout.write("[OK] Company-Product graph saved.")
 
-        # ============================================================
-        # 2. Product-Product Co-Trade Graph
-        # ============================================================
         self.stdout.write("Building Product-Product co-trade graph...")
         G_product_co = nx.Graph()
         df_sorted = df.sort_values('reporting_date')
@@ -80,7 +70,6 @@ class Command(BaseCommand):
                     if p1 == p2:
                         continue
 
-                    # Add node types
                     G_product_co.add_node(p1, type="product")
                     G_product_co.add_node(p2, type="product")
 
@@ -92,9 +81,6 @@ class Command(BaseCommand):
         nx.write_graphml(G_product_co, "product_co_trade_graph.graphml")
         self.stdout.write("[OK] Product-Product co-trade graph saved.")
 
-        # ============================================================
-        # 3. Seller-Product Graph
-        # ============================================================
         self.stdout.write("Building Seller-Product graph...")
         G_seller_product = nx.Graph()
 
@@ -103,7 +89,6 @@ class Command(BaseCommand):
             product = f"product_{row['product_item_id']}"
             weight = float(row['qty_mt']) if row['qty_mt'] else 0.0
 
-            # Add node types
             G_seller_product.add_node(seller, type="seller")
             G_seller_product.add_node(product, type="product")
 
@@ -115,9 +100,6 @@ class Command(BaseCommand):
         nx.write_graphml(G_seller_product, "seller_product_graph.graphml")
         self.stdout.write("[OK] Seller-Product graph saved.")
 
-        # ============================================================
-        # 4. Buyer-Seller Graph (for Link Prediction)
-        # ============================================================
         self.stdout.write("Building Buyer-Seller graph for link prediction...")
         G_buyer_seller = nx.Graph()
 
@@ -126,7 +108,6 @@ class Command(BaseCommand):
             seller = str(row['seller']).strip()
             weight = float(row['qty_mt']) if row['qty_mt'] else 1.0
 
-            # Add node types
             G_buyer_seller.add_node(buyer, type="buyer")
             G_buyer_seller.add_node(seller, type="seller")
 

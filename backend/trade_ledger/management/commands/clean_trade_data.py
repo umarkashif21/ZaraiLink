@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
         self.stdout.write('Cleaning trade ledger data...')
         
-        # Delete in order of dependencies
+        
         trend_count = TradeTrend.objects.count()
         TradeTrend.objects.all().delete()
         self.stdout.write(self.style.SUCCESS(f'✓ Deleted {trend_count} trade trends'))

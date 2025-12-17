@@ -11,7 +11,7 @@ const Pagination = ({
   maxVisiblePages = 5,
   className = '',
 }) => {
-  // Calculate visible page numbers
+  
   const getVisiblePages = () => {
     const pages = [];
     
@@ -34,7 +34,7 @@ const Pagination = ({
         start = totalPages - maxVisiblePages + 1;
       }
       
-      // Add first page and ellipsis if needed
+      
       if (start > 1) {
         pages.push(1);
         if (start > 2) {
@@ -42,14 +42,14 @@ const Pagination = ({
         }
       }
       
-      // Add visible pages
+      
       for (let i = start; i <= end; i++) {
         if (i !== 1 && i !== totalPages) {
           pages.push(i);
         }
       }
       
-      // Add ellipsis and last page if needed
+      
       if (end < totalPages) {
         if (end < totalPages - 1) {
           pages.push('...');
@@ -61,7 +61,7 @@ const Pagination = ({
     return pages;
   };
 
-  // Calculate item range for info display
+  
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
@@ -120,7 +120,7 @@ const Pagination = ({
   );
 };
 
-// Page size selector component
+
 export const PageSizeSelector = ({
   pageSize,
   onPageSizeChange,

@@ -1,4 +1,3 @@
-# services/compare.py
 from django.db.models import Sum, Avg, StdDev, F, FloatField, Count, Min
 from django.db.models.functions import Cast
 from trade_data.models import Transaction, CompanyEmbedding
@@ -11,7 +10,7 @@ def get_company_comparison_metrics(company_names, direction='import', **filters)
         qs = Transaction.objects.all()
         qs = apply_transaction_filters(qs, direction=direction, company_name=name, **filters)
 
-        # Basic Aggregates
+        
         aggs = qs.aggregate(
             total_vol=Sum('qty_mt'),
             total_val=Sum('usd'),
@@ -29,7 +28,7 @@ def get_company_comparison_metrics(company_names, direction='import', **filters)
         mom_growth = get_mom_growth_for_company(name, direction, filters.get('date_to'))
         price_std = qs.aggregate(s=StdDev('usd_per_mt'))['s']
 
-        # HHI / Diversity
+        
         total_vol_query = total_volume if total_volume > 0 else 1
         hhi = (
             qs.values('seller' if direction == 'import' else 'buyer')
@@ -45,7 +44,7 @@ def get_company_comparison_metrics(company_names, direction='import', **filters)
         )
         partner_diversity = 1.0 - hhi
 
-        # Network Metrics from Embedding
+        
         pagerank = 0.0
         degree = 0
         try:

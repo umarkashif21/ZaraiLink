@@ -1,4 +1,3 @@
-# services/products.py
 from django.db import models
 from django.db.models import Sum, Avg, F
 from trade_data.models import Transaction, ProductEmbedding
@@ -18,10 +17,10 @@ def get_yoy_growth_for_product(company_name, product_item_id, direction='import'
     qs = Transaction.objects.filter(product_item_id=product_item_id)
     qs = apply_transaction_filters(qs, direction=direction, company_name=company_name)
     
-    # Current T12 Volume
+    
     vol_t12 = qs.filter(reporting_date__range=[start_date_t12, end_date]).aggregate(v=Sum('qty_mt'))['v'] or 0
     
-    # Prior T12 Volume
+    
     vol_prior = qs.filter(reporting_date__range=[start_date_prior, start_date_t12]).aggregate(v=Sum('qty_mt'))['v'] or 0
     
     if vol_prior == 0:
@@ -47,7 +46,7 @@ def get_company_product_performance(company_name, direction='import', **filters)
         .order_by('-volume')
     )
     
-    # Enrich with YoY Growth
+    
     enriched_results = []
     for r in results:
         r['yoy_growth'] = get_yoy_growth_for_product(company_name, r['product_id'], direction)
@@ -92,8 +91,8 @@ def get_portfolio_similarity(company_name, top_k=4):
     """
     Computes company similarity based on product portfolio (weighted average of product embeddings).
     """
-    # 1. Get Target Company Profile: {ProductId: Volume}
-    # Assume we use ALL trade directions for portfolio signature
+    
+    
     target_txs = Transaction.objects.filter(
         models.Q(buyer=company_name) | models.Q(seller=company_name)
     ).values('product_item').annotate(vol=Sum('qty_mt')).filter(product_item__isnull=False)
@@ -102,13 +101,13 @@ def get_portfolio_similarity(company_name, top_k=4):
     if not target_profile:
         return []
 
-    # 2. Get All Products Embeddings
+    
     product_embeddings = {
         pe.product_item_id: np.array(pe.embedding) 
         for pe in ProductEmbedding.objects.all()
     }
     
-    # 3. Compute Target Vector
+    
     def compute_weighted_vector(profile_dict):
         total_weight = 0
         weighted_sum = None
@@ -127,10 +126,10 @@ def get_portfolio_similarity(company_name, top_k=4):
     if target_vector is None:
         return []
 
-    # 4. Compare with other companies
-    # Get all other transactions grouped by Company -> Product -> Volume
-    # This is heavy. Let's optimize: Get top 200 companies by volume?
-    # Or just iterate all.
+    
+    
+    
+    
     
     all_txs = Transaction.objects.exclude(
         models.Q(buyer=company_name) | models.Q(seller=company_name)
@@ -138,11 +137,11 @@ def get_portfolio_similarity(company_name, top_k=4):
     
     company_profiles = {}
     for tx in all_txs:
-        # Company could be buyer or seller
-        # A simpler approximation: Combine buyer/seller roles into one "trader" identity
-        # Or check if we want "Similar Buyers" vs "Similar Sellers".
-        # Prompt says "Portfolio Similarity", implies general business similarity.
-        # We will treat each distinct entity name as a company.
+        
+        
+        
+        
+        
         
         b = tx['buyer']
         s = tx['seller']
@@ -173,7 +172,7 @@ def get_portfolio_similarity(company_name, top_k=4):
                  'total_volume': total_vol
              })
     
-    # Sort by similarity
+    
     scores.sort(key=lambda x: x['similarity'], reverse=True)
     return scores[:top_k]
 
@@ -182,7 +181,7 @@ def get_co_traded_products(product_item_id, top_k=5):
     Finds products that are frequently traded alongside the target product.
     Logic: Companies that trade X also trade Y.
     """
-    # 1. Find companies that trade this product
+    
     companies = set(
         Transaction.objects.filter(product_item_id=product_item_id)
         .values_list('buyer', flat=True)
@@ -191,7 +190,7 @@ def get_co_traded_products(product_item_id, top_k=5):
         .values_list('seller', flat=True)
     )
     
-    # 2. Find other products traded by these companies
+    
     co_traded = (
         Transaction.objects.filter(
             models.Q(buyer__in=companies) | models.Q(seller__in=companies)
@@ -208,12 +207,12 @@ def get_product_clusters(company_name, direction='import'):
     """
     Returns the AI-generated cluster tags for the company's products.
     """
-    # 1. Get company's products
+    
     qs = Transaction.objects.all()
     qs = apply_transaction_filters(qs, direction=direction, company_name=company_name)
     product_ids = qs.values_list('product_item_id', flat=True).distinct()
     
-    # 2. Get clusters from embeddings
+    
     clusters = (
         ProductEmbedding.objects.filter(product_item_id__in=product_ids)
         .values('cluster_tag')

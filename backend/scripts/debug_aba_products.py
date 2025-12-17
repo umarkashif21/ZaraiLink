@@ -3,7 +3,7 @@ import django
 import sys
 import json
 
-# Setup Django environment
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zarailink.settings')
 django.setup()
@@ -16,7 +16,7 @@ COMPANY_NAME = "Aba Stepsworth Dwc Llc"
 def debug_company_products():
     print(f"--- Debugging Products for: {COMPANY_NAME} ---")
     
-    # 1. Check if company exists in Transactions
+    
     as_buyer = Transaction.objects.filter(buyer=COMPANY_NAME).count()
     as_seller = Transaction.objects.filter(seller=COMPANY_NAME).count()
     print(f"Transaction Count -> Buyer: {as_buyer}, Seller: {as_seller}")
@@ -27,7 +27,7 @@ def debug_company_products():
     
     print(f"Assumed Direction: {direction}")
 
-    # 2. Try calling the service
+    
     try:
         print("\nCalling get_company_product_performance...")
         performance = list(get_company_product_performance(
@@ -43,7 +43,7 @@ def debug_company_products():
         import traceback
         traceback.print_exc()
 
-    # 3. Try calling volume share
+    
     try:
         print("\nCalling get_volume_share...")
         shares = list(get_volume_share(

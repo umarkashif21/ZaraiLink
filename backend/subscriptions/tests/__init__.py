@@ -1,4 +1,3 @@
-# subscriptions/tests/__init__.py
 """
 Subscriptions app test package.
 

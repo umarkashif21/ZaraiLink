@@ -17,7 +17,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--sheet',
             type=str,
-            default=0,  # First sheet by default
+            default=0,  
             help='Sheet name or index (default: 0 for first sheet)'
         )
 
@@ -28,7 +28,7 @@ class Command(BaseCommand):
         self.stdout.write(f"Reading Excel file: {file_path}")
 
         try:
-            # Read Excel file
+            
             df = pd.read_excel(file_path, sheet_name=sheet_name)
             self.stdout.write(f"✓ Loaded {len(df)} rows from Excel")
         except FileNotFoundError:
@@ -36,22 +36,22 @@ class Command(BaseCommand):
         except Exception as e:
             raise CommandError(f"Error reading Excel file: {str(e)}")
 
-        # Define column mapping (Excel column name → field name)
-        # Adjust these based on your actual Excel column names
+        
+        
         column_mapping = {
             'Company Name': 'name',
-            'Company Email': 'email',  # Not in Company model, but used for info
+            'Company Email': 'email',  
             'Contact details/Numbers': 'landline_numbers',
             'Sector': 'sector_name',
             'Country': 'country',
             'Year established': 'year_established',
             'Number of employees': 'number_of_employees',
             'Website': 'website',
-            'Contact Level': 'contact_level',  # Used to determine role (Supplier/Buyer)
+            'Contact Level': 'contact_level',  
             'Description': 'description',
         }
 
-        # Check for required columns
+        
         for excel_col in column_mapping.keys():
             if excel_col not in df.columns:
                 self.stdout.write(self.style.WARNING(f"⚠ Missing column: {excel_col}"))
@@ -63,7 +63,7 @@ class Command(BaseCommand):
         with transaction.atomic():
             for idx, row in df.iterrows():
                 try:
-                    # Extract data from row
+                    
                     company_name = row.get('Company Name', '').strip()
                     if not company_name:
                         self.stdout.write(self.style.WARNING(f"Row {idx + 2}: Skipped (no company name)"))
@@ -79,38 +79,38 @@ class Command(BaseCommand):
                     description = row.get('Description', '').strip() or None
                     contact_level = row.get('Contact Level', '').strip().lower()
 
-                    # Convert year to int if valid
+                    
                     try:
                         year_established = int(year_established) if pd.notna(year_established) else None
                     except (ValueError, TypeError):
                         year_established = None
 
-                    # Determine company role based on contact level
-                    # Assuming: "supplier" in contact level → Supplier role
-                    #           otherwise → Buyer role
+                    
+                    
+                    
                     if 'supplier' in contact_level:
                         role_name = 'Supplier'
                         type_name = 'Sugar Mill'
                     else:
                         role_name = 'Buyer'
-                        # Determine buyer type based on sector or other field
+                        
                         if 'pharma' in sector_name.lower():
                             type_name = 'Pharmaceuticals'
                         elif 'confect' in sector_name.lower():
                             type_name = 'Confectionary'
                         else:
-                            type_name = 'Confectionary'  # Default buyer type
+                            type_name = 'Confectionary'  
 
-                    # Get or create Sector
+                    
                     sector, _ = Sector.objects.get_or_create(name=sector_name)
 
-                    # Get or create CompanyRole
+                    
                     company_role, _ = CompanyRole.objects.get_or_create(name=role_name)
 
-                    # Get or create CompanyType
+                    
                     company_type, _ = CompanyType.objects.get_or_create(name=type_name)
 
-                    # Create or update Company
+                    
                     company, created = Company.objects.update_or_create(
                         name=company_name,
                         defaults={
@@ -118,7 +118,7 @@ class Command(BaseCommand):
                             'year_established': year_established,
                             'number_of_employees': str(number_of_employees) if pd.notna(number_of_employees) else None,
                             'website': website,
-                            'address': f"{country}",  # Placeholder: use country as address if no address field
+                            'address': f"{country}",  
                             'description': description,
                             'landline_numbers': landline_numbers,
                             'sector': sector,
@@ -149,7 +149,7 @@ class Command(BaseCommand):
                         self.style.ERROR(f"Row {idx + 2}: ✗ Error: {str(e)}")
                     )
 
-        # Summary
+        
         self.stdout.write(self.style.SUCCESS("\n" + "=" * 60))
         self.stdout.write(self.style.SUCCESS(f"Import Complete!"))
         self.stdout.write(self.style.SUCCESS(f"  Created/Updated: {created_count}"))

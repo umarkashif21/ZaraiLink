@@ -1,9 +1,9 @@
-// src/setupTests.js
-// Jest/React Testing Library setup file
+
+
 
 import '@testing-library/jest-dom';
 
-// Mock window.matchMedia for dark mode tests
+
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
@@ -18,7 +18,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock IntersectionObserver
+
 global.IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
@@ -26,7 +26,7 @@ global.IntersectionObserver = class IntersectionObserver {
   unobserve() {}
 };
 
-// Mock ResizeObserver
+
 global.ResizeObserver = class ResizeObserver {
   constructor() {}
   disconnect() {}
@@ -34,10 +34,10 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {}
 };
 
-// Mock scrollTo
+
 window.scrollTo = jest.fn();
 
-// Reset mocks before each test
+
 beforeEach(() => {
   jest.clearAllMocks();
 });

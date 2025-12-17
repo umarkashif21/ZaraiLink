@@ -10,11 +10,11 @@ def validate_company_name(name):
     if not name:
         return None, "Company name is required"
     
-    # Allow alphanumeric, spaces, and common business characters
+    
     if len(name) > 500:
         return None, "Company name too long (max 500 characters)"
     
-    # Basic sanitization - remove dangerous characters
+    
     sanitized = re.sub(r'[<>"\';]', '', name)
     
     return sanitized, None
@@ -74,9 +74,9 @@ def sanitize_search_query(query):
     if not query:
         return None
     
-    # Remove SQL injection-like patterns
+    
     sanitized = re.sub(r'[;\'"\\]', '', query)
-    # Limit length
+    
     sanitized = sanitized[:255]
     
     return sanitized

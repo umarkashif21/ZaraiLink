@@ -11,7 +11,7 @@ const Subscription = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Redeem modal state
+  
   const [showRedeemModal, setShowRedeemModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [redeemCode, setRedeemCode] = useState('');
@@ -45,7 +45,7 @@ const Subscription = () => {
     setRedeemMessage({ type: '', text: '' });
   };
 
-  // Helper to get CSRF token
+  
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -81,7 +81,7 @@ const Subscription = () => {
         credentials: 'include',
         body: JSON.stringify({ 
           code: redeemCode.trim(),
-          plan_id: selectedPlan?.id  // Send the selected plan ID
+          plan_id: selectedPlan?.id  
         }),
       });
 
@@ -92,9 +92,9 @@ const Subscription = () => {
           type: 'success',
           text: `✓ ${data.tokens_added} tokens added! New balance: ${data.new_balance}`
         });
-        await refreshUser(); // Refresh token balance
+        await refreshUser(); 
         
-        // Close modal after 2 seconds
+        
         setTimeout(() => {
           setShowRedeemModal(false);
         }, 2000);
@@ -215,7 +215,7 @@ const Subscription = () => {
         </div>
       )}
 
-      {/* Redeem Modal */}
+      {}
       <Modal
         isOpen={showRedeemModal}
         onClose={() => setShowRedeemModal(false)}

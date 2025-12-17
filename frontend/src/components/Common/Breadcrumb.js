@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Breadcrumb.css';
 
-// Route to label mapping
+
 const routeLabels = {
   'dashboard': 'Home',
   'trade-directory': 'Trade Directory',
@@ -27,7 +27,7 @@ const routeLabels = {
 const Breadcrumb = ({ customItems, className = '' }) => {
   const location = useLocation();
   
-  // Generate breadcrumb items from URL path
+  
   const generateBreadcrumbs = () => {
     const pathnames = location.pathname.split('/').filter(x => x);
     
@@ -35,13 +35,13 @@ const Breadcrumb = ({ customItems, className = '' }) => {
       const to = `/${pathnames.slice(0, index + 1).join('/')}`;
       const isLast = index === pathnames.length - 1;
       
-      // Get label from mapping or format the path segment
+      
       let label = routeLabels[value] || value
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
       
-      // Handle dynamic segments (IDs)
+      
       if (/^\d+$/.test(value) || value.length > 20) {
         label = 'Details';
       }
@@ -56,7 +56,7 @@ const Breadcrumb = ({ customItems, className = '' }) => {
 
   const items = customItems || generateBreadcrumbs();
 
-  // Don't render if on home/dashboard
+  
   if (items.length <= 1) {
     return null;
   }
@@ -89,7 +89,7 @@ const Breadcrumb = ({ customItems, className = '' }) => {
   );
 };
 
-// Breadcrumb with custom context
+
 export const BreadcrumbWithContext = ({ 
   context, 
   currentPage,

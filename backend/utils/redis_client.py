@@ -12,8 +12,8 @@ class RedisClient:
     def get_connection(cls):
         if cls._connection is None:
             try:
-                # Parse settings.CACHES['default']['LOCATION']
-                # e.g. redis://127.0.0.1:6379/1
+                
+                
                 cls._connection = redis.Redis.from_url(settings.CACHES['default']['LOCATION'])
                 cls._connection.ping()
             except Exception as e:
@@ -29,12 +29,12 @@ class RedisClient:
         from redis.commands.search.field import VectorField, TextField
         from redis.commands.search.indexDefinition import IndexDefinition, IndexType
         
-        VECTOR_DIM = 1536 # OpenAI text-embedding-3-small
+        VECTOR_DIM = 1536 
         INDEX_NAME = "idx:companies"
         
         try:
             r.ft(INDEX_NAME).info()
-            # logger.info("Index already exists")
+            
         except:
             schema = (
                 TextField("name"),
@@ -76,7 +76,7 @@ class RedisClient:
     def search(cls, query_embedding, top_k=5):
         r = cls.get_connection()
         
-        # If Redis available, use it
+        
         if r and query_embedding is not None:
             from redis.commands.search.query import Query
             
@@ -91,13 +91,13 @@ class RedisClient:
             
             try:
                 res = r.ft(INDEX_NAME).search(query, params)
-                # doc.id is like "company:123", we want "123"
+                
                 return [{'id': doc.id.split(':')[-1], 'score': doc.score, 'name': doc.name} for doc in res.docs]
             except Exception as e:
                 logger.warning(f"Redis Search failed, falling back to text search: {e}")
         
-        # NOTE: In-memory fallback disabled because CompanyEmbedding stores 64-dim GNN embeddings
-        # which are incompatible with 1536-dim OpenAI embeddings. Return empty to trigger text search.
+        
+        
         logger.info("AI vector search unavailable (Redis down). Using text search fallback.")
         return []
     
@@ -109,13 +109,13 @@ class RedisClient:
             from companies.models import Company
             from sklearn.metrics.pairwise import cosine_similarity
             
-            # Get all embeddings from database
+            
             all_embeddings = list(CompanyEmbedding.objects.all().values('company_name', 'embedding'))
             if not all_embeddings:
                 logger.warning("No company embeddings found in database")
                 return []
             
-            # Build vectors matrix
+            
             names = []
             vectors = []
             for emb in all_embeddings:
@@ -125,15 +125,15 @@ class RedisClient:
             vectors = np.array(vectors)
             query_vec = np.array(query_embedding).reshape(1, -1)
             
-            # Compute similarities
+            
             similarities = cosine_similarity(query_vec, vectors)[0]
             top_indices = np.argsort(similarities)[-top_k:][::-1]
             
-            # Get company IDs from Company model
+            
             results = []
             for i in top_indices:
                 company_name = names[i]
-                # Try to find matching company ID
+                
                 company = Company.objects.filter(name__icontains=company_name).first()
                 if company:
                     results.append({
@@ -142,9 +142,9 @@ class RedisClient:
                         'name': company_name
                     })
                 else:
-                    # Use name as fallback if no Company match
+                    
                     results.append({
-                        'id': company_name,  # Use name as ID for fallback
+                        'id': company_name,  
                         'score': float(similarities[i]),
                         'name': company_name
                     })

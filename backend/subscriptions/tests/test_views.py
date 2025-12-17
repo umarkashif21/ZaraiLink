@@ -1,4 +1,3 @@
-# subscriptions/tests/test_views.py
 """
 Integration tests for the subscriptions app API views.
 
@@ -53,7 +52,7 @@ class TestListPlans:
         
         if plans:
             plan = plans[0]
-            # Check for required fields
+            
             assert 'plan_name' in plan or 'name' in plan
             assert 'price' in plan
             assert 'tokens_included' in plan or 'tokens' in plan
@@ -77,18 +76,18 @@ class TestRedeemCode:
         
         assert response.status_code == 200
         
-        # Verify token balance updated
+        
         user.refresh_from_db()
         assert user.token_balance == initial_balance + code_tokens
         
-        # Verify code is now redeemed
+        
         redeem_code.refresh_from_db()
         assert redeem_code.status == 'redeemed'
         assert redeem_code.redeemed_by == user
     
     def test_already_redeemed_code(self, authenticated_django_client, create_redeem_code, user):
         """Test that already redeemed code cannot be used again."""
-        # Create and redeem a code
+        
         code = create_redeem_code(status='redeemed')
         code.redeemed_by = user
         code.save()
@@ -107,7 +106,7 @@ class TestRedeemCode:
         from django.utils import timezone
         from datetime import timedelta
         
-        # Create an expired code
+        
         code = create_redeem_code()
         code.expires_at = timezone.now() - timedelta(days=1)
         code.save()
@@ -146,11 +145,11 @@ class TestRedeemCode:
         )
         
         if response.status_code == 200:
-            # Verify subscription created
+            
             final_subs = UserSubscription.objects.filter(user=user).count()
             assert final_subs == initial_subs + 1
             
-            # Verify subscription details
+            
             sub = UserSubscription.objects.filter(user=user).latest('created_at')
             assert sub.status == 'active'
             assert sub.plan == redeem_code.plan
@@ -164,7 +163,7 @@ class TestRedeemCode:
             content_type='application/json'
         )
         
-        # Should either redirect to login or return 401/403
+        
         assert response.status_code in [302, 401, 403]
 
 

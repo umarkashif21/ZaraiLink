@@ -1,9 +1,6 @@
 import toast from 'react-hot-toast';
 
-/**
- * Custom hook for toast notifications
- * Provides convenient methods for showing different types of toasts
- */
+
 const useToast = () => {
   const showSuccess = (message, options = {}) => {
     return toast.success(message, {
@@ -52,7 +49,7 @@ const useToast = () => {
     toast.dismiss();
   };
 
-  // Promise toast for async operations
+  
   const showPromise = (promise, messages, options = {}) => {
     return toast.promise(promise, {
       loading: messages.loading || 'Loading...',
@@ -63,7 +60,7 @@ const useToast = () => {
     });
   };
 
-  // Custom toast with action button
+  
   const showWithAction = (message, actionLabel, onAction, options = {}) => {
     return toast(
       (t) => (
@@ -97,7 +94,7 @@ const useToast = () => {
     );
   };
 
-  // Confirmation toast
+  
   const showConfirmation = (message, onConfirm, onCancel = () => {}) => {
     return toast(
       (t) => (
@@ -160,7 +157,7 @@ const useToast = () => {
     showConfirmation,
     dismissToast,
     dismissAll,
-    // Re-export original toast for custom usage
+    
     toast,
   };
 };

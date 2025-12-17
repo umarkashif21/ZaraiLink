@@ -12,7 +12,7 @@ const CompanyOverview = () => {
   const [load, setLoad] = useState(true);
   const [error, setError] = useState(null);
 
-  // Decode the company name from URL
+  
   const companyName = decodeURIComponent(id);
   const tab = loc.pathname.split('/').pop();
 
@@ -24,7 +24,7 @@ const CompanyOverview = () => {
     setLoad(true);
     setError(null);
     try {
-      // Use correct API endpoint: /api/company/{company_name}/overview/
+      
       const res = await fetch(`http://localhost:8000/api/company/${id}/overview/`, {
         credentials: 'include'
       });
@@ -231,7 +231,7 @@ const CompanyOverview = () => {
             )}
           </div>
 
-          {/* Country Distribution */}
+          {}
           {comp.country_distribution && comp.country_distribution.length > 0 && (
             <div style={{ marginTop: '2rem' }}>
               <h3>Trade by Country</h3>
@@ -249,7 +249,7 @@ const CompanyOverview = () => {
             </div>
           )}
 
-          {/* Similar Companies from GNN */}
+          {}
           <div style={{ marginTop: '2rem' }}>
             <h3>🤖 Similar Companies (AI Recommended)</h3>
             {comp.similar_companies && comp.similar_companies.length > 0 ? (

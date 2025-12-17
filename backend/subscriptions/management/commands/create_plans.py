@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         plans_data = [
-            # Monthly Plans
+            
             {
                 'plan_name': '500 Credits',
                 'price': 9.00,
@@ -46,7 +46,7 @@ class Command(BaseCommand):
                     'advanced_analytics': True
                 }
             },
-            # Annual Plans
+            
             {
                 'plan_name': '6000 Credits Annually',
                 'price': 99.00,

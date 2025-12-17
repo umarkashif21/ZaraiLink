@@ -16,7 +16,7 @@ const CompanyPartners = () => {
   const [potentialSellers, setPotentialSellers] = useState([]);
   const [potentialBuyers, setPotentialBuyers] = useState([]);
 
-  // Decode the company name from URL
+  
   const companyName = decodeURIComponent(id);
   const tab = loc.pathname.split('/').pop();
 
@@ -28,7 +28,7 @@ const CompanyPartners = () => {
     setLoad(true);
     setError(null);
     try {
-      // Use correct API endpoint: /api/company/{company_name}/partners/
+      
       const res = await fetch(`http://localhost:8000/api/company/${id}/partners/`, {
         credentials: 'include'
       });
@@ -46,7 +46,7 @@ const CompanyPartners = () => {
     }
   };
 
-  // Fetch Similar Companies from GNN API
+  
   const loadSimilarCompanies = async () => {
     try {
       const res = await fetch(`http://localhost:8000/api/company/${id}/similar/?method=combined`, {
@@ -68,26 +68,26 @@ const CompanyPartners = () => {
     }
   }, [id]);
 
-  // Load Potential Sellers and Buyers from GNN Link Prediction API
+  
   const loadPotentialPartners = async () => {
     try {
-      // Fetch potential sellers for this buyer
+      
       const sellersRes = await fetch(`http://localhost:8000/api/predict/sellers/${id}/?method=combined&top_k=5`, {
         credentials: 'include'
       });
       if (sellersRes.ok) {
         const sellersData = await sellersRes.json();
-        // API returns {buyer, method, results: [{seller, final_confidence, ...}]}
+        
         setPotentialSellers(sellersData.results || []);
       }
 
-      // Fetch potential buyers for this seller
+      
       const buyersRes = await fetch(`http://localhost:8000/api/predict/buyers/${id}/?method=combined&top_k=5`, {
         credentials: 'include'
       });
       if (buyersRes.ok) {
         const buyersData = await buyersRes.json();
-        // API returns {seller, method, results: [{buyer, final_confidence, ...}]}
+        
         setPotentialBuyers(buyersData.results || []);
       }
     } catch (err) {
@@ -109,7 +109,7 @@ const CompanyPartners = () => {
     }).format(v);
   };
 
-  // Get top partners from API response
+  
   const topPartners = parts?.top_partners || [];
   const tradeByCountry = parts?.trade_volume_by_country || [];
 
@@ -240,7 +240,7 @@ const CompanyPartners = () => {
                 )}
               </div>
 
-              {/* Partner Volume Bar Chart */}
+              {}
               {topPartners.filter(p => parseFloat(p.total_volume) > 0).length > 0 && (
                 <div style={{ marginTop: '2rem' }}>
                   <h3>Partner Trade Volume</h3>
@@ -288,7 +288,7 @@ const CompanyPartners = () => {
                 </div>
               )}
 
-              {/* GNN Link Prediction - Potential Sellers */}
+              {}
               <div style={{ marginTop: '2rem' }}>
                 <h3>🔮 AI-Predicted Potential Sellers</h3>
                 <p style={{ color: '#718096', fontSize: '0.9rem', marginTop: '0.5rem' }}>Based on graph neural network analysis of trade patterns</p>
@@ -331,7 +331,7 @@ const CompanyPartners = () => {
                 )}
               </div>
 
-              {/* GNN Link Prediction - Potential Buyers */}
+              {}
               <div style={{ marginTop: '2rem' }}>
                 <h3>🔮 AI-Predicted Potential Buyers</h3>
                 <p style={{ color: '#718096', fontSize: '0.9rem', marginTop: '0.5rem' }}>Based on graph neural network analysis of trade patterns</p>

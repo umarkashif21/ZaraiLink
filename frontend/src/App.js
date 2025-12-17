@@ -1,13 +1,5 @@
 
-/*
-import Signup from "./components/Auth/Signup";
 
-function App() {
-  return <Signup />;
-}
-
-export default App;
-*/
 
 import React, { Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
@@ -27,7 +19,7 @@ import CompanyProfile from "./components/TradeDirectory/CompanyProfile";
 import Subscription from "./components/Subscriptions/Subscription";
 import Watchlist from "./components/Watchlist/Watchlist";
 
-// Lazy Loaded Components (Code Splitting)
+
 const TradeLedger = React.lazy(() => import("./components/TradeIntelligence/TradeLedger"));
 const TradePulse = React.lazy(() => import("./components/TradeIntelligence/TradePulse"));
 const TradeLens = React.lazy(() => import("./components/TradeIntelligence/TradeLens"));
@@ -38,14 +30,14 @@ const CompanyPartners = React.lazy(() => import("./components/TradeIntelligence/
 const CompanyTrends = React.lazy(() => import("./components/TradeIntelligence/CompanyTrends"));
 const CompareCompanies = React.lazy(() => import("./components/TradeIntelligence/CompareCompanies"));
 
-// Loading Component
+
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
   </div>
 );
 
-// Protected Route Component
+
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -64,7 +56,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Public Route Component (redirect to dashboard if already logged in)
+
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -91,7 +83,7 @@ function App() {
           <Router>
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* Public Routes */}
+                {}
                 <Route
                   path="/"
                   element={
@@ -121,7 +113,7 @@ function App() {
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
                 <Route path="/verify-email/:token" element={<VerifyEmailSuccess />} />
 
-                {/* Protected Routes */}
+                {}
                 <Route
                   path="/dashboard"
                   element={
@@ -131,7 +123,7 @@ function App() {
                   }
                 />
                 
-                {/* Trade Directory Routes */}
+                {}
                 <Route
                   path="/trade-directory/find-suppliers"
                   element={
@@ -157,7 +149,7 @@ function App() {
                   }
                 />
                 
-                {/* Watchlist Route */}
+                {}
                 <Route
                   path="/watchlist"
                   element={
@@ -167,7 +159,7 @@ function App() {
                   }
                 />
 
-                {/* Trade Intelligence Routes */}
+                {}
                 <Route
                   path="/trade-intelligence/ledger"
                   element={
@@ -241,7 +233,7 @@ function App() {
                   }
                 />
                 
-                {/* Subscription Route */}
+                {}
                 <Route
                   path="/subscription"
                   element={
@@ -251,7 +243,7 @@ function App() {
                   }
                 />
 
-                {/* Fallback */}
+                {}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>

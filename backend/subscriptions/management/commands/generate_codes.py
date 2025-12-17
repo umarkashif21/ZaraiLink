@@ -14,18 +14,18 @@ class Command(BaseCommand):
         count = options['count']
 
         try:
-            # Try to fetch by ID first
+            
             if plan_identifier.isdigit():
                 plan = SubscriptionPlan.objects.get(id=int(plan_identifier))
             else:
-                # Try to fetch by exact name, then case-insensitive name
+                
                 try:
                     plan = SubscriptionPlan.objects.get(plan_name=plan_identifier)
                 except SubscriptionPlan.DoesNotExist:
                     plan = SubscriptionPlan.objects.get(plan_name__iexact=plan_identifier)
 
         except SubscriptionPlan.DoesNotExist:
-            # If still not found, try partial match
+            
             plans = SubscriptionPlan.objects.filter(plan_name__icontains=plan_identifier)
             if plans.count() == 1:
                 plan = plans.first()

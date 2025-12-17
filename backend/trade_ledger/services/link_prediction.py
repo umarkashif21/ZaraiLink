@@ -1,4 +1,3 @@
-# trade_ledger/services/link_prediction.py
 """
 Link Prediction Service for Buyer-Seller recommendations.
 
@@ -18,10 +17,10 @@ from trade_data.models import Transaction, CompanyEmbedding
 from django.db.models import Count
 
 
-# ============================================================
-# GLOBAL CONSTANTS
-# ============================================================
-# Maximum confidence score (100% implies perfect certainty, which is impossible)
+
+
+
+
 MAX_CONFIDENCE_SCORE = 0.95
 
 def scale_confidence(score, max_val=1.0):
@@ -32,7 +31,7 @@ def scale_confidence(score, max_val=1.0):
     if max_val <= 0:
         return 0.0
     normalized = min(1.0, max(0.0, score / max_val))
-    # Scale to 95% max
+    
     return normalized * MAX_CONFIDENCE_SCORE
 
 
@@ -42,7 +41,7 @@ def load_buyer_seller_graph():
         G = nx.read_graphml("buyer_seller_graph.graphml")
         return G
     except:
-        # Build from transactions if file not found
+        
         G = nx.Graph()
         transactions = Transaction.objects.values('buyer', 'seller', 'qty_mt')
         for tx in transactions:
@@ -70,9 +69,9 @@ def get_all_sellers():
     return list(Transaction.objects.values_list('seller', flat=True).distinct())
 
 
-# ============================================================
-# METHOD 1: Node2Vec + Cosine Similarity
-# ============================================================
+
+
+
 def predict_sellers_node2vec(buyer_name, top_k=10):
     """
     Find potential sellers for a buyer using Node2Vec embeddings.
@@ -81,17 +80,17 @@ def predict_sellers_node2vec(buyer_name, top_k=10):
     results = []
     
     try:
-        # Get buyer's embedding
+        
         buyer_emb = CompanyEmbedding.objects.filter(company_name=buyer_name).first()
         if not buyer_emb:
             return {"error": "Buyer not found in embeddings", "results": []}
         
         buyer_vector = np.array(buyer_emb.embedding).reshape(1, -1)
         
-        # Get all seller embeddings (sellers are those who appear as 'seller' in transactions)
+        
         seller_names = set(Transaction.objects.values_list('seller', flat=True).distinct())
         
-        # Get existing trading partners to exclude
+        
         existing_partners = set(
             Transaction.objects.filter(buyer=buyer_name)
             .values_list('seller', flat=True).distinct()
@@ -101,7 +100,7 @@ def predict_sellers_node2vec(buyer_name, top_k=10):
         
         for seller_emb in seller_embeddings:
             if seller_emb.company_name in existing_partners:
-                continue  # Skip existing partners
+                continue  
             
             seller_vector = np.array(seller_emb.embedding).reshape(1, -1)
             similarity = cosine_similarity(buyer_vector, seller_vector)[0][0]
@@ -113,11 +112,11 @@ def predict_sellers_node2vec(buyer_name, top_k=10):
                 "segment_tag": seller_emb.cluster_tag
             })
         
-        # Sort by raw score, then apply 95% cap
+        
         results.sort(key=lambda x: x['raw_score'], reverse=True)
         top_results = results[:top_k]
         
-        # Scale all scores to max 95%
+        
         for r in top_results:
             r['score'] = scale_confidence(r['raw_score'], max_val=1.0)
             del r['raw_score']
@@ -162,11 +161,11 @@ def predict_buyers_node2vec(seller_name, top_k=10):
                 "segment_tag": buyer_emb.cluster_tag
             })
         
-        # Sort by raw score, then apply 95% cap
+        
         results.sort(key=lambda x: x['raw_score'], reverse=True)
         top_results = results[:top_k]
         
-        # Scale all scores to max 95%
+        
         for r in top_results:
             r['score'] = scale_confidence(r['raw_score'], max_val=1.0)
             del r['raw_score']
@@ -177,9 +176,9 @@ def predict_buyers_node2vec(seller_name, top_k=10):
         return {"error": str(e), "results": []}
 
 
-# ============================================================
-# METHOD 2: Common Neighbors
-# ============================================================
+
+
+
 def predict_sellers_common_neighbors(buyer_name, top_k=10):
     """
     Find sellers that share common connections with the buyer.
@@ -190,7 +189,7 @@ def predict_sellers_common_neighbors(buyer_name, top_k=10):
     """
     results = []
     
-    # Get all sellers the buyer currently trades with
+    
     current_sellers = set(
         Transaction.objects.filter(buyer=buyer_name)
         .values_list('seller', flat=True).distinct()
@@ -199,34 +198,34 @@ def predict_sellers_common_neighbors(buyer_name, top_k=10):
     if not current_sellers:
         return {"error": "Buyer has no transaction history", "results": []}
     
-    # Find other buyers who trade with the same sellers
+    
     similar_buyers = set(
         Transaction.objects.filter(seller__in=current_sellers)
         .exclude(buyer=buyer_name)
         .values_list('buyer', flat=True).distinct()
     )
     
-    # Find sellers that these similar buyers trade with
+    
     candidate_sellers = defaultdict(int)
     for similar_buyer in similar_buyers:
         their_sellers = Transaction.objects.filter(buyer=similar_buyer).values_list('seller', flat=True).distinct()
         for seller in their_sellers:
             if seller not in current_sellers:
-                candidate_sellers[seller] += 1  # Count common neighbors
+                candidate_sellers[seller] += 1  
     
-    # Get sorted candidates
+    
     sorted_candidates = sorted(candidate_sellers.items(), key=lambda x: x[1], reverse=True)[:top_k]
     
-    # Normalize scores to 0-1 range, then scale to 95% max
+    
     max_count = max([c[1] for c in sorted_candidates], default=1)
     
     for seller, count in sorted_candidates:
         normalized_score = count / max_count if max_count > 0 else 0
         results.append({
             "seller": seller,
-            "score": scale_confidence(normalized_score, max_val=1.0),  # Capped at 95%
+            "score": scale_confidence(normalized_score, max_val=1.0),  
             "method": "common_neighbors",
-            "common_buyer_count": count  # Raw count for display
+            "common_buyer_count": count  
         })
     
     return {"results": results}
@@ -260,27 +259,27 @@ def predict_buyers_common_neighbors(seller_name, top_k=10):
             if buyer not in current_buyers:
                 candidate_buyers[buyer] += 1
     
-    # Get sorted candidates
+    
     sorted_candidates = sorted(candidate_buyers.items(), key=lambda x: x[1], reverse=True)[:top_k]
     
-    # Normalize scores to 0-1 range, then scale to 95% max
+    
     max_count = max([c[1] for c in sorted_candidates], default=1)
     
     for buyer, count in sorted_candidates:
         normalized_score = count / max_count if max_count > 0 else 0
         results.append({
             "buyer": buyer,
-            "score": scale_confidence(normalized_score, max_val=1.0),  # Capped at 95%
+            "score": scale_confidence(normalized_score, max_val=1.0),  
             "method": "common_neighbors",
-            "common_seller_count": count  # Raw count for display
+            "common_seller_count": count  
         })
     
     return {"results": results}
 
 
-# ============================================================
-# METHOD 3: Product Co-Trade
-# ============================================================
+
+
+
 def predict_sellers_by_product(buyer_name, top_k=10):
     """
     Find sellers who sell the same products the buyer purchases.
@@ -289,7 +288,7 @@ def predict_sellers_by_product(buyer_name, top_k=10):
     """
     results = []
     
-    # Get products the buyer has purchased
+    
     buyer_products = set(
         Transaction.objects.filter(buyer=buyer_name)
         .exclude(product_item__isnull=True)
@@ -299,13 +298,13 @@ def predict_sellers_by_product(buyer_name, top_k=10):
     if not buyer_products:
         return {"error": "Buyer has no product history", "results": []}
     
-    # Get current sellers
+    
     current_sellers = set(
         Transaction.objects.filter(buyer=buyer_name)
         .values_list('seller', flat=True).distinct()
     )
     
-    # Find sellers who sell these products
+    
     candidate_sellers = list(
         Transaction.objects.filter(product_item_id__in=buyer_products)
         .exclude(seller__in=current_sellers)
@@ -314,7 +313,7 @@ def predict_sellers_by_product(buyer_name, top_k=10):
         .order_by('-product_match_count')[:top_k]
     )
     
-    # Normalize scores to 0-1 range, then scale to 95% max
+    
     max_count = max([item['product_match_count'] for item in candidate_sellers], default=1)
     
     for item in candidate_sellers:
@@ -322,9 +321,9 @@ def predict_sellers_by_product(buyer_name, top_k=10):
         normalized_score = count / max_count if max_count > 0 else 0
         results.append({
             "seller": item['seller'],
-            "score": scale_confidence(normalized_score, max_val=1.0),  # Capped at 95%
+            "score": scale_confidence(normalized_score, max_val=1.0),  
             "method": "product_cotrade",
-            "matching_products": count  # Raw count for display
+            "matching_products": count  
         })
     
     return {"results": results}
@@ -359,7 +358,7 @@ def predict_buyers_by_product(seller_name, top_k=10):
         .order_by('-product_match_count')[:top_k]
     )
     
-    # Normalize scores to 0-1 range, then scale to 95% max
+    
     max_count = max([item['product_match_count'] for item in candidate_buyers], default=1)
     
     for item in candidate_buyers:
@@ -367,17 +366,17 @@ def predict_buyers_by_product(seller_name, top_k=10):
         normalized_score = count / max_count if max_count > 0 else 0
         results.append({
             "buyer": item['buyer'],
-            "score": scale_confidence(normalized_score, max_val=1.0),  # Capped at 95%
+            "score": scale_confidence(normalized_score, max_val=1.0),  
             "method": "product_cotrade",
-            "matching_products": count  # Raw count for display
+            "matching_products": count  
         })
     
     return {"results": results}
 
 
-# ============================================================
-# METHOD 4: Jaccard Coefficient
-# ============================================================
+
+
+
 def predict_sellers_jaccard(buyer_name, top_k=10):
     """
     Jaccard similarity based on shared seller connections.
@@ -395,7 +394,7 @@ def predict_sellers_jaccard(buyer_name, top_k=10):
     
     for seller in all_sellers:
         if seller in buyer_neighbors:
-            continue  # Skip existing partners
+            continue  
         
         seller_neighbors = set(G.neighbors(seller))
         
@@ -415,7 +414,7 @@ def predict_sellers_jaccard(buyer_name, top_k=10):
     results.sort(key=lambda x: x['raw_score'], reverse=True)
     top_results = results[:top_k]
     
-    # Apply 95% cap to all scores
+    
     for r in top_results:
         r['score'] = scale_confidence(r['raw_score'], max_val=1.0)
         del r['raw_score']
@@ -423,9 +422,9 @@ def predict_sellers_jaccard(buyer_name, top_k=10):
     return {"results": top_results}
 
 
-# ============================================================
-# METHOD 5: Preferential Attachment
-# ============================================================
+
+
+
 def predict_sellers_preferential_attachment(buyer_name, top_k=10):
     """
     Preferential Attachment: Score = degree(buyer) * degree(seller)
@@ -458,22 +457,22 @@ def predict_sellers_preferential_attachment(buyer_name, top_k=10):
             "seller_connections": seller_degree
         })
     
-    # Sort by raw score
+    
     raw_results.sort(key=lambda x: x['raw_score'], reverse=True)
     top_results = raw_results[:top_k]
     
-    # Normalize using log scale (handles large numbers like 14000)
+    
     if top_results:
         max_score = max(r['raw_score'] for r in top_results)
-        log_max = math.log1p(max_score)  # log(1 + max) to handle 0
+        log_max = math.log1p(max_score)  
         
         results = []
         for r in top_results:
-            # Log normalization: log(1 + score) / log(1 + max_score)
+            
             normalized = math.log1p(r['raw_score']) / log_max if log_max > 0 else 0
             results.append({
                 "seller": r['seller'],
-                "score": scale_confidence(normalized, max_val=1.0),  # Capped at 95%
+                "score": scale_confidence(normalized, max_val=1.0),  
                 "method": "preferential_attachment",
                 "seller_connections": r['seller_connections']
             })
@@ -482,17 +481,17 @@ def predict_sellers_preferential_attachment(buyer_name, top_k=10):
     return {"results": []}
 
 
-# ============================================================
-# COMBINED PREDICTION (All Methods)
-# ============================================================
 
-# Configurable weights for each method (must sum to 1.0)
+
+
+
+
 METHOD_WEIGHTS = {
-    'node2vec': 0.30,           # Most sophisticated (embedding-based)
-    'common_neighbors': 0.20,   # Basic but reliable
-    'product_cotrade': 0.25,    # Domain-specific relevance
-    'jaccard': 0.15,            # Good for sparse graphs
-    'preferential_attachment': 0.10  # Can bias toward popular nodes
+    'node2vec': 0.30,           
+    'common_neighbors': 0.20,   
+    'product_cotrade': 0.25,    
+    'jaccard': 0.15,            
+    'preferential_attachment': 0.10  
 }
 
 
@@ -507,7 +506,7 @@ def predict_sellers_combined(buyer_name, top_k=10):
     """
     all_results = {}
     
-    # Method 1: Node2Vec (already 0-1)
+    
     node2vec_results = predict_sellers_node2vec(buyer_name, top_k=50)
     for r in node2vec_results.get('results', []):
         seller = r['seller']
@@ -519,12 +518,12 @@ def predict_sellers_combined(buyer_name, top_k=10):
                 'weight_sum': 0,
                 'segment_tag': r.get('segment_tag')
             }
-        score = min(1.0, max(0.0, r['score']))  # Clamp to 0-1
+        score = min(1.0, max(0.0, r['score']))  
         all_results[seller]['scores']['node2vec'] = score
         all_results[seller]['weighted_sum'] += score * METHOD_WEIGHTS['node2vec']
         all_results[seller]['weight_sum'] += METHOD_WEIGHTS['node2vec']
     
-    # Method 2: Common Neighbors (already normalized 0-1)
+    
     cn_results = predict_sellers_common_neighbors(buyer_name, top_k=50)
     for r in cn_results.get('results', []):
         seller = r['seller']
@@ -540,7 +539,7 @@ def predict_sellers_combined(buyer_name, top_k=10):
         all_results[seller]['weighted_sum'] += score * METHOD_WEIGHTS['common_neighbors']
         all_results[seller]['weight_sum'] += METHOD_WEIGHTS['common_neighbors']
     
-    # Method 3: Product Co-Trade (already normalized 0-1)
+    
     product_results = predict_sellers_by_product(buyer_name, top_k=50)
     for r in product_results.get('results', []):
         seller = r['seller']
@@ -556,7 +555,7 @@ def predict_sellers_combined(buyer_name, top_k=10):
         all_results[seller]['weighted_sum'] += score * METHOD_WEIGHTS['product_cotrade']
         all_results[seller]['weight_sum'] += METHOD_WEIGHTS['product_cotrade']
     
-    # Method 4: Jaccard (already 0-1)
+    
     jaccard_results = predict_sellers_jaccard(buyer_name, top_k=50)
     for r in jaccard_results.get('results', []):
         seller = r['seller']
@@ -572,7 +571,7 @@ def predict_sellers_combined(buyer_name, top_k=10):
         all_results[seller]['weighted_sum'] += score * METHOD_WEIGHTS['jaccard']
         all_results[seller]['weight_sum'] += METHOD_WEIGHTS['jaccard']
     
-    # Method 5: Preferential Attachment (already normalized 0-1)
+    
     pa_results = predict_sellers_preferential_attachment(buyer_name, top_k=50)
     for r in pa_results.get('results', []):
         seller = r['seller']
@@ -588,38 +587,38 @@ def predict_sellers_combined(buyer_name, top_k=10):
         all_results[seller]['weighted_sum'] += score * METHOD_WEIGHTS['preferential_attachment']
         all_results[seller]['weight_sum'] += METHOD_WEIGHTS['preferential_attachment']
     
-    # Compute final confidence with method coverage penalty
-    # Maximum possible confidence is 95% (100% implies perfect certainty)
+    
+    
     MAX_CONFIDENCE = 0.95
-    TOTAL_METHODS = 5  # For sellers: Node2Vec, Common Neighbors, Product, Jaccard, PA
+    TOTAL_METHODS = 5  
     
     for seller_data in all_results.values():
         if seller_data['weight_sum'] > 0:
-            # Base weighted average
+            
             base_confidence = seller_data['weighted_sum'] / seller_data['weight_sum']
             
-            # Method coverage factor: penalize if fewer methods contribute
-            methods_used = len(seller_data['scores'])
-            coverage_factor = methods_used / TOTAL_METHODS  # 0.2 to 1.0
             
-            # Apply coverage penalty and cap at 95%
+            methods_used = len(seller_data['scores'])
+            coverage_factor = methods_used / TOTAL_METHODS  
+            
+            
             seller_data['final_confidence'] = min(
                 MAX_CONFIDENCE, 
-                base_confidence * (0.7 + 0.3 * coverage_factor)  # Scale between 70-100%
+                base_confidence * (0.7 + 0.3 * coverage_factor)  
             )
         else:
             seller_data['final_confidence'] = 0.0
         
-        # Also provide total_score for backward compatibility
+        
         seller_data['total_score'] = seller_data['final_confidence']
     
-    # Sort by final confidence
+    
     sorted_results = sorted(all_results.values(), key=lambda x: x['final_confidence'], reverse=True)[:top_k]
     
-    # Add rank
+    
     for idx, result in enumerate(sorted_results):
         result['rank'] = idx + 1
-        # Clean up temporary fields
+        
         del result['weighted_sum']
         del result['weight_sum']
     
@@ -641,7 +640,7 @@ def predict_buyers_combined(seller_name, top_k=10):
     """
     all_results = {}
     
-    # Node2Vec (already 0-1)
+    
     node2vec_results = predict_buyers_node2vec(seller_name, top_k=50)
     for r in node2vec_results.get('results', []):
         buyer = r['buyer']
@@ -658,7 +657,7 @@ def predict_buyers_combined(seller_name, top_k=10):
         all_results[buyer]['weighted_sum'] += score * METHOD_WEIGHTS['node2vec']
         all_results[buyer]['weight_sum'] += METHOD_WEIGHTS['node2vec']
     
-    # Common Neighbors (already normalized 0-1)
+    
     cn_results = predict_buyers_common_neighbors(seller_name, top_k=50)
     for r in cn_results.get('results', []):
         buyer = r['buyer']
@@ -674,7 +673,7 @@ def predict_buyers_combined(seller_name, top_k=10):
         all_results[buyer]['weighted_sum'] += score * METHOD_WEIGHTS['common_neighbors']
         all_results[buyer]['weight_sum'] += METHOD_WEIGHTS['common_neighbors']
     
-    # Product Co-Trade (already normalized 0-1)
+    
     product_results = predict_buyers_by_product(seller_name, top_k=50)
     for r in product_results.get('results', []):
         buyer = r['buyer']
@@ -690,38 +689,38 @@ def predict_buyers_combined(seller_name, top_k=10):
         all_results[buyer]['weighted_sum'] += score * METHOD_WEIGHTS['product_cotrade']
         all_results[buyer]['weight_sum'] += METHOD_WEIGHTS['product_cotrade']
     
-    # Compute final confidence with method coverage penalty
-    # Maximum possible confidence is 95% (100% implies perfect certainty)
+    
+    
     MAX_CONFIDENCE = 0.95
-    TOTAL_METHODS = 3  # For buyers: Node2Vec, Common Neighbors, Product Co-Trade
+    TOTAL_METHODS = 3  
     
     for buyer_data in all_results.values():
         if buyer_data['weight_sum'] > 0:
-            # Base weighted average
+            
             base_confidence = buyer_data['weighted_sum'] / buyer_data['weight_sum']
             
-            # Method coverage factor: penalize if fewer methods contribute
-            methods_used = len(buyer_data['scores'])
-            coverage_factor = methods_used / TOTAL_METHODS  # 0.33 to 1.0
             
-            # Apply coverage penalty and cap at 95%
+            methods_used = len(buyer_data['scores'])
+            coverage_factor = methods_used / TOTAL_METHODS  
+            
+            
             buyer_data['final_confidence'] = min(
                 MAX_CONFIDENCE, 
-                base_confidence * (0.7 + 0.3 * coverage_factor)  # Scale between 70-100%
+                base_confidence * (0.7 + 0.3 * coverage_factor)  
             )
         else:
             buyer_data['final_confidence'] = 0.0
         
-        # Also provide total_score for backward compatibility
+        
         buyer_data['total_score'] = buyer_data['final_confidence']
     
-    # Sort by final confidence
+    
     sorted_results = sorted(all_results.values(), key=lambda x: x['final_confidence'], reverse=True)[:top_k]
     
-    # Add rank
+    
     for idx, result in enumerate(sorted_results):
         result['rank'] = idx + 1
-        # Clean up temporary fields
+        
         del result['weighted_sum']
         del result['weight_sum']
     

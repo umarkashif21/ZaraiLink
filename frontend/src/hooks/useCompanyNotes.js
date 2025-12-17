@@ -2,9 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 const NOTES_KEY = 'zarailink-notes';
 
-/**
- * Hook for managing private notes on companies
- */
+
 const useCompanyNotes = () => {
   const [notes, setNotes] = useState(() => {
     try {

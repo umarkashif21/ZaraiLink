@@ -1,11 +1,10 @@
-
 import os
 import sys
 import django
 import json
 from pathlib import Path
 
-# Setup Django
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zarailink.settings')
 django.setup()
@@ -26,7 +25,7 @@ def restore_data():
 
     print(f"Found {len(data)} transactions.")
 
-    # 1. Collect all unique product_item_ids
+    
     product_ids = set()
     for tx in data:
         pid = tx.get('product_item_id')
@@ -35,9 +34,9 @@ def restore_data():
     
     print(f"Found {len(product_ids)} unique product items referenced.")
 
-    # 2. Ensure Dummy Hierarchy Exists
+    
     with db_transaction.atomic():
-        # Create Generic Parents
+        
         try:
             prod, _ = Product.objects.get_or_create(
                 hs_code="00",
@@ -55,7 +54,7 @@ def restore_data():
             print(f"Error creating base hierarchy: {e}")
             return
 
-        # 3. Create/Restore Product items
+        
         print("Restoring ProductItems...")
         created_count = 0
         existing_count = 0
@@ -72,13 +71,13 @@ def restore_data():
         
         print(f"ProductItems: {created_count} created, {existing_count} existing.")
 
-        # 4. Re-import Transactions with Links
+        
         print("Re-importing transactions with links...")
-        # Clear existing transactions to avoid duplicates? 
-        # Or just upsert based on some criteria? 
-        # Since we don't have unique IDs in json (maybe?), clear all might be safer if we are reloading the whole backup.
-        # But let's check if we want to wipe.
-        # The prompt implies we want to Make it Work. Wiping and clean reload is safest.
+        
+        
+        
+        
+        
         
         Transaction.objects.all().delete()
         print("Cleared existing transactions.")
@@ -86,7 +85,7 @@ def restore_data():
         tx_created = 0
         for item in data:
             try:
-                # Handle reporting_date parsing if needed, but JSON usually has string YYYY-MM-DD
+                
                 pid = item.get('product_item_id')
                 product_item = ProductItem.objects.get(id=int(pid)) if pid else None
 

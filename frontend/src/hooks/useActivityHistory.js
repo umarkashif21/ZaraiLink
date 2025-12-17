@@ -3,9 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 const ACTIVITY_KEY = 'zarailink-activity';
 const MAX_HISTORY = 50;
 
-/**
- * Hook for tracking user activity history
- */
+
 const useActivityHistory = () => {
   const [activities, setActivities] = useState(() => {
     try {

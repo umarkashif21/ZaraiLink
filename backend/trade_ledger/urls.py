@@ -1,7 +1,5 @@
-# trade_ledger/urls.py
-# trade_ledger/urls.py
 from django.urls import path
-from . import views  # <- This correctly imports trade_ledger/views.py
+from . import views  
 from .pdf_export_view import export_comparison_pdf
 
 urlpatterns = [
@@ -13,13 +11,13 @@ urlpatterns = [
     path('compare/', views.compare_companies_api),
     path('export-comparison-pdf/', export_comparison_pdf, name='export_comparison_pdf'),
     
-    # GNN APIs
+    
     path('company/<str:company_name>/similar/', views.similar_companies_api),
     path('company/<str:company_name>/potential-partners/', views.potential_partners_api),
     path('company/<str:company_name>/network-influence/', views.network_influence_api),
     path('product-clusters/', views.product_clusters_api),
     
-    # Link Prediction APIs
+    
     path('predict/sellers/<str:buyer_name>/', views.predict_sellers_api, name='predict_sellers'),
     path('predict/buyers/<str:seller_name>/', views.predict_buyers_api, name='predict_buyers'),
     path('predict/methods/', views.link_prediction_methods_api, name='link_prediction_methods'),

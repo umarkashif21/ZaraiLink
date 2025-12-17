@@ -26,7 +26,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         limit = options.get('limit')
         
-        # Get companies that don't have embeddings
+        
         existing_names = set(CompanyEmbedding.objects.values_list('company_name', flat=True))
         companies = Company.objects.filter(verification_status='verified')
         
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         
         created_count = 0
         for company in companies_to_process:
-            # Create embedding text from company info
+            
             text_parts = [company.name]
             if company.description:
                 text_parts.append(company.description)
@@ -50,14 +50,14 @@ class Command(BaseCommand):
             
             text = " | ".join(text_parts)
             
-            # Generate embedding using OpenAI
+            
             embedding = AIService.get_embedding(text)
             
             if embedding:
                 CompanyEmbedding.objects.create(
                     company_name=company.name,
                     embedding=embedding,
-                    cluster_tag="Directory Company",  # Default tag
+                    cluster_tag="Directory Company",  
                     pagerank=0.0,
                     degree=0
                 )

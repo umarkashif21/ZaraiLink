@@ -1,7 +1,7 @@
 import React from 'react';
 import './Modal.css';
 
-// Reusable Modal Component
+
 export const Modal = ({ isOpen, onClose, children, title }) => {
   if (!isOpen) return null;
 
@@ -22,7 +22,7 @@ export const Modal = ({ isOpen, onClose, children, title }) => {
   );
 };
 
-// Unlock Confirmation Modal
+
 export const UnlockConfirmModal = ({ isOpen, onClose, onConfirm, contactName, tokenCost }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -49,7 +49,7 @@ export const UnlockConfirmModal = ({ isOpen, onClose, onConfirm, contactName, to
   );
 };
 
-// Success Modal
+
 export const SuccessModal = ({ isOpen, onClose, contactInfo, tokensRemaining }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -102,7 +102,7 @@ export const SuccessModal = ({ isOpen, onClose, contactInfo, tokensRemaining }) 
   );
 };
 
-// Insufficient Tokens Modal
+
 export const InsufficientTokensModal = ({ isOpen, onClose, currentBalance, required, onBuyTokens }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
