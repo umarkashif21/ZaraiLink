@@ -3446,181 +3446,250 @@ The project includes a GitHub Actions workflow `.github/workflows/ci.yml` that r
 
 ---
 
+## 8.11 Testing & Quality Assurance (Pytest)
+
+The project uses **pytest** for backend testing, with a comprehensive suite of fixtures and integration tests.
+
+### 8.11.1 Test Structure
+
+Tests are co-located with their respective apps in a `tests/` directory:
+
+```
+backend/
+├── conftest.py          # Global fixtures (User, API Client, DB)
+├── companies/
+│   └── tests/
+│       ├── test_views.py
+│       └── test_models.py
+├── accounts/
+│   └── tests/
+│       └── ...
+```
+
+### 8.11.2 Global Configuration (conftest.py)
+
+**File location:** `backend/conftest.py`
+
+This file is the "engine room" of the test suite. It defines reusable "fixtures" that set up the test environment.
+
+**Key Fixtures:**
+
+- **`db`**: Automatically handles database setup/teardown. Tests run in a transaction that is rolled back at the end, keeping the DB clean.
+- **`api_client`**: An instance of `APIClient` for making HTTP requests to endpoints.
+- **`create_user`**: A factory function to create users dynamically.
+    ```python
+    user = create_user(email="test@example.com", token_balance=50)
+    ```
+- **`authenticated_client`**: An `api_client` that is already logged in as a test user.
+- **`create_company`**: Creates a company with all required foreign keys (Sector, Role, Type) automatically populated if not provided.
+
+### 8.11.3 How to Run Tests
+
+**Standard Run:**
+```bash
+pytest
+```
+*Runs all tests in the project.*
+
+**Verbose Mode (See individual test names):**
+```bash
+pytest -v
+```
+
+**Run Specific App:**
+```bash
+pytest backend/companies/
+```
+
+**Run Specific Test Case:**
+```bash
+pytest -k "test_filter_by_country"
+```
+
 **End of Part 8: Developer Operations**
 
 ---
 
-# Part 9: Trade Data App & GNN Embeddings
+# Part 9: AI, GNN & Link Prediction Deep Dive
 
-This section documents the `trade_data` app which stores raw transaction data and GNN embeddings.
+This section provides the **minutely detailed technical explanation** of the AI systems, including line-by-line logic, training pipelines, and retrieval algorithms.
 
 ---
 
-## 9.1 Product Hierarchy Models
+## 9.1 GNN Training Pipeline (The "Training" Phase)
 
-The product system uses a 4-level hierarchy based on HS (Harmonized System) codes.
+**Objective:** Convert the graph of Companies, Products, and Transactions into 64-dimensional vectors (embeddings) so that mathematical operations can find similarities.
 
-```mermaid
-graph TD
-    A[Product] -->|has many| B[ProductCategory]
-    B -->|has many| C[ProductSubCategory]
-    C -->|has many| D[ProductItem]
+**File Location:** `backend/trade_ledger/management/commands/generate_gnn_embeddings.py`
+
+### Logic Flow & Code Deep Dive
+
+The process is triggered via the command `python manage.py generate_gnn_embeddings`.
+
+#### Step 1: Loading the Graph
+The script first loads the pre-built NetworkX graphs from disk.
+
+```python
+# Lines 40-44
+G_cp = nx.read_graphml("company_product_graph.graphml")  # Graph A: Company-Product
+G_cc = nx.read_graphml("buyer_seller_graph.graphml")     # Graph B: Buyer-Seller (Trade)
+
+G_company = nx.compose(G_cp, G_cc)  # Combined Graph
+```
+**Logic:** We merge two graphs. One represents "what they trade" (Company-Product) and the other "who they trade with" (Buyer-Seller). This rich context is crucial for learning.
+
+#### Step 2: Node2Vec Random Walks
+We use the **Node2Vec** algorithm to generate "sentences" of nodes.
+
+```python
+# Lines 48-52
+node2vec = Node2Vec(G_company, dimensions=64, walk_length=30, num_walks=200, workers=4)
+model = node2vec.fit(window=10, min_count=1)
+```
+**Logic:**
+- **`dimensions=64`**: Each company will be represented by 64 numbers.
+- **`walk_length=30`**: The AI "walks" 30 steps from a node to explore its neighborhood.
+- **`num_walks=200`**: It does this 200 times per node to get statistically significant patterns.
+- **`fit()`**: Calls Word2Vec to learn embeddings. If Company A and Company B frequently appear in the same walks (e.g., they both trade Rice with the same buyers), they will have similar vectors.
+
+#### Step 3: Clustering (HDBSCAN)
+Once we have vectors, we group them into clusters.
+
+```python
+# Lines 70-72
+clusterer = HDBSCAN(min_cluster_size=5, metric='euclidean')
+cluster_labels = clusterer.fit_predict(embedding_matrix)
+```
+**Logic:** HDBSCAN is a density-based clustering algorithm. It finds "clumps" of companies in the 64D space. We assign tags like "Bulk Trader" or "Commodity Specialist" based on these clusters.
+
+#### Step 4: Saving to Database
+Finally, we save the learned math to the database for fast retrieval.
+
+```python
+# Lines 86-92
+CompanyEmbedding.objects.create(
+    company_name=company,
+    embedding=embeddings[company],  # The 64 float list
+    cluster_tag=company_tags[company],
+    pagerank=pagerank.get(company, 0.0),
+    degree=degree.get(company, 0)
+)
+```
+
+---
+
+## 9.2 Similarity Retrieval (The "Retrieval" Phase)
+
+**Objective:** Find companies similar to Company X based on the learned embeddings.
+
+**File Location:** `backend/trade_ledger/services/gnn.py`
+
+### Logic Flow & Code Deep Dive
+
+The retrieval uses **Cosine Similarity**, which measures the angle between two vectors. Small angle = High similarity.
+
+#### KEY FUNCTION: `get_similar_companies(company_name)`
+
+```python
+# Lines 39-66 (Simplified)
+def get_similar_companies(company_name, top_k=4):
+    # 1. Get the vector for the query company
+    target_vec, _ = get_company_embedding(company_name)
     
-    A1["Sugar (17)"]
-    B1["Other Sugars (17.02)"]
-    C1["Glucose Syrup (1702.3000)"]
-    D1["Dextrose Anhydrous"]
+    # 2. Get vectors for ALL other companies
+    all_embeddings = list(CompanyEmbedding.objects.exclude(company_name=company_name))
+    vectors = np.array([e.embedding for e in all_embeddings])  # Matrix of shape (N, 64)
+    
+    # 3. Compute Cosine Similarity
+    # result is an array of scores between -1 and 1
+    similarities = cosine_similarity([target_vec], vectors)[0]
+    
+    # 4. Sort and return Top K
+    top_indices = np.argsort(similarities)[-top_k:][::-1]
 ```
-
-### Models
-
-| Model | Purpose | Example |
-|-------|---------|---------|
-| `Product` | Top-level category (2-digit HS) | Sugar (17) |
-| `ProductCategory` | Category (4-digit HS) | Other Sugars (17.02) |
-| `ProductSubCategory` | Sub-category (8-digit HS) | Glucose Syrup (1702.3000) |
-| `ProductItem` | Specific product item | Dextrose Anhydrous |
-
-### File Location
-
-**File:** [trade_data/models.py](file:///d:/Salman%20Adnan/HU/7th%20Semester/FYP/Coding/backend/trade_data/models.py)
+**Logic:**
+- We perform a matrix multiplication (dot product) of the target vector against all other vectors.
+- This effectively compares the company's "DNA" (trade patterns, product portfolio, partners) against the entire database in milliseconds.
 
 ---
 
-## 9.2 Transaction Model
+## 9.3 Link Prediction (The "Prediction" Phase)
 
-Stores raw import/export transaction records.
+**Objective:** Predict *future* trading partners (Buyer-Seller links) that do not yet exist.
+
+**File Location:** `backend/trade_ledger/services/link_prediction.py`
+
+### Logic Flow & Code Deep Dive
+
+We use an **Ensemble Method** combining 5 different signals. The `predict_sellers_combined` function orchestrates this.
+
+#### The 5 Signals (Algorithms)
+
+1.  **Node2Vec Similarity (30% weight)**:
+    - **Logic:** Are the two companies close in the vector space?
+    - **Code (Line 107):** `similarity = cosine_similarity(buyer_vector, seller_vector)`
+
+2.  **Common Neighbors (20% weight)**:
+    - **Logic:** "Friends of friends". If Buyer A and Buyer B both buy from Seller S, and Buyer B also buys from Seller T, then Seller T is a candidate for Buyer A.
+    - **Code (Line 210):** `candidate_sellers[seller] += 1` (Counts overlapping connections).
+
+3.  **Product Co-Trade (25% weight)**:
+    - **Logic:** Does the seller sell what the buyer buys?
+    - **Code (Line 310):** `Transaction.objects.filter(product=buyer_products)`
+
+4.  **Jaccard Coefficient (15% weight)**:
+    - **Logic:** Normalized overlap. Intersection over Union.
+    - **Code (Line 406):** `jaccard = intersection / union`
+
+5.  **Preferential Attachment (10% weight)**:
+    - **Logic:** "The rich get richer". High-degree nodes (major hubs) attract more links.
+    - **Code (Line 453):** `pa_score = buyer_degree * seller_degree`
+
+#### The Combination Logic
 
 ```python
-class Transaction(models.Model):
-    """Raw import/export transaction records"""
-    buyer = models.CharField(max_length=500)
-    seller = models.CharField(max_length=500)
-    product_item = models.ForeignKey(ProductItem, ...)
-    country = models.CharField(max_length=100)
-    qty_mt = models.DecimalField(...)  # Metric Tonnes
-    usd_per_mt = models.DecimalField(...)  # Price per MT
-    reporting_date = models.DateField()
-    trade_type = models.CharField(max_length=10)  # Import/Export
+# Lines 596-610: Calculating Final Confidence
+for seller_data in all_results.values():
+    # 1. Weighted Average
+    base_confidence = seller_data['weighted_sum'] / seller_data['weight_sum']
+    
+    # 2. Coverage Penalty
+    # If a seller was only found by 1 method, reduce confidence.
+    # If found by all 5, confidence is boosted.
+    methods_used = len(seller_data['scores'])
+    coverage_factor = methods_used / TOTAL_METHODS
+    
+    # 3. Cap at 95%
+    final_confidence = min(0.95, base_confidence * (0.7 + 0.3 * coverage_factor))
 ```
 
-### Key Fields
-
-| Field | Type | Purpose |
-|-------|------|---------|
-| `buyer` | CharField | Importing company name |
-| `seller` | CharField | Exporting company name |
-| `hs_code` | CharField | Raw HS code |
-| `qty_mt` | DecimalField | Quantity in Metric Tonnes |
-| `usd_per_mt` | DecimalField | USD price per Metric Tonne |
-| `country` | CharField | Origin/destination country |
-
-### Database Indexes
-
-```python
-indexes = [
-    models.Index(fields=['reporting_date']),
-    models.Index(fields=['buyer']),
-    models.Index(fields=['seller']),
-    models.Index(fields=['hs_code']),
-]
-```
+**Why this logic?**
+- A pure Node2Vec prediction might be a hallucination.
+- A pure Product prediction might ignore logistics.
+- By **requiring multiple methods to agree** (coverage factor), we significantly reduce false positives.
 
 ---
 
-## 9.3 Aggregation Models
+## 9.4 How to Run the AI Features
 
-Pre-computed statistics for fast queries.
+### 1. Training (Generate Embeddings)
+This must be run whenever new data is ingested.
+```bash
+python backend/manage.py build_gnn_graphs
+python backend/manage.py generate_gnn_embeddings
+```
+*Note: This generates `CompanyEmbedding` records in your PostgreSQL database.*
 
-### AggProductMonthCountry
-
-Monthly product trade statistics by country.
-
-| Field | Purpose |
-|-------|---------|
-| `product` | ForeignKey to Sector |
-| `year`, `month` | Time period |
-| `country` | Trade partner country |
-| `total_quantity` | Sum of traded quantity |
-| `avg_price_usd` | Average price |
-| `total_value_usd` | Total trade value |
-
-### AggCompanyMonthProduct
-
-Monthly company trade statistics by product.
-
-| Field | Purpose |
-|-------|---------|
-| `company` | ForeignKey to Company |
-| `product` | ForeignKey to Sector |
-| `year`, `month` | Time period |
-| `total_quantity` | Sum of traded quantity |
-
----
-
-## 9.4 GNN Embedding Models
-
-Stores Node2Vec embeddings for AI features.
-
-### CompanyEmbedding
-
-```python
-class CompanyEmbedding(models.Model):
-    company_name = models.CharField(max_length=500, unique=True)
-    embedding = models.JSONField()  # 64-dimensional vector (list)
-    cluster_tag = models.CharField(max_length=100)  # "Bulk Trader", etc.
-    pagerank = models.FloatField(default=0.0)
-    degree = models.IntegerField(default=0)
+### 2. Predictions (API)
+You can test the prediction logic via the API or browser:
+```
+GET /api/trade-ledger/predict-sellers/TargetBuyerName/?top_k=5
 ```
 
-### ProductEmbedding
-
-```python
-class ProductEmbedding(models.Model):
-    product_item = models.ForeignKey(ProductItem, ...)
-    embedding = models.JSONField()  # 64-dimensional vector
-    cluster_tag = models.CharField(max_length=100)  # "Sugar & Derivatives", etc.
+### 3. Comparison
+To see similarity in action:
 ```
-
-### Cluster Tags
-
-**Company Tags:**
-- Bulk Trader
-- High Growth
-- Price Aggressive
-- Emerging
-- Regional Aggregator
-- Commodity Specialist
-
-**Product Tags:**
-- Sugar & Derivatives
-- Soy Products
-- Edible Oils
-- Pharma Raw Materials
-- Confectionery
-
----
-
-## 9.5 HS Code Mapping
-
-### HsToProductMap
-
-Maps HS codes to readable product names.
-
-```python
-class HsToProductMap(models.Model):
-    hs_code = models.CharField(max_length=50)
-    product_name = models.CharField(max_length=255)
-    notes = models.TextField(blank=True)
-```
-
-**Example:**
-```
-| hs_code    | product_name           |
-|------------|------------------------|
-| 1006.30    | Milled Rice            |
-| 1701.91    | Raw Cane Sugar         |
-| 1702.3000  | Glucose Syrup          |
+GET /api/trade-ledger/similar-companies/TargetCompanyName/
 ```
 
 ---
