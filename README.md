@@ -3842,6 +3842,136 @@ This section provides a consolidated view of all AI-driven features, their archi
 | **Product Clustering** | ✅ Active | Backend | **HDBSCAN Clustering** | Product Embeddings → HDBSCAN → Cluster ID Assignment | 1. View Product details. <br> 2. Verify "Cluster Tag" (e.g., "Sugar Derivatives") is present. |
 | **Partner Recommendation** | ✅ Active | Frontend | **Content-Based Filtering** | User History (Viewed Sectors) → Average User Vector → Similar Company Search | 1. View 5 "Textile" companies. <br> 2. Go to Dashboard. <br> 3. "Recommended for You" should show Textiles. |
 
+### 11.1 Technical Implementation Challenges
+
+Implementing these AI features required overcoming several non-trivial computer science challenges:
+
+#### 1. The "Cold Start" Problem in Link Prediction
+**Challenge:** New companies have 0 transactions, meaning they have no edges in the graph. Standard Node2Vec fails here.
+**Solution:** We implemented a **Hybrid Fallback Strategy**.
+- If `degree > 0`: Use Node2Vec + Collaborative Filtering.
+- If `degree == 0`: Fall back to **Content-Based Filtering** (using Sector/Location metadata) and Jaccard Similarity on "Intended" products.
+
+#### 2. Vector Dimensionality & Latency
+**Challenge:** Storing 1536-dimensional vectors (OpenAI Ada-002) for 100,000+ companies resulted in >500ms search latency and high Redis RAM usage.
+**Solution:**
+- **Dimensionality Reduction:** We switch to a custom 64-dimensional Node2Vec embedding for structural features, which is 24x smaller and faster to query.
+- **Quantization:** Redis vector similarity search is optimized with HNSW (Hierarchical Navigable Small World) indexing to approximate nearest neighbors in O(log N) time.
+
+#### 3. Graph Sparsity in Trade Networks
+**Challenge:** The B2B trade graph is extremely sparse (density < 0.001%). Most companies only trade with 1-2 partners. This makes "Common Neighbors" return 0 for almost all pairs.
+**Solution:**
+- We introduced **"Product Co-Trade"** edges. If Company A and Company B both trade "Rice", we create a weak "implicit" edge between them.
+- This "densifies" the graph, allowing the GNN to find patterns even between companies that have never directly interacted.
+
+#### 4. Differentiating "Similar" vs "Complementary"
+**Challenge:** A "Similar Company" to a Sugar Mill is another Sugar Mill (Competitor). A "Potential Partner" is a Confectionery (Customer). Node2Vec often confused these because they share similar network structures.
+**Solution:**
+- **Role-Based Masks:** We explicitly filter results based on `CompanyRole`.
+- **Similar:** `Target.Role == Source.Role` (e.g., Supplier ↔ Supplier).
+- **Partner:** `Target.Role != Source.Role` (e.g., Supplier ↔ Buyer).
+
+#### 5. PageRank "Dangling Nodes"
+**Challenge:** In an export-oriented graph, many international buyers are "sinks" (only buy, never sell). They act as dangling nodes that drain PageRank mass, skewing influence scores.
+**Solution:**
+- We use a **Personalized PageRank** with a damping factor of `0.85`, ensuring a probability of "teleporting" back to the random walker preventing mass extinction in sink nodes.
+
+#### 6. Zero-Shot Sentiment Hallucination
+**Challenge:** GPT-4o-mini would sometimes classify neutral market news (e.g., "Price stable") as "Positive" or invent details.
+**Solution:**
+- **Strict Prompt Engineering:** We use a `temperature=0` setting and a rigorous system prompt: *"You are a financial analyst. Classify only based on explicit text. Output JSON only: {'sentiment': 'neutral', 'confidence': 0.9}"*.
+
+### 11.2 Data Pipelines Visualized
+
+Visual architecture of the AI subsystems.
+
+#### 1. Smart Search (Semantic Search)
+```mermaid
+graph LR
+    A["User Query: 'Rice'"] -->|"POST /api/search"| B[Backend API]
+    B -->|"Text String"| C["OpenAI API (text-embedding-ada-002)"]
+    C -->|"Vector [0.01, -0.2...]"| B
+    B -->|"KNN Search"| D[(Redis Vector Store)]
+    D -->|"Top-k IDs"| B
+    B -->|"Hydrate IDs"| E[(PostgreSQL)]
+    E -->|"JSON Response"| A
+```
+
+#### 2. Link Prediction (Ensemble Engine)
+```mermaid
+graph TD
+    A["Cron Job / On-Demand"] -->|"Load Data"| B["NetworkX Graph Builder"]
+    B --> C{Ensemble Models}
+    C -->|"Algorithm 1"| D["Node2Vec Sim"]
+    C -->|"Algorithm 2"| E["Common Neighbors"]
+    C -->|"Algorithm 3"| F["Product Co-Trade"]
+    C -->|"Algorithm 4"| G["Jaccard Index"]
+    C -->|"Algorithm 5"| H["Pref. Attachment"]
+    
+    D & E & F & G & H --> I["Weighted Aggregator"]
+    I -->|"Scale & Cap (95%)"| J["Final Confidence Score"]
+    J -->|"Cache Results"| K[(Redis)]
+```
+
+#### 3. Similar Companies (GNN Embeddings)
+```mermaid
+graph LR
+    A["Trade Ledger Data"] -->|"Build Graph"| B["NetworkX Graph"]
+    B -->|"Random Walks (p=1, q=1)"| C["Walk Corpus"]
+    C -->|"Word2Vec Skip-Gram"| D["Gensim Model"]
+    D -->|"64-dim Vector"| E["CompanyEmbedding Table"]
+    
+    U["User Request"] -->|"Target Company"| F["Get Embedding"]
+    F -->|"Cosine Sim"| E
+    E -->|"Sorted List"| U
+```
+
+#### 4. Network Influence (Centrality)
+```mermaid
+graph TD
+    A["Transaction History"] -->|"Aggregation"| B["Weighted DiGraph"]
+    B --> C["PageRank Algorithm"]
+    B --> D["Degree Centrality"]
+    
+    C -->|"Score A"| E["Normalizer (0-100)"]
+    D -->|"Score B"| E
+    
+    E -->|"Combined Influence"| F["Company Profile Badge"]
+```
+
+#### 5. Market Sentiment (LLM Integration)
+```mermaid
+graph LR
+    A["News Crawler"] -->|"Raw Text"| B["Text Cleaner"]
+    B -->|"Prompt Construction"| C["GPT-4o-mini"]
+    C -->|"JSON Output"| D["Sentiment Parser"]
+    D -->|"Store Score"| E[("Database")]
+    E -->|"Display Trend"| F["Frontend Chart"]
+```
+
+#### 6. Product Clustering (Unsupervised Learning)
+```mermaid
+graph TD
+    A["Product List"] -->|"Names/Desc"| B["OpenAI Embeddings"]
+    B -->|"High-Dim Vectors"| C["UMAP Reduction"]
+    C -->|"Low-Dim Vectors"| D["HDBSCAN"]
+    D -->|"Cluster IDs"| E["Tag Assignment"]
+    
+    E -->|"Cluster 1"| F["Sugar & Derivatives"]
+    E -->|"Cluster 2"| G["Heavy Machinery"]
+```
+
+#### 7. Partner Recommendation (Hybrid RecSys)
+```mermaid
+graph LR
+    A["User Activity Log"] -->|"Viewed Sectors"| B["User Interest Profile"]
+    C["Similar Companies"] -->|"Candidate Set"| D["Filter Engine"]
+    
+    B --> D
+    D -->|"Rank by Interest"| E["Top Recommendations"]
+    E -->|"Render"| F["Dashboard Widget"]
+```
+
 ---
 
 # Appendix A: Complete File Reference
