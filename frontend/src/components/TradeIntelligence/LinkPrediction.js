@@ -93,7 +93,7 @@ const LinkPrediction = () => {
       <Navbar />
       <div className="trade-ledger-container">
         <div className="trade-ledger-header">
-          <h1>🔮 Link Prediction</h1>
+          <h1>Link Prediction</h1>
           <p>Discover potential trading partners using AI-powered predictions</p>
         </div>
 
@@ -146,7 +146,7 @@ const LinkPrediction = () => {
                 className="btn-primary"
                 style={{ marginTop: '24px' }}
               >
-                {loading ? 'Predicting...' : '🔍 Predict'}
+                {loading ? 'Predicting...' : 'Predict'}
               </button>
             </div>
           </div>
@@ -167,7 +167,7 @@ const LinkPrediction = () => {
         {}
         {error && (
           <div className="empty-state" style={{ background: '#fee2e2', color: '#dc2626' }}>
-            <h2>⚠️ Error</h2>
+            <h2>Error</h2>
             <p>{error}</p>
           </div>
         )}
@@ -200,7 +200,7 @@ const LinkPrediction = () => {
                       <div>
                         <h3>{result.seller || result.buyer}</h3>
                         <p className="company-location">
-                          {result.segment_tag && `🏷️ ${result.segment_tag}`}
+                          {result.segment_tag && `${result.segment_tag}`}
                         </p>
                       </div>
                       <span 

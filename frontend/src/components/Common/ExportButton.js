@@ -44,9 +44,9 @@ const ExportButton = ({
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled || isExporting}
       >
-        <span className="export-icon">📥</span>
+        {/* <span className="export-icon">📥</span> */}
         <span>Export</span>
-        <span className="export-arrow">▼</span>
+        {/* <span className="export-arrow">▼</span> */}
       </button>
       
       {isOpen && (
@@ -56,7 +56,7 @@ const ExportButton = ({
             onClick={handleExportCSV}
             disabled={isExporting}
           >
-            <span className="option-icon">📊</span>
+            {/* <span className="option-icon">📊</span> */}
             <div className="option-content">
               <span className="option-title">Export as CSV</span>
               <span className="option-desc">Spreadsheet format</span>
@@ -67,7 +67,7 @@ const ExportButton = ({
             onClick={handleExportPDF}
             disabled={isExporting}
           >
-            <span className="option-icon">📄</span>
+            {/* <span className="option-icon">📄</span> */}
             <div className="option-content">
               <span className="option-title">Export as PDF</span>
               <span className="option-desc">Document format</span>

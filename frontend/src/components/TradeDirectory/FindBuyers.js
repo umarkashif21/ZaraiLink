@@ -244,7 +244,7 @@ const FindBuyers = () => {
                 style={{ width: '16px', height: '16px' }}
             />
             <label htmlFor="useAI" style={{ cursor: 'pointer', fontWeight: '500', color: useAI ? 'var(--color-primary)' : 'inherit' }}>
-                🤖 Enable AI Smart Search
+                Enable AI Smart Search
             </label>
         </div>
 
@@ -303,7 +303,7 @@ const FindBuyers = () => {
           gap: '0.5rem',
           color: '#856404'
         }}>
-          <span>ℹ️</span>
+          {/* <span>ℹ️</span> */}
           <span>AI Smart Search is currently unavailable. Showing text search results instead.</span>
         </div>
       )}
@@ -311,7 +311,7 @@ const FindBuyers = () => {
       {}
       {error && (
         <div className="error-message">
-          <span>⚠️</span>
+          {/* <span>⚠️</span> */}
           <p>{error}</p>
         </div>
       )}

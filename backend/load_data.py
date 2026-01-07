@@ -28,20 +28,20 @@ SHEET_NAME = 0
 def import_companies():
     """Import companies from Excel file"""
     
-    print(f"📂 Reading Excel file: {EXCEL_FILE}")
+    print(f"Reading Excel file: {EXCEL_FILE}")
     
     try:
         df = pd.read_excel(EXCEL_FILE, sheet_name=SHEET_NAME)
-        print(f"✓ Loaded {len(df)} rows from Excel\n")
+        print(f"Loaded {len(df)} rows from Excel\n")
     except FileNotFoundError:
-        print(f"❌ Error: File not found: {EXCEL_FILE}")
+        print(f"Error: File not found: {EXCEL_FILE}")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Error reading Excel file: {str(e)}")
+        print(f"Error reading Excel file: {str(e)}")
         sys.exit(1)
 
     
-    print("📋 Available columns in Excel:")
+    print("Available columns in Excel:")
     for col in df.columns:
         print(f"   - {col}")
     print()
@@ -63,7 +63,7 @@ def import_companies():
 
                 company_name = safe_str(row.get('Company Name', ''))
                 if not company_name:
-                    print(f"⊘ Row {idx + 2}: Skipped (no company name)")
+                    print(f"Row {idx + 2}: Skipped (no company name)")
                     skipped_count += 1
                     continue
 
@@ -140,19 +140,19 @@ def import_companies():
                 )
 
                 if created:
-                    print(f"✓ Row {idx + 2}: Created '{company_name}' | Role: {role_name} | Type: {type_name}")
+                    print(f"Row {idx + 2}: Created '{company_name}' | Role: {role_name} | Type: {type_name}")
                     created_count += 1
                 else:
-                    print(f"⟳ Row {idx + 2}: Updated '{company_name}'")
+                    print(f"Row {idx + 2}: Updated '{company_name}'")
                     updated_count += 1
 
             except Exception as e:
                 error_count += 1
-                print(f"✗ Row {idx + 2}: Error: {str(e)}")
+                print(f"Row {idx + 2}: Error: {str(e)}")
 
     
     print("\n" + "=" * 70)
-    print("✓ IMPORT COMPLETE!")
+    print("IMPORT COMPLETE!")
     print(f"  Created:  {created_count}")
     print(f"  Updated:  {updated_count}")
     print(f"  Skipped:  {skipped_count}")
@@ -164,20 +164,20 @@ def import_companies():
 def import_contacts(sheet_name=0):
     """Import key contacts from separate Excel file"""
     
-    print(f"\n📂 Reading contacts from file: {CONTACTS_FILE}")
+    print(f"\nReading contacts from file: {CONTACTS_FILE}")
     
     try:
         df = pd.read_excel(CONTACTS_FILE, sheet_name=sheet_name)
-        print(f"✓ Loaded {len(df)} contact rows from Excel\n")
+        print(f"Loaded {len(df)} contact rows from Excel\n")
     except FileNotFoundError:
-        print(f"❌ Error: File not found: {CONTACTS_FILE}")
+        print(f"Error: File not found: {CONTACTS_FILE}")
         return
     except Exception as e:
-        print(f"⚠️  Error reading contacts file: {str(e)}")
+        print(f"Error reading contacts file: {str(e)}")
         return
 
     
-    print("📋 Available columns in Contacts sheet:")
+    print("Available columns in Contacts sheet:")
     for col in df.columns:
         print(f"   - {col}")
     print()
@@ -199,7 +199,7 @@ def import_contacts(sheet_name=0):
                 contact_name = safe_str(row.get('Name', ''))
                 
                 if not company_name or not contact_name:
-                    print(f"⊘ Row {idx + 2}: Skipped (missing company or name)")
+                    print(f"Row {idx + 2}: Skipped (missing company or name)")
                     skipped_count += 1
                     continue
 
@@ -207,7 +207,7 @@ def import_contacts(sheet_name=0):
                 try:
                     company = Company.objects.get(name__iexact=company_name)
                 except Company.DoesNotExist:
-                    print(f"✗ Row {idx + 2}: Company '{company_name}' not found in database (exact match required)")
+                    print(f"Row {idx + 2}: Company '{company_name}' not found in database (exact match required)")
                     error_count += 1
                     continue
 
@@ -251,18 +251,18 @@ def import_contacts(sheet_name=0):
                 )
 
                 if created:
-                    print(f"✓ Row {idx + 2}: Created contact '{contact_name}' for '{company_name}'")
+                    print(f"Row {idx + 2}: Created contact '{contact_name}' for '{company_name}'")
                     created_count += 1
                 else:
-                    print(f"⟳ Row {idx + 2}: Updated contact '{contact_name}'")
+                    print(f"Row {idx + 2}: Updated contact '{contact_name}'")
 
             except Exception as e:
                 error_count += 1
-                print(f"✗ Row {idx + 2}: Error: {str(e)}")
+                print(f"Row {idx + 2}: Error: {str(e)}")
 
     
     print("\n" + "=" * 70)
-    print("✓ CONTACTS IMPORT COMPLETE!")
+    print("CONTACTS IMPORT COMPLETE!")
     print(f"  Created:  {created_count}")
     print(f"  Skipped:  {skipped_count}")
     if error_count > 0:

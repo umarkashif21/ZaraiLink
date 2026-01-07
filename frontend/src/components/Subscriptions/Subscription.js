@@ -90,7 +90,7 @@ const Subscription = () => {
       if (response.ok && data.status === 'success') {
         setRedeemMessage({
           type: 'success',
-          text: `✓ ${data.tokens_added} tokens added! New balance: ${data.new_balance}`
+          text: `${data.tokens_added} tokens added! New balance: ${data.new_balance}`
         });
         await refreshUser(); 
         
@@ -144,7 +144,7 @@ const Subscription = () => {
       <div className="header">
         <h1>Subscription Plans</h1>
         <div className="token-badge">
-          <span className="token-icon">💎</span>
+          {/* <span className="token-icon">💎</span> */}
           <span className="token-count">{tokenBalance}</span>
           <span className="token-label">tokens</span>
         </div>
@@ -193,7 +193,7 @@ const Subscription = () => {
               <ul className="features-list">
                 {Object.entries(plan.features).map(([key, value]) => (
                   <li key={key}>
-                    ✓ {typeof value === 'boolean' && value ? key.replace(/_/g, ' ') : value}
+                    {/* ✓ */} {typeof value === 'boolean' && value ? key.replace(/_/g, ' ') : value}
                   </li>
                 ))}
               </ul>

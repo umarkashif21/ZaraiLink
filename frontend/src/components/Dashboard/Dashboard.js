@@ -16,7 +16,7 @@ const Dashboard = () => {
       <div className="dashboard-container">
         {}
         <div className="hero-section">
-          <h1>Welcome back, {user?.name || user?.email?.split('@')[0]}! 👋</h1>
+          <h1>Welcome back, {user?.name || user?.email?.split('@')[0]}!</h1>
           <p className="hero-subtitle">
             Your gateway to Pakistan's agricultural trade intelligence
           </p>
@@ -25,7 +25,7 @@ const Dashboard = () => {
         {/* Stats Cards */}
         <div className="stats-grid">
           <div className="stat-card token-card">
-            <div className="stat-icon">💎</div>
+            {/* <div className="stat-icon">💎</div> */}
             <div className="stat-content">
               <h3>{tokenBalance || 0}</h3>
               <p>Available Tokens</p>
@@ -39,7 +39,7 @@ const Dashboard = () => {
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon">🏭</div>
+            {/* <div className="stat-icon">🏭</div> */}
             <div className="stat-content">
               <h3>Discover</h3>
               <p>Verified Suppliers</p>
@@ -53,7 +53,7 @@ const Dashboard = () => {
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon">🤝</div>
+            {/* <div className="stat-icon">🤝</div> */}
             <div className="stat-content">
               <h3>Connect</h3>
               <p>AI Partner Match</p>
@@ -75,7 +75,7 @@ const Dashboard = () => {
               className="action-card"
               onClick={() => navigate('/trade-directory/find-suppliers')}
             >
-              <div className="action-icon supplier">🏭</div>
+              {/* <div className="action-icon supplier">🏭</div> */}
               <h3>Find Suppliers</h3>
               <p>Search verified agricultural suppliers across Pakistan</p>
               <span className="action-arrow">→</span>
@@ -85,7 +85,7 @@ const Dashboard = () => {
               className="action-card"
               onClick={() => navigate('/trade-directory/find-buyers')}
             >
-              <div className="action-icon buyer">🛒</div>
+              {/* <div className="action-icon buyer">🛒</div> */}
               <h3>Find Buyers</h3>
               <p>Connect with verified buyers and distributors for your produce.</p>
               <span className="action-arrow">→</span>
@@ -95,7 +95,7 @@ const Dashboard = () => {
               className="action-card"
               onClick={() => navigate('/trade-intelligence/ledger')}
             >
-              <div className="action-icon intelligence">📊</div>
+              {/* <div className="action-icon intelligence">📊</div> */}
               <h3>Trade Intelligence</h3>
               <p>Access comprehensive trade data and company analytics</p>
               <span className="action-arrow">→</span>
@@ -105,7 +105,7 @@ const Dashboard = () => {
               className="action-card"
               onClick={() => navigate('/subscription')}
             >
-              <div className="action-icon subscription">💳</div>
+              {/* <div className="action-icon subscription">💳</div> */}
               <h3>Manage Subscription</h3>
               <p>View plans and redeem codes for more tokens</p>
               <span className="action-arrow">→</span>
@@ -115,7 +115,7 @@ const Dashboard = () => {
               className="action-card"
               onClick={() => navigate('/trade-intelligence/link-prediction')}
             >
-              <div className="action-icon" style={{background: 'linear-gradient(135deg, #8b5cf6, #6366f1)'}}>🔮</div>
+              {/* <div className="action-icon" style={{background: 'linear-gradient(135deg, #8b5cf6, #6366f1)'}}>🔮</div> */}
               <h3>AI Partner Prediction</h3>
               <p>Discover potential trading partners using machine learning</p>
               <span className="action-arrow">→</span>

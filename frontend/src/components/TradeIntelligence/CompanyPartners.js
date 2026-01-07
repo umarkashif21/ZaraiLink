@@ -133,7 +133,7 @@ const CompanyPartners = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h1>{companyName}</h1>
-              <p>📍 Trade Intelligence Profile</p>
+              <p>Trade Intelligence Profile</p>
             </div>
             {topPartners && topPartners.length > 0 && (
               <ExportButton
@@ -290,7 +290,7 @@ const CompanyPartners = () => {
 
               {}
               <div style={{ marginTop: '2rem' }}>
-                <h3>🔮 AI-Predicted Potential Sellers</h3>
+                <h3>AI-Predicted Potential Sellers</h3>
                 <p style={{ color: '#718096', fontSize: '0.9rem', marginTop: '0.5rem' }}>Based on graph neural network analysis of trade patterns</p>
                 {potentialSellers.length > 0 ? (
                   <div className="partners-grid" style={{ marginTop: '1rem' }}>
@@ -333,7 +333,7 @@ const CompanyPartners = () => {
 
               {}
               <div style={{ marginTop: '2rem' }}>
-                <h3>🔮 AI-Predicted Potential Buyers</h3>
+                <h3>AI-Predicted Potential Buyers</h3>
                 <p style={{ color: '#718096', fontSize: '0.9rem', marginTop: '0.5rem' }}>Based on graph neural network analysis of trade patterns</p>
                 {potentialBuyers.length > 0 ? (
                   <div className="partners-grid" style={{ marginTop: '1rem' }}>

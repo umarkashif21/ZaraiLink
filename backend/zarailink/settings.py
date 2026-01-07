@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'trade_data',
     'market_intel',
     'trade_ledger',
+    'trade_lens',
 ]
 
 MIDDLEWARE = [

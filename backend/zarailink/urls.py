@@ -30,5 +30,6 @@ urlpatterns = [
     path('api/market-intel/', include('market_intel.urls')), 
     path('api/', include('companies.urls')),  
     path('api/', include('trade_ledger.urls')),  
+    path('api/trade-lens/', include('trade_lens.urls')),
     path("ckeditor5/", include('django_ckeditor_5.urls')),
 ]

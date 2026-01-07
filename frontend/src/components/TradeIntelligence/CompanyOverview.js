@@ -95,7 +95,7 @@ const CompanyOverview = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h1>{companyName}</h1>
-              <p>📍 Trade Intelligence Profile</p>
+              <p>Trade Intelligence Profile</p>
               <div className="company-tags">
                 {comp.reputation_tags && comp.reputation_tags.map((tag, idx) => (
                   <span key={idx} className="company-tag">{tag}</span>
@@ -251,7 +251,7 @@ const CompanyOverview = () => {
 
           {}
           <div style={{ marginTop: '2rem' }}>
-            <h3>🤖 Similar Companies (AI Recommended)</h3>
+            <h3>Similar Companies (AI Recommended)</h3>
             {comp.similar_companies && comp.similar_companies.length > 0 ? (
               <div className="partners-grid" style={{ marginTop: '1rem' }}>
                 {comp.similar_companies.map((sc, idx) => (

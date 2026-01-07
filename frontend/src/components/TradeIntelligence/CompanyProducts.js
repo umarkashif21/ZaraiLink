@@ -94,7 +94,7 @@ const CompanyProducts = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h1>{companyName}</h1>
-              <p>📍 Trade Intelligence Profile</p>
+              <p>Trade Intelligence Profile</p>
             </div>
             {prods?.product_performance && prods.product_performance.length > 0 && (
               <ExportButton

@@ -34,7 +34,7 @@ const Navbar = () => {
       <div className="navbar-container">
         {}
         <Link to="/dashboard" className="navbar-logo">
-          <span className="logo-icon">🌾</span>
+          {/* <span className="logo-icon">🌾</span> */}
           <span className="logo-text">ZaraiLink</span>
         </Link>
 
@@ -131,7 +131,7 @@ const Navbar = () => {
 
           {}
           <div className="token-display">
-            <span className="token-icon">💎</span>
+            {/* <span className="token-icon">💎</span> */}
             <span className="token-count">{tokenBalance || 0}</span>
           </div>
 
@@ -163,7 +163,7 @@ const Navbar = () => {
                   </div>
                   <hr />
                   <button onClick={handleLogout} className="logout-button">
-                    <span>🚪</span> Sign Out
+                    {/* <span>🚪</span> */} Sign Out
                   </button>
                 </motion.div>
               )}

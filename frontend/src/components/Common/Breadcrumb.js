@@ -66,7 +66,7 @@ const Breadcrumb = ({ customItems, className = '' }) => {
       <ol className="breadcrumb-list">
         <li className="breadcrumb-item">
           <Link to="/dashboard" className="breadcrumb-link">
-            <span className="breadcrumb-icon">🏠</span>
+            {/* <span className="breadcrumb-icon">🏠</span> */}
             <span className="breadcrumb-home-text">Home</span>
           </Link>
         </li>
