@@ -9,27 +9,27 @@ const VerificationBadge = ({
 }) => {
   const badges = {
     verified: {
-      icon: '✓',
+      icon: '',
       label: 'Verified',
       className: 'verified',
     },
     premium: {
-      icon: '★',
+      icon: '',
       label: 'Premium Partner',
       className: 'premium',
     },
     top_trader: {
-      icon: '🏆',
+      icon: '',
       label: 'Top Trader',
       className: 'top-trader',
     },
     pending: {
-      icon: '◐',
+      icon: '',
       label: 'Pending',
       className: 'pending',
     },
     unverified: {
-      icon: '○',
+      icon: '',
       label: 'Unverified',
       className: 'unverified',
     },

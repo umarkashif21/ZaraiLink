@@ -64,30 +64,30 @@ const ShareButton = ({
         onClick={() => navigator.share ? handleNativeShare() : setIsOpen(!isOpen)}
         aria-label="Share"
       >
-        <span className="share-icon">🔗</span>
+        {/* <span className="share-icon">🔗</span> */}
         <span>Share</span>
       </button>
       
       {isOpen && !navigator.share && (
         <div className="share-dropdown">
           <button className="share-option" onClick={handleCopyLink}>
-            <span>{copied ? '✓' : '📋'}</span>
+            <span>{copied ? 'Copied' : 'Copy'}</span>
             <span>{copied ? 'Copied!' : 'Copy Link'}</span>
           </button>
           <button className="share-option" onClick={() => handleShare('whatsapp')}>
-            <span>💬</span>
+            {/* <span>💬</span> */}
             <span>WhatsApp</span>
           </button>
           <button className="share-option" onClick={() => handleShare('linkedin')}>
-            <span>💼</span>
+            {/* <span>💼</span> */}
             <span>LinkedIn</span>
           </button>
           <button className="share-option" onClick={() => handleShare('twitter')}>
-            <span>🐦</span>
+            {/* <span>🐦</span> */}
             <span>Twitter</span>
           </button>
           <button className="share-option" onClick={() => handleShare('email')}>
-            <span>📧</span>
+            {/* <span>📧</span> */}
             <span>Email</span>
           </button>
         </div>

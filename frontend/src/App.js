@@ -23,6 +23,11 @@ import Watchlist from "./components/Watchlist/Watchlist";
 const TradeLedger = React.lazy(() => import("./components/TradeIntelligence/TradeLedger"));
 const TradePulse = React.lazy(() => import("./components/TradeIntelligence/TradePulse"));
 const TradeLens = React.lazy(() => import("./components/TradeIntelligence/TradeLens"));
+const TradeLensOverview = React.lazy(() => import("./components/TradeIntelligence/TradeLensOverview"));
+const TradeLensSummary = React.lazy(() => import("./components/TradeIntelligence/TradeLensSummary"));
+const TradeLensComparison = React.lazy(() => import("./components/TradeIntelligence/TradeLensComparison"));
+const TradeLensDetails = React.lazy(() => import("./components/TradeIntelligence/TradeLensDetails"));
+const TradeLensGlobal = React.lazy(() => import("./components/TradeIntelligence/TradeLensGlobal"));
 const LinkPrediction = React.lazy(() => import("./components/TradeIntelligence/LinkPrediction"));
 const CompanyOverview = React.lazy(() => import("./components/TradeIntelligence/CompanyOverview"));
 const CompanyProducts = React.lazy(() => import("./components/TradeIntelligence/CompanyProducts"));
@@ -181,6 +186,46 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <TradeLens />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/lens/:productId/overview"
+                  element={
+                    <ProtectedRoute>
+                      <TradeLensOverview />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/lens/:productId/summary"
+                  element={
+                    <ProtectedRoute>
+                      <TradeLensSummary />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/lens/:productId/comparison"
+                  element={
+                    <ProtectedRoute>
+                      <TradeLensComparison />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/lens/:productId/details"
+                  element={
+                    <ProtectedRoute>
+                      <TradeLensDetails />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trade-intelligence/lens/:productId/global"
+                  element={
+                    <ProtectedRoute>
+                      <TradeLensGlobal />
                     </ProtectedRoute>
                   }
                 />

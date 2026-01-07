@@ -237,7 +237,7 @@ const TradeLedger = () => {
         
         <div className="trade-ledger-header">
           <div>
-            <h1>📊 Trade Ledger</h1>
+            <h1>Trade Ledger</h1>
             <p>Comprehensive trade intelligence and company analytics</p>
           </div>
           <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -397,7 +397,7 @@ const TradeLedger = () => {
                           <strong>{c.company.name}</strong>
                           {c.company.province && (
                             <span className="company-location-sub">
-                              📍 {c.company.province}
+                              {c.company.province}
                             </span>
                           )}
                         </div>

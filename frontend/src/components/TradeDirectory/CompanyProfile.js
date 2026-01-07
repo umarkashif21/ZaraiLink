@@ -176,7 +176,7 @@ const CompanyProfile = () => {
   if (error || !company) {
     return (
       <div className="error-container">
-        <h2>⚠️ {error || 'Company Not Found'}</h2>
+        <h2>{error || 'Company Not Found'}</h2>
         <button onClick={() => navigate('/trade-directory/find-suppliers')} className="btn-primary">
           Back to Directory
         </button>
@@ -196,13 +196,13 @@ const CompanyProfile = () => {
             {company.legal_name && company.legal_name !== company.name && (
               <p className="legal-name">{company.legal_name}</p>
             )}
-            <p className="location">
-              📍 {company.district && `${company.district}, `}{company.province}, {company.country}
-            </p>
+              <p className="location">
+                {company.district && `${company.district}, `}{company.province}, {company.country}
+              </p>
           </div>
           <div className="header-badges">
             <span className={`status-badge ${company.verification_status}`}>
-              {company.verification_status === 'verified' ? '✓ Verified' : 'Pending'}
+              {company.verification_status === 'verified' ? 'Verified' : 'Pending'}
             </span>
             {company.market_sentiment && (
                <span className="status-badge" style={{ 
@@ -210,7 +210,7 @@ const CompanyProfile = () => {
                    color: company.market_sentiment === 'Positive' ? '#137333' : company.market_sentiment === 'Negative' ? '#c5221f' : '#202124',
                    marginLeft: '0.5rem'
                }}>
-                 {company.market_sentiment === 'Positive' ? '📈' : company.market_sentiment === 'Negative' ? '📉' : '😐'} {company.market_sentiment} Sentiment
+                  {company.market_sentiment} Sentiment
                </span>
             )}
           </div>
@@ -300,8 +300,8 @@ const CompanyProfile = () => {
             {company.contact_email && (
               <div className="info-section">
                 <h3>General Contact</h3>
-                <p>📧 {company.contact_email}</p>
-                {company.phone && <p>📞 {company.phone}</p>}
+                <p>Email: {company.contact_email}</p>
+                {company.phone && <p>Phone: {company.phone}</p>}
               </div>
             )}
           </div>
@@ -348,28 +348,28 @@ const CompanyProfile = () => {
 
                     <div className="contact-details">
                       <div className="detail-row">
-                        <span className="detail-label">📞 Phone:</span>
+                        <span className="detail-label">Phone:</span>
                         {contact.is_unlocked || contact.is_public ? (
                           <span className="detail-value unlocked">{contact.phone}</span>
                         ) : (
-                          <span className="detail-value locked">🔒 Locked</span>
+                          <span className="detail-value locked">Locked</span>
                         )}
                       </div>
                       <div className="detail-row">
-                        <span className="detail-label">📧 Email:</span>
+                        <span className="detail-label">Email:</span>
                         {contact.is_unlocked || contact.is_public ? (
                           <span className="detail-value unlocked">{contact.email}</span>
                         ) : (
-                          <span className="detail-value locked">🔒 Locked</span>
+                          <span className="detail-value locked">Locked</span>
                         )}
                       </div>
                       {contact.whatsapp && (
                         <div className="detail-row">
-                          <span className="detail-label">💬 WhatsApp:</span>
+                          <span className="detail-label">WhatsApp:</span>
                           {contact.is_unlocked || contact.is_public ? (
                             <span className="detail-value unlocked">{contact.whatsapp}</span>
                           ) : (
-                            <span className="detail-value locked">🔒 Locked</span>
+                            <span className="detail-value locked">Locked</span>
                           )}
                         </div>
                       )}
@@ -385,7 +385,7 @@ const CompanyProfile = () => {
                       </button>
                     )}
                     {contact.is_unlocked && !contact.is_public && (
-                      <div className="unlocked-badge">✓ Unlocked</div>
+                      <div className="unlocked-badge">Unlocked</div>
                     )}
                   </div>
                 ))}

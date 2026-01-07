@@ -12,7 +12,7 @@ const useOnboardingTour = () => {
     {
       element: '.navbar-logo',
       popover: {
-        title: '🌾 Welcome to ZaraiLink!',
+        title: 'Welcome to ZaraiLink!',
         description: 'Your comprehensive agricultural trade intelligence platform. Let\'s take a quick tour!',
         side: 'bottom',
       }
@@ -20,7 +20,7 @@ const useOnboardingTour = () => {
     {
       element: '.nav-dropdown:first-of-type',
       popover: {
-        title: '📁 Trade Directory',
+        title: 'Trade Directory',
         description: 'Find verified suppliers and buyers in the agricultural sector. Search by product, location, and more.',
         side: 'bottom',
       }
@@ -28,7 +28,7 @@ const useOnboardingTour = () => {
     {
       element: '.nav-dropdown:last-of-type',
       popover: {
-        title: '📊 Trade Intelligence',
+        title: 'Trade Intelligence',
         description: 'Access market analytics, trade ledger data, and AI-powered predictions.',
         side: 'bottom',
       }
@@ -36,7 +36,7 @@ const useOnboardingTour = () => {
     {
       element: '.token-display',
       popover: {
-        title: '💎 Your Tokens',
+        title: 'Your Tokens',
         description: 'Use tokens to unlock premium contact information. Purchase more in Subscription.',
         side: 'bottom',
       }
@@ -44,7 +44,7 @@ const useOnboardingTour = () => {
     {
       element: '.theme-toggle',
       popover: {
-        title: '🌙 Dark Mode',
+        title: 'Dark Mode',
         description: 'Toggle between light and dark themes for comfortable viewing.',
         side: 'bottom',
       }
@@ -52,7 +52,7 @@ const useOnboardingTour = () => {
     {
       element: '.user-menu',
       popover: {
-        title: '👤 Your Account',
+        title: 'Your Account',
         description: 'Access your profile settings and sign out from here.',
         side: 'left',
       }

@@ -81,7 +81,7 @@ const CompanyTrends = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h1>{companyName}</h1>
-              <p>📍 Trade Intelligence Profile</p>
+              <p>Trade Intelligence Profile</p>
             </div>
             {volumePriceTrend && volumePriceTrend.length > 0 && (
               <ExportButton

@@ -112,7 +112,7 @@ const Watchlist = () => {
                   }
                 }}
               >
-                🗑️ Clear All
+                Clear All
               </button>
             </div>
           )}
@@ -217,13 +217,13 @@ const Watchlist = () => {
             <h3>Quick Actions</h3>
             <div className="action-buttons">
               <Link to="/trade-directory/find-suppliers" className="action-btn">
-                🔍 Find More Suppliers
+                Find More Suppliers
               </Link>
               <Link to="/trade-directory/find-buyers" className="action-btn">
-                🛒 Find More Buyers
+                Find More Buyers
               </Link>
               <Link to="/trade-intelligence/ledger" className="action-btn">
-                📊 Trade Ledger
+                Trade Ledger
               </Link>
             </div>
           </div>
