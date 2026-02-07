@@ -1,0 +1,7390 @@
+{
+  "high_confidence": [
+    {
+      "name": "Arshine Food Additives Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9923499226570129,
+      "is_labeled": false
+    },
+    {
+      "name": "Novi Srl",
+      "predicted_class": 2,
+      "confidence": 0.9932789206504822,
+      "is_labeled": false
+    },
+    {
+      "name": "Al Zain International Traders",
+      "predicted_class": 3,
+      "confidence": 0.9987726807594299,
+      "is_labeled": false
+    },
+    {
+      "name": "Fynk Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9787245392799377,
+      "is_labeled": false
+    },
+    {
+      "name": "Ahmed Chemical Co",
+      "predicted_class": 2,
+      "confidence": 0.9483175277709961,
+      "is_labeled": false
+    },
+    {
+      "name": "Embassy Of United States Of America",
+      "predicted_class": 3,
+      "confidence": 0.9987717270851135,
+      "is_labeled": false
+    },
+    {
+      "name": "Aries Pharmaceutical Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9785996675491333,
+      "is_labeled": false
+    },
+    {
+      "name": "Archard Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.924168586730957,
+      "is_labeled": false
+    },
+    {
+      "name": "Novargo Inc",
+      "predicted_class": 3,
+      "confidence": 0.9927948117256165,
+      "is_labeled": false
+    },
+    {
+      "name": "Mcc Resources Development Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9459443688392639,
+      "is_labeled": false
+    },
+    {
+      "name": "Pfizer Pakistan Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9603511691093445,
+      "is_labeled": false
+    },
+    {
+      "name": "Karam Traders",
+      "predicted_class": 3,
+      "confidence": 0.9983306527137756,
+      "is_labeled": false
+    },
+    {
+      "name": "Shanghai Huamao Pharmaceutical Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9378064274787903,
+      "is_labeled": false
+    },
+    {
+      "name": "Al-Burque Enterprise",
+      "predicted_class": 2,
+      "confidence": 0.9983543157577515,
+      "is_labeled": false
+    },
+    {
+      "name": "Irca Spa",
+      "predicted_class": 3,
+      "confidence": 0.9920030832290649,
+      "is_labeled": false
+    },
+    {
+      "name": "Sh Muhammad Rashid And Brothers",
+      "predicted_class": 2,
+      "confidence": 0.9732180237770081,
+      "is_labeled": false
+    },
+    {
+      "name": "Tayas Gida San Ve Tic As",
+      "predicted_class": 3,
+      "confidence": 0.9345247149467468,
+      "is_labeled": false
+    },
+    {
+      "name": "Bosmos International Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927878975868225,
+      "is_labeled": false
+    },
+    {
+      "name": "Diamond Fabrics Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9983318448066711,
+      "is_labeled": false
+    },
+    {
+      "name": "Quaper Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9779833555221558,
+      "is_labeled": false
+    },
+    {
+      "name": "Greyhound Chromatography and Allied Chemicals Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9928015470504761,
+      "is_labeled": false
+    },
+    {
+      "name": "Eterna Pharma Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9937717318534851,
+      "is_labeled": false
+    },
+    {
+      "name": "Seawall Enterprise Ltd",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "Agp Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9300588369369507,
+      "is_labeled": false
+    },
+    {
+      "name": "Flaxen Trading Co",
+      "predicted_class": 2,
+      "confidence": 0.997860848903656,
+      "is_labeled": false
+    },
+    {
+      "name": "The Coca-Cola Export Corporation Pakistan Branch",
+      "predicted_class": 0,
+      "confidence": 0.9946795105934143,
+      "is_labeled": true
+    },
+    {
+      "name": "Univet Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9969244599342346,
+      "is_labeled": false
+    },
+    {
+      "name": "Mission Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9995941519737244,
+      "is_labeled": false
+    },
+    {
+      "name": "Boba Bubble Beverages Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987695813179016,
+      "is_labeled": false
+    },
+    {
+      "name": "Shanghai Icv Chemical Technology Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9925528168678284,
+      "is_labeled": false
+    },
+    {
+      "name": "M Yasin Ibico",
+      "predicted_class": 3,
+      "confidence": 0.9813087582588196,
+      "is_labeled": false
+    },
+    {
+      "name": "Sa Corporation",
+      "predicted_class": 3,
+      "confidence": 0.998769223690033,
+      "is_labeled": false
+    },
+    {
+      "name": "Lactalis Ingredients",
+      "predicted_class": 0,
+      "confidence": 0.9999967813491821,
+      "is_labeled": true
+    },
+    {
+      "name": "Suedzucker Ag",
+      "predicted_class": 3,
+      "confidence": 0.992233157157898,
+      "is_labeled": false
+    },
+    {
+      "name": "Fenchem Supply Chain Ltd",
+      "predicted_class": 3,
+      "confidence": 0.992800235748291,
+      "is_labeled": false
+    },
+    {
+      "name": "Meggle Gmbh & Co Kg",
+      "predicted_class": 0,
+      "confidence": 0.9980407357215881,
+      "is_labeled": false
+    },
+    {
+      "name": "Hebei Xiaoxixi Food Science And Technology",
+      "predicted_class": 3,
+      "confidence": 0.992768406867981,
+      "is_labeled": false
+    },
+    {
+      "name": "Ccnsport Hong Kong Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9928048253059387,
+      "is_labeled": false
+    },
+    {
+      "name": "R.S International",
+      "predicted_class": 2,
+      "confidence": 0.9912436008453369,
+      "is_labeled": false
+    },
+    {
+      "name": "D Orsogna Dolciaria Srl",
+      "predicted_class": 3,
+      "confidence": 0.9927383065223694,
+      "is_labeled": true
+    },
+    {
+      "name": "Sultan Chemicals",
+      "predicted_class": 2,
+      "confidence": 0.9895554780960083,
+      "is_labeled": false
+    },
+    {
+      "name": "Ns Trade International",
+      "predicted_class": 3,
+      "confidence": 0.9987431168556213,
+      "is_labeled": false
+    },
+    {
+      "name": "Aykilic Gross Dis Ticaret Ltd",
+      "predicted_class": 3,
+      "confidence": 0.990881085395813,
+      "is_labeled": false
+    },
+    {
+      "name": "Haris Fayyaz",
+      "predicted_class": 3,
+      "confidence": 0.9987726807594299,
+      "is_labeled": false
+    },
+    {
+      "name": "Rotex Pharma Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9982923865318298,
+      "is_labeled": false
+    },
+    {
+      "name": "Soar Biotech Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927958846092224,
+      "is_labeled": false
+    },
+    {
+      "name": "Asfa Karim",
+      "predicted_class": 3,
+      "confidence": 0.9928051829338074,
+      "is_labeled": false
+    },
+    {
+      "name": "Maria Violeta Jardines Rubieles",
+      "predicted_class": 3,
+      "confidence": 0.9707614779472351,
+      "is_labeled": false
+    },
+    {
+      "name": "Shantou Yangyu Foodstuff Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9733020663261414,
+      "is_labeled": false
+    },
+    {
+      "name": "Selfridges & Co",
+      "predicted_class": 3,
+      "confidence": 0.9928045868873596,
+      "is_labeled": false
+    },
+    {
+      "name": "Zain Enterprise Oilfield Supply Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987711310386658,
+      "is_labeled": false
+    },
+    {
+      "name": "Continental Worldwide Trading Co",
+      "predicted_class": 2,
+      "confidence": 0.9280557632446289,
+      "is_labeled": false
+    },
+    {
+      "name": "Royal Chemicals",
+      "predicted_class": 2,
+      "confidence": 0.9873019456863403,
+      "is_labeled": false
+    },
+    {
+      "name": "Shanggao Richwant Trading Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9925976991653442,
+      "is_labeled": false
+    },
+    {
+      "name": "Embassy Of Germany",
+      "predicted_class": 3,
+      "confidence": 0.9987714886665344,
+      "is_labeled": false
+    },
+    {
+      "name": "Ccl Pharmaceuticals Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9065956473350525,
+      "is_labeled": false
+    },
+    {
+      "name": "Mediflow Pharmaceutical Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9577019214630127,
+      "is_labeled": false
+    },
+    {
+      "name": "Hongye Chemical Group Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9924691319465637,
+      "is_labeled": true
+    },
+    {
+      "name": "Tabros Pharma Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9942922592163086,
+      "is_labeled": false
+    },
+    {
+      "name": "Al Khaleej Sugar Co Llc",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "Mr Khurram",
+      "predicted_class": 3,
+      "confidence": 0.9928044676780701,
+      "is_labeled": false
+    },
+    {
+      "name": "Pak Suzuki Motor Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9980269074440002,
+      "is_labeled": false
+    },
+    {
+      "name": "Agris Ninh Hoa Import Export",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "Dohler Pakistan Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.969515860080719,
+      "is_labeled": false
+    },
+    {
+      "name": "Mi International",
+      "predicted_class": 3,
+      "confidence": 0.9987725615501404,
+      "is_labeled": false
+    },
+    {
+      "name": "Guangdong Youzhiweipin Biotechnology",
+      "predicted_class": 3,
+      "confidence": 0.9608891010284424,
+      "is_labeled": false
+    },
+    {
+      "name": "Faas Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9785657525062561,
+      "is_labeled": false
+    },
+    {
+      "name": "Fakhar Abbas Shah",
+      "predicted_class": 3,
+      "confidence": 0.9987727999687195,
+      "is_labeled": false
+    },
+    {
+      "name": "Pacific Pharmaceuticals Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9875619411468506,
+      "is_labeled": false
+    },
+    {
+      "name": "Pt Mayora Indah Tbk",
+      "predicted_class": 0,
+      "confidence": 0.9894934892654419,
+      "is_labeled": false
+    },
+    {
+      "name": "Chromachemie Laboratory Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9880325794219971,
+      "is_labeled": false
+    },
+    {
+      "name": "Global Traders",
+      "predicted_class": 2,
+      "confidence": 0.9982753992080688,
+      "is_labeled": false
+    },
+    {
+      "name": "Iman Tariq Cheema",
+      "predicted_class": 3,
+      "confidence": 0.9987727999687195,
+      "is_labeled": false
+    },
+    {
+      "name": "Leads Pharma Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9087529182434082,
+      "is_labeled": false
+    },
+    {
+      "name": "Usman Brothers Pvt Ltd",
+      "predicted_class": 0,
+      "confidence": 0.938719630241394,
+      "is_labeled": false
+    },
+    {
+      "name": "Acme Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9862543344497681,
+      "is_labeled": false
+    },
+    {
+      "name": "Hubei Sweet Element Food Technology",
+      "predicted_class": 3,
+      "confidence": 0.9925969839096069,
+      "is_labeled": false
+    },
+    {
+      "name": "Shenzhen Xingyan International",
+      "predicted_class": 3,
+      "confidence": 0.9928050637245178,
+      "is_labeled": false
+    },
+    {
+      "name": "Ies Global Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9895281195640564,
+      "is_labeled": true
+    },
+    {
+      "name": "Daks Trading Fz Llc",
+      "predicted_class": 3,
+      "confidence": 0.9928050637245178,
+      "is_labeled": false
+    },
+    {
+      "name": "Selmore Pharmaceuticals Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9527576565742493,
+      "is_labeled": true
+    },
+    {
+      "name": "Sethness Roquette Food (Lianyungang) Co Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9751741290092468,
+      "is_labeled": false
+    },
+    {
+      "name": "Takayuki Shirota",
+      "predicted_class": 3,
+      "confidence": 0.9987727999687195,
+      "is_labeled": false
+    },
+    {
+      "name": "Meliana Tonga",
+      "predicted_class": 3,
+      "confidence": 0.9928047060966492,
+      "is_labeled": false
+    },
+    {
+      "name": "Sanofi Aventis Pakistan Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9993752837181091,
+      "is_labeled": false
+    },
+    {
+      "name": "Yijia Consultants Smc Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9765243530273438,
+      "is_labeled": false
+    },
+    {
+      "name": "Divine Food Hub",
+      "predicted_class": 3,
+      "confidence": 0.9986929297447205,
+      "is_labeled": false
+    },
+    {
+      "name": "Stair Way Electronics Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9832984805107117,
+      "is_labeled": false
+    },
+    {
+      "name": "Ruland Chemistry (Nanjing) Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9918825030326843,
+      "is_labeled": false
+    },
+    {
+      "name": "Wuhan Lipharma Chemicals Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927535653114319,
+      "is_labeled": false
+    },
+    {
+      "name": "Sunshine Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9988235831260681,
+      "is_labeled": false
+    },
+    {
+      "name": "K.S.L Export Trading Co Ltd",
+      "predicted_class": 0,
+      "confidence": 0.982674777507782,
+      "is_labeled": false
+    },
+    {
+      "name": "Aziz Impex",
+      "predicted_class": 2,
+      "confidence": 0.989639401435852,
+      "is_labeled": false
+    },
+    {
+      "name": "Embassy Of Jordan",
+      "predicted_class": 3,
+      "confidence": 0.9985017776489258,
+      "is_labeled": false
+    },
+    {
+      "name": "Fk Trader",
+      "predicted_class": 2,
+      "confidence": 0.9852288365364075,
+      "is_labeled": false
+    },
+    {
+      "name": "Premium Chemicals",
+      "predicted_class": 3,
+      "confidence": 0.9987339377403259,
+      "is_labeled": false
+    },
+    {
+      "name": "Msm Prai Berhad",
+      "predicted_class": 0,
+      "confidence": 0.9998779296875,
+      "is_labeled": false
+    },
+    {
+      "name": "Advan Pharmachem Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927443265914917,
+      "is_labeled": false
+    },
+    {
+      "name": "S.S Naseeruddin",
+      "predicted_class": 3,
+      "confidence": 0.9973177313804626,
+      "is_labeled": false
+    },
+    {
+      "name": "Qingdao Doeast Chemical Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927728772163391,
+      "is_labeled": false
+    },
+    {
+      "name": "Kohinoor Industries",
+      "predicted_class": 2,
+      "confidence": 0.9695287346839905,
+      "is_labeled": false
+    },
+    {
+      "name": "Maple Star Food Solutions",
+      "predicted_class": 3,
+      "confidence": 0.998768150806427,
+      "is_labeled": false
+    },
+    {
+      "name": "Docile Alimentos Ltda",
+      "predicted_class": 3,
+      "confidence": 0.9218738079071045,
+      "is_labeled": false
+    },
+    {
+      "name": "Bismillah Trading Co",
+      "predicted_class": 2,
+      "confidence": 0.9070876836776733,
+      "is_labeled": false
+    },
+    {
+      "name": "International Importers",
+      "predicted_class": 2,
+      "confidence": 0.978033185005188,
+      "is_labeled": false
+    },
+    {
+      "name": "M A Kamil Farma Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9074845314025879,
+      "is_labeled": false
+    },
+    {
+      "name": "Rano Fashion Llc",
+      "predicted_class": 3,
+      "confidence": 0.992804229259491,
+      "is_labeled": false
+    },
+    {
+      "name": "Dangschat T.O.H Gmbh & Co Kg",
+      "predicted_class": 2,
+      "confidence": 0.9319080710411072,
+      "is_labeled": false
+    },
+    {
+      "name": "Pharmedic Laboratories Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9786658883094788,
+      "is_labeled": false
+    },
+    {
+      "name": "Galaxo Smith Kline Pakistan Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9061768651008606,
+      "is_labeled": true
+    },
+    {
+      "name": "S.S Scientific System",
+      "predicted_class": 3,
+      "confidence": 0.9987726807594299,
+      "is_labeled": false
+    },
+    {
+      "name": "Chuming Pharmaceutical Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9816981554031372,
+      "is_labeled": true
+    },
+    {
+      "name": "Ard Al Buraq General Trading Llc",
+      "predicted_class": 3,
+      "confidence": 0.992694616317749,
+      "is_labeled": false
+    },
+    {
+      "name": "Martin Dow Marker Ltd",
+      "predicted_class": 2,
+      "confidence": 0.999936580657959,
+      "is_labeled": false
+    },
+    {
+      "name": "A.M International",
+      "predicted_class": 2,
+      "confidence": 0.957632303237915,
+      "is_labeled": false
+    },
+    {
+      "name": "D-Haans Pharma Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9916456341743469,
+      "is_labeled": false
+    },
+    {
+      "name": "Ahmad Naveed",
+      "predicted_class": 3,
+      "confidence": 0.9987726807594299,
+      "is_labeled": false
+    },
+    {
+      "name": "Syed Naeem General Trading",
+      "predicted_class": 3,
+      "confidence": 0.9982379674911499,
+      "is_labeled": false
+    },
+    {
+      "name": "Ss Agencies",
+      "predicted_class": 3,
+      "confidence": 0.9987370371818542,
+      "is_labeled": false
+    },
+    {
+      "name": "Javed Chemical Corporation",
+      "predicted_class": 2,
+      "confidence": 0.9970820546150208,
+      "is_labeled": false
+    },
+    {
+      "name": "Asian Food Industries Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9793072938919067,
+      "is_labeled": false
+    },
+    {
+      "name": "International Diplomatic Supplies Inc",
+      "predicted_class": 3,
+      "confidence": 0.9927990436553955,
+      "is_labeled": false
+    },
+    {
+      "name": "Fynk Pharmacuticals Formerly Unison Chem Works",
+      "predicted_class": 2,
+      "confidence": 0.9787584543228149,
+      "is_labeled": false
+    },
+    {
+      "name": "Jiangsu Soho Honry Import & Export Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927563071250916,
+      "is_labeled": false
+    },
+    {
+      "name": "Qinhuangdao Lihua Starch Co Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9995588660240173,
+      "is_labeled": true
+    },
+    {
+      "name": "Shantou Lebei Trading Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9912942051887512,
+      "is_labeled": false
+    },
+    {
+      "name": "Gmp Foods Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9986398816108704,
+      "is_labeled": false
+    },
+    {
+      "name": "Farmasino Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9924537539482117,
+      "is_labeled": false
+    },
+    {
+      "name": "Fusion Fareway Food Products Co Llc",
+      "predicted_class": 3,
+      "confidence": 0.9926140308380127,
+      "is_labeled": false
+    },
+    {
+      "name": "M.R.S Star General Trading Llc",
+      "predicted_class": 3,
+      "confidence": 0.9927234053611755,
+      "is_labeled": false
+    },
+    {
+      "name": "Sethness Products Co",
+      "predicted_class": 3,
+      "confidence": 0.9927816987037659,
+      "is_labeled": true
+    },
+    {
+      "name": "Guangdong Shantai Foodstuff Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9926726222038269,
+      "is_labeled": false
+    },
+    {
+      "name": "Takasago International (Pakistan) Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987727999687195,
+      "is_labeled": false
+    },
+    {
+      "name": "Bluebird Commodities Fzco",
+      "predicted_class": 3,
+      "confidence": 0.9928017854690552,
+      "is_labeled": false
+    },
+    {
+      "name": "A Z Enterprises",
+      "predicted_class": 3,
+      "confidence": 0.9987704157829285,
+      "is_labeled": false
+    },
+    {
+      "name": "Asr Group",
+      "predicted_class": 3,
+      "confidence": 0.9926789999008179,
+      "is_labeled": false
+    },
+    {
+      "name": "Yiwu Umm E Hani Trading Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9869264364242554,
+      "is_labeled": false
+    },
+    {
+      "name": "Zarnam Farhikhtegan Research",
+      "predicted_class": 3,
+      "confidence": 0.9925680160522461,
+      "is_labeled": false
+    },
+    {
+      "name": "Ol Usa Llc",
+      "predicted_class": 3,
+      "confidence": 0.9915977716445923,
+      "is_labeled": false
+    },
+    {
+      "name": "Friesland Campina Nederland Bv",
+      "predicted_class": 3,
+      "confidence": 0.9821600317955017,
+      "is_labeled": false
+    },
+    {
+      "name": "Makkah Traders",
+      "predicted_class": 2,
+      "confidence": 0.9566614031791687,
+      "is_labeled": false
+    },
+    {
+      "name": "Evolution Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.96934974193573,
+      "is_labeled": false
+    },
+    {
+      "name": "Shanzhan International Catering Management (Henan) Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927840232849121,
+      "is_labeled": false
+    },
+    {
+      "name": "Rose Containerline Inc",
+      "predicted_class": 3,
+      "confidence": 0.9919256567955017,
+      "is_labeled": false
+    },
+    {
+      "name": "Karl Geuther Handels-Gmbh & Co Kg",
+      "predicted_class": 3,
+      "confidence": 0.9927980899810791,
+      "is_labeled": false
+    },
+    {
+      "name": "Evliya Sek San Ve Tic Ltd Sti",
+      "predicted_class": 3,
+      "confidence": 0.9926194548606873,
+      "is_labeled": false
+    },
+    {
+      "name": "Hangzhou Telida Biopharmtech Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927803874015808,
+      "is_labeled": false
+    },
+    {
+      "name": "Heal Pharmaceutical Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9895979166030884,
+      "is_labeled": false
+    },
+    {
+      "name": "Zhejiang Chemicals Import And Export Corporation",
+      "predicted_class": 3,
+      "confidence": 0.9924486875534058,
+      "is_labeled": false
+    },
+    {
+      "name": "Anadolu Etap Penkon Gida Ve Icecek",
+      "predicted_class": 3,
+      "confidence": 0.9928008317947388,
+      "is_labeled": false
+    },
+    {
+      "name": "Dpexi Private Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9928050637245178,
+      "is_labeled": false
+    },
+    {
+      "name": "Galaxy Enterprises",
+      "predicted_class": 3,
+      "confidence": 0.9986445307731628,
+      "is_labeled": false
+    },
+    {
+      "name": "Winthrox Laboratories Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9995430707931519,
+      "is_labeled": false
+    },
+    {
+      "name": "Qas International",
+      "predicted_class": 2,
+      "confidence": 0.9965758919715881,
+      "is_labeled": false
+    },
+    {
+      "name": "Getz Pharma Pvt Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9971171617507935,
+      "is_labeled": true
+    },
+    {
+      "name": "Nawal Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9751296043395996,
+      "is_labeled": false
+    },
+    {
+      "name": "International Franchises Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987383484840393,
+      "is_labeled": false
+    },
+    {
+      "name": "Sk & Sons",
+      "predicted_class": 3,
+      "confidence": 0.9420443177223206,
+      "is_labeled": false
+    },
+    {
+      "name": "Adm Besin Ve Tarim As",
+      "predicted_class": 2,
+      "confidence": 0.9907943606376648,
+      "is_labeled": false
+    },
+    {
+      "name": "Best Day International",
+      "predicted_class": 3,
+      "confidence": 0.9978588223457336,
+      "is_labeled": false
+    },
+    {
+      "name": "Fonterra Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9920998215675354,
+      "is_labeled": false
+    },
+    {
+      "name": "Coca Cola Beverages Pakistan Ltd Lhr",
+      "predicted_class": 3,
+      "confidence": 0.9987719655036926,
+      "is_labeled": false
+    },
+    {
+      "name": "Pollen End Gida San Ve Tic",
+      "predicted_class": 3,
+      "confidence": 0.9927542805671692,
+      "is_labeled": false
+    },
+    {
+      "name": "Izfaar Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9992296695709229,
+      "is_labeled": false
+    },
+    {
+      "name": "Elite Chemicals Co",
+      "predicted_class": 1,
+      "confidence": 0.9245403409004211,
+      "is_labeled": true
+    },
+    {
+      "name": "Werrick Pharamaceuticals",
+      "predicted_class": 1,
+      "confidence": 0.9443446397781372,
+      "is_labeled": false
+    },
+    {
+      "name": "Cortex Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9992089867591858,
+      "is_labeled": false
+    },
+    {
+      "name": "Obs Pharma Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9997060894966125,
+      "is_labeled": false
+    },
+    {
+      "name": "Al Taqi Impex",
+      "predicted_class": 3,
+      "confidence": 0.9987607002258301,
+      "is_labeled": false
+    },
+    {
+      "name": "C/O Conseil De L Europe Edqm Int",
+      "predicted_class": 3,
+      "confidence": 0.9928033947944641,
+      "is_labeled": false
+    },
+    {
+      "name": "Supreme Traders",
+      "predicted_class": 2,
+      "confidence": 0.9962369203567505,
+      "is_labeled": false
+    },
+    {
+      "name": "Ups Air Couriers Of America",
+      "predicted_class": 0,
+      "confidence": 0.9999828338623047,
+      "is_labeled": false
+    },
+    {
+      "name": "Pak International",
+      "predicted_class": 1,
+      "confidence": 0.9792246222496033,
+      "is_labeled": true
+    },
+    {
+      "name": "Thanh Thanh Cong \u2013 Bien Hoa",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "Alpavit Gmbh & Co Kg",
+      "predicted_class": 2,
+      "confidence": 0.9922094345092773,
+      "is_labeled": false
+    },
+    {
+      "name": "Owin Industry Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927894473075867,
+      "is_labeled": false
+    },
+    {
+      "name": "Inshal Pharmaceutical Industries",
+      "predicted_class": 2,
+      "confidence": 0.9755772352218628,
+      "is_labeled": false
+    },
+    {
+      "name": "Musaji Adam & Sons",
+      "predicted_class": 1,
+      "confidence": 0.9173204302787781,
+      "is_labeled": false
+    },
+    {
+      "name": "Bridge Initiative Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9984196424484253,
+      "is_labeled": false
+    },
+    {
+      "name": "Giant Ingredients Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9810876250267029,
+      "is_labeled": false
+    },
+    {
+      "name": "Bakers Supplies",
+      "predicted_class": 3,
+      "confidence": 0.9987718462944031,
+      "is_labeled": false
+    },
+    {
+      "name": "Tate & Lyle Slovakia Sro",
+      "predicted_class": 3,
+      "confidence": 0.9923275113105774,
+      "is_labeled": false
+    },
+    {
+      "name": "Central Pak Trading Fz Llc",
+      "predicted_class": 3,
+      "confidence": 0.9928045868873596,
+      "is_labeled": false
+    },
+    {
+      "name": "Hudson Pharma Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9662688374519348,
+      "is_labeled": false
+    },
+    {
+      "name": "Xiamen Yasin Industry & Trade Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.992800235748291,
+      "is_labeled": false
+    },
+    {
+      "name": "Mars International",
+      "predicted_class": 3,
+      "confidence": 0.9987720847129822,
+      "is_labeled": true
+    },
+    {
+      "name": "Searle Pakistan Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9668939113616943,
+      "is_labeled": false
+    },
+    {
+      "name": "Qingdao Fugar Chemical Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9924336671829224,
+      "is_labeled": false
+    },
+    {
+      "name": "Highnoon Laboratories Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9139975309371948,
+      "is_labeled": false
+    },
+    {
+      "name": "Vision For The Kingdom In Pakistan",
+      "predicted_class": 3,
+      "confidence": 0.9987723231315613,
+      "is_labeled": false
+    },
+    {
+      "name": "Solaris Life Sciences Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.998063862323761,
+      "is_labeled": false
+    },
+    {
+      "name": "Hiranis Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.911689281463623,
+      "is_labeled": false
+    },
+    {
+      "name": "Qingdao Hisunny Imp & Exp Co Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9308778643608093,
+      "is_labeled": false
+    },
+    {
+      "name": "Valor Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9314930438995361,
+      "is_labeled": false
+    },
+    {
+      "name": "Dfe Pahrma Gmbh & Co Kg",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "The Searle Co Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9991552829742432,
+      "is_labeled": true
+    },
+    {
+      "name": "M Hanif & Sons",
+      "predicted_class": 2,
+      "confidence": 0.9905017614364624,
+      "is_labeled": false
+    },
+    {
+      "name": "Hassan Nazir International",
+      "predicted_class": 3,
+      "confidence": 0.9973148703575134,
+      "is_labeled": false
+    },
+    {
+      "name": "Mars Way Food Stuff Llc",
+      "predicted_class": 3,
+      "confidence": 0.9928014278411865,
+      "is_labeled": false
+    },
+    {
+      "name": "Mango Fresh",
+      "predicted_class": 3,
+      "confidence": 0.9927998781204224,
+      "is_labeled": false
+    },
+    {
+      "name": "Qasim Import Export Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987706542015076,
+      "is_labeled": false
+    },
+    {
+      "name": "Molekula Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9928007125854492,
+      "is_labeled": false
+    },
+    {
+      "name": "Amazon Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.999760091304779,
+      "is_labeled": false
+    },
+    {
+      "name": "Dulceplus Golosinas Sa",
+      "predicted_class": 2,
+      "confidence": 0.9937404990196228,
+      "is_labeled": false
+    },
+    {
+      "name": "Tiva Gida San Ve Tic As",
+      "predicted_class": 0,
+      "confidence": 0.9602618217468262,
+      "is_labeled": false
+    },
+    {
+      "name": "Farooq Enterprises",
+      "predicted_class": 3,
+      "confidence": 0.9016732573509216,
+      "is_labeled": false
+    },
+    {
+      "name": "Gamco International",
+      "predicted_class": 2,
+      "confidence": 0.9663282036781311,
+      "is_labeled": false
+    },
+    {
+      "name": "Wdcw Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9867756962776184,
+      "is_labeled": false
+    },
+    {
+      "name": "Moosani Impex",
+      "predicted_class": 2,
+      "confidence": 0.993263840675354,
+      "is_labeled": false
+    },
+    {
+      "name": "Bahr Al Najah Trading Llc",
+      "predicted_class": 3,
+      "confidence": 0.9960615038871765,
+      "is_labeled": true
+    },
+    {
+      "name": "Nippan Ips Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9928051829338074,
+      "is_labeled": false
+    },
+    {
+      "name": "Guangzhou Dongchen International Trade Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927934408187866,
+      "is_labeled": false
+    },
+    {
+      "name": "Uniwell International Machinery Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9087948203086853,
+      "is_labeled": false
+    },
+    {
+      "name": "Dhl Pakistan Pvt Ltd",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "Naveed Impex",
+      "predicted_class": 2,
+      "confidence": 0.9990179538726807,
+      "is_labeled": true
+    },
+    {
+      "name": "Horeca Systems",
+      "predicted_class": 3,
+      "confidence": 0.9987693428993225,
+      "is_labeled": false
+    },
+    {
+      "name": "Milchwerke Mittelelbe Gmbh",
+      "predicted_class": 0,
+      "confidence": 0.9725250005722046,
+      "is_labeled": false
+    },
+    {
+      "name": "Leprino Foods Dairy Products Co",
+      "predicted_class": 0,
+      "confidence": 0.9944004416465759,
+      "is_labeled": false
+    },
+    {
+      "name": "Shijiazhuang Jiaduohao Food Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.992759108543396,
+      "is_labeled": false
+    },
+    {
+      "name": "Embassy Of The Republic Of Tajikistan",
+      "predicted_class": 2,
+      "confidence": 0.9847374558448792,
+      "is_labeled": false
+    },
+    {
+      "name": "Majestic Pharma",
+      "predicted_class": 2,
+      "confidence": 0.99953293800354,
+      "is_labeled": false
+    },
+    {
+      "name": "Hashwan Traders Pack House And Cold Storage Facility",
+      "predicted_class": 3,
+      "confidence": 0.9919840693473816,
+      "is_labeled": false
+    },
+    {
+      "name": "Sheheryar Enterprises",
+      "predicted_class": 1,
+      "confidence": 0.9116882085800171,
+      "is_labeled": false
+    },
+    {
+      "name": "Ahmar Abbas Shah",
+      "predicted_class": 3,
+      "confidence": 0.9928051829338074,
+      "is_labeled": false
+    },
+    {
+      "name": "Ashrafsons Pharmaceutical Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.942993700504303,
+      "is_labeled": false
+    },
+    {
+      "name": "Al Showaib Al Dhahabi General Trading Llc",
+      "predicted_class": 3,
+      "confidence": 0.985215425491333,
+      "is_labeled": false
+    },
+    {
+      "name": "Hinucon Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9344214797019958,
+      "is_labeled": false
+    },
+    {
+      "name": "Pt Arta Maja Prima",
+      "predicted_class": 3,
+      "confidence": 0.9657626748085022,
+      "is_labeled": false
+    },
+    {
+      "name": "Duksan Pure Chemicals Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9928044676780701,
+      "is_labeled": true
+    },
+    {
+      "name": "Pamir Gida Sanayi As",
+      "predicted_class": 0,
+      "confidence": 0.9650547504425049,
+      "is_labeled": false
+    },
+    {
+      "name": "Zoic International",
+      "predicted_class": 2,
+      "confidence": 0.9592945575714111,
+      "is_labeled": false
+    },
+    {
+      "name": "Haji Razak Haji Habib Janoo",
+      "predicted_class": 2,
+      "confidence": 0.9988173842430115,
+      "is_labeled": false
+    },
+    {
+      "name": "Peter Justesen Company As",
+      "predicted_class": 2,
+      "confidence": 0.9458560347557068,
+      "is_labeled": false
+    },
+    {
+      "name": "Shandong Tianliang Import And Export Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9805583357810974,
+      "is_labeled": false
+    },
+    {
+      "name": "Flash Laboratories",
+      "predicted_class": 2,
+      "confidence": 0.9144685864448547,
+      "is_labeled": false
+    },
+    {
+      "name": "Ai-Cha Food Trading Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987706542015076,
+      "is_labeled": false
+    },
+    {
+      "name": "Shenzhen Yezi Biotech Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9928051829338074,
+      "is_labeled": false
+    },
+    {
+      "name": "Memon Brothers",
+      "predicted_class": 3,
+      "confidence": 0.9897973537445068,
+      "is_labeled": false
+    },
+    {
+      "name": "Shazeb Pharmaceutical Industries Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9869303703308105,
+      "is_labeled": false
+    },
+    {
+      "name": "Cspc Shengxue Glucose Co Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9240773916244507,
+      "is_labeled": false
+    },
+    {
+      "name": "Shanghai J. Shine Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9883153438568115,
+      "is_labeled": false
+    },
+    {
+      "name": "Ideal Foods & Chemicals",
+      "predicted_class": 3,
+      "confidence": 0.9146060943603516,
+      "is_labeled": false
+    },
+    {
+      "name": "Murree Brewery Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9868039488792419,
+      "is_labeled": false
+    },
+    {
+      "name": "The Connection",
+      "predicted_class": 2,
+      "confidence": 0.9981861710548401,
+      "is_labeled": false
+    },
+    {
+      "name": "Foreach Enterprise Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9673119783401489,
+      "is_labeled": false
+    },
+    {
+      "name": "Muller & Phipps (Pakistan) Pvt Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9999998807907104,
+      "is_labeled": true
+    },
+    {
+      "name": "Sami Pharmaceuticals Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9125659465789795,
+      "is_labeled": false
+    },
+    {
+      "name": "Aftab Chemical Co",
+      "predicted_class": 2,
+      "confidence": 0.9450569152832031,
+      "is_labeled": false
+    },
+    {
+      "name": "Jamaica Foodstuff Trading Co Llc",
+      "predicted_class": 3,
+      "confidence": 0.9819620251655579,
+      "is_labeled": false
+    },
+    {
+      "name": "Madam Sun Sdn Bhd",
+      "predicted_class": 3,
+      "confidence": 0.9927859902381897,
+      "is_labeled": false
+    },
+    {
+      "name": "Panteley Toshev Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9923169612884521,
+      "is_labeled": false
+    },
+    {
+      "name": "Asian Gulf Shisha Molasses",
+      "predicted_class": 2,
+      "confidence": 0.9983112812042236,
+      "is_labeled": false
+    },
+    {
+      "name": "Arochem",
+      "predicted_class": 2,
+      "confidence": 0.9543390870094299,
+      "is_labeled": false
+    },
+    {
+      "name": "Innova Ingredients Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9858090281486511,
+      "is_labeled": false
+    },
+    {
+      "name": "Meggle Africa And Middle East Dmcc",
+      "predicted_class": 3,
+      "confidence": 0.9910045862197876,
+      "is_labeled": false
+    },
+    {
+      "name": "Royal Ilac San Tic Ltd Sti",
+      "predicted_class": 3,
+      "confidence": 0.9920410513877869,
+      "is_labeled": false
+    },
+    {
+      "name": "Hangzhou Dawn Ray Pharmaceutical Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.990186333656311,
+      "is_labeled": false
+    },
+    {
+      "name": "Stylopod Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.992405354976654,
+      "is_labeled": false
+    },
+    {
+      "name": "Dairyland Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9505048990249634,
+      "is_labeled": false
+    },
+    {
+      "name": "Friesland Campina Engro Pakistan Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9843224883079529,
+      "is_labeled": true
+    },
+    {
+      "name": "Shenyang Flourish Biotech Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9925986528396606,
+      "is_labeled": false
+    },
+    {
+      "name": "B Healthy Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9361582398414612,
+      "is_labeled": false
+    },
+    {
+      "name": "Honber International Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9924157857894897,
+      "is_labeled": false
+    },
+    {
+      "name": "Mukaty Enterprises",
+      "predicted_class": 2,
+      "confidence": 0.9998138546943665,
+      "is_labeled": false
+    },
+    {
+      "name": "The Thai Sugar Trading Corp",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "Mcc Huaye Duddar Mining Co Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9974722266197205,
+      "is_labeled": false
+    },
+    {
+      "name": "Syeda Ambreen Mushtaq",
+      "predicted_class": 3,
+      "confidence": 0.9987718462944031,
+      "is_labeled": false
+    },
+    {
+      "name": "Sanna Laboratories",
+      "predicted_class": 3,
+      "confidence": 0.9654465913772583,
+      "is_labeled": false
+    },
+    {
+      "name": "Embassy Of The Russian Federation",
+      "predicted_class": 2,
+      "confidence": 0.9940500855445862,
+      "is_labeled": false
+    },
+    {
+      "name": "Imcd Middle East Fzco",
+      "predicted_class": 3,
+      "confidence": 0.9925462603569031,
+      "is_labeled": false
+    },
+    {
+      "name": "Tradex International Llc",
+      "predicted_class": 3,
+      "confidence": 0.9922784566879272,
+      "is_labeled": false
+    },
+    {
+      "name": "Elvan Gida San Ve Tic As",
+      "predicted_class": 3,
+      "confidence": 0.9291738271713257,
+      "is_labeled": false
+    },
+    {
+      "name": "Chase Up",
+      "predicted_class": 3,
+      "confidence": 0.9820392727851868,
+      "is_labeled": false
+    },
+    {
+      "name": "Thermo Fisher Scientific",
+      "predicted_class": 3,
+      "confidence": 0.9928027987480164,
+      "is_labeled": false
+    },
+    {
+      "name": "Regent Laboratories",
+      "predicted_class": 2,
+      "confidence": 0.9785863757133484,
+      "is_labeled": false
+    },
+    {
+      "name": "Awais Trading Corporation",
+      "predicted_class": 2,
+      "confidence": 0.9976028800010681,
+      "is_labeled": true
+    },
+    {
+      "name": "Scilife Pharma Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9733154773712158,
+      "is_labeled": false
+    },
+    {
+      "name": "Roohi Chaudhri",
+      "predicted_class": 3,
+      "confidence": 0.9983300566673279,
+      "is_labeled": false
+    },
+    {
+      "name": "United Chemical Corporation Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9753465056419373,
+      "is_labeled": false
+    },
+    {
+      "name": "Fuji Global Chocolate (M) Sdn Bhd",
+      "predicted_class": 3,
+      "confidence": 0.992529571056366,
+      "is_labeled": false
+    },
+    {
+      "name": "Emrays Middleeast General Trading Llc",
+      "predicted_class": 3,
+      "confidence": 0.9923549890518188,
+      "is_labeled": false
+    },
+    {
+      "name": "Vega Pharma Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9925433397293091,
+      "is_labeled": false
+    },
+    {
+      "name": "Philip Morris (Pakistan) Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9964407086372375,
+      "is_labeled": true
+    },
+    {
+      "name": "High Profile Poultry Services",
+      "predicted_class": 3,
+      "confidence": 0.9987326264381409,
+      "is_labeled": false
+    },
+    {
+      "name": "Nestle Pakistan Ltd",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": true
+    },
+    {
+      "name": "Sucere Foods Corporation",
+      "predicted_class": 3,
+      "confidence": 0.992620050907135,
+      "is_labeled": false
+    },
+    {
+      "name": "Fast Da Trade Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9928050637245178,
+      "is_labeled": false
+    },
+    {
+      "name": "One Health Pharma",
+      "predicted_class": 2,
+      "confidence": 0.9936413168907166,
+      "is_labeled": false
+    },
+    {
+      "name": "Ahsons Drug Co",
+      "predicted_class": 2,
+      "confidence": 0.9917033910751343,
+      "is_labeled": false
+    },
+    {
+      "name": "Zhejiang Jinlian Chemtech Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.992720901966095,
+      "is_labeled": false
+    },
+    {
+      "name": "Isis Pharmaceuticals & Chemical Works",
+      "predicted_class": 3,
+      "confidence": 0.9049025774002075,
+      "is_labeled": false
+    },
+    {
+      "name": "Guangdong Yichao Biological Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9919203519821167,
+      "is_labeled": false
+    },
+    {
+      "name": "Morgan Technologies Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9292134046554565,
+      "is_labeled": false
+    },
+    {
+      "name": "Al Ard Al Zarkha Goods",
+      "predicted_class": 3,
+      "confidence": 0.992779552936554,
+      "is_labeled": false
+    },
+    {
+      "name": "Grandma Catering Management Services Smc Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987688660621643,
+      "is_labeled": false
+    },
+    {
+      "name": "Muhammad Arslan Ramzan",
+      "predicted_class": 3,
+      "confidence": 0.998415470123291,
+      "is_labeled": false
+    },
+    {
+      "name": "Green Tract Shipping Llc",
+      "predicted_class": 3,
+      "confidence": 0.9890804886817932,
+      "is_labeled": false
+    },
+    {
+      "name": "Amna Keyani",
+      "predicted_class": 3,
+      "confidence": 0.9987726807594299,
+      "is_labeled": false
+    },
+    {
+      "name": "Business Links International",
+      "predicted_class": 3,
+      "confidence": 0.9987240433692932,
+      "is_labeled": false
+    },
+    {
+      "name": "Dhl Express International (Th) Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9543212652206421,
+      "is_labeled": false
+    },
+    {
+      "name": "Mattoo Sons",
+      "predicted_class": 1,
+      "confidence": 0.9320378303527832,
+      "is_labeled": false
+    },
+    {
+      "name": "Waheed Waheed",
+      "predicted_class": 3,
+      "confidence": 0.9928047060966492,
+      "is_labeled": false
+    },
+    {
+      "name": "Frontier Dextrose Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9831333756446838,
+      "is_labeled": false
+    },
+    {
+      "name": "Don Valley Pharmaceuticals Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987682700157166,
+      "is_labeled": false
+    },
+    {
+      "name": "York Star Hong Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927316308021545,
+      "is_labeled": false
+    },
+    {
+      "name": "Shahmurad Sugar Mills Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987370371818542,
+      "is_labeled": false
+    },
+    {
+      "name": "Shantou Yuanda Foods Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9924095869064331,
+      "is_labeled": false
+    },
+    {
+      "name": "San Soon Seng Food Industries Sdn Bhd",
+      "predicted_class": 1,
+      "confidence": 0.9041360020637512,
+      "is_labeled": true
+    },
+    {
+      "name": "Five Star Trading",
+      "predicted_class": 3,
+      "confidence": 0.9987162351608276,
+      "is_labeled": false
+    },
+    {
+      "name": "Dhl Express International",
+      "predicted_class": 3,
+      "confidence": 0.9056756496429443,
+      "is_labeled": false
+    },
+    {
+      "name": "Avicenna Laboratories Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9996371269226074,
+      "is_labeled": true
+    },
+    {
+      "name": "Nutrico Morinaga Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9910592436790466,
+      "is_labeled": false
+    },
+    {
+      "name": "Ckd Pharmaceuticals Pakistan Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9831457138061523,
+      "is_labeled": false
+    },
+    {
+      "name": "Doehler Gmbh",
+      "predicted_class": 3,
+      "confidence": 0.9928038716316223,
+      "is_labeled": false
+    },
+    {
+      "name": "Azarkian Toss Intl",
+      "predicted_class": 3,
+      "confidence": 0.9927853345870972,
+      "is_labeled": false
+    },
+    {
+      "name": "Yah Impex",
+      "predicted_class": 2,
+      "confidence": 0.9368041157722473,
+      "is_labeled": false
+    },
+    {
+      "name": "Healthtek Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.999259889125824,
+      "is_labeled": false
+    },
+    {
+      "name": "Perfetti Van Melle Confectionery (Shenzhen) Co Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9999996423721313,
+      "is_labeled": false
+    },
+    {
+      "name": "Elko Organization Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9073817133903503,
+      "is_labeled": false
+    },
+    {
+      "name": "Ferozsons Laboratories Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9994587302207947,
+      "is_labeled": true
+    },
+    {
+      "name": "Shazia Trading Co",
+      "predicted_class": 3,
+      "confidence": 0.9987375140190125,
+      "is_labeled": false
+    },
+    {
+      "name": "Glorious Laboratories",
+      "predicted_class": 2,
+      "confidence": 0.9995684027671814,
+      "is_labeled": false
+    },
+    {
+      "name": "Pt Pusan Manis Mulia",
+      "predicted_class": 3,
+      "confidence": 0.9928041100502014,
+      "is_labeled": false
+    },
+    {
+      "name": "Citi Pharma Ltd",
+      "predicted_class": 3,
+      "confidence": 0.955005407333374,
+      "is_labeled": false
+    },
+    {
+      "name": "M.A Kamil",
+      "predicted_class": 2,
+      "confidence": 0.9800175428390503,
+      "is_labeled": false
+    },
+    {
+      "name": "Shenzhen Xpa International Log",
+      "predicted_class": 3,
+      "confidence": 0.9928008317947388,
+      "is_labeled": false
+    },
+    {
+      "name": "Dohler Gida Sanayi As",
+      "predicted_class": 3,
+      "confidence": 0.9927936792373657,
+      "is_labeled": false
+    },
+    {
+      "name": "Guangdong Haoliyuan Food Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9934131503105164,
+      "is_labeled": false
+    },
+    {
+      "name": "Qingdao Foture Industry Co Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9470791816711426,
+      "is_labeled": false
+    },
+    {
+      "name": "Jawed Traders",
+      "predicted_class": 1,
+      "confidence": 0.9834594130516052,
+      "is_labeled": false
+    },
+    {
+      "name": "Zhaoqing Huanfa Biotechnology Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9924255609512329,
+      "is_labeled": false
+    },
+    {
+      "name": "National Radio Telecommunication Corporation Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987727999687195,
+      "is_labeled": false
+    },
+    {
+      "name": "A.F.U International",
+      "predicted_class": 1,
+      "confidence": 0.9128627777099609,
+      "is_labeled": false
+    },
+    {
+      "name": "Pak Polychem Enterprises",
+      "predicted_class": 2,
+      "confidence": 0.9993010759353638,
+      "is_labeled": false
+    },
+    {
+      "name": "Tahir Muhammad Iqbal Hookmani",
+      "predicted_class": 3,
+      "confidence": 0.9987727999687195,
+      "is_labeled": false
+    },
+    {
+      "name": "Abdullah Impex",
+      "predicted_class": 2,
+      "confidence": 0.9895724654197693,
+      "is_labeled": false
+    },
+    {
+      "name": "Guangdond Yichao Biological Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9242942333221436,
+      "is_labeled": false
+    },
+    {
+      "name": "Shafiq Iqbal Enterprises",
+      "predicted_class": 2,
+      "confidence": 0.9594312906265259,
+      "is_labeled": false
+    },
+    {
+      "name": "Sb Pharma",
+      "predicted_class": 2,
+      "confidence": 0.9901250600814819,
+      "is_labeled": false
+    },
+    {
+      "name": "Lgc Gmbh",
+      "predicted_class": 3,
+      "confidence": 0.9927750825881958,
+      "is_labeled": false
+    },
+    {
+      "name": "Tereos Acucar E Energia",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "Jalal Maical",
+      "predicted_class": 3,
+      "confidence": 0.9928051829338074,
+      "is_labeled": false
+    },
+    {
+      "name": "Ras Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9938855767250061,
+      "is_labeled": false
+    },
+    {
+      "name": "Sons Traders",
+      "predicted_class": 3,
+      "confidence": 0.9723336100578308,
+      "is_labeled": false
+    },
+    {
+      "name": "R.A Impex",
+      "predicted_class": 3,
+      "confidence": 0.9917957186698914,
+      "is_labeled": false
+    },
+    {
+      "name": "Dsv Solutions Slovakia Sro",
+      "predicted_class": 3,
+      "confidence": 0.9928037524223328,
+      "is_labeled": false
+    },
+    {
+      "name": "Brothers Enterprise Pvt Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9996236562728882,
+      "is_labeled": false
+    },
+    {
+      "name": "Adchem International Fzco",
+      "predicted_class": 3,
+      "confidence": 0.9927821159362793,
+      "is_labeled": false
+    },
+    {
+      "name": "Pacific Sugar Corporation Ltd",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": true
+    },
+    {
+      "name": "Universal Logistics Services Pvt Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9997450709342957,
+      "is_labeled": false
+    },
+    {
+      "name": "Reign Pharmaceuticals Pcsir Klc Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9990851879119873,
+      "is_labeled": false
+    },
+    {
+      "name": "J.S Corporation",
+      "predicted_class": 2,
+      "confidence": 0.9339888691902161,
+      "is_labeled": true
+    },
+    {
+      "name": "Ciba Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.931512176990509,
+      "is_labeled": false
+    },
+    {
+      "name": "Norte-Eurocao Slu",
+      "predicted_class": 3,
+      "confidence": 0.9925552010536194,
+      "is_labeled": false
+    },
+    {
+      "name": "Haameem",
+      "predicted_class": 2,
+      "confidence": 0.9813639521598816,
+      "is_labeled": false
+    },
+    {
+      "name": "Chemtech",
+      "predicted_class": 2,
+      "confidence": 0.9993035793304443,
+      "is_labeled": false
+    },
+    {
+      "name": "New Chemical Centre",
+      "predicted_class": 3,
+      "confidence": 0.9987727999687195,
+      "is_labeled": false
+    },
+    {
+      "name": "Rashidiya Impex",
+      "predicted_class": 3,
+      "confidence": 0.9977360963821411,
+      "is_labeled": false
+    },
+    {
+      "name": "Fayrefield Foods As",
+      "predicted_class": 3,
+      "confidence": 0.9913215041160583,
+      "is_labeled": false
+    },
+    {
+      "name": "Maac International",
+      "predicted_class": 2,
+      "confidence": 0.9497143030166626,
+      "is_labeled": false
+    },
+    {
+      "name": "Rinda Food Industries Sdn Bhd",
+      "predicted_class": 3,
+      "confidence": 0.9925515651702881,
+      "is_labeled": false
+    },
+    {
+      "name": "Famous Trading Co",
+      "predicted_class": 2,
+      "confidence": 0.9493470191955566,
+      "is_labeled": false
+    },
+    {
+      "name": "Wilson's Pharmaceuticals",
+      "predicted_class": 1,
+      "confidence": 0.9475950598716736,
+      "is_labeled": false
+    },
+    {
+      "name": "Kings International General Trading Llc",
+      "predicted_class": 3,
+      "confidence": 0.9968960285186768,
+      "is_labeled": false
+    },
+    {
+      "name": "Zhejiang New Vision Imp & Exp Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9912813305854797,
+      "is_labeled": false
+    },
+    {
+      "name": "Bonart Gida Sanayi Ve Ticaret As",
+      "predicted_class": 3,
+      "confidence": 0.978065550327301,
+      "is_labeled": false
+    },
+    {
+      "name": "Tate & Lyle Sugars Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9409025311470032,
+      "is_labeled": false
+    },
+    {
+      "name": "Shanghai Richfield Internaitonal Trade Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9925605654716492,
+      "is_labeled": false
+    },
+    {
+      "name": "Jawa Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9951592087745667,
+      "is_labeled": false
+    },
+    {
+      "name": "Delight Enterprises Smc Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9958034157752991,
+      "is_labeled": false
+    },
+    {
+      "name": "Emrays International General Trading Co Llc",
+      "predicted_class": 2,
+      "confidence": 0.969623327255249,
+      "is_labeled": false
+    },
+    {
+      "name": "Taiwanfuyou Food Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927923679351807,
+      "is_labeled": false
+    },
+    {
+      "name": "Gallop Water Sciences",
+      "predicted_class": 2,
+      "confidence": 0.9991410970687866,
+      "is_labeled": false
+    },
+    {
+      "name": "Aa Foods",
+      "predicted_class": 3,
+      "confidence": 0.9078165292739868,
+      "is_labeled": false
+    },
+    {
+      "name": "Crimson Middle East Fz Llc",
+      "predicted_class": 3,
+      "confidence": 0.9919561147689819,
+      "is_labeled": false
+    },
+    {
+      "name": "Hamza Enterprise",
+      "predicted_class": 2,
+      "confidence": 0.9794719219207764,
+      "is_labeled": false
+    },
+    {
+      "name": "A & K Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9975538849830627,
+      "is_labeled": false
+    },
+    {
+      "name": "Monakhal Wariech",
+      "predicted_class": 3,
+      "confidence": 0.9928051829338074,
+      "is_labeled": false
+    },
+    {
+      "name": "Mafworth Ltd",
+      "predicted_class": 3,
+      "confidence": 0.992398202419281,
+      "is_labeled": false
+    },
+    {
+      "name": "United Food Group",
+      "predicted_class": 2,
+      "confidence": 0.9984096884727478,
+      "is_labeled": false
+    },
+    {
+      "name": "Khat Tadawul General Trading Llc",
+      "predicted_class": 3,
+      "confidence": 0.9915249943733215,
+      "is_labeled": false
+    },
+    {
+      "name": "Sz Traders",
+      "predicted_class": 2,
+      "confidence": 0.9994469285011292,
+      "is_labeled": false
+    },
+    {
+      "name": "Nation Trade International",
+      "predicted_class": 3,
+      "confidence": 0.9986577033996582,
+      "is_labeled": false
+    },
+    {
+      "name": "Mondelez Pakistan Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9452201724052429,
+      "is_labeled": false
+    },
+    {
+      "name": "Hangzhou Pharmco Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9923810362815857,
+      "is_labeled": false
+    },
+    {
+      "name": "Trading Corporation Of Pakistan Pvt Ltd",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "Epoch Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9422733187675476,
+      "is_labeled": false
+    },
+    {
+      "name": "Mylab Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9996885061264038,
+      "is_labeled": false
+    },
+    {
+      "name": "Pmmc Llc",
+      "predicted_class": 3,
+      "confidence": 0.9924862384796143,
+      "is_labeled": false
+    },
+    {
+      "name": "Tradetrans Corp",
+      "predicted_class": 3,
+      "confidence": 0.9925820827484131,
+      "is_labeled": false
+    },
+    {
+      "name": "Shanghai Tianjia Biochemical Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9920969009399414,
+      "is_labeled": false
+    },
+    {
+      "name": "High-Q Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9989526271820068,
+      "is_labeled": false
+    },
+    {
+      "name": "Iram Yousaf",
+      "predicted_class": 3,
+      "confidence": 0.9987727999687195,
+      "is_labeled": false
+    },
+    {
+      "name": "Raim Enterprises",
+      "predicted_class": 2,
+      "confidence": 0.9983904361724854,
+      "is_labeled": false
+    },
+    {
+      "name": "Sois Life Sciences",
+      "predicted_class": 2,
+      "confidence": 0.9994631409645081,
+      "is_labeled": false
+    },
+    {
+      "name": "Yiwu Huayi Imp And Exp Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9429377317428589,
+      "is_labeled": false
+    },
+    {
+      "name": "Northern Logistics Carrier Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9920145273208618,
+      "is_labeled": false
+    },
+    {
+      "name": "Star Laboratories Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9996472597122192,
+      "is_labeled": false
+    },
+    {
+      "name": "Rahim Enterprises",
+      "predicted_class": 3,
+      "confidence": 0.9987362027168274,
+      "is_labeled": false
+    },
+    {
+      "name": "Eurozyme Gida Katki Mad San Ve Tic As",
+      "predicted_class": 3,
+      "confidence": 0.992766261100769,
+      "is_labeled": false
+    },
+    {
+      "name": "Adeel Ahmad",
+      "predicted_class": 3,
+      "confidence": 0.9987726807594299,
+      "is_labeled": false
+    },
+    {
+      "name": "East Chemsources Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9879004955291748,
+      "is_labeled": false
+    },
+    {
+      "name": "Qingdao Songwal Biotech Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9928621649742126,
+      "is_labeled": false
+    },
+    {
+      "name": "Imtiaz Group Smc Pvt Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9970092177391052,
+      "is_labeled": false
+    },
+    {
+      "name": "Dream Nest Fze Llc",
+      "predicted_class": 3,
+      "confidence": 0.9925149083137512,
+      "is_labeled": false
+    },
+    {
+      "name": "Lotte Vietnam Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9925764203071594,
+      "is_labeled": false
+    },
+    {
+      "name": "Ibrahim International",
+      "predicted_class": 2,
+      "confidence": 0.9337584972381592,
+      "is_labeled": false
+    },
+    {
+      "name": "Sociedad Espanola De Colorantes Naturales",
+      "predicted_class": 2,
+      "confidence": 0.9928224682807922,
+      "is_labeled": false
+    },
+    {
+      "name": "Jilin Cofco Bio-Chem And Bio-Energy Marketing",
+      "predicted_class": 2,
+      "confidence": 0.9928352236747742,
+      "is_labeled": false
+    },
+    {
+      "name": "Changsha Vigorous Tech Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9928023219108582,
+      "is_labeled": false
+    },
+    {
+      "name": "Haleon Pakistan Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9850217700004578,
+      "is_labeled": false
+    },
+    {
+      "name": "Pt Gandum Mas Kencana",
+      "predicted_class": 2,
+      "confidence": 0.9937357306480408,
+      "is_labeled": false
+    },
+    {
+      "name": "Platinum Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9340712428092957,
+      "is_labeled": false
+    },
+    {
+      "name": "Rice And Spice Filling Llc",
+      "predicted_class": 3,
+      "confidence": 0.9927800297737122,
+      "is_labeled": false
+    },
+    {
+      "name": "Suzuki Motor Corporation",
+      "predicted_class": 3,
+      "confidence": 0.95302414894104,
+      "is_labeled": false
+    },
+    {
+      "name": "Xiamen Ying Wan Foodstuff Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9925731420516968,
+      "is_labeled": false
+    },
+    {
+      "name": "Barnabas Aid",
+      "predicted_class": 3,
+      "confidence": 0.9928027987480164,
+      "is_labeled": true
+    },
+    {
+      "name": "Med Pharm Research Lab",
+      "predicted_class": 3,
+      "confidence": 0.9939498901367188,
+      "is_labeled": false
+    },
+    {
+      "name": "N.N Enterprises",
+      "predicted_class": 3,
+      "confidence": 0.9983600974082947,
+      "is_labeled": false
+    },
+    {
+      "name": "Blooming Foods Fzco",
+      "predicted_class": 2,
+      "confidence": 0.9435489773750305,
+      "is_labeled": false
+    },
+    {
+      "name": "Fa Enterprises",
+      "predicted_class": 3,
+      "confidence": 0.9987661838531494,
+      "is_labeled": false
+    },
+    {
+      "name": "Abdullah Solutions",
+      "predicted_class": 3,
+      "confidence": 0.9812331199645996,
+      "is_labeled": false
+    },
+    {
+      "name": "Rayburn Trading Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9475707411766052,
+      "is_labeled": false
+    },
+    {
+      "name": "Hebei Jinfeng Starch Sugar Alcohol",
+      "predicted_class": 3,
+      "confidence": 0.991078794002533,
+      "is_labeled": false
+    },
+    {
+      "name": "Farm Wise Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9987642765045166,
+      "is_labeled": false
+    },
+    {
+      "name": "Gerry's International Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.9802298545837402,
+      "is_labeled": false
+    },
+    {
+      "name": "Rasco Pharma",
+      "predicted_class": 2,
+      "confidence": 0.9883943796157837,
+      "is_labeled": false
+    },
+    {
+      "name": "Jk International Fze",
+      "predicted_class": 2,
+      "confidence": 0.9937724471092224,
+      "is_labeled": false
+    },
+    {
+      "name": "Meraj Din Mohammad Iqbal",
+      "predicted_class": 3,
+      "confidence": 0.9985093474388123,
+      "is_labeled": false
+    },
+    {
+      "name": "Abdool Aly Moosabhoy & Sons",
+      "predicted_class": 2,
+      "confidence": 0.9977854490280151,
+      "is_labeled": false
+    },
+    {
+      "name": "Yiwu Zhixin Import And Export Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927523136138916,
+      "is_labeled": false
+    },
+    {
+      "name": "Jawed & Co",
+      "predicted_class": 2,
+      "confidence": 0.9896295666694641,
+      "is_labeled": false
+    },
+    {
+      "name": "Axis Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.98142009973526,
+      "is_labeled": false
+    },
+    {
+      "name": "Aba Stepsworth Dwc Llc",
+      "predicted_class": 0,
+      "confidence": 0.9997336268424988,
+      "is_labeled": false
+    },
+    {
+      "name": "Bdairy Bv",
+      "predicted_class": 3,
+      "confidence": 0.9913499355316162,
+      "is_labeled": false
+    },
+    {
+      "name": "Batala Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9664745926856995,
+      "is_labeled": false
+    },
+    {
+      "name": "Beschoo Trading Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9927937984466553,
+      "is_labeled": false
+    },
+    {
+      "name": "Fivestar Corporation",
+      "predicted_class": 2,
+      "confidence": 0.9993780851364136,
+      "is_labeled": false
+    },
+    {
+      "name": "Hemani International Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9977939128875732,
+      "is_labeled": false
+    },
+    {
+      "name": "Bless Laboratories Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9985477328300476,
+      "is_labeled": false
+    },
+    {
+      "name": "Pt Savoria Kreasi Rasa",
+      "predicted_class": 2,
+      "confidence": 0.9448422193527222,
+      "is_labeled": false
+    },
+    {
+      "name": "Sea Quest Logistic Services",
+      "predicted_class": 3,
+      "confidence": 0.9987726807594299,
+      "is_labeled": false
+    },
+    {
+      "name": "North Mile Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9927735924720764,
+      "is_labeled": false
+    },
+    {
+      "name": "Imperial Foods General Trading Llc",
+      "predicted_class": 3,
+      "confidence": 0.9671319127082825,
+      "is_labeled": false
+    },
+    {
+      "name": "Hangzhou Clake Biotech Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9936308264732361,
+      "is_labeled": false
+    },
+    {
+      "name": "Adamjee Pharmaceutical Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9918609857559204,
+      "is_labeled": true
+    },
+    {
+      "name": "Neutra Cure",
+      "predicted_class": 2,
+      "confidence": 0.9728526473045349,
+      "is_labeled": false
+    },
+    {
+      "name": "Yaseen And Co",
+      "predicted_class": 3,
+      "confidence": 0.9917355179786682,
+      "is_labeled": false
+    },
+    {
+      "name": "Haseeb Lab Supplies",
+      "predicted_class": 3,
+      "confidence": 0.9987726807594299,
+      "is_labeled": false
+    },
+    {
+      "name": "Multiple Trading House",
+      "predicted_class": 3,
+      "confidence": 0.9984028935432434,
+      "is_labeled": false
+    },
+    {
+      "name": "Pt Hanjaya Mandala Sampoerna Tbk",
+      "predicted_class": 1,
+      "confidence": 0.9411429762840271,
+      "is_labeled": false
+    },
+    {
+      "name": "Macter International Ltd",
+      "predicted_class": 2,
+      "confidence": 0.995263934135437,
+      "is_labeled": false
+    },
+    {
+      "name": "Jinnah Pharmaceuticals Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.9990189075469971,
+      "is_labeled": false
+    },
+    {
+      "name": "Evergreen Pharmaceuticals",
+      "predicted_class": 2,
+      "confidence": 0.9950146079063416,
+      "is_labeled": false
+    },
+    {
+      "name": "Mak Kemikal",
+      "predicted_class": 1,
+      "confidence": 0.9502833485603333,
+      "is_labeled": true
+    },
+    {
+      "name": "Muneeb Trading Co",
+      "predicted_class": 2,
+      "confidence": 0.9971627593040466,
+      "is_labeled": false
+    },
+    {
+      "name": "Kervan Gida San Ve Tic As",
+      "predicted_class": 3,
+      "confidence": 0.9922762513160706,
+      "is_labeled": false
+    },
+    {
+      "name": "World Sugar Export Co Ltd",
+      "predicted_class": 0,
+      "confidence": 0.9999998807907104,
+      "is_labeled": false
+    },
+    {
+      "name": "Dhl Worldwide Express",
+      "predicted_class": 0,
+      "confidence": 1.0,
+      "is_labeled": false
+    },
+    {
+      "name": "Global Imports",
+      "predicted_class": 3,
+      "confidence": 0.959642767906189,
+      "is_labeled": true
+    },
+    {
+      "name": "Zhejiang Synose Tech Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9925729036331177,
+      "is_labeled": true
+    },
+    {
+      "name": "Yiwu East Coast Import & Export",
+      "predicted_class": 3,
+      "confidence": 0.9920440912246704,
+      "is_labeled": false
+    },
+    {
+      "name": "Ebuy Enterprise Ltd",
+      "predicted_class": 3,
+      "confidence": 0.9924476146697998,
+      "is_labeled": false
+    }
+  ],
+  "low_confidence": [
+    {
+      "name": "New Natural Biotech Fz Llc",
+      "predicted_class": 2,
+      "confidence": 0.5493921041488647,
+      "is_labeled": false
+    },
+    {
+      "name": "Yiwu Yilong Import And Export Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.5689986944198608,
+      "is_labeled": false
+    },
+    {
+      "name": "Abbott Laboratories Pakistan Ltd",
+      "predicted_class": 0,
+      "confidence": 0.5908029079437256,
+      "is_labeled": false
+    },
+    {
+      "name": "Arshine Lifescience Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.495250940322876,
+      "is_labeled": false
+    },
+    {
+      "name": "Puratos (Thailand) Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.45210975408554077,
+      "is_labeled": false
+    },
+    {
+      "name": "Malkara Birlik Sut Ve Sut Mamulleri As",
+      "predicted_class": 0,
+      "confidence": 0.5628584623336792,
+      "is_labeled": false
+    },
+    {
+      "name": "Jrs Pharma Gmbh & Co Kg",
+      "predicted_class": 2,
+      "confidence": 0.5178617238998413,
+      "is_labeled": false
+    },
+    {
+      "name": "Pt Yupi Indo Jelly Gum Tbk",
+      "predicted_class": 2,
+      "confidence": 0.49596503376960754,
+      "is_labeled": false
+    },
+    {
+      "name": "Szumex International",
+      "predicted_class": 1,
+      "confidence": 0.5539292097091675,
+      "is_labeled": false
+    },
+    {
+      "name": "Dairy Life Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.5846112966537476,
+      "is_labeled": false
+    },
+    {
+      "name": "Gn Chemicals Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.41916510462760925,
+      "is_labeled": false
+    },
+    {
+      "name": "Apeloa Hong Kong Ltd",
+      "predicted_class": 1,
+      "confidence": 0.5099731087684631,
+      "is_labeled": false
+    },
+    {
+      "name": "Daejung Chemicals & Metals Co Ltd",
+      "predicted_class": 0,
+      "confidence": 0.4207266867160797,
+      "is_labeled": false
+    },
+    {
+      "name": "F.B Enterprises",
+      "predicted_class": 3,
+      "confidence": 0.5966511368751526,
+      "is_labeled": false
+    },
+    {
+      "name": "Zafa Pharmaceutical Laboratories Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.5037092566490173,
+      "is_labeled": false
+    },
+    {
+      "name": "Anhui Newchem Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.591113269329071,
+      "is_labeled": false
+    },
+    {
+      "name": "Global Trade Link",
+      "predicted_class": 3,
+      "confidence": 0.503434419631958,
+      "is_labeled": false
+    },
+    {
+      "name": "Abdullah Trading Co",
+      "predicted_class": 3,
+      "confidence": 0.5445556044578552,
+      "is_labeled": false
+    },
+    {
+      "name": "General Candy Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.5895889401435852,
+      "is_labeled": false
+    },
+    {
+      "name": "I.M Traders",
+      "predicted_class": 3,
+      "confidence": 0.4551403522491455,
+      "is_labeled": false
+    },
+    {
+      "name": "Fora Sweets Gida San Ve Tic As",
+      "predicted_class": 2,
+      "confidence": 0.47719645500183105,
+      "is_labeled": false
+    },
+    {
+      "name": "Shenzhen Rungu Food Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.48966822028160095,
+      "is_labeled": false
+    },
+    {
+      "name": "Dhl International Bahrain Bsc",
+      "predicted_class": 3,
+      "confidence": 0.5777441263198853,
+      "is_labeled": false
+    },
+    {
+      "name": "Shawn Enterprises",
+      "predicted_class": 2,
+      "confidence": 0.49920454621315,
+      "is_labeled": false
+    },
+    {
+      "name": "M I Traders",
+      "predicted_class": 3,
+      "confidence": 0.44764018058776855,
+      "is_labeled": false
+    },
+    {
+      "name": "Irca Manufacturing Netherlands Bv",
+      "predicted_class": 3,
+      "confidence": 0.556191623210907,
+      "is_labeled": false
+    },
+    {
+      "name": "Indus Pharma Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.5644859075546265,
+      "is_labeled": false
+    },
+    {
+      "name": "Ibrahim Khatri Trading Co",
+      "predicted_class": 3,
+      "confidence": 0.5009410381317139,
+      "is_labeled": false
+    },
+    {
+      "name": "Emad Trade House Fzco",
+      "predicted_class": 0,
+      "confidence": 0.5093370676040649,
+      "is_labeled": false
+    },
+    {
+      "name": "Singsino Group Ltd",
+      "predicted_class": 2,
+      "confidence": 0.4465130567550659,
+      "is_labeled": false
+    },
+    {
+      "name": "Shabbir International",
+      "predicted_class": 2,
+      "confidence": 0.48602354526519775,
+      "is_labeled": false
+    },
+    {
+      "name": "Tcs Express Ww",
+      "predicted_class": 1,
+      "confidence": 0.5854392051696777,
+      "is_labeled": false
+    },
+    {
+      "name": "Sachsenmilch Leppersdorf Gmbh",
+      "predicted_class": 2,
+      "confidence": 0.3609870374202728,
+      "is_labeled": false
+    },
+    {
+      "name": "Merck Life Science Kgaa",
+      "predicted_class": 3,
+      "confidence": 0.5432074666023254,
+      "is_labeled": false
+    },
+    {
+      "name": "Trading World",
+      "predicted_class": 0,
+      "confidence": 0.5550270676612854,
+      "is_labeled": false
+    },
+    {
+      "name": "Ahmed Tariq Co",
+      "predicted_class": 3,
+      "confidence": 0.5009410381317139,
+      "is_labeled": false
+    },
+    {
+      "name": "Hangzhou Starshine Pharmaceutical Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.4912107288837433,
+      "is_labeled": false
+    },
+    {
+      "name": "Rapid World General Trading Co Llc",
+      "predicted_class": 2,
+      "confidence": 0.40830108523368835,
+      "is_labeled": true
+    },
+    {
+      "name": "Horizon Healthcare Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.5460386872291565,
+      "is_labeled": false
+    },
+    {
+      "name": "Dongying City Longxing Chemical Co Ltd",
+      "predicted_class": 3,
+      "confidence": 0.5331194400787354,
+      "is_labeled": false
+    },
+    {
+      "name": "S. J & G Fazul Ellahie Pvt Ltd",
+      "predicted_class": 2,
+      "confidence": 0.5948716998100281,
+      "is_labeled": false
+    },
+    {
+      "name": "Mek Gida Sanayi Ve Ticaret Ltd Sirketi",
+      "predicted_class": 3,
+      "confidence": 0.5577873587608337,
+      "is_labeled": false
+    },
+    {
+      "name": "Wheyco Gmbh",
+      "predicted_class": 1,
+      "confidence": 0.4040173292160034,
+      "is_labeled": false
+    },
+    {
+      "name": "Zibo Weibin Imp & Exp Co Ltd",
+      "predicted_class": 1,
+      "confidence": 0.5819225907325745,
+      "is_labeled": false
+    },
+    {
+      "name": "S.R International",
+      "predicted_class": 3,
+      "confidence": 0.5009322762489319,
+      "is_labeled": false
+    },
+    {
+      "name": "Route-2 Health Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.5728114247322083,
+      "is_labeled": false
+    },
+    {
+      "name": "Makeup 4U",
+      "predicted_class": 0,
+      "confidence": 0.48140978813171387,
+      "is_labeled": false
+    },
+    {
+      "name": "Cargill Bio-Chemical Co Ltd",
+      "predicted_class": 1,
+      "confidence": 0.35834401845932007,
+      "is_labeled": false
+    },
+    {
+      "name": "Pt Raja Impex",
+      "predicted_class": 2,
+      "confidence": 0.3897168040275574,
+      "is_labeled": false
+    },
+    {
+      "name": "Nabi Qasim Industries Pvt Ltd",
+      "predicted_class": 1,
+      "confidence": 0.593675971031189,
+      "is_labeled": false
+    },
+    {
+      "name": "Pt Damai Karya Abadi",
+      "predicted_class": 2,
+      "confidence": 0.5309062004089355,
+      "is_labeled": false
+    },
+    {
+      "name": "Central Chemicals",
+      "predicted_class": 3,
+      "confidence": 0.48814359307289124,
+      "is_labeled": false
+    },
+    {
+      "name": "Bilal Impex",
+      "predicted_class": 3,
+      "confidence": 0.5009717345237732,
+      "is_labeled": false
+    },
+    {
+      "name": "Yiwu Guoyou Import & Export Co Ltd",
+      "predicted_class": 2,
+      "confidence": 0.5944408774375916,
+      "is_labeled": false
+    },
+    {
+      "name": "Aromsa Besin Aroma Ve Katki Maddeleri San Ve Tic",
+      "predicted_class": 1,
+      "confidence": 0.5591782331466675,
+      "is_labeled": false
+    },
+    {
+      "name": "Martin Dow Specialities Pvt Ltd",
+      "predicted_class": 3,
+      "confidence": 0.49330446124076843,
+      "is_labeled": false
+    }
+  ],
+  "by_class": {
+    "0": [
+      {
+        "name": "Abbott Laboratories Pakistan Ltd",
+        "predicted_class": 0,
+        "confidence": 0.5908029079437256,
+        "is_labeled": false
+      },
+      {
+        "name": "Seawall Enterprise Ltd",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      },
+      {
+        "name": "Malkara Birlik Sut Ve Sut Mamulleri As",
+        "predicted_class": 0,
+        "confidence": 0.5628584623336792,
+        "is_labeled": false
+      },
+      {
+        "name": "The Coca-Cola Export Corporation Pakistan Branch",
+        "predicted_class": 0,
+        "confidence": 0.9946795105934143,
+        "is_labeled": true
+      },
+      {
+        "name": "Lactalis Ingredients",
+        "predicted_class": 0,
+        "confidence": 0.9999967813491821,
+        "is_labeled": true
+      },
+      {
+        "name": "Meggle Gmbh & Co Kg",
+        "predicted_class": 0,
+        "confidence": 0.9980407357215881,
+        "is_labeled": false
+      },
+      {
+        "name": "Klarg Exports",
+        "predicted_class": 0,
+        "confidence": 0.8545668721199036,
+        "is_labeled": false
+      },
+      {
+        "name": "Friesland Campina Domo",
+        "predicted_class": 0,
+        "confidence": 0.6025900840759277,
+        "is_labeled": true
+      },
+      {
+        "name": "Al Khaleej Sugar Co Llc",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      },
+      {
+        "name": "Agris Ninh Hoa Import Export",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      },
+      {
+        "name": "Daejung Chemicals & Metals Co Ltd",
+        "predicted_class": 0,
+        "confidence": 0.4207266867160797,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Mayora Indah Tbk",
+        "predicted_class": 0,
+        "confidence": 0.9894934892654419,
+        "is_labeled": false
+      },
+      {
+        "name": "Qiqihar Longjiang Fufeng Biotechnologies Co Ltd",
+        "predicted_class": 0,
+        "confidence": 0.6750327348709106,
+        "is_labeled": false
+      },
+      {
+        "name": "Usman Brothers Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 0.938719630241394,
+        "is_labeled": false
+      },
+      {
+        "name": "Malkani Traders",
+        "predicted_class": 0,
+        "confidence": 0.7132924199104309,
+        "is_labeled": false
+      },
+      {
+        "name": "Sethness Roquette Food (Lianyungang) Co Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9751741290092468,
+        "is_labeled": false
+      },
+      {
+        "name": "K.S.L Export Trading Co Ltd",
+        "predicted_class": 0,
+        "confidence": 0.982674777507782,
+        "is_labeled": false
+      },
+      {
+        "name": "Msm Prai Berhad",
+        "predicted_class": 0,
+        "confidence": 0.9998779296875,
+        "is_labeled": false
+      },
+      {
+        "name": "Galaxo Smith Kline Pakistan Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9061768651008606,
+        "is_labeled": true
+      },
+      {
+        "name": "Chuming Pharmaceutical Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9816981554031372,
+        "is_labeled": true
+      },
+      {
+        "name": "Qinhuangdao Lihua Starch Co Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9995588660240173,
+        "is_labeled": true
+      },
+      {
+        "name": "Armor Proteines Sas",
+        "predicted_class": 0,
+        "confidence": 0.8014881014823914,
+        "is_labeled": false
+      },
+      {
+        "name": "Fedex Express",
+        "predicted_class": 0,
+        "confidence": 0.6451913714408875,
+        "is_labeled": false
+      },
+      {
+        "name": "Getz Pharma Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9971171617507935,
+        "is_labeled": true
+      },
+      {
+        "name": "Ups Air Couriers Of America",
+        "predicted_class": 0,
+        "confidence": 0.9999828338623047,
+        "is_labeled": false
+      },
+      {
+        "name": "Hilton Pharma Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 0.8629112839698792,
+        "is_labeled": false
+      },
+      {
+        "name": "Thanh Thanh Cong \u2013 Bien Hoa",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      },
+      {
+        "name": "Dfe Pahrma Gmbh & Co Kg",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      },
+      {
+        "name": "The Searle Co Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9991552829742432,
+        "is_labeled": true
+      },
+      {
+        "name": "Tiva Gida San Ve Tic As",
+        "predicted_class": 0,
+        "confidence": 0.9602618217468262,
+        "is_labeled": false
+      },
+      {
+        "name": "Emad Trade House Fzco",
+        "predicted_class": 0,
+        "confidence": 0.5093370676040649,
+        "is_labeled": false
+      },
+      {
+        "name": "Dhl Pakistan Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      },
+      {
+        "name": "Milchwerke Mittelelbe Gmbh",
+        "predicted_class": 0,
+        "confidence": 0.9725250005722046,
+        "is_labeled": false
+      },
+      {
+        "name": "Leprino Foods Dairy Products Co",
+        "predicted_class": 0,
+        "confidence": 0.9944004416465759,
+        "is_labeled": false
+      },
+      {
+        "name": "Pamir Gida Sanayi As",
+        "predicted_class": 0,
+        "confidence": 0.9650547504425049,
+        "is_labeled": false
+      },
+      {
+        "name": "Muller & Phipps (Pakistan) Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9999998807907104,
+        "is_labeled": true
+      },
+      {
+        "name": "Friesland Campina Engro Pakistan Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9843224883079529,
+        "is_labeled": true
+      },
+      {
+        "name": "The Thai Sugar Trading Corp",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      },
+      {
+        "name": "Trading World",
+        "predicted_class": 0,
+        "confidence": 0.5550270676612854,
+        "is_labeled": false
+      },
+      {
+        "name": "Nestle Pakistan Ltd",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": true
+      },
+      {
+        "name": "Laboratory Scientific Supplies Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 0.68824303150177,
+        "is_labeled": false
+      },
+      {
+        "name": "Perfetti Van Melle Confectionery (Shenzhen) Co Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9999996423721313,
+        "is_labeled": false
+      },
+      {
+        "name": "Tereos Acucar E Energia",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      },
+      {
+        "name": "Liaoning Pharmaceutical Foreign Trade Corporation",
+        "predicted_class": 0,
+        "confidence": 0.8355353474617004,
+        "is_labeled": false
+      },
+      {
+        "name": "Brothers Enterprise Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9996236562728882,
+        "is_labeled": false
+      },
+      {
+        "name": "Pacific Sugar Corporation Ltd",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": true
+      },
+      {
+        "name": "Universal Logistics Services Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9997450709342957,
+        "is_labeled": false
+      },
+      {
+        "name": "Makeup 4U",
+        "predicted_class": 0,
+        "confidence": 0.48140978813171387,
+        "is_labeled": false
+      },
+      {
+        "name": "Trading Corporation Of Pakistan Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      },
+      {
+        "name": "Ismail & Rais Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 0.8292478322982788,
+        "is_labeled": false
+      },
+      {
+        "name": "Imtiaz Group Smc Pvt Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9970092177391052,
+        "is_labeled": false
+      },
+      {
+        "name": "Haleon Pakistan Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9850217700004578,
+        "is_labeled": false
+      },
+      {
+        "name": "Sigma-Aldrich Chemie Gmbh",
+        "predicted_class": 0,
+        "confidence": 0.8241798281669617,
+        "is_labeled": false
+      },
+      {
+        "name": "Aba Stepsworth Dwc Llc",
+        "predicted_class": 0,
+        "confidence": 0.9997336268424988,
+        "is_labeled": false
+      },
+      {
+        "name": "World Sugar Export Co Ltd",
+        "predicted_class": 0,
+        "confidence": 0.9999998807907104,
+        "is_labeled": false
+      },
+      {
+        "name": "Dhl Worldwide Express",
+        "predicted_class": 0,
+        "confidence": 1.0,
+        "is_labeled": false
+      }
+    ],
+    "1": [
+      {
+        "name": "Palzar Enterprises",
+        "predicted_class": 1,
+        "confidence": 0.8998674750328064,
+        "is_labeled": false
+      },
+      {
+        "name": "Weifang Shengtai Medicine Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6918447017669678,
+        "is_labeled": false
+      },
+      {
+        "name": "Medisure Laboratories Pakistan Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.7523481845855713,
+        "is_labeled": false
+      },
+      {
+        "name": "Unilever Pakistan Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6621223092079163,
+        "is_labeled": false
+      },
+      {
+        "name": "Agp Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9300588369369507,
+        "is_labeled": false
+      },
+      {
+        "name": "Anhui Ebuy International Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.8858792185783386,
+        "is_labeled": false
+      },
+      {
+        "name": "Mansoor Chemical",
+        "predicted_class": 1,
+        "confidence": 0.8014492392539978,
+        "is_labeled": false
+      },
+      {
+        "name": "Global Pharmaceuticals Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.7567568421363831,
+        "is_labeled": false
+      },
+      {
+        "name": "Szumex International",
+        "predicted_class": 1,
+        "confidence": 0.5539292097091675,
+        "is_labeled": false
+      },
+      {
+        "name": "Has Trading Solutions",
+        "predicted_class": 1,
+        "confidence": 0.7701380252838135,
+        "is_labeled": false
+      },
+      {
+        "name": "Dairy Life Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.5846112966537476,
+        "is_labeled": false
+      },
+      {
+        "name": "Tabros Pharma Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9942922592163086,
+        "is_labeled": false
+      },
+      {
+        "name": "Apeloa Hong Kong Ltd",
+        "predicted_class": 1,
+        "confidence": 0.5099731087684631,
+        "is_labeled": false
+      },
+      {
+        "name": "Zafa Pharmaceutical Laboratories Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.5037092566490173,
+        "is_labeled": false
+      },
+      {
+        "name": "Leads Pharma Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9087529182434082,
+        "is_labeled": false
+      },
+      {
+        "name": "Selmore Pharmaceuticals Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9527576565742493,
+        "is_labeled": true
+      },
+      {
+        "name": "Nishat Sutas Dairy Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6175364255905151,
+        "is_labeled": false
+      },
+      {
+        "name": "Barrett Hodgson Pakistan Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.7566428780555725,
+        "is_labeled": false
+      },
+      {
+        "name": "Pharmevo Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.884827196598053,
+        "is_labeled": false
+      },
+      {
+        "name": "Anhui Kemfood International Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.8729085922241211,
+        "is_labeled": true
+      },
+      {
+        "name": "Rongcheng More Efficient Trading Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6843509078025818,
+        "is_labeled": false
+      },
+      {
+        "name": "Atco Laboratories Ltd",
+        "predicted_class": 1,
+        "confidence": 0.843869149684906,
+        "is_labeled": false
+      },
+      {
+        "name": "Elite Chemicals Co",
+        "predicted_class": 1,
+        "confidence": 0.9245403409004211,
+        "is_labeled": true
+      },
+      {
+        "name": "Werrick Pharamaceuticals",
+        "predicted_class": 1,
+        "confidence": 0.9443446397781372,
+        "is_labeled": false
+      },
+      {
+        "name": "Pak International",
+        "predicted_class": 1,
+        "confidence": 0.9792246222496033,
+        "is_labeled": true
+      },
+      {
+        "name": "Musaji Adam & Sons",
+        "predicted_class": 1,
+        "confidence": 0.9173204302787781,
+        "is_labeled": false
+      },
+      {
+        "name": "W Woodward Pakistan Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6870551109313965,
+        "is_labeled": false
+      },
+      {
+        "name": "Highnoon Laboratories Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9139975309371948,
+        "is_labeled": false
+      },
+      {
+        "name": "Qingdao Hisunny Imp & Exp Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9308778643608093,
+        "is_labeled": false
+      },
+      {
+        "name": "Foshan Gaoming Jinjie Import And Export Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6174752712249756,
+        "is_labeled": false
+      },
+      {
+        "name": "Sheheryar Enterprises",
+        "predicted_class": 1,
+        "confidence": 0.9116882085800171,
+        "is_labeled": false
+      },
+      {
+        "name": "Hinucon Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9344214797019958,
+        "is_labeled": false
+      },
+      {
+        "name": "Tcs Express Ww",
+        "predicted_class": 1,
+        "confidence": 0.5854392051696777,
+        "is_labeled": false
+      },
+      {
+        "name": "Emrays (Hangzhou) Pharmaceutical Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6679747104644775,
+        "is_labeled": true
+      },
+      {
+        "name": "Cspc Shengxue Glucose Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9240773916244507,
+        "is_labeled": false
+      },
+      {
+        "name": "Sami Pharmaceuticals Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9125659465789795,
+        "is_labeled": false
+      },
+      {
+        "name": "Firstop Commercial And Trading Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.8472506403923035,
+        "is_labeled": false
+      },
+      {
+        "name": "Mohammadi Traders",
+        "predicted_class": 1,
+        "confidence": 0.7586279511451721,
+        "is_labeled": false
+      },
+      {
+        "name": "Unisa Pharmaceutical Industries Ltd",
+        "predicted_class": 1,
+        "confidence": 0.7706577181816101,
+        "is_labeled": true
+      },
+      {
+        "name": "Martin Dow Ltd",
+        "predicted_class": 1,
+        "confidence": 0.8725475072860718,
+        "is_labeled": false
+      },
+      {
+        "name": "Sweetzone Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6770110726356506,
+        "is_labeled": false
+      },
+      {
+        "name": "Tcs Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.8458965420722961,
+        "is_labeled": false
+      },
+      {
+        "name": "As Enterprises",
+        "predicted_class": 1,
+        "confidence": 0.7269682884216309,
+        "is_labeled": false
+      },
+      {
+        "name": "United Chemical Corporation Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9753465056419373,
+        "is_labeled": false
+      },
+      {
+        "name": "Zhejiang Medicines & Health Products Import & Export Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.8160430788993835,
+        "is_labeled": true
+      },
+      {
+        "name": "Philip Morris (Pakistan) Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9964407086372375,
+        "is_labeled": true
+      },
+      {
+        "name": "Mattoo Sons",
+        "predicted_class": 1,
+        "confidence": 0.9320378303527832,
+        "is_labeled": false
+      },
+      {
+        "name": "San Soon Seng Food Industries Sdn Bhd",
+        "predicted_class": 1,
+        "confidence": 0.9041360020637512,
+        "is_labeled": true
+      },
+      {
+        "name": "Nutrico Morinaga Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9910592436790466,
+        "is_labeled": false
+      },
+      {
+        "name": "Haleeb Foods Ltd",
+        "predicted_class": 1,
+        "confidence": 0.7010131478309631,
+        "is_labeled": false
+      },
+      {
+        "name": "Wheyco Gmbh",
+        "predicted_class": 1,
+        "confidence": 0.4040173292160034,
+        "is_labeled": false
+      },
+      {
+        "name": "Qingdao Foture Industry Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9470791816711426,
+        "is_labeled": false
+      },
+      {
+        "name": "Zibo Weibin Imp & Exp Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.5819225907325745,
+        "is_labeled": false
+      },
+      {
+        "name": "Monin Asia Kl Sdn Bhd",
+        "predicted_class": 1,
+        "confidence": 0.8434927463531494,
+        "is_labeled": true
+      },
+      {
+        "name": "Jawed Traders",
+        "predicted_class": 1,
+        "confidence": 0.9834594130516052,
+        "is_labeled": false
+      },
+      {
+        "name": "A.F.U International",
+        "predicted_class": 1,
+        "confidence": 0.9128627777099609,
+        "is_labeled": false
+      },
+      {
+        "name": "Global Marketing Carporation",
+        "predicted_class": 1,
+        "confidence": 0.8696087002754211,
+        "is_labeled": false
+      },
+      {
+        "name": "Candy Shandy Enterprise",
+        "predicted_class": 1,
+        "confidence": 0.7436234354972839,
+        "is_labeled": false
+      },
+      {
+        "name": "Yiwu Saijia Trading Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6898512244224548,
+        "is_labeled": false
+      },
+      {
+        "name": "D.D Williamson Ingredients (Shanghai) Ltd",
+        "predicted_class": 1,
+        "confidence": 0.7114356160163879,
+        "is_labeled": false
+      },
+      {
+        "name": "Wilson's Pharmaceuticals",
+        "predicted_class": 1,
+        "confidence": 0.9475950598716736,
+        "is_labeled": false
+      },
+      {
+        "name": "Betelnuts Corporation",
+        "predicted_class": 1,
+        "confidence": 0.853975772857666,
+        "is_labeled": false
+      },
+      {
+        "name": "Cargill Bio-Chemical Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.35834401845932007,
+        "is_labeled": false
+      },
+      {
+        "name": "Protech",
+        "predicted_class": 1,
+        "confidence": 0.8875141739845276,
+        "is_labeled": false
+      },
+      {
+        "name": "Nabi Qasim Industries Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.593675971031189,
+        "is_labeled": false
+      },
+      {
+        "name": "I & H Services",
+        "predicted_class": 1,
+        "confidence": 0.6173647046089172,
+        "is_labeled": false
+      },
+      {
+        "name": "Fipharm Co Ltd",
+        "predicted_class": 1,
+        "confidence": 0.6617857813835144,
+        "is_labeled": false
+      },
+      {
+        "name": "Mondelez Pakistan Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9452201724052429,
+        "is_labeled": false
+      },
+      {
+        "name": "Tate & Lyle Boleraz Sro",
+        "predicted_class": 1,
+        "confidence": 0.7050988674163818,
+        "is_labeled": false
+      },
+      {
+        "name": "Sensient Technologies Europe Gmbh",
+        "predicted_class": 1,
+        "confidence": 0.7325302958488464,
+        "is_labeled": false
+      },
+      {
+        "name": "Pepsi-Cola International Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.7362057566642761,
+        "is_labeled": false
+      },
+      {
+        "name": "Infinity Traders",
+        "predicted_class": 1,
+        "confidence": 0.8842613697052002,
+        "is_labeled": false
+      },
+      {
+        "name": "Pollen Endustriyel Gida Sanayi Ve Ticaret As",
+        "predicted_class": 1,
+        "confidence": 0.7492061257362366,
+        "is_labeled": false
+      },
+      {
+        "name": "Lucky Core Industries Ltd",
+        "predicted_class": 1,
+        "confidence": 0.8265207409858704,
+        "is_labeled": true
+      },
+      {
+        "name": "Pharmatec Pakistan Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.728924572467804,
+        "is_labeled": false
+      },
+      {
+        "name": "Gerry's International Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.9802298545837402,
+        "is_labeled": false
+      },
+      {
+        "name": "Toss Enterprises",
+        "predicted_class": 1,
+        "confidence": 0.7567707896232605,
+        "is_labeled": false
+      },
+      {
+        "name": "Inventor Pharma Pvt Ltd",
+        "predicted_class": 1,
+        "confidence": 0.8938448429107666,
+        "is_labeled": false
+      },
+      {
+        "name": "Aromsa Besin Aroma Ve Katki Maddeleri San Ve Tic",
+        "predicted_class": 1,
+        "confidence": 0.5591782331466675,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Hanjaya Mandala Sampoerna Tbk",
+        "predicted_class": 1,
+        "confidence": 0.9411429762840271,
+        "is_labeled": false
+      },
+      {
+        "name": "Mak Kemikal",
+        "predicted_class": 1,
+        "confidence": 0.9502833485603333,
+        "is_labeled": true
+      },
+      {
+        "name": "Pharma Chemicals",
+        "predicted_class": 1,
+        "confidence": 0.8203732967376709,
+        "is_labeled": false
+      }
+    ],
+    "2": [
+      {
+        "name": "Novi Srl",
+        "predicted_class": 2,
+        "confidence": 0.9932789206504822,
+        "is_labeled": false
+      },
+      {
+        "name": "Fynk Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9787245392799377,
+        "is_labeled": false
+      },
+      {
+        "name": "Twin Star International",
+        "predicted_class": 2,
+        "confidence": 0.6652603149414062,
+        "is_labeled": false
+      },
+      {
+        "name": "Ahmed Chemical Co",
+        "predicted_class": 2,
+        "confidence": 0.9483175277709961,
+        "is_labeled": false
+      },
+      {
+        "name": "New Natural Biotech Fz Llc",
+        "predicted_class": 2,
+        "confidence": 0.5493921041488647,
+        "is_labeled": false
+      },
+      {
+        "name": "Aries Pharmaceutical Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9785996675491333,
+        "is_labeled": false
+      },
+      {
+        "name": "Kayans Pharmaceuticals Industries",
+        "predicted_class": 2,
+        "confidence": 0.8909859657287598,
+        "is_labeled": false
+      },
+      {
+        "name": "Nabiqasim Industries Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6526739001274109,
+        "is_labeled": false
+      },
+      {
+        "name": "Yiwu Harpy Import And Export Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6192614436149597,
+        "is_labeled": false
+      },
+      {
+        "name": "Nova Link General Trading Llc",
+        "predicted_class": 2,
+        "confidence": 0.7642760872840881,
+        "is_labeled": false
+      },
+      {
+        "name": "Archard Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.924168586730957,
+        "is_labeled": false
+      },
+      {
+        "name": "Pfizer Pakistan Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9603511691093445,
+        "is_labeled": false
+      },
+      {
+        "name": "Shaigan Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7698971033096313,
+        "is_labeled": false
+      },
+      {
+        "name": "Shanghai Huamao Pharmaceutical Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9378064274787903,
+        "is_labeled": false
+      },
+      {
+        "name": "Al-Burque Enterprise",
+        "predicted_class": 2,
+        "confidence": 0.9983543157577515,
+        "is_labeled": false
+      },
+      {
+        "name": "Matco Foods Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8335703015327454,
+        "is_labeled": false
+      },
+      {
+        "name": "Arshine Lifescience Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.495250940322876,
+        "is_labeled": false
+      },
+      {
+        "name": "Sh Muhammad Rashid And Brothers",
+        "predicted_class": 2,
+        "confidence": 0.9732180237770081,
+        "is_labeled": false
+      },
+      {
+        "name": "Stand Pharm Pakistan Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6890879273414612,
+        "is_labeled": false
+      },
+      {
+        "name": "Quaper Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9779833555221558,
+        "is_labeled": false
+      },
+      {
+        "name": "Puratos (Thailand) Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.45210975408554077,
+        "is_labeled": false
+      },
+      {
+        "name": "Flaxen Trading Co",
+        "predicted_class": 2,
+        "confidence": 0.997860848903656,
+        "is_labeled": false
+      },
+      {
+        "name": "Univet Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9969244599342346,
+        "is_labeled": false
+      },
+      {
+        "name": "Mission Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9995941519737244,
+        "is_labeled": false
+      },
+      {
+        "name": "Alamgir",
+        "predicted_class": 2,
+        "confidence": 0.7920670509338379,
+        "is_labeled": false
+      },
+      {
+        "name": "Zain Enterprises",
+        "predicted_class": 2,
+        "confidence": 0.6121149659156799,
+        "is_labeled": false
+      },
+      {
+        "name": "Jrs Pharma Gmbh & Co Kg",
+        "predicted_class": 2,
+        "confidence": 0.5178617238998413,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Yupi Indo Jelly Gum Tbk",
+        "predicted_class": 2,
+        "confidence": 0.49596503376960754,
+        "is_labeled": false
+      },
+      {
+        "name": "Phytocon International Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6690956950187683,
+        "is_labeled": false
+      },
+      {
+        "name": "R.S International",
+        "predicted_class": 2,
+        "confidence": 0.9912436008453369,
+        "is_labeled": false
+      },
+      {
+        "name": "Sultan Chemicals",
+        "predicted_class": 2,
+        "confidence": 0.9895554780960083,
+        "is_labeled": false
+      },
+      {
+        "name": "Neutro Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6652460694313049,
+        "is_labeled": false
+      },
+      {
+        "name": "Rotex Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9982923865318298,
+        "is_labeled": false
+      },
+      {
+        "name": "Gn Chemicals Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.41916510462760925,
+        "is_labeled": false
+      },
+      {
+        "name": "Continental Worldwide Trading Co",
+        "predicted_class": 2,
+        "confidence": 0.9280557632446289,
+        "is_labeled": false
+      },
+      {
+        "name": "Royal Chemicals",
+        "predicted_class": 2,
+        "confidence": 0.9873019456863403,
+        "is_labeled": false
+      },
+      {
+        "name": "Austin Chemical Co Inc",
+        "predicted_class": 2,
+        "confidence": 0.8955211639404297,
+        "is_labeled": false
+      },
+      {
+        "name": "Mediflow Pharmaceutical Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9577019214630127,
+        "is_labeled": false
+      },
+      {
+        "name": "Hongye Chemical Group Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9924691319465637,
+        "is_labeled": true
+      },
+      {
+        "name": "Pharmawise Labs. Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6690783500671387,
+        "is_labeled": false
+      },
+      {
+        "name": "Labbaik Enterprises",
+        "predicted_class": 2,
+        "confidence": 0.7911482453346252,
+        "is_labeled": false
+      },
+      {
+        "name": "Faas Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9785657525062561,
+        "is_labeled": false
+      },
+      {
+        "name": "Pacific Pharmaceuticals Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9875619411468506,
+        "is_labeled": false
+      },
+      {
+        "name": "Chromachemie Laboratory Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9880325794219971,
+        "is_labeled": false
+      },
+      {
+        "name": "Global Traders",
+        "predicted_class": 2,
+        "confidence": 0.9982753992080688,
+        "is_labeled": false
+      },
+      {
+        "name": "Anhui Newchem Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.591113269329071,
+        "is_labeled": false
+      },
+      {
+        "name": "Acme Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9862543344497681,
+        "is_labeled": false
+      },
+      {
+        "name": "Baariq Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.8161537051200867,
+        "is_labeled": true
+      },
+      {
+        "name": "Ies Global Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9895281195640564,
+        "is_labeled": true
+      },
+      {
+        "name": "Glucorp Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8368726968765259,
+        "is_labeled": false
+      },
+      {
+        "name": "Caliph Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6693776845932007,
+        "is_labeled": false
+      },
+      {
+        "name": "Sanofi Aventis Pakistan Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9993752837181091,
+        "is_labeled": false
+      },
+      {
+        "name": "Yijia Consultants Smc Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9765243530273438,
+        "is_labeled": false
+      },
+      {
+        "name": "Stair Way Electronics Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9832984805107117,
+        "is_labeled": false
+      },
+      {
+        "name": "Angus Bio (Shanghai) Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7128252983093262,
+        "is_labeled": false
+      },
+      {
+        "name": "Sunshine Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9988235831260681,
+        "is_labeled": false
+      },
+      {
+        "name": "Aziz Impex",
+        "predicted_class": 2,
+        "confidence": 0.989639401435852,
+        "is_labeled": false
+      },
+      {
+        "name": "Fk Trader",
+        "predicted_class": 2,
+        "confidence": 0.9852288365364075,
+        "is_labeled": false
+      },
+      {
+        "name": "Kohinoor Industries",
+        "predicted_class": 2,
+        "confidence": 0.9695287346839905,
+        "is_labeled": false
+      },
+      {
+        "name": "Bismillah Trading Co",
+        "predicted_class": 2,
+        "confidence": 0.9070876836776733,
+        "is_labeled": false
+      },
+      {
+        "name": "International Importers",
+        "predicted_class": 2,
+        "confidence": 0.978033185005188,
+        "is_labeled": false
+      },
+      {
+        "name": "Aqua Food",
+        "predicted_class": 2,
+        "confidence": 0.7658509016036987,
+        "is_labeled": false
+      },
+      {
+        "name": "Dangschat T.O.H Gmbh & Co Kg",
+        "predicted_class": 2,
+        "confidence": 0.9319080710411072,
+        "is_labeled": false
+      },
+      {
+        "name": "Z And F Sungold Corporation",
+        "predicted_class": 2,
+        "confidence": 0.6624530553817749,
+        "is_labeled": false
+      },
+      {
+        "name": "Shandong Lianmeng International Trade Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7044058442115784,
+        "is_labeled": false
+      },
+      {
+        "name": "Pharmedic Laboratories Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9786658883094788,
+        "is_labeled": false
+      },
+      {
+        "name": "Martin Dow Marker Ltd",
+        "predicted_class": 2,
+        "confidence": 0.999936580657959,
+        "is_labeled": false
+      },
+      {
+        "name": "A.M International",
+        "predicted_class": 2,
+        "confidence": 0.957632303237915,
+        "is_labeled": false
+      },
+      {
+        "name": "D-Haans Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9916456341743469,
+        "is_labeled": false
+      },
+      {
+        "name": "Javed Chemical Corporation",
+        "predicted_class": 2,
+        "confidence": 0.9970820546150208,
+        "is_labeled": false
+      },
+      {
+        "name": "General Candy Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.5895889401435852,
+        "is_labeled": false
+      },
+      {
+        "name": "Fora Sweets Gida San Ve Tic As",
+        "predicted_class": 2,
+        "confidence": 0.47719645500183105,
+        "is_labeled": false
+      },
+      {
+        "name": "Dalda Foods Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7839601635932922,
+        "is_labeled": false
+      },
+      {
+        "name": "Fynk Pharmacuticals Formerly Unison Chem Works",
+        "predicted_class": 2,
+        "confidence": 0.9787584543228149,
+        "is_labeled": false
+      },
+      {
+        "name": "G.T Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.836452066898346,
+        "is_labeled": false
+      },
+      {
+        "name": "Jeram Coconut Sdn Bhd",
+        "predicted_class": 2,
+        "confidence": 0.8932045102119446,
+        "is_labeled": true
+      },
+      {
+        "name": "Makkah Traders",
+        "predicted_class": 2,
+        "confidence": 0.9566614031791687,
+        "is_labeled": false
+      },
+      {
+        "name": "Evolution Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.96934974193573,
+        "is_labeled": false
+      },
+      {
+        "name": "Shenzhen Rungu Food Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.48966822028160095,
+        "is_labeled": false
+      },
+      {
+        "name": "Farm Aid Group",
+        "predicted_class": 2,
+        "confidence": 0.8257219791412354,
+        "is_labeled": false
+      },
+      {
+        "name": "Dfe Pharma Gmbh & Co Kg",
+        "predicted_class": 2,
+        "confidence": 0.797066330909729,
+        "is_labeled": false
+      },
+      {
+        "name": "Heal Pharmaceutical Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9895979166030884,
+        "is_labeled": false
+      },
+      {
+        "name": "Winthrox Laboratories Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9995430707931519,
+        "is_labeled": false
+      },
+      {
+        "name": "Qas International",
+        "predicted_class": 2,
+        "confidence": 0.9965758919715881,
+        "is_labeled": false
+      },
+      {
+        "name": "Nawal Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9751296043395996,
+        "is_labeled": false
+      },
+      {
+        "name": "Adm Besin Ve Tarim As",
+        "predicted_class": 2,
+        "confidence": 0.9907943606376648,
+        "is_labeled": false
+      },
+      {
+        "name": "Atlantic Pharmaceutical Laboratories",
+        "predicted_class": 2,
+        "confidence": 0.6692211627960205,
+        "is_labeled": false
+      },
+      {
+        "name": "Shawn Enterprises",
+        "predicted_class": 2,
+        "confidence": 0.49920454621315,
+        "is_labeled": false
+      },
+      {
+        "name": "Izfaar Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9992296695709229,
+        "is_labeled": false
+      },
+      {
+        "name": "Cortex Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9992089867591858,
+        "is_labeled": false
+      },
+      {
+        "name": "Obs Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9997060894966125,
+        "is_labeled": false
+      },
+      {
+        "name": "Efroze Chemical Industries Private Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7694934010505676,
+        "is_labeled": false
+      },
+      {
+        "name": "Supreme Traders",
+        "predicted_class": 2,
+        "confidence": 0.9962369203567505,
+        "is_labeled": false
+      },
+      {
+        "name": "Revive Pharmakon",
+        "predicted_class": 2,
+        "confidence": 0.6692001819610596,
+        "is_labeled": false
+      },
+      {
+        "name": "Alpavit Gmbh & Co Kg",
+        "predicted_class": 2,
+        "confidence": 0.9922094345092773,
+        "is_labeled": false
+      },
+      {
+        "name": "Hong Kong Foreal Industrial Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8739489912986755,
+        "is_labeled": false
+      },
+      {
+        "name": "Inshal Pharmaceutical Industries",
+        "predicted_class": 2,
+        "confidence": 0.9755772352218628,
+        "is_labeled": false
+      },
+      {
+        "name": "Otsuka Pakistan Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8838719129562378,
+        "is_labeled": false
+      },
+      {
+        "name": "Zanctok Pharmaceutical Laboratories",
+        "predicted_class": 2,
+        "confidence": 0.771906316280365,
+        "is_labeled": false
+      },
+      {
+        "name": "Atago Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8611719608306885,
+        "is_labeled": false
+      },
+      {
+        "name": "Hudson Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9662688374519348,
+        "is_labeled": false
+      },
+      {
+        "name": "Searle Pakistan Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9668939113616943,
+        "is_labeled": false
+      },
+      {
+        "name": "Solaris Life Sciences Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.998063862323761,
+        "is_labeled": false
+      },
+      {
+        "name": "Kulsoom International",
+        "predicted_class": 2,
+        "confidence": 0.8468599915504456,
+        "is_labeled": false
+      },
+      {
+        "name": "Lakhani Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7467705607414246,
+        "is_labeled": false
+      },
+      {
+        "name": "Hiranis Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.911689281463623,
+        "is_labeled": false
+      },
+      {
+        "name": "Ghani Enterprises",
+        "predicted_class": 2,
+        "confidence": 0.8554837107658386,
+        "is_labeled": false
+      },
+      {
+        "name": "Valor Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9314930438995361,
+        "is_labeled": false
+      },
+      {
+        "name": "Indus Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.5644859075546265,
+        "is_labeled": false
+      },
+      {
+        "name": "M Hanif & Sons",
+        "predicted_class": 2,
+        "confidence": 0.9905017614364624,
+        "is_labeled": false
+      },
+      {
+        "name": "Amazon Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.999760091304779,
+        "is_labeled": false
+      },
+      {
+        "name": "Dulceplus Golosinas Sa",
+        "predicted_class": 2,
+        "confidence": 0.9937404990196228,
+        "is_labeled": false
+      },
+      {
+        "name": "Aipu Food Industry Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7231286764144897,
+        "is_labeled": true
+      },
+      {
+        "name": "Gamco International",
+        "predicted_class": 2,
+        "confidence": 0.9663282036781311,
+        "is_labeled": false
+      },
+      {
+        "name": "Moosani Impex",
+        "predicted_class": 2,
+        "confidence": 0.993263840675354,
+        "is_labeled": false
+      },
+      {
+        "name": "Uniwell International Machinery Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9087948203086853,
+        "is_labeled": false
+      },
+      {
+        "name": "Naveed Impex",
+        "predicted_class": 2,
+        "confidence": 0.9990179538726807,
+        "is_labeled": true
+      },
+      {
+        "name": "Standard Drug Co",
+        "predicted_class": 2,
+        "confidence": 0.771906316280365,
+        "is_labeled": false
+      },
+      {
+        "name": "Embassy Of The Republic Of Tajikistan",
+        "predicted_class": 2,
+        "confidence": 0.9847374558448792,
+        "is_labeled": false
+      },
+      {
+        "name": "Majestic Pharma",
+        "predicted_class": 2,
+        "confidence": 0.99953293800354,
+        "is_labeled": false
+      },
+      {
+        "name": "Singsino Group Ltd",
+        "predicted_class": 2,
+        "confidence": 0.4465130567550659,
+        "is_labeled": false
+      },
+      {
+        "name": "Shabbir International",
+        "predicted_class": 2,
+        "confidence": 0.48602354526519775,
+        "is_labeled": false
+      },
+      {
+        "name": "Ashrafsons Pharmaceutical Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.942993700504303,
+        "is_labeled": false
+      },
+      {
+        "name": "Zoic International",
+        "predicted_class": 2,
+        "confidence": 0.9592945575714111,
+        "is_labeled": false
+      },
+      {
+        "name": "Haji Razak Haji Habib Janoo",
+        "predicted_class": 2,
+        "confidence": 0.9988173842430115,
+        "is_labeled": false
+      },
+      {
+        "name": "Peter Justesen Company As",
+        "predicted_class": 2,
+        "confidence": 0.9458560347557068,
+        "is_labeled": false
+      },
+      {
+        "name": "Flash Laboratories",
+        "predicted_class": 2,
+        "confidence": 0.9144685864448547,
+        "is_labeled": false
+      },
+      {
+        "name": "Shazeb Pharmaceutical Industries Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9869303703308105,
+        "is_labeled": false
+      },
+      {
+        "name": "Murree Brewery Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9868039488792419,
+        "is_labeled": false
+      },
+      {
+        "name": "The Connection",
+        "predicted_class": 2,
+        "confidence": 0.9981861710548401,
+        "is_labeled": false
+      },
+      {
+        "name": "Foreach Enterprise Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9673119783401489,
+        "is_labeled": false
+      },
+      {
+        "name": "Sachsenmilch Leppersdorf Gmbh",
+        "predicted_class": 2,
+        "confidence": 0.3609870374202728,
+        "is_labeled": false
+      },
+      {
+        "name": "Aftab Chemical Co",
+        "predicted_class": 2,
+        "confidence": 0.9450569152832031,
+        "is_labeled": false
+      },
+      {
+        "name": "Aamster Laboratories (Branch)",
+        "predicted_class": 2,
+        "confidence": 0.8946282863616943,
+        "is_labeled": false
+      },
+      {
+        "name": "Chifeng Eyeris Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6393366456031799,
+        "is_labeled": false
+      },
+      {
+        "name": "Asian Gulf Shisha Molasses",
+        "predicted_class": 2,
+        "confidence": 0.9983112812042236,
+        "is_labeled": false
+      },
+      {
+        "name": "Arochem",
+        "predicted_class": 2,
+        "confidence": 0.9543390870094299,
+        "is_labeled": false
+      },
+      {
+        "name": "Infoark Industry Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7214893698692322,
+        "is_labeled": true
+      },
+      {
+        "name": "Innova Ingredients Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9858090281486511,
+        "is_labeled": false
+      },
+      {
+        "name": "Dairyland Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9505048990249634,
+        "is_labeled": false
+      },
+      {
+        "name": "Al-Chemist Corp",
+        "predicted_class": 2,
+        "confidence": 0.859711229801178,
+        "is_labeled": false
+      },
+      {
+        "name": "B Healthy Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9361582398414612,
+        "is_labeled": false
+      },
+      {
+        "name": "Mukaty Enterprises",
+        "predicted_class": 2,
+        "confidence": 0.9998138546943665,
+        "is_labeled": false
+      },
+      {
+        "name": "Mcc Huaye Duddar Mining Co Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9974722266197205,
+        "is_labeled": false
+      },
+      {
+        "name": "Genix Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7581825852394104,
+        "is_labeled": false
+      },
+      {
+        "name": "Cheminova Corporation",
+        "predicted_class": 2,
+        "confidence": 0.8875659704208374,
+        "is_labeled": false
+      },
+      {
+        "name": "Embassy Of The Russian Federation",
+        "predicted_class": 2,
+        "confidence": 0.9940500855445862,
+        "is_labeled": false
+      },
+      {
+        "name": "Regent Laboratories",
+        "predicted_class": 2,
+        "confidence": 0.9785863757133484,
+        "is_labeled": false
+      },
+      {
+        "name": "Awais Trading Corporation",
+        "predicted_class": 2,
+        "confidence": 0.9976028800010681,
+        "is_labeled": true
+      },
+      {
+        "name": "Scilife Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9733154773712158,
+        "is_labeled": false
+      },
+      {
+        "name": "D-Maarson Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.8935657739639282,
+        "is_labeled": false
+      },
+      {
+        "name": "Krypton Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8193802833557129,
+        "is_labeled": false
+      },
+      {
+        "name": "Jhk Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6764811873435974,
+        "is_labeled": false
+      },
+      {
+        "name": "Geofman Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.6646947264671326,
+        "is_labeled": false
+      },
+      {
+        "name": "Prime International",
+        "predicted_class": 2,
+        "confidence": 0.7506744265556335,
+        "is_labeled": false
+      },
+      {
+        "name": "One Health Pharma",
+        "predicted_class": 2,
+        "confidence": 0.9936413168907166,
+        "is_labeled": false
+      },
+      {
+        "name": "Ahsons Drug Co",
+        "predicted_class": 2,
+        "confidence": 0.9917033910751343,
+        "is_labeled": false
+      },
+      {
+        "name": "Hangzhou Starshine Pharmaceutical Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.4912107288837433,
+        "is_labeled": false
+      },
+      {
+        "name": "Morgan Technologies Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9292134046554565,
+        "is_labeled": false
+      },
+      {
+        "name": "Rapid World General Trading Co Llc",
+        "predicted_class": 2,
+        "confidence": 0.40830108523368835,
+        "is_labeled": true
+      },
+      {
+        "name": "Horizon Healthcare Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.5460386872291565,
+        "is_labeled": false
+      },
+      {
+        "name": "Dhl Express International (Th) Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9543212652206421,
+        "is_labeled": false
+      },
+      {
+        "name": "Poulvet Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8593791723251343,
+        "is_labeled": false
+      },
+      {
+        "name": "Frontier Dextrose Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9831333756446838,
+        "is_labeled": false
+      },
+      {
+        "name": "Perfetti Van Melle (Vietnam) Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8131274580955505,
+        "is_labeled": false
+      },
+      {
+        "name": "Avicenna Laboratories Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9996371269226074,
+        "is_labeled": true
+      },
+      {
+        "name": "Ckd Pharmaceuticals Pakistan Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9831457138061523,
+        "is_labeled": false
+      },
+      {
+        "name": "Yah Impex",
+        "predicted_class": 2,
+        "confidence": 0.9368041157722473,
+        "is_labeled": false
+      },
+      {
+        "name": "Healthtek Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.999259889125824,
+        "is_labeled": false
+      },
+      {
+        "name": "S. J & G Fazul Ellahie Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.5948716998100281,
+        "is_labeled": false
+      },
+      {
+        "name": "Hoechst Pakistan Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8746281266212463,
+        "is_labeled": false
+      },
+      {
+        "name": "Naveed Trading Co",
+        "predicted_class": 2,
+        "confidence": 0.7289140224456787,
+        "is_labeled": false
+      },
+      {
+        "name": "Bin Dawood Flavours Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8965499997138977,
+        "is_labeled": false
+      },
+      {
+        "name": "Ferozsons Laboratories Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9994587302207947,
+        "is_labeled": true
+      },
+      {
+        "name": "Glorious Laboratories",
+        "predicted_class": 2,
+        "confidence": 0.9995684027671814,
+        "is_labeled": false
+      },
+      {
+        "name": "M.A Kamil",
+        "predicted_class": 2,
+        "confidence": 0.9800175428390503,
+        "is_labeled": false
+      },
+      {
+        "name": "Guangdong Haoliyuan Food Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9934131503105164,
+        "is_labeled": false
+      },
+      {
+        "name": "Fortune Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7156212329864502,
+        "is_labeled": false
+      },
+      {
+        "name": "Damel Group Sl",
+        "predicted_class": 2,
+        "confidence": 0.8321328163146973,
+        "is_labeled": false
+      },
+      {
+        "name": "Medipak Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7796645164489746,
+        "is_labeled": false
+      },
+      {
+        "name": "Aspin Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8943539261817932,
+        "is_labeled": false
+      },
+      {
+        "name": "Pak Polychem Enterprises",
+        "predicted_class": 2,
+        "confidence": 0.9993010759353638,
+        "is_labeled": false
+      },
+      {
+        "name": "Abdullah Impex",
+        "predicted_class": 2,
+        "confidence": 0.9895724654197693,
+        "is_labeled": false
+      },
+      {
+        "name": "Irza Pharma Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7694934010505676,
+        "is_labeled": false
+      },
+      {
+        "name": "Shafiq Iqbal Enterprises",
+        "predicted_class": 2,
+        "confidence": 0.9594312906265259,
+        "is_labeled": false
+      },
+      {
+        "name": "Sb Pharma",
+        "predicted_class": 2,
+        "confidence": 0.9901250600814819,
+        "is_labeled": false
+      },
+      {
+        "name": "Ras Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9938855767250061,
+        "is_labeled": false
+      },
+      {
+        "name": "Epharm Laboratories",
+        "predicted_class": 2,
+        "confidence": 0.6817389130592346,
+        "is_labeled": false
+      },
+      {
+        "name": "Renacon Pharma Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8031406998634338,
+        "is_labeled": false
+      },
+      {
+        "name": "Reign Pharmaceuticals Pcsir Klc Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9990851879119873,
+        "is_labeled": false
+      },
+      {
+        "name": "J.S Corporation",
+        "predicted_class": 2,
+        "confidence": 0.9339888691902161,
+        "is_labeled": true
+      },
+      {
+        "name": "Ciba Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.931512176990509,
+        "is_labeled": false
+      },
+      {
+        "name": "Haameem",
+        "predicted_class": 2,
+        "confidence": 0.9813639521598816,
+        "is_labeled": false
+      },
+      {
+        "name": "Chemtech",
+        "predicted_class": 2,
+        "confidence": 0.9993035793304443,
+        "is_labeled": false
+      },
+      {
+        "name": "Maac International",
+        "predicted_class": 2,
+        "confidence": 0.9497143030166626,
+        "is_labeled": false
+      },
+      {
+        "name": "Famous Trading Co",
+        "predicted_class": 2,
+        "confidence": 0.9493470191955566,
+        "is_labeled": false
+      },
+      {
+        "name": "Mariam International",
+        "predicted_class": 2,
+        "confidence": 0.7025424242019653,
+        "is_labeled": false
+      },
+      {
+        "name": "Mallard Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7988441586494446,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Raja Impex",
+        "predicted_class": 2,
+        "confidence": 0.3897168040275574,
+        "is_labeled": false
+      },
+      {
+        "name": "Tate & Lyle Sugars Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9409025311470032,
+        "is_labeled": false
+      },
+      {
+        "name": "Fauji Foods Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8962725400924683,
+        "is_labeled": false
+      },
+      {
+        "name": "Jawa Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9951592087745667,
+        "is_labeled": false
+      },
+      {
+        "name": "Emrays International General Trading Co Llc",
+        "predicted_class": 2,
+        "confidence": 0.969623327255249,
+        "is_labeled": false
+      },
+      {
+        "name": "Bakbel Europe Sa",
+        "predicted_class": 2,
+        "confidence": 0.7167697548866272,
+        "is_labeled": false
+      },
+      {
+        "name": "Herbion Pakistan Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7347732782363892,
+        "is_labeled": false
+      },
+      {
+        "name": "Saadet Gida Pazarlama San Ve Tic As",
+        "predicted_class": 2,
+        "confidence": 0.7705886363983154,
+        "is_labeled": false
+      },
+      {
+        "name": "Signet Excipients Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7603029012680054,
+        "is_labeled": false
+      },
+      {
+        "name": "Gallop Water Sciences",
+        "predicted_class": 2,
+        "confidence": 0.9991410970687866,
+        "is_labeled": false
+      },
+      {
+        "name": "Hamza Enterprise",
+        "predicted_class": 2,
+        "confidence": 0.9794719219207764,
+        "is_labeled": false
+      },
+      {
+        "name": "A & K Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9975538849830627,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Damai Karya Abadi",
+        "predicted_class": 2,
+        "confidence": 0.5309062004089355,
+        "is_labeled": false
+      },
+      {
+        "name": "United Food Group",
+        "predicted_class": 2,
+        "confidence": 0.9984096884727478,
+        "is_labeled": false
+      },
+      {
+        "name": "Sz Traders",
+        "predicted_class": 2,
+        "confidence": 0.9994469285011292,
+        "is_labeled": false
+      },
+      {
+        "name": "Davis Pharmaceutical Laboratories",
+        "predicted_class": 2,
+        "confidence": 0.8088735938072205,
+        "is_labeled": false
+      },
+      {
+        "name": "Epoch Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9422733187675476,
+        "is_labeled": false
+      },
+      {
+        "name": "Mylab Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9996885061264038,
+        "is_labeled": false
+      },
+      {
+        "name": "Aptly Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.7358344793319702,
+        "is_labeled": false
+      },
+      {
+        "name": "Parkar Pharma",
+        "predicted_class": 2,
+        "confidence": 0.771906316280365,
+        "is_labeled": false
+      },
+      {
+        "name": "High-Q Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9989526271820068,
+        "is_labeled": false
+      },
+      {
+        "name": "Raim Enterprises",
+        "predicted_class": 2,
+        "confidence": 0.9983904361724854,
+        "is_labeled": false
+      },
+      {
+        "name": "Sois Life Sciences",
+        "predicted_class": 2,
+        "confidence": 0.9994631409645081,
+        "is_labeled": false
+      },
+      {
+        "name": "Star Laboratories Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9996472597122192,
+        "is_labeled": false
+      },
+      {
+        "name": "Transmed International Pte Ltd",
+        "predicted_class": 2,
+        "confidence": 0.8314484357833862,
+        "is_labeled": false
+      },
+      {
+        "name": "East Chemsources Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9879004955291748,
+        "is_labeled": false
+      },
+      {
+        "name": "Qingdao Songwal Biotech Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9928621649742126,
+        "is_labeled": false
+      },
+      {
+        "name": "Ibrahim International",
+        "predicted_class": 2,
+        "confidence": 0.9337584972381592,
+        "is_labeled": false
+      },
+      {
+        "name": "Sociedad Espanola De Colorantes Naturales",
+        "predicted_class": 2,
+        "confidence": 0.9928224682807922,
+        "is_labeled": false
+      },
+      {
+        "name": "Jilin Cofco Bio-Chem And Bio-Energy Marketing",
+        "predicted_class": 2,
+        "confidence": 0.9928352236747742,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Gandum Mas Kencana",
+        "predicted_class": 2,
+        "confidence": 0.9937357306480408,
+        "is_labeled": false
+      },
+      {
+        "name": "Platinum Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9340712428092957,
+        "is_labeled": false
+      },
+      {
+        "name": "Blooming Foods Fzco",
+        "predicted_class": 2,
+        "confidence": 0.9435489773750305,
+        "is_labeled": false
+      },
+      {
+        "name": "Rayburn Trading Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9475707411766052,
+        "is_labeled": false
+      },
+      {
+        "name": "Haarold's Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7904325127601624,
+        "is_labeled": false
+      },
+      {
+        "name": "Apsis Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.6705653071403503,
+        "is_labeled": false
+      },
+      {
+        "name": "Defeem Sdn Bhd",
+        "predicted_class": 2,
+        "confidence": 0.8861948847770691,
+        "is_labeled": false
+      },
+      {
+        "name": "Zeta Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.6694585084915161,
+        "is_labeled": false
+      },
+      {
+        "name": "Rasco Pharma",
+        "predicted_class": 2,
+        "confidence": 0.9883943796157837,
+        "is_labeled": false
+      },
+      {
+        "name": "Jk International Fze",
+        "predicted_class": 2,
+        "confidence": 0.9937724471092224,
+        "is_labeled": false
+      },
+      {
+        "name": "Abdool Aly Moosabhoy & Sons",
+        "predicted_class": 2,
+        "confidence": 0.9977854490280151,
+        "is_labeled": false
+      },
+      {
+        "name": "Jawed & Co",
+        "predicted_class": 2,
+        "confidence": 0.9896295666694641,
+        "is_labeled": false
+      },
+      {
+        "name": "Axis Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.98142009973526,
+        "is_labeled": false
+      },
+      {
+        "name": "Embassy Of The Republic Of Ukraine",
+        "predicted_class": 2,
+        "confidence": 0.8816421031951904,
+        "is_labeled": false
+      },
+      {
+        "name": "Batala Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9664745926856995,
+        "is_labeled": false
+      },
+      {
+        "name": "Fivestar Corporation",
+        "predicted_class": 2,
+        "confidence": 0.9993780851364136,
+        "is_labeled": false
+      },
+      {
+        "name": "Bless Laboratories Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9985477328300476,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Savoria Kreasi Rasa",
+        "predicted_class": 2,
+        "confidence": 0.9448422193527222,
+        "is_labeled": false
+      },
+      {
+        "name": "Yiwu Guoyou Import & Export Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.5944408774375916,
+        "is_labeled": false
+      },
+      {
+        "name": "North Mile Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9927735924720764,
+        "is_labeled": false
+      },
+      {
+        "name": "Hangzhou Clake Biotech Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9936308264732361,
+        "is_labeled": false
+      },
+      {
+        "name": "Adamjee Pharmaceutical Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9918609857559204,
+        "is_labeled": true
+      },
+      {
+        "name": "Neutra Cure",
+        "predicted_class": 2,
+        "confidence": 0.9728526473045349,
+        "is_labeled": false
+      },
+      {
+        "name": "Great Wall Trading Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.7814206480979919,
+        "is_labeled": false
+      },
+      {
+        "name": "Macter International Ltd",
+        "predicted_class": 2,
+        "confidence": 0.995263934135437,
+        "is_labeled": false
+      },
+      {
+        "name": "Jinnah Pharmaceuticals Pvt Ltd",
+        "predicted_class": 2,
+        "confidence": 0.9990189075469971,
+        "is_labeled": false
+      },
+      {
+        "name": "Evergreen Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.9950146079063416,
+        "is_labeled": false
+      },
+      {
+        "name": "Muneeb Trading Co",
+        "predicted_class": 2,
+        "confidence": 0.9971627593040466,
+        "is_labeled": false
+      },
+      {
+        "name": "M2K2 Llc",
+        "predicted_class": 2,
+        "confidence": 0.7823680639266968,
+        "is_labeled": false
+      },
+      {
+        "name": "Yiwu Youcan Food Co Ltd",
+        "predicted_class": 2,
+        "confidence": 0.6206016540527344,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Yupi Indo Jelly Gum",
+        "predicted_class": 2,
+        "confidence": 0.7255095839500427,
+        "is_labeled": false
+      },
+      {
+        "name": "Vetrox Pharmaceuticals",
+        "predicted_class": 2,
+        "confidence": 0.6693943738937378,
+        "is_labeled": false
+      }
+    ],
+    "3": [
+      {
+        "name": "Arshine Food Additives Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9923499226570129,
+        "is_labeled": false
+      },
+      {
+        "name": "Al Zain International Traders",
+        "predicted_class": 3,
+        "confidence": 0.9987726807594299,
+        "is_labeled": false
+      },
+      {
+        "name": "Embassy Of United States Of America",
+        "predicted_class": 3,
+        "confidence": 0.9987717270851135,
+        "is_labeled": false
+      },
+      {
+        "name": "Semos Pharmaceutical Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6576113104820251,
+        "is_labeled": false
+      },
+      {
+        "name": "Novargo Inc",
+        "predicted_class": 3,
+        "confidence": 0.9927948117256165,
+        "is_labeled": false
+      },
+      {
+        "name": "Mcc Resources Development Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9459443688392639,
+        "is_labeled": false
+      },
+      {
+        "name": "Karam Traders",
+        "predicted_class": 3,
+        "confidence": 0.9983306527137756,
+        "is_labeled": false
+      },
+      {
+        "name": "Irca Spa",
+        "predicted_class": 3,
+        "confidence": 0.9920030832290649,
+        "is_labeled": false
+      },
+      {
+        "name": "Yiwu Yilong Import And Export Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.5689986944198608,
+        "is_labeled": false
+      },
+      {
+        "name": "Tayas Gida San Ve Tic As",
+        "predicted_class": 3,
+        "confidence": 0.9345247149467468,
+        "is_labeled": false
+      },
+      {
+        "name": "Bosmos International Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927878975868225,
+        "is_labeled": false
+      },
+      {
+        "name": "Diamond Fabrics Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9983318448066711,
+        "is_labeled": false
+      },
+      {
+        "name": "Greyhound Chromatography and Allied Chemicals Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9928015470504761,
+        "is_labeled": false
+      },
+      {
+        "name": "Eterna Pharma Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9937717318534851,
+        "is_labeled": false
+      },
+      {
+        "name": "D.D Willimason (Uk) Ltd",
+        "predicted_class": 3,
+        "confidence": 0.8791879415512085,
+        "is_labeled": false
+      },
+      {
+        "name": "Swan Impex Llp",
+        "predicted_class": 3,
+        "confidence": 0.7120581865310669,
+        "is_labeled": false
+      },
+      {
+        "name": "Boba Bubble Beverages Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987695813179016,
+        "is_labeled": false
+      },
+      {
+        "name": "Shanghai Icv Chemical Technology Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9925528168678284,
+        "is_labeled": false
+      },
+      {
+        "name": "M Yasin Ibico",
+        "predicted_class": 3,
+        "confidence": 0.9813087582588196,
+        "is_labeled": false
+      },
+      {
+        "name": "Sa Corporation",
+        "predicted_class": 3,
+        "confidence": 0.998769223690033,
+        "is_labeled": false
+      },
+      {
+        "name": "Suedzucker Ag",
+        "predicted_class": 3,
+        "confidence": 0.992233157157898,
+        "is_labeled": false
+      },
+      {
+        "name": "Fenchem Supply Chain Ltd",
+        "predicted_class": 3,
+        "confidence": 0.992800235748291,
+        "is_labeled": false
+      },
+      {
+        "name": "Venus Pharma",
+        "predicted_class": 3,
+        "confidence": 0.6576312184333801,
+        "is_labeled": false
+      },
+      {
+        "name": "Hebei Xiaoxixi Food Science And Technology",
+        "predicted_class": 3,
+        "confidence": 0.992768406867981,
+        "is_labeled": false
+      },
+      {
+        "name": "Ccnsport Hong Kong Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9928048253059387,
+        "is_labeled": false
+      },
+      {
+        "name": "D Orsogna Dolciaria Srl",
+        "predicted_class": 3,
+        "confidence": 0.9927383065223694,
+        "is_labeled": true
+      },
+      {
+        "name": "Ns Trade International",
+        "predicted_class": 3,
+        "confidence": 0.9987431168556213,
+        "is_labeled": false
+      },
+      {
+        "name": "Aykilic Gross Dis Ticaret Ltd",
+        "predicted_class": 3,
+        "confidence": 0.990881085395813,
+        "is_labeled": false
+      },
+      {
+        "name": "Haris Fayyaz",
+        "predicted_class": 3,
+        "confidence": 0.9987726807594299,
+        "is_labeled": false
+      },
+      {
+        "name": "Soar Biotech Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927958846092224,
+        "is_labeled": false
+      },
+      {
+        "name": "Asfa Karim",
+        "predicted_class": 3,
+        "confidence": 0.9928051829338074,
+        "is_labeled": false
+      },
+      {
+        "name": "Maria Violeta Jardines Rubieles",
+        "predicted_class": 3,
+        "confidence": 0.9707614779472351,
+        "is_labeled": false
+      },
+      {
+        "name": "Shantou Yangyu Foodstuff Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9733020663261414,
+        "is_labeled": false
+      },
+      {
+        "name": "Selfridges & Co",
+        "predicted_class": 3,
+        "confidence": 0.9928045868873596,
+        "is_labeled": false
+      },
+      {
+        "name": "Zain Enterprise Oilfield Supply Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987711310386658,
+        "is_labeled": false
+      },
+      {
+        "name": "Shanggao Richwant Trading Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9925976991653442,
+        "is_labeled": false
+      },
+      {
+        "name": "Embassy Of Germany",
+        "predicted_class": 3,
+        "confidence": 0.9987714886665344,
+        "is_labeled": false
+      },
+      {
+        "name": "Ccl Pharmaceuticals Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9065956473350525,
+        "is_labeled": false
+      },
+      {
+        "name": "Zak Tech",
+        "predicted_class": 3,
+        "confidence": 0.6583892107009888,
+        "is_labeled": false
+      },
+      {
+        "name": "Mr Khurram",
+        "predicted_class": 3,
+        "confidence": 0.9928044676780701,
+        "is_labeled": false
+      },
+      {
+        "name": "Pak Suzuki Motor Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9980269074440002,
+        "is_labeled": false
+      },
+      {
+        "name": "Dohler Pakistan Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.969515860080719,
+        "is_labeled": false
+      },
+      {
+        "name": "Mi International",
+        "predicted_class": 3,
+        "confidence": 0.9987725615501404,
+        "is_labeled": false
+      },
+      {
+        "name": "Guangdong Youzhiweipin Biotechnology",
+        "predicted_class": 3,
+        "confidence": 0.9608891010284424,
+        "is_labeled": false
+      },
+      {
+        "name": "Fizi Pharmaceutical And Chemical Laboratories",
+        "predicted_class": 3,
+        "confidence": 0.6575931310653687,
+        "is_labeled": false
+      },
+      {
+        "name": "Alb Wholesale Ltd",
+        "predicted_class": 3,
+        "confidence": 0.7016964554786682,
+        "is_labeled": false
+      },
+      {
+        "name": "Fakhar Abbas Shah",
+        "predicted_class": 3,
+        "confidence": 0.9987727999687195,
+        "is_labeled": false
+      },
+      {
+        "name": "F.B Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.5966511368751526,
+        "is_labeled": false
+      },
+      {
+        "name": "Iman Tariq Cheema",
+        "predicted_class": 3,
+        "confidence": 0.9987727999687195,
+        "is_labeled": false
+      },
+      {
+        "name": "I.A Global Eximp",
+        "predicted_class": 3,
+        "confidence": 0.6573302149772644,
+        "is_labeled": false
+      },
+      {
+        "name": "Enzon Pharma Labs Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6268749237060547,
+        "is_labeled": false
+      },
+      {
+        "name": "Hubei Sweet Element Food Technology",
+        "predicted_class": 3,
+        "confidence": 0.9925969839096069,
+        "is_labeled": false
+      },
+      {
+        "name": "Shenzhen Xingyan International",
+        "predicted_class": 3,
+        "confidence": 0.9928050637245178,
+        "is_labeled": false
+      },
+      {
+        "name": "Global Trade Link",
+        "predicted_class": 3,
+        "confidence": 0.503434419631958,
+        "is_labeled": false
+      },
+      {
+        "name": "Daks Trading Fz Llc",
+        "predicted_class": 3,
+        "confidence": 0.9928050637245178,
+        "is_labeled": false
+      },
+      {
+        "name": "Takayuki Shirota",
+        "predicted_class": 3,
+        "confidence": 0.9987727999687195,
+        "is_labeled": false
+      },
+      {
+        "name": "Meliana Tonga",
+        "predicted_class": 3,
+        "confidence": 0.9928047060966492,
+        "is_labeled": false
+      },
+      {
+        "name": "Divine Food Hub",
+        "predicted_class": 3,
+        "confidence": 0.9986929297447205,
+        "is_labeled": false
+      },
+      {
+        "name": "Bagat Agro Impex Llc",
+        "predicted_class": 3,
+        "confidence": 0.7973766326904297,
+        "is_labeled": false
+      },
+      {
+        "name": "Ruland Chemistry (Nanjing) Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9918825030326843,
+        "is_labeled": false
+      },
+      {
+        "name": "Chem Color International Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6582252979278564,
+        "is_labeled": true
+      },
+      {
+        "name": "Wuhan Lipharma Chemicals Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927535653114319,
+        "is_labeled": false
+      },
+      {
+        "name": "Vetcon Pharmaceuticals Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6576083898544312,
+        "is_labeled": false
+      },
+      {
+        "name": "Shazal's Pharmaceuticals",
+        "predicted_class": 3,
+        "confidence": 0.6576690077781677,
+        "is_labeled": false
+      },
+      {
+        "name": "Embassy Of Jordan",
+        "predicted_class": 3,
+        "confidence": 0.9985017776489258,
+        "is_labeled": false
+      },
+      {
+        "name": "Heilongjiang Jinxiang Biochemical Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.7251721024513245,
+        "is_labeled": false
+      },
+      {
+        "name": "Masfa Industries Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6576083898544312,
+        "is_labeled": true
+      },
+      {
+        "name": "Premium Chemicals",
+        "predicted_class": 3,
+        "confidence": 0.9987339377403259,
+        "is_labeled": false
+      },
+      {
+        "name": "Advan Pharmachem Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927443265914917,
+        "is_labeled": false
+      },
+      {
+        "name": "S.S Naseeruddin",
+        "predicted_class": 3,
+        "confidence": 0.9973177313804626,
+        "is_labeled": false
+      },
+      {
+        "name": "Qingdao Doeast Chemical Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927728772163391,
+        "is_labeled": false
+      },
+      {
+        "name": "Maple Star Food Solutions",
+        "predicted_class": 3,
+        "confidence": 0.998768150806427,
+        "is_labeled": false
+      },
+      {
+        "name": "Docile Alimentos Ltda",
+        "predicted_class": 3,
+        "confidence": 0.9218738079071045,
+        "is_labeled": false
+      },
+      {
+        "name": "M A Kamil Farma Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9074845314025879,
+        "is_labeled": false
+      },
+      {
+        "name": "Rano Fashion Llc",
+        "predicted_class": 3,
+        "confidence": 0.992804229259491,
+        "is_labeled": false
+      },
+      {
+        "name": "S.S Scientific System",
+        "predicted_class": 3,
+        "confidence": 0.9987726807594299,
+        "is_labeled": false
+      },
+      {
+        "name": "Ard Al Buraq General Trading Llc",
+        "predicted_class": 3,
+        "confidence": 0.992694616317749,
+        "is_labeled": false
+      },
+      {
+        "name": "Abdullah Trading Co",
+        "predicted_class": 3,
+        "confidence": 0.5445556044578552,
+        "is_labeled": false
+      },
+      {
+        "name": "Ahmad Naveed",
+        "predicted_class": 3,
+        "confidence": 0.9987726807594299,
+        "is_labeled": false
+      },
+      {
+        "name": "Syed Naeem General Trading",
+        "predicted_class": 3,
+        "confidence": 0.9982379674911499,
+        "is_labeled": false
+      },
+      {
+        "name": "Ss Agencies",
+        "predicted_class": 3,
+        "confidence": 0.9987370371818542,
+        "is_labeled": false
+      },
+      {
+        "name": "Far Eastern Impex Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6127274632453918,
+        "is_labeled": false
+      },
+      {
+        "name": "Asian Food Industries Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9793072938919067,
+        "is_labeled": false
+      },
+      {
+        "name": "I.M Traders",
+        "predicted_class": 3,
+        "confidence": 0.4551403522491455,
+        "is_labeled": false
+      },
+      {
+        "name": "International Diplomatic Supplies Inc",
+        "predicted_class": 3,
+        "confidence": 0.9927990436553955,
+        "is_labeled": false
+      },
+      {
+        "name": "Ma Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.6456402540206909,
+        "is_labeled": false
+      },
+      {
+        "name": "Jiangsu Soho Honry Import & Export Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927563071250916,
+        "is_labeled": false
+      },
+      {
+        "name": "Shantou Lebei Trading Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9912942051887512,
+        "is_labeled": false
+      },
+      {
+        "name": "Gmp Foods Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9986398816108704,
+        "is_labeled": false
+      },
+      {
+        "name": "Farmasino Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9924537539482117,
+        "is_labeled": false
+      },
+      {
+        "name": "Fusion Fareway Food Products Co Llc",
+        "predicted_class": 3,
+        "confidence": 0.9926140308380127,
+        "is_labeled": false
+      },
+      {
+        "name": "M.R.S Star General Trading Llc",
+        "predicted_class": 3,
+        "confidence": 0.9927234053611755,
+        "is_labeled": false
+      },
+      {
+        "name": "Sethness Products Co",
+        "predicted_class": 3,
+        "confidence": 0.9927816987037659,
+        "is_labeled": true
+      },
+      {
+        "name": "Guangdong Shantai Foodstuff Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9926726222038269,
+        "is_labeled": false
+      },
+      {
+        "name": "Takasago International (Pakistan) Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987727999687195,
+        "is_labeled": false
+      },
+      {
+        "name": "Bluebird Commodities Fzco",
+        "predicted_class": 3,
+        "confidence": 0.9928017854690552,
+        "is_labeled": false
+      },
+      {
+        "name": "A Z Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.9987704157829285,
+        "is_labeled": false
+      },
+      {
+        "name": "Asr Group",
+        "predicted_class": 3,
+        "confidence": 0.9926789999008179,
+        "is_labeled": false
+      },
+      {
+        "name": "Best Brands General Trading Llc",
+        "predicted_class": 3,
+        "confidence": 0.8249492645263672,
+        "is_labeled": false
+      },
+      {
+        "name": "Yiwu Umm E Hani Trading Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9869264364242554,
+        "is_labeled": false
+      },
+      {
+        "name": "Zarnam Farhikhtegan Research",
+        "predicted_class": 3,
+        "confidence": 0.9925680160522461,
+        "is_labeled": false
+      },
+      {
+        "name": "Ol Usa Llc",
+        "predicted_class": 3,
+        "confidence": 0.9915977716445923,
+        "is_labeled": false
+      },
+      {
+        "name": "Friesland Campina Nederland Bv",
+        "predicted_class": 3,
+        "confidence": 0.9821600317955017,
+        "is_labeled": false
+      },
+      {
+        "name": "Shanzhan International Catering Management (Henan) Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927840232849121,
+        "is_labeled": false
+      },
+      {
+        "name": "Rose Containerline Inc",
+        "predicted_class": 3,
+        "confidence": 0.9919256567955017,
+        "is_labeled": false
+      },
+      {
+        "name": "Karl Geuther Handels-Gmbh & Co Kg",
+        "predicted_class": 3,
+        "confidence": 0.9927980899810791,
+        "is_labeled": false
+      },
+      {
+        "name": "Evliya Sek San Ve Tic Ltd Sti",
+        "predicted_class": 3,
+        "confidence": 0.9926194548606873,
+        "is_labeled": false
+      },
+      {
+        "name": "Hangzhou Telida Biopharmtech Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927803874015808,
+        "is_labeled": false
+      },
+      {
+        "name": "Zhejiang Chemicals Import And Export Corporation",
+        "predicted_class": 3,
+        "confidence": 0.9924486875534058,
+        "is_labeled": false
+      },
+      {
+        "name": "Dhl International Bahrain Bsc",
+        "predicted_class": 3,
+        "confidence": 0.5777441263198853,
+        "is_labeled": false
+      },
+      {
+        "name": "Anadolu Etap Penkon Gida Ve Icecek",
+        "predicted_class": 3,
+        "confidence": 0.9928008317947388,
+        "is_labeled": false
+      },
+      {
+        "name": "Dpexi Private Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9928050637245178,
+        "is_labeled": false
+      },
+      {
+        "name": "Galaxy Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.9986445307731628,
+        "is_labeled": false
+      },
+      {
+        "name": "International Franchises Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987383484840393,
+        "is_labeled": false
+      },
+      {
+        "name": "Sk & Sons",
+        "predicted_class": 3,
+        "confidence": 0.9420443177223206,
+        "is_labeled": false
+      },
+      {
+        "name": "Rush Foods",
+        "predicted_class": 3,
+        "confidence": 0.6849452257156372,
+        "is_labeled": false
+      },
+      {
+        "name": "Best Day International",
+        "predicted_class": 3,
+        "confidence": 0.9978588223457336,
+        "is_labeled": false
+      },
+      {
+        "name": "Access Usa Shipping",
+        "predicted_class": 3,
+        "confidence": 0.8249217867851257,
+        "is_labeled": false
+      },
+      {
+        "name": "Fonterra Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9920998215675354,
+        "is_labeled": false
+      },
+      {
+        "name": "Coca Cola Beverages Pakistan Ltd Lhr",
+        "predicted_class": 3,
+        "confidence": 0.9987719655036926,
+        "is_labeled": false
+      },
+      {
+        "name": "Mr International",
+        "predicted_class": 3,
+        "confidence": 0.8533845543861389,
+        "is_labeled": false
+      },
+      {
+        "name": "Pollen End Gida San Ve Tic",
+        "predicted_class": 3,
+        "confidence": 0.9927542805671692,
+        "is_labeled": false
+      },
+      {
+        "name": "Lisko Pakistan Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6575710773468018,
+        "is_labeled": false
+      },
+      {
+        "name": "Al Taqi Impex",
+        "predicted_class": 3,
+        "confidence": 0.9987607002258301,
+        "is_labeled": false
+      },
+      {
+        "name": "Saeed Brothers",
+        "predicted_class": 3,
+        "confidence": 0.8606133460998535,
+        "is_labeled": false
+      },
+      {
+        "name": "C/O Conseil De L Europe Edqm Int",
+        "predicted_class": 3,
+        "confidence": 0.9928033947944641,
+        "is_labeled": false
+      },
+      {
+        "name": "J.K Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.6519176959991455,
+        "is_labeled": false
+      },
+      {
+        "name": "M I Traders",
+        "predicted_class": 3,
+        "confidence": 0.44764018058776855,
+        "is_labeled": false
+      },
+      {
+        "name": "Owin Industry Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927894473075867,
+        "is_labeled": false
+      },
+      {
+        "name": "Bridge Initiative Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9984196424484253,
+        "is_labeled": false
+      },
+      {
+        "name": "Giant Ingredients Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9810876250267029,
+        "is_labeled": false
+      },
+      {
+        "name": "Bakers Supplies",
+        "predicted_class": 3,
+        "confidence": 0.9987718462944031,
+        "is_labeled": false
+      },
+      {
+        "name": "Tate & Lyle Slovakia Sro",
+        "predicted_class": 3,
+        "confidence": 0.9923275113105774,
+        "is_labeled": false
+      },
+      {
+        "name": "Central Pak Trading Fz Llc",
+        "predicted_class": 3,
+        "confidence": 0.9928045868873596,
+        "is_labeled": false
+      },
+      {
+        "name": "Xiamen Yasin Industry & Trade Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.992800235748291,
+        "is_labeled": false
+      },
+      {
+        "name": "Sabbaq Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.6406356692314148,
+        "is_labeled": false
+      },
+      {
+        "name": "Qingdao Icd Biochemistry Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6745537519454956,
+        "is_labeled": false
+      },
+      {
+        "name": "Mars International",
+        "predicted_class": 3,
+        "confidence": 0.9987720847129822,
+        "is_labeled": true
+      },
+      {
+        "name": "Qingdao Fugar Chemical Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9924336671829224,
+        "is_labeled": false
+      },
+      {
+        "name": "Vision For The Kingdom In Pakistan",
+        "predicted_class": 3,
+        "confidence": 0.9987723231315613,
+        "is_labeled": false
+      },
+      {
+        "name": "Haameem Food Solutions",
+        "predicted_class": 3,
+        "confidence": 0.7594633102416992,
+        "is_labeled": false
+      },
+      {
+        "name": "Irca Manufacturing Netherlands Bv",
+        "predicted_class": 3,
+        "confidence": 0.556191623210907,
+        "is_labeled": false
+      },
+      {
+        "name": "Ibrahim Khatri Trading Co",
+        "predicted_class": 3,
+        "confidence": 0.5009410381317139,
+        "is_labeled": false
+      },
+      {
+        "name": "Hassan Nazir International",
+        "predicted_class": 3,
+        "confidence": 0.9973148703575134,
+        "is_labeled": false
+      },
+      {
+        "name": "Mars Way Food Stuff Llc",
+        "predicted_class": 3,
+        "confidence": 0.9928014278411865,
+        "is_labeled": false
+      },
+      {
+        "name": "Mango Fresh",
+        "predicted_class": 3,
+        "confidence": 0.9927998781204224,
+        "is_labeled": false
+      },
+      {
+        "name": "Qasim Import Export Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987706542015076,
+        "is_labeled": false
+      },
+      {
+        "name": "Molekula Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9928007125854492,
+        "is_labeled": false
+      },
+      {
+        "name": "Farooq Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.9016732573509216,
+        "is_labeled": false
+      },
+      {
+        "name": "Premier Trading Co",
+        "predicted_class": 3,
+        "confidence": 0.6730843186378479,
+        "is_labeled": false
+      },
+      {
+        "name": "Wdcw Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9867756962776184,
+        "is_labeled": false
+      },
+      {
+        "name": "Bahr Al Najah Trading Llc",
+        "predicted_class": 3,
+        "confidence": 0.9960615038871765,
+        "is_labeled": true
+      },
+      {
+        "name": "Nippan Ips Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9928051829338074,
+        "is_labeled": false
+      },
+      {
+        "name": "Guangzhou Dongchen International Trade Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927934408187866,
+        "is_labeled": false
+      },
+      {
+        "name": "Horeca Systems",
+        "predicted_class": 3,
+        "confidence": 0.9987693428993225,
+        "is_labeled": false
+      },
+      {
+        "name": "Puratos Nv",
+        "predicted_class": 3,
+        "confidence": 0.7756174802780151,
+        "is_labeled": false
+      },
+      {
+        "name": "Shijiazhuang Jiaduohao Food Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.992759108543396,
+        "is_labeled": false
+      },
+      {
+        "name": "Hashwan Traders Pack House And Cold Storage Facility",
+        "predicted_class": 3,
+        "confidence": 0.9919840693473816,
+        "is_labeled": false
+      },
+      {
+        "name": "Ahmar Abbas Shah",
+        "predicted_class": 3,
+        "confidence": 0.9928051829338074,
+        "is_labeled": false
+      },
+      {
+        "name": "Al Showaib Al Dhahabi General Trading Llc",
+        "predicted_class": 3,
+        "confidence": 0.985215425491333,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Arta Maja Prima",
+        "predicted_class": 3,
+        "confidence": 0.9657626748085022,
+        "is_labeled": false
+      },
+      {
+        "name": "Duksan Pure Chemicals Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9928044676780701,
+        "is_labeled": true
+      },
+      {
+        "name": "Shandong Tianliang Import And Export Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9805583357810974,
+        "is_labeled": false
+      },
+      {
+        "name": "Chemical Trades",
+        "predicted_class": 3,
+        "confidence": 0.658362090587616,
+        "is_labeled": false
+      },
+      {
+        "name": "Ai-Cha Food Trading Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987706542015076,
+        "is_labeled": false
+      },
+      {
+        "name": "Shenzhen Yezi Biotech Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9928051829338074,
+        "is_labeled": false
+      },
+      {
+        "name": "Memon Brothers",
+        "predicted_class": 3,
+        "confidence": 0.9897973537445068,
+        "is_labeled": false
+      },
+      {
+        "name": "Shanghai J. Shine Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9883153438568115,
+        "is_labeled": false
+      },
+      {
+        "name": "Ideal Foods & Chemicals",
+        "predicted_class": 3,
+        "confidence": 0.9146060943603516,
+        "is_labeled": false
+      },
+      {
+        "name": "Hawk Bio Pharma Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6331815123558044,
+        "is_labeled": false
+      },
+      {
+        "name": "Himark Laboratories Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6574673056602478,
+        "is_labeled": false
+      },
+      {
+        "name": "Maka Tarabar",
+        "predicted_class": 3,
+        "confidence": 0.717516303062439,
+        "is_labeled": false
+      },
+      {
+        "name": "Jamaica Foodstuff Trading Co Llc",
+        "predicted_class": 3,
+        "confidence": 0.9819620251655579,
+        "is_labeled": false
+      },
+      {
+        "name": "Madam Sun Sdn Bhd",
+        "predicted_class": 3,
+        "confidence": 0.9927859902381897,
+        "is_labeled": false
+      },
+      {
+        "name": "Panteley Toshev Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9923169612884521,
+        "is_labeled": false
+      },
+      {
+        "name": "Meggle Africa And Middle East Dmcc",
+        "predicted_class": 3,
+        "confidence": 0.9910045862197876,
+        "is_labeled": false
+      },
+      {
+        "name": "Royal Ilac San Tic Ltd Sti",
+        "predicted_class": 3,
+        "confidence": 0.9920410513877869,
+        "is_labeled": false
+      },
+      {
+        "name": "Gujranwala Food Industries Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.7365159392356873,
+        "is_labeled": false
+      },
+      {
+        "name": "Xinjiang haoyuguo international trade Co",
+        "predicted_class": 3,
+        "confidence": 0.6641967296600342,
+        "is_labeled": false
+      },
+      {
+        "name": "Hangzhou Dawn Ray Pharmaceutical Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.990186333656311,
+        "is_labeled": false
+      },
+      {
+        "name": "Stylopod Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.992405354976654,
+        "is_labeled": false
+      },
+      {
+        "name": "Shenyang Flourish Biotech Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9925986528396606,
+        "is_labeled": false
+      },
+      {
+        "name": "Honber International Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9924157857894897,
+        "is_labeled": false
+      },
+      {
+        "name": "Merck Life Science Kgaa",
+        "predicted_class": 3,
+        "confidence": 0.5432074666023254,
+        "is_labeled": false
+      },
+      {
+        "name": "Syeda Ambreen Mushtaq",
+        "predicted_class": 3,
+        "confidence": 0.9987718462944031,
+        "is_labeled": false
+      },
+      {
+        "name": "Sanna Laboratories",
+        "predicted_class": 3,
+        "confidence": 0.9654465913772583,
+        "is_labeled": false
+      },
+      {
+        "name": "Imcd Middle East Fzco",
+        "predicted_class": 3,
+        "confidence": 0.9925462603569031,
+        "is_labeled": false
+      },
+      {
+        "name": "Tradex International Llc",
+        "predicted_class": 3,
+        "confidence": 0.9922784566879272,
+        "is_labeled": false
+      },
+      {
+        "name": "Elvan Gida San Ve Tic As",
+        "predicted_class": 3,
+        "confidence": 0.9291738271713257,
+        "is_labeled": false
+      },
+      {
+        "name": "Chase Up",
+        "predicted_class": 3,
+        "confidence": 0.9820392727851868,
+        "is_labeled": false
+      },
+      {
+        "name": "Thermo Fisher Scientific",
+        "predicted_class": 3,
+        "confidence": 0.9928027987480164,
+        "is_labeled": false
+      },
+      {
+        "name": "Roohi Chaudhri",
+        "predicted_class": 3,
+        "confidence": 0.9983300566673279,
+        "is_labeled": false
+      },
+      {
+        "name": "Fuji Global Chocolate (M) Sdn Bhd",
+        "predicted_class": 3,
+        "confidence": 0.992529571056366,
+        "is_labeled": false
+      },
+      {
+        "name": "Emrays Middleeast General Trading Llc",
+        "predicted_class": 3,
+        "confidence": 0.9923549890518188,
+        "is_labeled": false
+      },
+      {
+        "name": "Astral Neutraceuticals",
+        "predicted_class": 3,
+        "confidence": 0.678404688835144,
+        "is_labeled": false
+      },
+      {
+        "name": "Vega Pharma Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9925433397293091,
+        "is_labeled": false
+      },
+      {
+        "name": "High Profile Poultry Services",
+        "predicted_class": 3,
+        "confidence": 0.9987326264381409,
+        "is_labeled": false
+      },
+      {
+        "name": "Agar International Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6583654284477234,
+        "is_labeled": false
+      },
+      {
+        "name": "Sucere Foods Corporation",
+        "predicted_class": 3,
+        "confidence": 0.992620050907135,
+        "is_labeled": false
+      },
+      {
+        "name": "Fast Da Trade Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9928050637245178,
+        "is_labeled": false
+      },
+      {
+        "name": "Ahmed Tariq Co",
+        "predicted_class": 3,
+        "confidence": 0.5009410381317139,
+        "is_labeled": false
+      },
+      {
+        "name": "Zhejiang Jinlian Chemtech Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.992720901966095,
+        "is_labeled": false
+      },
+      {
+        "name": "Isis Pharmaceuticals & Chemical Works",
+        "predicted_class": 3,
+        "confidence": 0.9049025774002075,
+        "is_labeled": false
+      },
+      {
+        "name": "Guangdong Yichao Biological Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9919203519821167,
+        "is_labeled": false
+      },
+      {
+        "name": "Al Ard Al Zarkha Goods",
+        "predicted_class": 3,
+        "confidence": 0.992779552936554,
+        "is_labeled": false
+      },
+      {
+        "name": "Grandma Catering Management Services Smc Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987688660621643,
+        "is_labeled": false
+      },
+      {
+        "name": "Muhammad Arslan Ramzan",
+        "predicted_class": 3,
+        "confidence": 0.998415470123291,
+        "is_labeled": false
+      },
+      {
+        "name": "Green Tract Shipping Llc",
+        "predicted_class": 3,
+        "confidence": 0.9890804886817932,
+        "is_labeled": false
+      },
+      {
+        "name": "Amna Keyani",
+        "predicted_class": 3,
+        "confidence": 0.9987726807594299,
+        "is_labeled": false
+      },
+      {
+        "name": "Business Links International",
+        "predicted_class": 3,
+        "confidence": 0.9987240433692932,
+        "is_labeled": false
+      },
+      {
+        "name": "Dongying City Longxing Chemical Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.5331194400787354,
+        "is_labeled": false
+      },
+      {
+        "name": "Waheed Waheed",
+        "predicted_class": 3,
+        "confidence": 0.9928047060966492,
+        "is_labeled": false
+      },
+      {
+        "name": "U.S Corporation",
+        "predicted_class": 3,
+        "confidence": 0.6583384871482849,
+        "is_labeled": false
+      },
+      {
+        "name": "Don Valley Pharmaceuticals Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987682700157166,
+        "is_labeled": false
+      },
+      {
+        "name": "York Star Hong Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927316308021545,
+        "is_labeled": false
+      },
+      {
+        "name": "Shahmurad Sugar Mills Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987370371818542,
+        "is_labeled": false
+      },
+      {
+        "name": "Shantou Yuanda Foods Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9924095869064331,
+        "is_labeled": false
+      },
+      {
+        "name": "Five Star Trading",
+        "predicted_class": 3,
+        "confidence": 0.9987162351608276,
+        "is_labeled": false
+      },
+      {
+        "name": "Intervac Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6576461791992188,
+        "is_labeled": false
+      },
+      {
+        "name": "Dhl Express International",
+        "predicted_class": 3,
+        "confidence": 0.9056756496429443,
+        "is_labeled": false
+      },
+      {
+        "name": "Doehler Gmbh",
+        "predicted_class": 3,
+        "confidence": 0.9928038716316223,
+        "is_labeled": false
+      },
+      {
+        "name": "Fm Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.73100346326828,
+        "is_labeled": false
+      },
+      {
+        "name": "Azarkian Toss Intl",
+        "predicted_class": 3,
+        "confidence": 0.9927853345870972,
+        "is_labeled": false
+      },
+      {
+        "name": "Elko Organization Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9073817133903503,
+        "is_labeled": false
+      },
+      {
+        "name": "Mek Gida Sanayi Ve Ticaret Ltd Sirketi",
+        "predicted_class": 3,
+        "confidence": 0.5577873587608337,
+        "is_labeled": false
+      },
+      {
+        "name": "Shazia Trading Co",
+        "predicted_class": 3,
+        "confidence": 0.9987375140190125,
+        "is_labeled": false
+      },
+      {
+        "name": "Pt Pusan Manis Mulia",
+        "predicted_class": 3,
+        "confidence": 0.9928041100502014,
+        "is_labeled": false
+      },
+      {
+        "name": "Citi Pharma Ltd",
+        "predicted_class": 3,
+        "confidence": 0.955005407333374,
+        "is_labeled": false
+      },
+      {
+        "name": "Shenzhen Xpa International Log",
+        "predicted_class": 3,
+        "confidence": 0.9928008317947388,
+        "is_labeled": false
+      },
+      {
+        "name": "Dohler Gida Sanayi As",
+        "predicted_class": 3,
+        "confidence": 0.9927936792373657,
+        "is_labeled": false
+      },
+      {
+        "name": "Zhaoqing Huanfa Biotechnology Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9924255609512329,
+        "is_labeled": false
+      },
+      {
+        "name": "National Radio Telecommunication Corporation Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987727999687195,
+        "is_labeled": false
+      },
+      {
+        "name": "Bint-E-Sulham Trading & Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.6583384871482849,
+        "is_labeled": false
+      },
+      {
+        "name": "Tahir Muhammad Iqbal Hookmani",
+        "predicted_class": 3,
+        "confidence": 0.9987727999687195,
+        "is_labeled": false
+      },
+      {
+        "name": "S.R International",
+        "predicted_class": 3,
+        "confidence": 0.5009322762489319,
+        "is_labeled": false
+      },
+      {
+        "name": "Guangdond Yichao Biological Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9242942333221436,
+        "is_labeled": false
+      },
+      {
+        "name": "Lgc Gmbh",
+        "predicted_class": 3,
+        "confidence": 0.9927750825881958,
+        "is_labeled": false
+      },
+      {
+        "name": "Jalal Maical",
+        "predicted_class": 3,
+        "confidence": 0.9928051829338074,
+        "is_labeled": false
+      },
+      {
+        "name": "Elif Cikolata San Ve Tic Ltd Sti",
+        "predicted_class": 3,
+        "confidence": 0.6146392226219177,
+        "is_labeled": false
+      },
+      {
+        "name": "Sons Traders",
+        "predicted_class": 3,
+        "confidence": 0.9723336100578308,
+        "is_labeled": false
+      },
+      {
+        "name": "R.A Impex",
+        "predicted_class": 3,
+        "confidence": 0.9917957186698914,
+        "is_labeled": false
+      },
+      {
+        "name": "Dsv Solutions Slovakia Sro",
+        "predicted_class": 3,
+        "confidence": 0.9928037524223328,
+        "is_labeled": false
+      },
+      {
+        "name": "Adchem International Fzco",
+        "predicted_class": 3,
+        "confidence": 0.9927821159362793,
+        "is_labeled": false
+      },
+      {
+        "name": "Attabak Pharmaceutical Industries",
+        "predicted_class": 3,
+        "confidence": 0.657628059387207,
+        "is_labeled": false
+      },
+      {
+        "name": "Norte-Eurocao Slu",
+        "predicted_class": 3,
+        "confidence": 0.9925552010536194,
+        "is_labeled": false
+      },
+      {
+        "name": "Infoark International Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6016578674316406,
+        "is_labeled": false
+      },
+      {
+        "name": "New Chemical Centre",
+        "predicted_class": 3,
+        "confidence": 0.9987727999687195,
+        "is_labeled": false
+      },
+      {
+        "name": "Rashidiya Impex",
+        "predicted_class": 3,
+        "confidence": 0.9977360963821411,
+        "is_labeled": false
+      },
+      {
+        "name": "Fayrefield Foods As",
+        "predicted_class": 3,
+        "confidence": 0.9913215041160583,
+        "is_labeled": false
+      },
+      {
+        "name": "Route-2 Health Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.5728114247322083,
+        "is_labeled": false
+      },
+      {
+        "name": "Rinda Food Industries Sdn Bhd",
+        "predicted_class": 3,
+        "confidence": 0.9925515651702881,
+        "is_labeled": false
+      },
+      {
+        "name": "Kings International General Trading Llc",
+        "predicted_class": 3,
+        "confidence": 0.9968960285186768,
+        "is_labeled": false
+      },
+      {
+        "name": "Zhejiang New Vision Imp & Exp Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9912813305854797,
+        "is_labeled": false
+      },
+      {
+        "name": "Bonart Gida Sanayi Ve Ticaret As",
+        "predicted_class": 3,
+        "confidence": 0.978065550327301,
+        "is_labeled": false
+      },
+      {
+        "name": "Shanghai Richfield Internaitonal Trade Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9925605654716492,
+        "is_labeled": false
+      },
+      {
+        "name": "Delight Enterprises Smc Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9958034157752991,
+        "is_labeled": false
+      },
+      {
+        "name": "Taiwanfuyou Food Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927923679351807,
+        "is_labeled": false
+      },
+      {
+        "name": "Aa Foods",
+        "predicted_class": 3,
+        "confidence": 0.9078165292739868,
+        "is_labeled": false
+      },
+      {
+        "name": "Crimson Middle East Fz Llc",
+        "predicted_class": 3,
+        "confidence": 0.9919561147689819,
+        "is_labeled": false
+      },
+      {
+        "name": "Shree Sai Trading",
+        "predicted_class": 3,
+        "confidence": 0.6603754758834839,
+        "is_labeled": false
+      },
+      {
+        "name": "Monakhal Wariech",
+        "predicted_class": 3,
+        "confidence": 0.9928051829338074,
+        "is_labeled": false
+      },
+      {
+        "name": "Mafworth Ltd",
+        "predicted_class": 3,
+        "confidence": 0.992398202419281,
+        "is_labeled": false
+      },
+      {
+        "name": "Khat Tadawul General Trading Llc",
+        "predicted_class": 3,
+        "confidence": 0.9915249943733215,
+        "is_labeled": false
+      },
+      {
+        "name": "Nation Trade International",
+        "predicted_class": 3,
+        "confidence": 0.9986577033996582,
+        "is_labeled": false
+      },
+      {
+        "name": "Hangzhou Pharmco Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9923810362815857,
+        "is_labeled": false
+      },
+      {
+        "name": "Pmmc Llc",
+        "predicted_class": 3,
+        "confidence": 0.9924862384796143,
+        "is_labeled": false
+      },
+      {
+        "name": "Central Chemicals",
+        "predicted_class": 3,
+        "confidence": 0.48814359307289124,
+        "is_labeled": false
+      },
+      {
+        "name": "Tradetrans Corp",
+        "predicted_class": 3,
+        "confidence": 0.9925820827484131,
+        "is_labeled": false
+      },
+      {
+        "name": "Shanghai Tianjia Biochemical Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9920969009399414,
+        "is_labeled": false
+      },
+      {
+        "name": "Iram Yousaf",
+        "predicted_class": 3,
+        "confidence": 0.9987727999687195,
+        "is_labeled": false
+      },
+      {
+        "name": "Yiwu Huayi Imp And Exp Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9429377317428589,
+        "is_labeled": false
+      },
+      {
+        "name": "Northern Logistics Carrier Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9920145273208618,
+        "is_labeled": false
+      },
+      {
+        "name": "Rahim Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.9987362027168274,
+        "is_labeled": false
+      },
+      {
+        "name": "Eurozyme Gida Katki Mad San Ve Tic As",
+        "predicted_class": 3,
+        "confidence": 0.992766261100769,
+        "is_labeled": false
+      },
+      {
+        "name": "Adeel Ahmad",
+        "predicted_class": 3,
+        "confidence": 0.9987726807594299,
+        "is_labeled": false
+      },
+      {
+        "name": "Decent Pharma",
+        "predicted_class": 3,
+        "confidence": 0.6575412750244141,
+        "is_labeled": true
+      },
+      {
+        "name": "Dream Nest Fze Llc",
+        "predicted_class": 3,
+        "confidence": 0.9925149083137512,
+        "is_labeled": false
+      },
+      {
+        "name": "Lotte Vietnam Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9925764203071594,
+        "is_labeled": false
+      },
+      {
+        "name": "Trade Genius Llc",
+        "predicted_class": 3,
+        "confidence": 0.8199988603591919,
+        "is_labeled": false
+      },
+      {
+        "name": "Adil And Co",
+        "predicted_class": 3,
+        "confidence": 0.6572417616844177,
+        "is_labeled": false
+      },
+      {
+        "name": "Changsha Vigorous Tech Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9928023219108582,
+        "is_labeled": false
+      },
+      {
+        "name": "World-Wide Services",
+        "predicted_class": 3,
+        "confidence": 0.8928206562995911,
+        "is_labeled": false
+      },
+      {
+        "name": "Rice And Spice Filling Llc",
+        "predicted_class": 3,
+        "confidence": 0.9927800297737122,
+        "is_labeled": false
+      },
+      {
+        "name": "Suzuki Motor Corporation",
+        "predicted_class": 3,
+        "confidence": 0.95302414894104,
+        "is_labeled": false
+      },
+      {
+        "name": "Xiamen Ying Wan Foodstuff Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9925731420516968,
+        "is_labeled": false
+      },
+      {
+        "name": "Barnabas Aid",
+        "predicted_class": 3,
+        "confidence": 0.9928027987480164,
+        "is_labeled": true
+      },
+      {
+        "name": "Med Pharm Research Lab",
+        "predicted_class": 3,
+        "confidence": 0.9939498901367188,
+        "is_labeled": false
+      },
+      {
+        "name": "N.N Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.9983600974082947,
+        "is_labeled": false
+      },
+      {
+        "name": "Bilal Impex",
+        "predicted_class": 3,
+        "confidence": 0.5009717345237732,
+        "is_labeled": false
+      },
+      {
+        "name": "Fa Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.9987661838531494,
+        "is_labeled": false
+      },
+      {
+        "name": "Abdullah Solutions",
+        "predicted_class": 3,
+        "confidence": 0.9812331199645996,
+        "is_labeled": false
+      },
+      {
+        "name": "Hebei Jinfeng Starch Sugar Alcohol",
+        "predicted_class": 3,
+        "confidence": 0.991078794002533,
+        "is_labeled": false
+      },
+      {
+        "name": "Farm Wise Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9987642765045166,
+        "is_labeled": false
+      },
+      {
+        "name": "Meraj Din Mohammad Iqbal",
+        "predicted_class": 3,
+        "confidence": 0.9985093474388123,
+        "is_labeled": false
+      },
+      {
+        "name": "Yiwu Zhixin Import And Export Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927523136138916,
+        "is_labeled": false
+      },
+      {
+        "name": "Bdairy Bv",
+        "predicted_class": 3,
+        "confidence": 0.9913499355316162,
+        "is_labeled": false
+      },
+      {
+        "name": "Beschoo Trading Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9927937984466553,
+        "is_labeled": false
+      },
+      {
+        "name": "Hemani International Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9977939128875732,
+        "is_labeled": false
+      },
+      {
+        "name": "Sea Quest Logistic Services",
+        "predicted_class": 3,
+        "confidence": 0.9987726807594299,
+        "is_labeled": false
+      },
+      {
+        "name": "Imperial Foods General Trading Llc",
+        "predicted_class": 3,
+        "confidence": 0.9671319127082825,
+        "is_labeled": false
+      },
+      {
+        "name": "Hangzhou Zhongbao Imp & Exp Corp Ltd",
+        "predicted_class": 3,
+        "confidence": 0.6616013646125793,
+        "is_labeled": false
+      },
+      {
+        "name": "Martin Dow Specialities Pvt Ltd",
+        "predicted_class": 3,
+        "confidence": 0.49330446124076843,
+        "is_labeled": false
+      },
+      {
+        "name": "Yaseen And Co",
+        "predicted_class": 3,
+        "confidence": 0.9917355179786682,
+        "is_labeled": false
+      },
+      {
+        "name": "Haseeb Lab Supplies",
+        "predicted_class": 3,
+        "confidence": 0.9987726807594299,
+        "is_labeled": false
+      },
+      {
+        "name": "Multiple Trading House",
+        "predicted_class": 3,
+        "confidence": 0.9984028935432434,
+        "is_labeled": false
+      },
+      {
+        "name": "Kervan Gida San Ve Tic As",
+        "predicted_class": 3,
+        "confidence": 0.9922762513160706,
+        "is_labeled": false
+      },
+      {
+        "name": "Usama Enterprises",
+        "predicted_class": 3,
+        "confidence": 0.6574540734291077,
+        "is_labeled": false
+      },
+      {
+        "name": "Raja Govt. Contractor, General Order Supplier And Importer-Exporter",
+        "predicted_class": 3,
+        "confidence": 0.7068144679069519,
+        "is_labeled": false
+      },
+      {
+        "name": "Global Imports",
+        "predicted_class": 3,
+        "confidence": 0.959642767906189,
+        "is_labeled": true
+      },
+      {
+        "name": "Zhejiang Synose Tech Co Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9925729036331177,
+        "is_labeled": true
+      },
+      {
+        "name": "Yiwu East Coast Import & Export",
+        "predicted_class": 3,
+        "confidence": 0.9920440912246704,
+        "is_labeled": false
+      },
+      {
+        "name": "Ebuy Enterprise Ltd",
+        "predicted_class": 3,
+        "confidence": 0.9924476146697998,
+        "is_labeled": false
+      }
+    ]
+  }
+}

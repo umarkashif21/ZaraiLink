@@ -219,6 +219,39 @@ class ProductEmbedding(models.Model):
         return f"{self.product_item.name} → {self.cluster_tag}"
 
 
+class DemandForecast(models.Model):
+    """ML-generated demand forecasts for products"""
+    hs_code = models.CharField(max_length=50)
+    product_item = models.ForeignKey(
+        ProductItem, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        related_name='forecasts'
+    )
+    forecast_month = models.DateField(help_text="First day of the forecasted month")
+    predicted_volume_mt = models.DecimalField(max_digits=20, decimal_places=6)
+    confidence_lower = models.DecimalField(max_digits=20, decimal_places=6, null=True, blank=True)
+    confidence_upper = models.DecimalField(max_digits=20, decimal_places=6, null=True, blank=True)
+    model_used = models.CharField(max_length=50, help_text="e.g., LightGBM, XGBoost, Ensemble")
+    model_version = models.CharField(max_length=50, default="v1.0")
+    training_mape = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Demand Forecast'
+        verbose_name_plural = 'Demand Forecasts'
+        ordering = ['-forecast_month']
+        unique_together = ['hs_code', 'forecast_month', 'model_used']
+        indexes = [
+            models.Index(fields=['hs_code', 'forecast_month']),
+            models.Index(fields=['forecast_month']),
+        ]
+    
+    def __str__(self):
+        return f"{self.hs_code} - {self.forecast_month.strftime('%Y-%m')} - {self.predicted_volume_mt} MT"
+
+
 from auditlog.registry import auditlog
 auditlog.register(Product)
 auditlog.register(ProductCategory)

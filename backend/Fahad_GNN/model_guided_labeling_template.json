@@ -1,0 +1,1402 @@
+{
+  "Imtiaz Group Smc Pvt Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.85,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Many transactions (28)",
+    "model_suggestion": {
+      "predicted_class": 0,
+      "model_confidence": "0.338",
+      "priority_rank": 1,
+      "priority_score": "56.4"
+    },
+    "reference_stats": {
+      "total_usd": "$267,468.00",
+      "total_transactions": 28,
+      "avg_transaction_size": "$9,552.43",
+      "num_partners": 9,
+      "product_diversity": 28,
+      "months_active": 8
+    },
+    "priority_breakdown": {
+      "volume": "0.5/30",
+      "uncertainty": "19.9/30",
+      "network": "18.0/20",
+      "diversity": "10.0/10",
+      "total": "56.4/100"
+    }
+  },
+  "F.B Enterprises": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.5,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Low volume ($89,365)",
+    "model_suggestion": {
+      "predicted_class": 0,
+      "model_confidence": "0.320",
+      "priority_rank": 2,
+      "priority_score": "52.6"
+    },
+    "reference_stats": {
+      "total_usd": "$89,365.00",
+      "total_transactions": 12,
+      "avg_transaction_size": "$7,447.08",
+      "num_partners": 7,
+      "product_diversity": 12,
+      "months_active": 8
+    },
+    "priority_breakdown": {
+      "volume": "0.2/30",
+      "uncertainty": "20.4/30",
+      "network": "14.0/20",
+      "diversity": "10.0/10",
+      "total": "52.6/100"
+    }
+  },
+  "Klarg Exports": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.85,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Many transactions (22)",
+    "model_suggestion": {
+      "predicted_class": 0,
+      "model_confidence": "0.308",
+      "priority_rank": 3,
+      "priority_score": "51.5"
+    },
+    "reference_stats": {
+      "total_usd": "$383,564.25",
+      "total_transactions": 22,
+      "avg_transaction_size": "$17,434.74",
+      "num_partners": 5,
+      "product_diversity": 12,
+      "months_active": 11
+    },
+    "priority_breakdown": {
+      "volume": "0.8/30",
+      "uncertainty": "20.7/30",
+      "network": "10.0/20",
+      "diversity": "10.0/10",
+      "total": "51.5/100"
+    }
+  },
+  "Friesland Campina Engro Pakistan Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.85,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($2,907,500); Many transactions (25)",
+    "model_suggestion": {
+      "predicted_class": 0,
+      "model_confidence": "0.304",
+      "priority_rank": 4,
+      "priority_score": "50.7"
+    },
+    "reference_stats": {
+      "total_usd": "$2,907,500.39",
+      "total_transactions": 25,
+      "avg_transaction_size": "$116,300.02",
+      "num_partners": 3,
+      "product_diversity": 13,
+      "months_active": 8
+    },
+    "priority_breakdown": {
+      "volume": "5.8/30",
+      "uncertainty": "20.9/30",
+      "network": "6.0/20",
+      "diversity": "10.0/10",
+      "total": "50.7/100"
+    }
+  },
+  "Pepsi-Cola International Pvt Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 0,
+      "model_confidence": "0.282",
+      "priority_rank": 5,
+      "priority_score": "44.8"
+    },
+    "reference_stats": {
+      "total_usd": "$641,453.00",
+      "total_transactions": 9,
+      "avg_transaction_size": "$71,272.56",
+      "num_partners": 2,
+      "product_diversity": 9,
+      "months_active": 8
+    },
+    "priority_breakdown": {
+      "volume": "1.3/30",
+      "uncertainty": "21.6/30",
+      "network": "4.0/20",
+      "diversity": "10.0/10",
+      "total": "44.8/100"
+    }
+  },
+  "Pacific Sugar Corporation Ltd": {
+    "class_id": 1,
+    "class_name": null,
+    "confidence": 0.8,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Very high volume ($13,875,000); High avg tx ($6,937,500); Few transactions (2); Few partners (1)",
+    "model_suggestion": {
+      "predicted_class": 1,
+      "model_confidence": "0.483",
+      "priority_rank": 6,
+      "priority_score": "48.2"
+    },
+    "reference_stats": {
+      "total_usd": "$13,875,000.00",
+      "total_transactions": 2,
+      "avg_transaction_size": "$6,937,500.00",
+      "num_partners": 1,
+      "product_diversity": 1,
+      "months_active": 1
+    },
+    "priority_breakdown": {
+      "volume": "27.8/30",
+      "uncertainty": "15.5/30",
+      "network": "2.0/20",
+      "diversity": "2.0/10",
+      "total": "48.2/100"
+    }
+  },
+  "World Sugar Export Co Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 1,
+      "model_confidence": "0.571",
+      "priority_rank": 7,
+      "priority_score": "29.0"
+    },
+    "reference_stats": {
+      "total_usd": "$5,550,000.00",
+      "total_transactions": 1,
+      "avg_transaction_size": "$5,550,000.00",
+      "num_partners": 1,
+      "product_diversity": 1,
+      "months_active": 1
+    },
+    "priority_breakdown": {
+      "volume": "11.1/30",
+      "uncertainty": "12.9/30",
+      "network": "2.0/20",
+      "diversity": "2.0/10",
+      "total": "29.0/100"
+    }
+  },
+  "Lactalis Ingredients": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.8,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($5,424,013); Many transactions (76); Many partners (11)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.586",
+      "priority_rank": 8,
+      "priority_score": "63.3"
+    },
+    "reference_stats": {
+      "total_usd": "$5,424,013.39",
+      "total_transactions": 76,
+      "avg_transaction_size": "$71,368.60",
+      "num_partners": 11,
+      "product_diversity": 41,
+      "months_active": 12
+    },
+    "priority_breakdown": {
+      "volume": "10.8/30",
+      "uncertainty": "12.4/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "63.3/100"
+    }
+  },
+  "Malkani Traders": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.7,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Many transactions (22); Many partners (10)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.332",
+      "priority_rank": 9,
+      "priority_score": "60.9"
+    },
+    "reference_stats": {
+      "total_usd": "$442,137.00",
+      "total_transactions": 22,
+      "avg_transaction_size": "$20,097.14",
+      "num_partners": 10,
+      "product_diversity": 22,
+      "months_active": 10
+    },
+    "priority_breakdown": {
+      "volume": "0.9/30",
+      "uncertainty": "20.1/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "60.9/100"
+    }
+  },
+  "Meggle Gmbh & Co Kg": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.8,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($1,904,644); Many transactions (47); Many partners (13)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.556",
+      "priority_rank": 10,
+      "priority_score": "57.1"
+    },
+    "reference_stats": {
+      "total_usd": "$1,904,643.75",
+      "total_transactions": 47,
+      "avg_transaction_size": "$40,524.34",
+      "num_partners": 13,
+      "product_diversity": 38,
+      "months_active": 12
+    },
+    "priority_breakdown": {
+      "volume": "3.8/30",
+      "uncertainty": "13.3/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "57.1/100"
+    }
+  },
+  "Emad Trade House Fzco": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.75,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: ",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.290",
+      "priority_rank": 11,
+      "priority_score": "57.1"
+    },
+    "reference_stats": {
+      "total_usd": "$393,232.25",
+      "total_transactions": 18,
+      "avg_transaction_size": "$21,846.24",
+      "num_partners": 8,
+      "product_diversity": 17,
+      "months_active": 9
+    },
+    "priority_breakdown": {
+      "volume": "0.8/30",
+      "uncertainty": "21.3/30",
+      "network": "16.0/20",
+      "diversity": "10.0/10",
+      "total": "57.1/100"
+    }
+  },
+  "Weifang Shengtai Medicine Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.7,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Many transactions (25); Many partners (12)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.497",
+      "priority_rank": 12,
+      "priority_score": "56.2"
+    },
+    "reference_stats": {
+      "total_usd": "$535,145.64",
+      "total_transactions": 25,
+      "avg_transaction_size": "$21,405.83",
+      "num_partners": 12,
+      "product_diversity": 21,
+      "months_active": 12
+    },
+    "priority_breakdown": {
+      "volume": "1.1/30",
+      "uncertainty": "15.1/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "56.2/100"
+    }
+  },
+  "Anhui Kemfood International Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.6,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Few transactions (7); Very consistent (0.75)",
+    "model_suggestion": {
+      "predicted_class": 3,
+      "model_confidence": "0.286",
+      "priority_rank": 13,
+      "priority_score": "48.8"
+    },
+    "reference_stats": {
+      "total_usd": "$165,984.00",
+      "total_transactions": 7,
+      "avg_transaction_size": "$23,712.00",
+      "num_partners": 6,
+      "product_diversity": 5,
+      "months_active": 5
+    },
+    "priority_breakdown": {
+      "volume": "0.3/30",
+      "uncertainty": "21.4/30",
+      "network": "12.0/20",
+      "diversity": "10.0/10",
+      "total": "48.8/100"
+    }
+  },
+  "Zibo Weibin Imp & Exp Co Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 3,
+      "model_confidence": "0.280",
+      "priority_rank": 14,
+      "priority_score": "45.8"
+    },
+    "reference_stats": {
+      "total_usd": "$106,435.00",
+      "total_transactions": 5,
+      "avg_transaction_size": "$21,287.00",
+      "num_partners": 5,
+      "product_diversity": 5,
+      "months_active": 4
+    },
+    "priority_breakdown": {
+      "volume": "0.2/30",
+      "uncertainty": "21.6/30",
+      "network": "10.0/20",
+      "diversity": "10.0/10",
+      "total": "45.8/100"
+    }
+  },
+  "A.F.U International": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 3,
+      "model_confidence": "0.295",
+      "priority_rank": 15,
+      "priority_score": "45.2"
+    },
+    "reference_stats": {
+      "total_usd": "$22,942.69",
+      "total_transactions": 12,
+      "avg_transaction_size": "$1,911.89",
+      "num_partners": 3,
+      "product_diversity": 12,
+      "months_active": 8
+    },
+    "priority_breakdown": {
+      "volume": "0.0/30",
+      "uncertainty": "21.2/30",
+      "network": "6.0/20",
+      "diversity": "10.0/10",
+      "total": "45.2/100"
+    }
+  },
+  "Aptly Pharmaceuticals": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 3,
+      "model_confidence": "0.293",
+      "priority_rank": 16,
+      "priority_score": "44.4"
+    },
+    "reference_stats": {
+      "total_usd": "$89,360.00",
+      "total_transactions": 5,
+      "avg_transaction_size": "$17,872.00",
+      "num_partners": 4,
+      "product_diversity": 5,
+      "months_active": 5
+    },
+    "priority_breakdown": {
+      "volume": "0.2/30",
+      "uncertainty": "21.2/30",
+      "network": "8.0/20",
+      "diversity": "10.0/10",
+      "total": "44.4/100"
+    }
+  },
+  "San Soon Seng Food Industries Sdn Bhd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 3,
+      "model_confidence": "0.307",
+      "priority_rank": 17,
+      "priority_score": "42.5"
+    },
+    "reference_stats": {
+      "total_usd": "$378,704.00",
+      "total_transactions": 9,
+      "avg_transaction_size": "$42,078.22",
+      "num_partners": 1,
+      "product_diversity": 9,
+      "months_active": 9
+    },
+    "priority_breakdown": {
+      "volume": "0.8/30",
+      "uncertainty": "20.8/30",
+      "network": "2.0/20",
+      "diversity": "10.0/10",
+      "total": "42.5/100"
+    }
+  },
+  "Sethness Roquette Food (Lianyungang) Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.85,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($1,595,944); Many transactions (32)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.322",
+      "priority_rank": 18,
+      "priority_score": "55.5"
+    },
+    "reference_stats": {
+      "total_usd": "$1,595,943.64",
+      "total_transactions": 32,
+      "avg_transaction_size": "$49,873.24",
+      "num_partners": 6,
+      "product_diversity": 14,
+      "months_active": 11
+    },
+    "priority_breakdown": {
+      "volume": "3.2/30",
+      "uncertainty": "20.3/30",
+      "network": "12.0/20",
+      "diversity": "10.0/10",
+      "total": "55.5/100"
+    }
+  },
+  "Msm Prai Berhad": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.8,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($1,417,450); Many transactions (67); Many partners (13)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.629",
+      "priority_rank": 19,
+      "priority_score": "54.0"
+    },
+    "reference_stats": {
+      "total_usd": "$1,417,450.00",
+      "total_transactions": 67,
+      "avg_transaction_size": "$21,155.97",
+      "num_partners": 13,
+      "product_diversity": 42,
+      "months_active": 12
+    },
+    "priority_breakdown": {
+      "volume": "2.8/30",
+      "uncertainty": "11.1/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "54.0/100"
+    }
+  },
+  "Malkara Birlik Sut Ve Sut Mamulleri As": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.8,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Many transactions (33); Many partners (17)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.606",
+      "priority_rank": 20,
+      "priority_score": "52.9"
+    },
+    "reference_stats": {
+      "total_usd": "$516,455.00",
+      "total_transactions": 33,
+      "avg_transaction_size": "$15,650.15",
+      "num_partners": 17,
+      "product_diversity": 29,
+      "months_active": 12
+    },
+    "priority_breakdown": {
+      "volume": "1.0/30",
+      "uncertainty": "11.8/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "52.9/100"
+    }
+  },
+  "Qinhuangdao Lihua Starch Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.9,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($2,372,341); Many transactions (58); Many partners (18)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.738",
+      "priority_rank": 21,
+      "priority_score": "52.6"
+    },
+    "reference_stats": {
+      "total_usd": "$2,372,340.75",
+      "total_transactions": 58,
+      "avg_transaction_size": "$40,902.43",
+      "num_partners": 18,
+      "product_diversity": 37,
+      "months_active": 12
+    },
+    "priority_breakdown": {
+      "volume": "4.7/30",
+      "uncertainty": "7.9/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "52.6/100"
+    }
+  },
+  "Qingdao Hisunny Imp & Exp Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.6,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Few transactions (8)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.327",
+      "priority_rank": 22,
+      "priority_score": "52.5"
+    },
+    "reference_stats": {
+      "total_usd": "$141,609.00",
+      "total_transactions": 8,
+      "avg_transaction_size": "$17,701.12",
+      "num_partners": 8,
+      "product_diversity": 8,
+      "months_active": 6
+    },
+    "priority_breakdown": {
+      "volume": "0.3/30",
+      "uncertainty": "20.2/30",
+      "network": "16.0/20",
+      "diversity": "10.0/10",
+      "total": "52.5/100"
+    }
+  },
+  "Qingdao Foture Industry Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.75,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: ",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.337",
+      "priority_rank": 23,
+      "priority_score": "52.3"
+    },
+    "reference_stats": {
+      "total_usd": "$209,824.00",
+      "total_transactions": 11,
+      "avg_transaction_size": "$19,074.91",
+      "num_partners": 7,
+      "product_diversity": 9,
+      "months_active": 8
+    },
+    "priority_breakdown": {
+      "volume": "0.4/30",
+      "uncertainty": "19.9/30",
+      "network": "14.0/20",
+      "diversity": "10.0/10",
+      "total": "52.3/100"
+    }
+  },
+  "The Searle Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.85,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($3,357,169); Many transactions (46)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.386",
+      "priority_rank": 24,
+      "priority_score": "51.1"
+    },
+    "reference_stats": {
+      "total_usd": "$3,357,169.00",
+      "total_transactions": 46,
+      "avg_transaction_size": "$72,981.93",
+      "num_partners": 3,
+      "product_diversity": 27,
+      "months_active": 12
+    },
+    "priority_breakdown": {
+      "volume": "6.7/30",
+      "uncertainty": "18.4/30",
+      "network": "6.0/20",
+      "diversity": "10.0/10",
+      "total": "51.1/100"
+    }
+  },
+  "Sami Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.75,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: ",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.334",
+      "priority_rank": 25,
+      "priority_score": "50.8"
+    },
+    "reference_stats": {
+      "total_usd": "$425,772.00",
+      "total_transactions": 16,
+      "avg_transaction_size": "$26,610.75",
+      "num_partners": 5,
+      "product_diversity": 16,
+      "months_active": 10
+    },
+    "priority_breakdown": {
+      "volume": "0.9/30",
+      "uncertainty": "20.0/30",
+      "network": "10.0/20",
+      "diversity": "10.0/10",
+      "total": "50.8/100"
+    }
+  },
+  "Abbott Laboratories Pakistan Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.85,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Many transactions (20)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.344",
+      "priority_rank": 26,
+      "priority_score": "50.7"
+    },
+    "reference_stats": {
+      "total_usd": "$490,952.40",
+      "total_transactions": 20,
+      "avg_transaction_size": "$24,547.62",
+      "num_partners": 5,
+      "product_diversity": 13,
+      "months_active": 10
+    },
+    "priority_breakdown": {
+      "volume": "1.0/30",
+      "uncertainty": "19.7/30",
+      "network": "10.0/20",
+      "diversity": "10.0/10",
+      "total": "50.7/100"
+    }
+  },
+  "Liaoning Pharmaceutical Foreign Trade Corporation": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.8,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Many transactions (33); Many partners (22)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.679",
+      "priority_rank": 27,
+      "priority_score": "49.9"
+    },
+    "reference_stats": {
+      "total_usd": "$656,650.88",
+      "total_transactions": 33,
+      "avg_transaction_size": "$19,898.51",
+      "num_partners": 22,
+      "product_diversity": 32,
+      "months_active": 9
+    },
+    "priority_breakdown": {
+      "volume": "1.3/30",
+      "uncertainty": "9.6/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "49.9/100"
+    }
+  },
+  "Aba Stepsworth Dwc Llc": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.9,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($1,026,730); Many transactions (59); Many partners (22)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.745",
+      "priority_rank": 28,
+      "priority_score": "49.7"
+    },
+    "reference_stats": {
+      "total_usd": "$1,026,729.80",
+      "total_transactions": 59,
+      "avg_transaction_size": "$17,402.20",
+      "num_partners": 22,
+      "product_diversity": 58,
+      "months_active": 11
+    },
+    "priority_breakdown": {
+      "volume": "2.1/30",
+      "uncertainty": "7.7/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "49.7/100"
+    }
+  },
+  "Qiqihar Longjiang Fufeng Biotechnologies Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.8,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Many transactions (31); Many partners (22)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.630",
+      "priority_rank": 29,
+      "priority_score": "49.6"
+    },
+    "reference_stats": {
+      "total_usd": "$751,184.00",
+      "total_transactions": 31,
+      "avg_transaction_size": "$24,231.74",
+      "num_partners": 22,
+      "product_diversity": 19,
+      "months_active": 7
+    },
+    "priority_breakdown": {
+      "volume": "1.5/30",
+      "uncertainty": "11.1/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "49.6/100"
+    }
+  },
+  "Dfe Pharma Gmbh & Co Kg": {
+    "class_id": 1,
+    "class_name": null,
+    "confidence": 0.5,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Few transactions (8)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.376",
+      "priority_rank": 30,
+      "priority_score": "49.4"
+    },
+    "reference_stats": {
+      "total_usd": "$318,974.84",
+      "total_transactions": 8,
+      "avg_transaction_size": "$39,871.86",
+      "num_partners": 7,
+      "product_diversity": 8,
+      "months_active": 6
+    },
+    "priority_breakdown": {
+      "volume": "0.6/30",
+      "uncertainty": "18.7/30",
+      "network": "14.0/20",
+      "diversity": "10.0/10",
+      "total": "49.4/100"
+    }
+  },
+  "Anhui Ebuy International Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.6,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Few transactions (8)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.315",
+      "priority_rank": 31,
+      "priority_score": "49.0"
+    },
+    "reference_stats": {
+      "total_usd": "$223,387.00",
+      "total_transactions": 8,
+      "avg_transaction_size": "$27,923.38",
+      "num_partners": 6,
+      "product_diversity": 8,
+      "months_active": 6
+    },
+    "priority_breakdown": {
+      "volume": "0.4/30",
+      "uncertainty": "20.5/30",
+      "network": "12.0/20",
+      "diversity": "10.0/10",
+      "total": "49.0/100"
+    }
+  },
+  "Getz Pharma Pvt Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.85,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($1,749,579); Many transactions (50)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.488",
+      "priority_rank": 32,
+      "priority_score": "48.9"
+    },
+    "reference_stats": {
+      "total_usd": "$1,749,579.48",
+      "total_transactions": 50,
+      "avg_transaction_size": "$34,991.59",
+      "num_partners": 5,
+      "product_diversity": 26,
+      "months_active": 11
+    },
+    "priority_breakdown": {
+      "volume": "3.5/30",
+      "uncertainty": "15.4/30",
+      "network": "10.0/20",
+      "diversity": "10.0/10",
+      "total": "48.9/100"
+    }
+  },
+  "Zhejiang Medicines & Health Products Import & Export Co Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.75,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: ",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.331",
+      "priority_rank": 33,
+      "priority_score": "48.7"
+    },
+    "reference_stats": {
+      "total_usd": "$316,475.00",
+      "total_transactions": 11,
+      "avg_transaction_size": "$28,770.45",
+      "num_partners": 6,
+      "product_diversity": 9,
+      "months_active": 6
+    },
+    "priority_breakdown": {
+      "volume": "0.6/30",
+      "uncertainty": "20.1/30",
+      "network": "12.0/20",
+      "diversity": "10.0/10",
+      "total": "48.7/100"
+    }
+  },
+  "Hilton Pharma Pvt Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.65,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Many transactions (24)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.449",
+      "priority_rank": 34,
+      "priority_score": "48.2"
+    },
+    "reference_stats": {
+      "total_usd": "$825,153.28",
+      "total_transactions": 24,
+      "avg_transaction_size": "$34,381.39",
+      "num_partners": 5,
+      "product_diversity": 23,
+      "months_active": 11
+    },
+    "priority_breakdown": {
+      "volume": "1.7/30",
+      "uncertainty": "16.5/30",
+      "network": "10.0/20",
+      "diversity": "10.0/10",
+      "total": "48.2/100"
+    }
+  },
+  "Makeup 4U": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.5,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: Low volume ($543)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.329",
+      "priority_rank": 35,
+      "priority_score": "48.1"
+    },
+    "reference_stats": {
+      "total_usd": "$542.76",
+      "total_transactions": 14,
+      "avg_transaction_size": "$38.77",
+      "num_partners": 5,
+      "product_diversity": 14,
+      "months_active": 8
+    },
+    "priority_breakdown": {
+      "volume": "0.0/30",
+      "uncertainty": "20.1/30",
+      "network": "10.0/20",
+      "diversity": "10.0/10",
+      "total": "48.1/100"
+    }
+  },
+  "Chuming Pharmaceutical Ltd": {
+    "class_id": 2,
+    "class_name": null,
+    "confidence": 0.7,
+    "annotator": "AUTO_LABELER",
+    "notes": "Auto-labeled: High volume ($2,907,406); Many transactions (33); Few partners (1)",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.347",
+      "priority_rank": 36,
+      "priority_score": "47.4"
+    },
+    "reference_stats": {
+      "total_usd": "$2,907,406.00",
+      "total_transactions": 33,
+      "avg_transaction_size": "$88,103.21",
+      "num_partners": 1,
+      "product_diversity": 19,
+      "months_active": 11
+    },
+    "priority_breakdown": {
+      "volume": "5.8/30",
+      "uncertainty": "19.6/30",
+      "network": "2.0/20",
+      "diversity": "10.0/10",
+      "total": "47.4/100"
+    }
+  },
+  "Seawall Enterprise Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.999",
+      "priority_rank": 37,
+      "priority_score": "47.4"
+    },
+    "reference_stats": {
+      "total_usd": "$3,679,718.00",
+      "total_transactions": 177,
+      "avg_transaction_size": "$20,789.37",
+      "num_partners": 88,
+      "product_diversity": 121,
+      "months_active": 12
+    },
+    "priority_breakdown": {
+      "volume": "7.4/30",
+      "uncertainty": "0.0/30",
+      "network": "20.0/20",
+      "diversity": "10.0/10",
+      "total": "47.4/100"
+    }
+  },
+  "Galaxo Smith Kline Pakistan Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.414",
+      "priority_rank": 38,
+      "priority_score": "47.1"
+    },
+    "reference_stats": {
+      "total_usd": "$771,206.93",
+      "total_transactions": 25,
+      "avg_transaction_size": "$30,848.28",
+      "num_partners": 4,
+      "product_diversity": 15,
+      "months_active": 10
+    },
+    "priority_breakdown": {
+      "volume": "1.5/30",
+      "uncertainty": "17.6/30",
+      "network": "8.0/20",
+      "diversity": "10.0/10",
+      "total": "47.1/100"
+    }
+  },
+  "Infoark Industry Co Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.372",
+      "priority_rank": 39,
+      "priority_score": "46.9"
+    },
+    "reference_stats": {
+      "total_usd": "$43,845.00",
+      "total_transactions": 6,
+      "avg_transaction_size": "$7,307.50",
+      "num_partners": 6,
+      "product_diversity": 6,
+      "months_active": 6
+    },
+    "priority_breakdown": {
+      "volume": "0.1/30",
+      "uncertainty": "18.8/30",
+      "network": "12.0/20",
+      "diversity": "10.0/10",
+      "total": "46.9/100"
+    }
+  },
+  "Atco Laboratories Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.497",
+      "priority_rank": 40,
+      "priority_score": "46.8"
+    },
+    "reference_stats": {
+      "total_usd": "$364,359.00",
+      "total_transactions": 20,
+      "avg_transaction_size": "$18,217.95",
+      "num_partners": 6,
+      "product_diversity": 20,
+      "months_active": 9
+    },
+    "priority_breakdown": {
+      "volume": "0.7/30",
+      "uncertainty": "15.1/30",
+      "network": "12.0/20",
+      "diversity": "10.0/10",
+      "total": "46.8/100"
+    }
+  },
+  "As Enterprises": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.280",
+      "priority_rank": 41,
+      "priority_score": "46.8"
+    },
+    "reference_stats": {
+      "total_usd": "$71,094.00",
+      "total_transactions": 17,
+      "avg_transaction_size": "$4,182.00",
+      "num_partners": 4,
+      "product_diversity": 7,
+      "months_active": 7
+    },
+    "priority_breakdown": {
+      "volume": "0.1/30",
+      "uncertainty": "21.6/30",
+      "network": "8.0/20",
+      "diversity": "10.0/10",
+      "total": "46.8/100"
+    }
+  },
+  "Cspc Shengxue Glucose Co Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.294",
+      "priority_rank": 42,
+      "priority_score": "46.5"
+    },
+    "reference_stats": {
+      "total_usd": "$142,067.00",
+      "total_transactions": 8,
+      "avg_transaction_size": "$17,758.38",
+      "num_partners": 4,
+      "product_diversity": 7,
+      "months_active": 7
+    },
+    "priority_breakdown": {
+      "volume": "0.3/30",
+      "uncertainty": "21.2/30",
+      "network": "8.0/20",
+      "diversity": "10.0/10",
+      "total": "46.5/100"
+    }
+  },
+  "Heilongjiang Jinxiang Biochemical Co Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.316",
+      "priority_rank": 43,
+      "priority_score": "45.8"
+    },
+    "reference_stats": {
+      "total_usd": "$126,819.00",
+      "total_transactions": 7,
+      "avg_transaction_size": "$18,117.00",
+      "num_partners": 7,
+      "product_diversity": 5,
+      "months_active": 1
+    },
+    "priority_breakdown": {
+      "volume": "0.3/30",
+      "uncertainty": "20.5/30",
+      "network": "14.0/20",
+      "diversity": "10.0/10",
+      "total": "45.8/100"
+    }
+  },
+  "Pharmevo Pvt Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.439",
+      "priority_rank": 44,
+      "priority_score": "45.4"
+    },
+    "reference_stats": {
+      "total_usd": "$283,111.75",
+      "total_transactions": 21,
+      "avg_transaction_size": "$13,481.51",
+      "num_partners": 4,
+      "product_diversity": 16,
+      "months_active": 10
+    },
+    "priority_breakdown": {
+      "volume": "0.6/30",
+      "uncertainty": "16.8/30",
+      "network": "8.0/20",
+      "diversity": "10.0/10",
+      "total": "45.4/100"
+    }
+  },
+  "Pak International": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.433",
+      "priority_rank": 45,
+      "priority_score": "45.2"
+    },
+    "reference_stats": {
+      "total_usd": "$111,260.00",
+      "total_transactions": 18,
+      "avg_transaction_size": "$6,181.11",
+      "num_partners": 4,
+      "product_diversity": 18,
+      "months_active": 10
+    },
+    "priority_breakdown": {
+      "volume": "0.2/30",
+      "uncertainty": "17.0/30",
+      "network": "8.0/20",
+      "diversity": "10.0/10",
+      "total": "45.2/100"
+    }
+  },
+  "Leprino Foods Dairy Products Co": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.336",
+      "priority_rank": 46,
+      "priority_score": "45.1"
+    },
+    "reference_stats": {
+      "total_usd": "$3,073,229.00",
+      "total_transactions": 40,
+      "avg_transaction_size": "$76,830.73",
+      "num_partners": 1,
+      "product_diversity": 6,
+      "months_active": 7
+    },
+    "priority_breakdown": {
+      "volume": "6.1/30",
+      "uncertainty": "19.9/30",
+      "network": "2.0/20",
+      "diversity": "10.0/10",
+      "total": "45.1/100"
+    }
+  },
+  "Foshan Gaoming Jinjie Import And Export Co Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.375",
+      "priority_rank": 47,
+      "priority_score": "45.0"
+    },
+    "reference_stats": {
+      "total_usd": "$145,050.00",
+      "total_transactions": 12,
+      "avg_transaction_size": "$12,087.50",
+      "num_partners": 4,
+      "product_diversity": 11,
+      "months_active": 8
+    },
+    "priority_breakdown": {
+      "volume": "0.3/30",
+      "uncertainty": "18.7/30",
+      "network": "8.0/20",
+      "diversity": "10.0/10",
+      "total": "45.0/100"
+    }
+  },
+  "Milchwerke Mittelelbe Gmbh": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.364",
+      "priority_rank": 48,
+      "priority_score": "45.0"
+    },
+    "reference_stats": {
+      "total_usd": "$1,458,866.79",
+      "total_transactions": 32,
+      "avg_transaction_size": "$45,589.59",
+      "num_partners": 2,
+      "product_diversity": 11,
+      "months_active": 9
+    },
+    "priority_breakdown": {
+      "volume": "2.9/30",
+      "uncertainty": "19.1/30",
+      "network": "4.0/20",
+      "diversity": "10.0/10",
+      "total": "45.0/100"
+    }
+  },
+  "D.D Williamson Ingredients (Shanghai) Ltd": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.286",
+      "priority_rank": 49,
+      "priority_score": "44.6"
+    },
+    "reference_stats": {
+      "total_usd": "$106,735.00",
+      "total_transactions": 7,
+      "avg_transaction_size": "$15,247.86",
+      "num_partners": 4,
+      "product_diversity": 6,
+      "months_active": 5
+    },
+    "priority_breakdown": {
+      "volume": "0.2/30",
+      "uncertainty": "21.4/30",
+      "network": "8.0/20",
+      "diversity": "10.0/10",
+      "total": "44.6/100"
+    }
+  },
+  "Szumex International": {
+    "class_id": null,
+    "class_name": null,
+    "confidence": 1.0,
+    "annotator": "YOUR_NAME_HERE",
+    "notes": "",
+    "model_suggestion": {
+      "predicted_class": 2,
+      "model_confidence": "0.331",
+      "priority_rank": 50,
+      "priority_score": "43.7"
+    },
+    "reference_stats": {
+      "total_usd": "$823,668.40",
+      "total_transactions": 15,
+      "avg_transaction_size": "$54,911.23",
+      "num_partners": 2,
+      "product_diversity": 7,
+      "months_active": 8
+    },
+    "priority_breakdown": {
+      "volume": "1.6/30",
+      "uncertainty": "20.1/30",
+      "network": "4.0/20",
+      "diversity": "10.0/10",
+      "total": "43.7/100"
+    }
+  }
+}

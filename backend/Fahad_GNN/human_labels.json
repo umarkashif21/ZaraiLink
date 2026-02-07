@@ -1,0 +1,626 @@
+{
+  "Getz Pharma Pvt Ltd": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($1,749,579)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$1,749,579.48",
+      "total_tx": 50,
+      "avg_tx_size": "$34,991.59",
+      "consistency": "0.68",
+      "partners": 5
+    }
+  },
+  "Lactalis Ingredients": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($5,424,013)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$5,424,013.39",
+      "total_tx": 76,
+      "avg_tx_size": "$71,368.60",
+      "consistency": "0.59",
+      "partners": 11
+    }
+  },
+  "Muller & Phipps (Pakistan) Pvt Ltd": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($1,005,334)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$1,005,334.00",
+      "total_tx": 93,
+      "avg_tx_size": "$10,810.04",
+      "consistency": "0.73",
+      "partners": 2
+    }
+  },
+  "The Coca-Cola Export Corporation Pakistan Branch": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($932,412)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$932,412.00",
+      "total_tx": 19,
+      "avg_tx_size": "$49,074.32",
+      "consistency": "0.59",
+      "partners": 1
+    }
+  },
+  "Galaxo Smith Kline Pakistan Ltd": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($771,207)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$771,206.93",
+      "total_tx": 25,
+      "avg_tx_size": "$30,848.28",
+      "consistency": "0.49",
+      "partners": 4
+    }
+  },
+  "Friesland Campina Engro Pakistan Ltd": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($2,907,500)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$2,907,500.39",
+      "total_tx": 25,
+      "avg_tx_size": "$116,300.02",
+      "consistency": "0.65",
+      "partners": 3
+    }
+  },
+  "Qinhuangdao Lihua Starch Co Ltd": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($2,372,341)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$2,372,340.75",
+      "total_tx": 58,
+      "avg_tx_size": "$40,902.43",
+      "consistency": "0.55",
+      "partners": 18
+    }
+  },
+  "Nestle Pakistan Ltd": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($8,533,764)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$8,533,764.34",
+      "total_tx": 88,
+      "avg_tx_size": "$96,974.59",
+      "consistency": "0.66",
+      "partners": 8
+    }
+  },
+  "Pacific Sugar Corporation Ltd": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($13,875,000)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$13,875,000.00",
+      "total_tx": 2,
+      "avg_tx_size": "$6,937,500.00",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Friesland Campina Domo": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($971,962)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$971,961.72",
+      "total_tx": 9,
+      "avg_tx_size": "$107,995.75",
+      "consistency": "0.58",
+      "partners": 1
+    }
+  },
+  "Chuming Pharmaceutical Ltd": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($2,907,406)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$2,907,406.00",
+      "total_tx": 33,
+      "avg_tx_size": "$88,103.21",
+      "consistency": "0.65",
+      "partners": 1
+    }
+  },
+  "The Searle Co Ltd": {
+    "class_id": 0,
+    "confidence": 1.0,
+    "reason": "Top 5% by volume ($3,357,169)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$3,357,169.00",
+      "total_tx": 46,
+      "avg_tx_size": "$72,981.93",
+      "consistency": "0.64",
+      "partners": 3
+    }
+  },
+  "Elite Chemicals Co": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($167,675)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$167,674.54",
+      "total_tx": 7,
+      "avg_tx_size": "$23,953.51",
+      "consistency": "0.70",
+      "partners": 4
+    }
+  },
+  "Anhui Kemfood International Co Ltd": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($165,984)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$165,984.00",
+      "total_tx": 7,
+      "avg_tx_size": "$23,712.00",
+      "consistency": "0.75",
+      "partners": 6
+    }
+  },
+  "Unisa Pharmaceutical Industries Ltd": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($205,250)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$205,250.00",
+      "total_tx": 6,
+      "avg_tx_size": "$34,208.33",
+      "consistency": "0.78",
+      "partners": 2
+    }
+  },
+  "Lucky Core Industries Ltd": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($349,745)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$349,744.83",
+      "total_tx": 14,
+      "avg_tx_size": "$24,981.77",
+      "consistency": "0.51",
+      "partners": 4
+    }
+  },
+  "Monin Asia Kl Sdn Bhd": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($122,145)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$122,145.07",
+      "total_tx": 7,
+      "avg_tx_size": "$17,449.30",
+      "consistency": "0.73",
+      "partners": 1
+    }
+  },
+  "Philip Morris (Pakistan) Ltd": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($106,880)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$106,880.00",
+      "total_tx": 11,
+      "avg_tx_size": "$9,716.36",
+      "consistency": "0.73",
+      "partners": 1
+    }
+  },
+  "Selmore Pharmaceuticals Pvt Ltd": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($112,960)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$112,960.00",
+      "total_tx": 11,
+      "avg_tx_size": "$10,269.09",
+      "consistency": "0.61",
+      "partners": 6
+    }
+  },
+  "Emrays (Hangzhou) Pharmaceutical Co Ltd": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($149,020)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$149,020.00",
+      "total_tx": 8,
+      "avg_tx_size": "$18,627.50",
+      "consistency": "0.64",
+      "partners": 3
+    }
+  },
+  "San Soon Seng Food Industries Sdn Bhd": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($378,704)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$378,704.00",
+      "total_tx": 9,
+      "avg_tx_size": "$42,078.22",
+      "consistency": "0.63",
+      "partners": 1
+    }
+  },
+  "Zhejiang Medicines & Health Products Import & Export Co Ltd": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($316,475)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$316,475.00",
+      "total_tx": 11,
+      "avg_tx_size": "$28,770.45",
+      "consistency": "0.63",
+      "partners": 6
+    }
+  },
+  "Pak International": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($111,260)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$111,260.00",
+      "total_tx": 18,
+      "avg_tx_size": "$6,181.11",
+      "consistency": "0.49",
+      "partners": 4
+    }
+  },
+  "Mak Kemikal": {
+    "class_id": 1,
+    "confidence": 1.0,
+    "reason": "Top 20% by volume ($196,168)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$196,168.00",
+      "total_tx": 15,
+      "avg_tx_size": "$13,077.87",
+      "consistency": "0.68",
+      "partners": 3
+    }
+  },
+  "Aipu Food Industry Co Ltd": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($73,135)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$73,135.00",
+      "total_tx": 4,
+      "avg_tx_size": "$18,283.75",
+      "consistency": "0.75",
+      "partners": 2
+    }
+  },
+  "Awais Trading Corporation": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($60,648)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$60,648.00",
+      "total_tx": 2,
+      "avg_tx_size": "$30,324.00",
+      "consistency": "1.00",
+      "partners": 2
+    }
+  },
+  "Hongye Chemical Group Ltd": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($60,760)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$60,760.00",
+      "total_tx": 2,
+      "avg_tx_size": "$30,380.00",
+      "consistency": "1.00",
+      "partners": 2
+    }
+  },
+  "J.S Corporation": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($22,820)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$22,820.00",
+      "total_tx": 1,
+      "avg_tx_size": "$22,820.00",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Chem Color International Pvt Ltd": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($27,888)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$27,888.00",
+      "total_tx": 1,
+      "avg_tx_size": "$27,888.00",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Jeram Coconut Sdn Bhd": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($22,310)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$22,310.00",
+      "total_tx": 4,
+      "avg_tx_size": "$5,577.50",
+      "consistency": "0.82",
+      "partners": 1
+    }
+  },
+  "Avicenna Laboratories Pvt Ltd": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($32,822)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$32,822.00",
+      "total_tx": 2,
+      "avg_tx_size": "$16,411.00",
+      "consistency": "1.00",
+      "partners": 1
+    }
+  },
+  "Ferozsons Laboratories Ltd": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($78,000)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$78,000.00",
+      "total_tx": 3,
+      "avg_tx_size": "$26,000.00",
+      "consistency": "0.90",
+      "partners": 2
+    }
+  },
+  "Naveed Impex": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($63,000)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$63,000.00",
+      "total_tx": 2,
+      "avg_tx_size": "$31,500.00",
+      "consistency": "0.94",
+      "partners": 1
+    }
+  },
+  "Adamjee Pharmaceutical Pvt Ltd": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($52,700)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$52,700.00",
+      "total_tx": 2,
+      "avg_tx_size": "$26,350.00",
+      "consistency": "0.77",
+      "partners": 2
+    }
+  },
+  "Infoark Industry Co Ltd": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($43,845)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$43,845.00",
+      "total_tx": 6,
+      "avg_tx_size": "$7,307.50",
+      "consistency": "0.50",
+      "partners": 6
+    }
+  },
+  "Ies Global Pvt Ltd": {
+    "class_id": 2,
+    "confidence": 1.0,
+    "reason": "Top 50% by volume ($25,332)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$25,331.74",
+      "total_tx": 1,
+      "avg_tx_size": "$25,331.74",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Mars International": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($199)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$199.32",
+      "total_tx": 1,
+      "avg_tx_size": "$199.32",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "D Orsogna Dolciaria Srl": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($3,177)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$3,177.39",
+      "total_tx": 1,
+      "avg_tx_size": "$3,177.39",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Masfa Industries Pvt Ltd": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($18,120)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$18,120.00",
+      "total_tx": 1,
+      "avg_tx_size": "$18,120.00",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Global Imports": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($3,009)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$3,009.00",
+      "total_tx": 2,
+      "avg_tx_size": "$1,504.50",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Sethness Products Co": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($1,223)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$1,223.00",
+      "total_tx": 1,
+      "avg_tx_size": "$1,223.00",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Duksan Pure Chemicals Co Ltd": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($44)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$44.00",
+      "total_tx": 1,
+      "avg_tx_size": "$44.00",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Barnabas Aid": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($128)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$128.49",
+      "total_tx": 1,
+      "avg_tx_size": "$128.49",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Zhejiang Synose Tech Co Ltd": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($10,000)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$10,000.00",
+      "total_tx": 1,
+      "avg_tx_size": "$10,000.00",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Rapid World General Trading Co Llc": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($14,830)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$14,830.00",
+      "total_tx": 4,
+      "avg_tx_size": "$3,707.50",
+      "consistency": "0.64",
+      "partners": 3
+    }
+  },
+  "Decent Pharma": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($17,059)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$17,059.00",
+      "total_tx": 1,
+      "avg_tx_size": "$17,059.00",
+      "consistency": "0.50",
+      "partners": 1
+    }
+  },
+  "Baariq Pharmaceuticals": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($21,086)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$21,086.00",
+      "total_tx": 2,
+      "avg_tx_size": "$10,543.00",
+      "consistency": "0.57",
+      "partners": 2
+    }
+  },
+  "Bahr Al Najah Trading Llc": {
+    "class_id": 3,
+    "confidence": 1.0,
+    "reason": "Bottom 50% by volume ($17,711)",
+    "method": "percentile_balanced",
+    "stats": {
+      "total_usd": "$17,711.00",
+      "total_tx": 12,
+      "avg_tx_size": "$1,475.92",
+      "consistency": "0.86",
+      "partners": 1
+    }
+  }
+}

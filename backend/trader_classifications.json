@@ -1,0 +1,2842 @@
+{
+  "Embassy Of Germany": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Merck Life Science Kgaa": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Aykilic Gross Dis Ticaret Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Getz Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Tereos Acucar E Energia": {
+    "class_id": 1,
+    "method": "gnn"
+  },
+  "Friesland Campina Engro Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shanghai Tianjia Biochemical Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Atco Laboratories Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Muller & Phipps (Pakistan) Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Adamjee Pharmaceutical Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Chem Color International Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "The Searle Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Revive Pharmakon": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Great Wall Trading Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Emad Trade House Fzco": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Infoark International Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Lakhani Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dangschat T.O.H Gmbh & Co Kg": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Tradetrans Corp": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Adchem International Fzco": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Batala Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Regent Laboratories": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Qiqihar Longjiang Fufeng Biotechnologies Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Martin Dow Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Al-Burque Enterprise": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Saeed Brothers": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Zhejiang Medicines & Health Products Import & Export Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Stair Way Electronics Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Maria Violeta Jardines Rubieles": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Bdairy Bv": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Hiranis Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Fa Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "As Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Eterna Pharma Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Evolution Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Irza Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Novi Srl": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Guangzhou Dongchen International Trade Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Otsuka Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "S.S Scientific System": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shanzhan International Catering Management (Henan) Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Panteley Toshev Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Nishat Sutas Dairy Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Attabak Pharmaceutical Industries": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Arshine Lifescience Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Guangdong Haoliyuan Food Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Vision For The Kingdom In Pakistan": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Continental Worldwide Trading Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sethness Roquette Food (Lianyungang) Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mr Khurram": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Tayas Gida San Ve Tic As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mcc Resources Development Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Nutrico Morinaga Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Kulsoom International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Werrick Pharamaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Al Taqi Impex": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Takayuki Shirota": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Adil And Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Innova Ingredients Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Amna Keyani": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "International Diplomatic Supplies Inc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Austin Chemical Co Inc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Szumex International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mcc Huaye Duddar Mining Co Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Xiamen Yasin Industry & Trade Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Qinhuangdao Lihua Starch Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Rice And Spice Filling Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Searle Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Global Traders": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mohammadi Traders": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Haarold's Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ebuy Enterprise Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Protech": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Selfridges & Co": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Parkar Pharma": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Rapid World General Trading Co Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Fayrefield Foods As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Scilife Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Al Khaleej Sugar Co Llc": {
+    "class_id": 1,
+    "method": "gnn"
+  },
+  "Seawall Enterprise Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Guangdong Youzhiweipin Biotechnology": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Abbott Laboratories Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mak Kemikal": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Tahir Muhammad Iqbal Hookmani": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pepsi-Cola International Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Stand Pharm Pakistan Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Supreme Traders": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sami Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zibo Weibin Imp & Exp Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Maka Tarabar": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shazeb Pharmaceutical Industries Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ghani Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "United Food Group": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Suedzucker Ag": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Gerry's International Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shazia Trading Co": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Bagat Agro Impex Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Perfetti Van Melle (Vietnam) Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Naveed Trading Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Yiwu Yilong Import And Export Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ahsons Drug Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Universal Logistics Services Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Guangdong Yichao Biological Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Qas International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ahmed Tariq Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Bin Dawood Flavours Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pt Savoria Kreasi Rasa": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fizi Pharmaceutical And Chemical Laboratories": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Docile Alimentos Ltda": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Dulceplus Golosinas Sa": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Jeram Coconut Sdn Bhd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Murree Brewery Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "M2K2 Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zhejiang Jinlian Chemtech Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sanna Laboratories": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Zoic International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Flash Laboratories": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Jamaica Foodstuff Trading Co Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Bint-E-Sulham Trading & Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Qingdao Fugar Chemical Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Dohler Gida Sanayi As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "D Orsogna Dolciaria Srl": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Embassy Of The Russian Federation": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "The Connection": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Haris Fayyaz": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pollen Endustriyel Gida Sanayi Ve Ticaret As": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Poulvet Pharmaceuticals Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "World-Wide Services": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Dhl Express International (Th) Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Yiwu Umm E Hani Trading Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Qingdao Doeast Chemical Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Reign Pharmaceuticals Pcsir Klc Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zanctok Pharmaceutical Laboratories": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "D-Maarson Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Yijia Consultants Smc Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Delight Enterprises Smc Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Singsino Group Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Avicenna Laboratories Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zak Tech": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Boba Bubble Beverages Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Trade Genius Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "M Hanif & Sons": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Fenchem Supply Chain Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Aqua Food": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Heilongjiang Jinxiang Biochemical Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Madam Sun Sdn Bhd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Memon Brothers": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Malkara Birlik Sut Ve Sut Mamulleri As": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Bahr Al Najah Trading Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pharmedic Laboratories Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Global Marketing Carporation": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Kervan Gida San Ve Tic As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "I & H Services": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Aipu Food Industry Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Tate & Lyle Slovakia Sro": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Business Links International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mattoo Sons": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Monin Asia Kl Sdn Bhd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Herbion Pakistan Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "D.D Williamson Ingredients (Shanghai) Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "S. J & G Fazul Ellahie Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sweetzone Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Karl Geuther Handels-Gmbh & Co Kg": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Elif Cikolata San Ve Tic Ltd Sti": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Chifeng Eyeris Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ies Global Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Nation Trade International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "World Sugar Export Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Rashidiya Impex": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Genix Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Qingdao Hisunny Imp & Exp Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Geofman Pharmaceuticals": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Intervac Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Meliana Tonga": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Abdullah Solutions": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Martin Dow Marker Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Gallop Water Sciences": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Rahim Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Himark Laboratories Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Gn Chemicals Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Suzuki Motor Corporation": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Khat Tadawul General Trading Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sa Corporation": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "J.S Corporation": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Krypton Pharma Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Epoch Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Apsis Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Leprino Foods Dairy Products Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Global Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Al Ard Al Zarkha Goods": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fynk Pharmacuticals Formerly Unison Chem Works": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pollen End Gida San Ve Tic": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Aba Stepsworth Dwc Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Usama Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Perfetti Van Melle Confectionery (Shenzhen) Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sociedad Espanola De Colorantes Naturales": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Haji Razak Haji Habib Janoo": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ns Trade International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Star Laboratories Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dairy Life Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shijiazhuang Jiaduohao Food Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ckd Pharmaceuticals Pakistan Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zafa Pharmaceutical Laboratories Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Axis Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Meggle Gmbh & Co Kg": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "J.K Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Renacon Pharma Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Qasim Import Export Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Apeloa Hong Kong Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Yiwu Huayi Imp And Exp Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Taiwanfuyou Food Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ol Usa Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shenzhen Xpa International Log": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Chromachemie Laboratory Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Divine Food Hub": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Kayans Pharmaceuticals Industries": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Waheed Waheed": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sultan Chemicals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Martin Dow Specialities Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ccl Pharmaceuticals Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shawn Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pt Damai Karya Abadi": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Rayburn Trading Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Heal Pharmaceutical Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Raja Govt. Contractor, General Order Supplier And Importer-Exporter": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zain Enterprise Oilfield Supply Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ashrafsons Pharmaceutical Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Duksan Pure Chemicals Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shanghai Richfield Internaitonal Trade Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Arshine Food Additives Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Dhl Worldwide Express": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shazal's Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Al-Chemist Corp": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Rotex Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Lucky Core Industries Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Emrays International General Trading Co Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Irca Spa": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Don Valley Pharmaceuticals Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Horeca Systems": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sucere Foods Corporation": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Roohi Chaudhri": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Aziz Impex": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sk & Sons": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shenzhen Xingyan International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Valor Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dfe Pharma Gmbh & Co Kg": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Jk International Fze": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Prime International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Far Eastern Impex Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Aa Foods": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Novargo Inc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Dalda Foods Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Agar International Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sb Pharma": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fivestar Corporation": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Standard Drug Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Famous Trading Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Frontier Dextrose Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Karam Traders": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ma Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mr International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Elite Chemicals Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sigma-Aldrich Chemie Gmbh": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dfe Pahrma Gmbh & Co Kg": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Blooming Foods Fzco": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Saadet Gida Pazarlama San Ve Tic As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shanghai J. Shine Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Haleeb Foods Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hubei Sweet Element Food Technology": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sanofi Aventis Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Abdool Aly Moosabhoy & Sons": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Gmp Foods Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Best Day International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Global Imports": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ruland Chemistry (Nanjing) Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Crimson Middle East Fz Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Amazon Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shantou Yuanda Foods Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Neutra Cure": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Haseeb Lab Supplies": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Owin Industry Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Abdullah Impex": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "York Star Hong Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "U.S Corporation": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "C/O Conseil De L Europe Edqm Int": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Bilal Impex": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Friesland Campina Nederland Bv": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mylab Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Unisa Pharmaceutical Industries Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Azarkian Toss Intl": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shree Sai Trading": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shenzhen Yezi Biotech Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Faas Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dhl Pakistan Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Royal Ilac San Tic Ltd Sti": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Eurozyme Gida Katki Mad San Ve Tic As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fora Sweets Gida San Ve Tic As": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shantou Yangyu Foodstuff Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Chemtech": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Univet Pharmaceuticals": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Stylopod Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fedex Express": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shenzhen Rungu Food Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Adm Besin Ve Tarim As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pak Polychem Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pharmevo Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Agris Ninh Hoa Import Export": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Coca Cola Beverages Pakistan Ltd Lhr": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fast Da Trade Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Syed Naeem General Trading": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Vetcon Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "New Chemical Centre": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Al Showaib Al Dhahabi General Trading Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shandong Lianmeng International Trade Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Inshal Pharmaceutical Industries": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "National Radio Telecommunication Corporation Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "K.S.L Export Trading Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shandong Tianliang Import And Export Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Malkani Traders": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Jinnah Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dsv Solutions Slovakia Sro": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Vetrox Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ss Agencies": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Nippan Ips Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "High-Q Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zeta Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "North Mile Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pak Suzuki Motor Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Yiwu Harpy Import And Export Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Central Chemicals": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Aries Pharmaceutical Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Meraj Din Mohammad Iqbal": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Hongye Chemical Group Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "The Thai Sugar Trading Corp": {
+    "class_id": 1,
+    "method": "gnn"
+  },
+  "Asian Gulf Shisha Molasses": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "S.S Naseeruddin": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Bakers Supplies": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Winthrox Laboratories Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "San Soon Seng Food Industries Sdn Bhd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Alpavit Gmbh & Co Kg": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Aptly Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Muneeb Trading Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Davis Pharmaceutical Laboratories": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Agp Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hong Kong Foreal Industrial Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Haameem": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Izfaar Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "High Profile Poultry Services": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Glorious Laboratories": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mission Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Maple Star Food Solutions": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pacific Pharmaceuticals Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mek Gida Sanayi Ve Ticaret Ltd Sirketi": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "A.M International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Decent Pharma": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shenyang Flourish Biotech Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Route-2 Health Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Monakhal Wariech": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Cspc Shengxue Glucose Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Yiwu Zhixin Import And Export Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Elko Organization Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Medipak Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Imperial Foods General Trading Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Five Star Trading": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Central Pak Trading Fz Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Inventor Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Platinum Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mi International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Doehler Gmbh": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Hangzhou Telida Biopharmtech Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Brothers Enterprise Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mukaty Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Weifang Shengtai Medicine Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Tabros Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Haleon Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dongying City Longxing Chemical Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Javed Chemical Corporation": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Candy Shandy Enterprise": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Indus Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pt Yupi Indo Jelly Gum Tbk": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Hangzhou Starshine Pharmaceutical Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dhl Express International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Daks Trading Fz Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Horizon Healthcare Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shantou Lebei Trading Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Tate & Lyle Boleraz Sro": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Soar Biotech Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Cargill Bio-Chemical Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hamza Enterprise": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "G.T Pharma Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Glucorp Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "D.D Willimason (Uk) Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Aromsa Besin Aroma Ve Katki Maddeleri San Ve Tic": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Galaxo Smith Kline Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ai-Cha Food Trading Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pt Mayora Indah Tbk": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Baariq Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mafworth Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fakhar Abbas Shah": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Grandma Catering Management Services Smc Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ferozsons Laboratories Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hangzhou Clake Biotech Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Puratos Nv": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Friesland Campina Domo": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Venus Pharma": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sh Muhammad Rashid And Brothers": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "F.B Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Flaxen Trading Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Fortune Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Barrett Hodgson Pakistan Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Emrays Middleeast General Trading Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Phytocon International Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Anadolu Etap Penkon Gida Ve Icecek": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Acme Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Best Brands General Trading Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Astral Neutraceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Embassy Of The Republic Of Tajikistan": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Bless Laboratories Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Awais Trading Corporation": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Fk Trader": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Archard Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Farm Wise Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sois Life Sciences": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shanghai Huamao Pharmaceutical Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Peter Justesen Company As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Embassy Of United States Of America": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mars International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shabbir International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mango Fresh": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Hebei Jinfeng Starch Sugar Alcohol": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Klarg Exports": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Asr Group": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mansoor Chemical": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "R.A Impex": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Farooq Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Nova Link General Trading Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dhl International Bahrain Bsc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Shaigan Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Meggle Africa And Middle East Dmcc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "General Candy Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Premier Trading Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "International Franchises Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Tate & Lyle Sugars Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sachsenmilch Leppersdorf Gmbh": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Cheminova Corporation": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pharmatec Pakistan Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Firstop Commercial And Trading Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pamir Gida Sanayi As": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Haameem Food Solutions": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Xinjiang haoyuguo international trade Co": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Qingdao Icd Biochemistry Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Bonart Gida Sanayi Ve Ticaret As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sabbaq Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ibrahim International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fm Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Maac International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Premium Chemicals": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Bakbel Europe Sa": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Embassy Of Jordan": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Chuming Pharmaceutical Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ard Al Buraq General Trading Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Epharm Laboratories": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Palzar Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sethness Products Co": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shafiq Iqbal Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Fusion Fareway Food Products Co Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Wdcw Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Caliph Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Bosmos International Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Med Pharm Research Lab": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Jawed Traders": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zarnam Farhikhtegan Research": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Leads Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ismail & Rais Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "M.R.S Star General Trading Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Jrs Pharma Gmbh & Co Kg": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mars Way Food Stuff Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Molekula Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Has Trading Solutions": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Rasco Pharma": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Yiwu Youcan Food Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Twin Star International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Thanh Thanh Cong \u2013 Bien Hoa": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Liaoning Pharmaceutical Foreign Trade Corporation": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Changsha Vigorous Tech Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Raim Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Efroze Chemical Industries Private Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hoechst Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Aamster Laboratories (Branch)": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Nabiqasim Industries Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Bluebird Commodities Fzco": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Wheyco Gmbh": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Medisure Laboratories Pakistan Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Adeel Ahmad": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Xiamen Ying Wan Foodstuff Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "International Importers": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sunshine Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mediflow Pharmaceutical Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Multiple Trading House": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Signet Excipients Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Farm Aid Group": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ahmar Abbas Shah": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Hashwan Traders Pack House And Cold Storage Facility": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Anhui Newchem Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Qingdao Foture Industry Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sensient Technologies Europe Gmbh": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Philip Morris (Pakistan) Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Jhk Pharma Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pmmc Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Puratos (Thailand) Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Damel Group Sl": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Z And F Sungold Corporation": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Farmasino Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Rinda Food Industries Sdn Bhd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Alamgir": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Atlantic Pharmaceutical Laboratories": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Al Zain International Traders": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Gujranwala Food Industries Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sea Quest Logistic Services": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Solaris Life Sciences Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Milchwerke Mittelelbe Gmbh": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Green Tract Shipping Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Zhejiang Chemicals Import And Export Corporation": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Guangdong Shantai Foodstuff Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Masfa Industries Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hangzhou Dawn Ray Pharmaceutical Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Obs Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Tiva Gida San Ve Tic As": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Evliya Sek San Ve Tic Ltd Sti": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Abdullah Trading Co": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Iman Tariq Cheema": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pharmawise Labs. Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Semos Pharmaceutical Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Anhui Ebuy International Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pak International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Sons Traders": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pharma Chemicals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Infoark Industry Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Uniwell International Machinery Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shanggao Richwant Trading Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Qingdao Songwal Biotech Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Royal Chemicals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Iram Yousaf": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Yaseen And Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Nabi Qasim Industries Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "M I Traders": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Macter International Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Fuji Global Chocolate (M) Sdn Bhd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Syeda Ambreen Mushtaq": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Rush Foods": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zain Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ccnsport Hong Kong Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "A & K Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Arochem": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Jalal Maical": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mariam International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Neutro Pharma Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pt Raja Impex": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pt Gandum Mas Kencana": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Quaper Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Gamco International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Wilson's Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "D-Haans Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pt Pusan Manis Mulia": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "N.N Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ibrahim Khatri Trading Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Laboratory Scientific Supplies Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ahmad Naveed": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shahmurad Sugar Mills Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Asian Food Industries Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Citi Pharma Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "I.A Global Eximp": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Imtiaz Group Smc Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Lactalis Ingredients": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Mondelez Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Norte-Eurocao Slu": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Nestle Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Kohinoor Industries": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Unilever Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Jiangsu Soho Honry Import & Export Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Lgc Gmbh": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Angus Bio (Shanghai) Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Muhammad Arslan Ramzan": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Kings International General Trading Llc": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Rano Fashion Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Irca Manufacturing Netherlands Bv": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hassan Nazir International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ciba Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Tradex International Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Guangdond Yichao Biological Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Mallard Pharmaceuticals Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Nawal Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Anhui Kemfood International Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "S.R International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Matco Foods Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Zhaoqing Huanfa Biotechnology Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "M.A Kamil": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Foshan Gaoming Jinjie Import And Export Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hinucon Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hebei Xiaoxixi Food Science And Technology": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Trading Corporation Of Pakistan Pvt Ltd": {
+    "class_id": 0,
+    "method": "gnn"
+  },
+  "Evergreen Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Takasago International (Pakistan) Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Armor Proteines Sas": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Embassy Of The Republic Of Ukraine": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Global Trade Link": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Asfa Karim": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Musaji Adam & Sons": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Majestic Pharma": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "R.S International": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Galaxy Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "A.F.U International": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Makkah Traders": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Isis Pharmaceuticals & Chemical Works": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Tcs Express Ww": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Transmed International Pte Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hawk Bio Pharma Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Highnoon Laboratories Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Defeem Sdn Bhd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Hangzhou Pharmco Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Barnabas Aid": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Yiwu Guoyou Import & Export Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Selmore Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Jawa Pharmaceuticals Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Swan Impex Llp": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hilton Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Yah Impex": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Bridge Initiative Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Advan Pharmachem Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pfizer Pakistan Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Daejung Chemicals & Metals Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Labbaik Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Chase Up": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Enzon Pharma Labs Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fauji Foods Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Betelnuts Corporation": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Morgan Technologies Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Makeup 4U": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Atago Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Rose Containerline Inc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "I.M Traders": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Usman Brothers Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Msm Prai Berhad": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Bismillah Trading Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pt Hanjaya Mandala Sampoerna Tbk": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Dream Nest Fze Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "A Z Enterprises": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "W Woodward Pakistan Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Yiwu East Coast Import & Export": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "New Natural Biotech Fz Llc": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Pt Arta Maja Prima": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Rongcheng More Efficient Trading Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "East Chemsources Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Imcd Middle East Fzco": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Jawed & Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Naveed Impex": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "B Healthy Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Emrays (Hangzhou) Pharmaceutical Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Access Usa Shipping": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Lotte Vietnam Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Northern Logistics Carrier Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Beschoo Trading Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Zhejiang New Vision Imp & Exp Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Thermo Fisher Scientific": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Yiwu Saijia Trading Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Chemical Trades": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pt Yupi Indo Jelly Gum": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Shanghai Icv Chemical Technology Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Tcs Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Foreach Enterprise Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Giant Ingredients Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sz Traders": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ups Air Couriers Of America": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hemani International Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Greyhound Chromatography and Allied Chemicals Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Moosani Impex": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Fonterra Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Fipharm Co Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Fynk Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Wuhan Lipharma Chemicals Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Trading World": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Pacific Sugar Corporation Ltd": {
+    "class_id": 1,
+    "method": "gnn"
+  },
+  "Honber International Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Dpexi Private Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Dairyland Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "The Coca-Cola Export Corporation Pakistan Branch": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hangzhou Zhongbao Imp & Exp Corp Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Lisko Pakistan Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Hudson Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Vega Pharma Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Zhejiang Synose Tech Co Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Aftab Chemical Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Ideal Foods & Chemicals": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Jilin Cofco Bio-Chem And Bio-Energy Marketing": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ras Pharmaceuticals Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "United Chemical Corporation Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Diamond Fabrics Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Alb Wholesale Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Cortex Pharmaceuticals": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "M A Kamil Farma Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Sheheryar Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Aspin Pharma Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "One Health Pharma": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Infinity Traders": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Toss Enterprises": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Elvan Gida San Ve Tic As": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Dohler Pakistan Pvt Ltd": {
+    "class_id": 3,
+    "method": "gnn"
+  },
+  "Ahmed Chemical Co": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "Healthtek Pvt Ltd": {
+    "class_id": 2,
+    "method": "gnn"
+  },
+  "M Yasin Ibico": {
+    "class_id": 3,
+    "method": "gnn"
+  }
+}

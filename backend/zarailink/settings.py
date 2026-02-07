@@ -96,9 +96,9 @@ WSGI_APPLICATION = 'zarailink.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql', 
-        'NAME': 'zarailink',
+        'NAME': 'ZaraiLink',
         'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'PASSWORD': '1234',
         'HOST': 'localhost', 
         'PORT': '5432',
     }

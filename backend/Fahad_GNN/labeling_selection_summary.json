@@ -1,0 +1,27 @@
+{
+  "total_candidates": 694,
+  "selected_count": 50,
+  "class_distribution": {
+    "0": 5,
+    "1": 2,
+    "2": 38,
+    "3": 5
+  },
+  "top_10_names": [
+    "Imtiaz Group Smc Pvt Ltd",
+    "F.B Enterprises",
+    "Klarg Exports",
+    "Friesland Campina Engro Pakistan Ltd",
+    "Pepsi-Cola International Pvt Ltd",
+    "Pacific Sugar Corporation Ltd",
+    "World Sugar Export Co Ltd",
+    "Lactalis Ingredients",
+    "Malkani Traders",
+    "Meggle Gmbh & Co Kg"
+  ],
+  "priority_score_range": {
+    "min": 28.98470983505249,
+    "max": 63.277640847077635,
+    "mean": 49.1421806456
+  }
+}

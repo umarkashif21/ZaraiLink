@@ -29,3 +29,6 @@ db.sqlite3-journal
 *.swp
 *.swo
 *~
+.venv310/ 
+Fahad_GNN/.venv310/ 
+node_modules/ 
