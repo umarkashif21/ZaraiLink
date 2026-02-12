@@ -12,9 +12,9 @@ const Dashboard = () => {
   return (
     <div className="dashboard-wrapper">
       <Navbar />
-      
+
       <div className="dashboard-container">
-        {}
+        { }
         <div className="hero-section">
           <h1>Welcome back, {user?.name || user?.email?.split('@')[0]}!</h1>
           <p className="hero-subtitle">
@@ -30,7 +30,7 @@ const Dashboard = () => {
               <h3>{tokenBalance || 0}</h3>
               <p>Available Tokens</p>
             </div>
-            <button 
+            <button
               onClick={() => navigate('/subscription')}
               className="stat-action"
             >
@@ -44,7 +44,7 @@ const Dashboard = () => {
               <h3>Discover</h3>
               <p>Verified Suppliers</p>
             </div>
-            <button 
+            <button
               onClick={() => navigate('/trade-directory/find-suppliers')}
               className="stat-action"
             >
@@ -58,11 +58,24 @@ const Dashboard = () => {
               <h3>Connect</h3>
               <p>AI Partner Match</p>
             </div>
-            <button 
+            <button
               onClick={() => navigate('/trade-intelligence/link-prediction')}
               className="stat-action"
             >
               Explore →
+            </button>
+          </div>
+          <div className="stat-card" style={{ background: 'linear-gradient(135deg, #4f46e5, #4338ca)', color: 'white' }}>
+            <div className="stat-content">
+              <h3 style={{ color: 'white' }}>Search</h3>
+              <p style={{ color: 'rgba(255,255,255,0.8)' }}>Unified Interface</p>
+            </div>
+            <button
+              onClick={() => navigate('/search')}
+              className="stat-action"
+              style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}
+            >
+              Try Now →
             </button>
           </div>
         </div>
@@ -71,7 +84,7 @@ const Dashboard = () => {
         <div className="quick-actions-section">
           <h2>Quick Actions</h2>
           <div className="actions-grid">
-            <div 
+            <div
               className="action-card"
               onClick={() => navigate('/trade-directory/find-suppliers')}
             >
@@ -81,7 +94,7 @@ const Dashboard = () => {
               <span className="action-arrow">→</span>
             </div>
 
-            <div 
+            <div
               className="action-card"
               onClick={() => navigate('/trade-directory/find-buyers')}
             >
@@ -91,7 +104,7 @@ const Dashboard = () => {
               <span className="action-arrow">→</span>
             </div>
 
-            <div 
+            <div
               className="action-card"
               onClick={() => navigate('/trade-intelligence/ledger')}
             >
@@ -101,7 +114,7 @@ const Dashboard = () => {
               <span className="action-arrow">→</span>
             </div>
 
-            <div 
+            <div
               className="action-card"
               onClick={() => navigate('/subscription')}
             >
@@ -111,7 +124,7 @@ const Dashboard = () => {
               <span className="action-arrow">→</span>
             </div>
 
-            <div 
+            <div
               className="action-card"
               onClick={() => navigate('/trade-intelligence/link-prediction')}
             >
@@ -164,13 +177,13 @@ const Dashboard = () => {
             <h2>Ready to grow your business?</h2>
             <p>Start exploring verified suppliers and unlock valuable contacts</p>
             <div className="cta-buttons">
-              <button 
+              <button
                 onClick={() => navigate('/trade-directory/find-suppliers')}
                 className="btn-primary-cta"
               >
                 Browse Directory
               </button>
-              <button 
+              <button
                 onClick={() => navigate('/subscription')}
                 className="btn-secondary-cta"
               >

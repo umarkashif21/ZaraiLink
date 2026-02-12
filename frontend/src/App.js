@@ -35,6 +35,11 @@ const CompanyPartners = React.lazy(() => import("./components/TradeIntelligence/
 const CompanyTrends = React.lazy(() => import("./components/TradeIntelligence/CompanyTrends"));
 const CompareCompanies = React.lazy(() => import("./components/TradeIntelligence/CompareCompanies"));
 
+// Search Module
+const SearchHome = React.lazy(() => import("./components/Search/SearchHome"));
+const SearchResults = React.lazy(() => import("./components/Search/SearchResults"));
+const DealDetail = React.lazy(() => import("./components/Search/DealDetail"));
+
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -88,7 +93,7 @@ function App() {
           <Router>
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                {}
+                { }
                 <Route
                   path="/"
                   element={
@@ -118,7 +123,7 @@ function App() {
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
                 <Route path="/verify-email/:token" element={<VerifyEmailSuccess />} />
 
-                {}
+                { }
                 <Route
                   path="/dashboard"
                   element={
@@ -127,8 +132,8 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                
-                {}
+
+                { }
                 <Route
                   path="/trade-directory/find-suppliers"
                   element={
@@ -153,8 +158,8 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                
-                {}
+
+                { }
                 <Route
                   path="/watchlist"
                   element={
@@ -164,7 +169,7 @@ function App() {
                   }
                 />
 
-                {}
+                { }
                 <Route
                   path="/trade-intelligence/ledger"
                   element={
@@ -277,8 +282,33 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                
-                {}
+
+                {/* Search Module Routes */}
+                <Route
+                  path="/search"
+                  element={
+                    <ProtectedRoute>
+                      <SearchHome />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/search/results"
+                  element={
+                    <ProtectedRoute>
+                      <SearchResults />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/search/supplier/:name"
+                  element={
+                    <ProtectedRoute>
+                      <DealDetail />
+                    </ProtectedRoute>
+                  }
+                />
+                { }
                 <Route
                   path="/subscription"
                   element={
@@ -288,7 +318,7 @@ function App() {
                   }
                 />
 
-                {}
+                { }
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
