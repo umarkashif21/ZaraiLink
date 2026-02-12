@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'market_intel',
     'trade_ledger',
     'trade_lens',
+    'search', # Search & Trade Facilitator
 ]
 
 MIDDLEWARE = [
