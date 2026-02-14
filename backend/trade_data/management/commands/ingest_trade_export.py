@@ -11,14 +11,14 @@ from django.db import transaction as db_transaction
 
 
 class Command(BaseCommand):
-    help = "Ingest IMPORT trade data into Transaction model"
+    help = "Ingest EXPORT trade data into Transaction model"
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--file",
             type=str,
             required=True,
-            help="Path to import_data_1year.xlsx or CSV file",
+            help="Path to export_data.xlsx or CSV file",
         )
 
     def handle(self, *args, **options):
@@ -33,8 +33,11 @@ class Command(BaseCommand):
         else:
             df = pd.read_csv(file_path)
 
-        df.columns = df.columns.str.strip().str.replace(" ", "_").str.lower()
+        # Normalize column names: lowercase, strip, replace spaces with underscores
+        df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+        self.stdout.write(self.style.WARNING(f"Columns in file: {list(df.columns)}"))
 
+        # Required columns after normalization
         required = [
             "date",
             "hs_code",
@@ -53,11 +56,7 @@ class Command(BaseCommand):
             "usd",
         ]
 
-        missing = [
-            col for col in required
-            if col.lower().replace(" ", "_") not in df.columns
-        ]
-
+        missing = [col for col in required if col not in df.columns]
         if missing:
             raise ValueError(f"[ERROR] Missing columns in file: {missing}")
 
@@ -68,7 +67,6 @@ class Command(BaseCommand):
         # -------------------------
         with db_transaction.atomic():
             for idx, row in df.iterrows():
-
                 if pd.isna(row["date"]):
                     continue
 
@@ -123,16 +121,16 @@ class Command(BaseCommand):
                 usd = row["usd"] if pd.notna(row["usd"]) else None
 
                 # -------------------------
-                # IMPORTANT: Direction Logic
+                # Direction Logic (EXPORT)
                 # -------------------------
-                origin_country = str(row["country"]).strip()
-                destination_country = "Pakistan"
+                origin_country = "Pakistan"
+                destination_country = str(row["country"]).strip()
 
                 tx = Transaction(
                     source_file=file_path,
-                    tx_reference=f"IMPORT-ROW-{idx}",
+                    tx_reference=f"EXPORT-ROW-{idx}",
                     reporting_date=reporting_date,
-                    trade_type="IMPORT",
+                    trade_type="EXPORT",
 
                     hs_code=hs_code_full,
                     product_item=product_item,
@@ -162,10 +160,9 @@ class Command(BaseCommand):
                     transactions_to_create,
                     ignore_conflicts=True
                 )
-
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"[OK] Ingested {len(transactions_to_create)} IMPORT records successfully."
+                        f"[OK] Ingested {len(transactions_to_create)} EXPORT records successfully."
                     )
                 )
             else:

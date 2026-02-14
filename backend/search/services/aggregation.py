@@ -4,37 +4,110 @@ from django.db.models.functions import TruncMonth
 from trade_data.models import Transaction
 
 class SupplierAggregator:
-    def get_suppliers_for_subcategories(self, subcategory_ids):
+    def get_suppliers_for_subcategories(self, subcategory_ids, intent='BUY', scope='WORLDWIDE', country_filter=None, price_filter=None, volume_filter=None, time_filter=None):
         """
-        Aggregates supplier data for the given subcategory IDs.
+        Aggregates counterparty data (Suppliers or Buyers) for the given subcategory IDs.
+        
+        Args:
+            intent: 'BUY' (Find Suppliers) or 'SELL' (Find Buyers).
+            scope: 'WORLDWIDE' or 'PAKISTAN'.
+            country_filter: List of countries to filter by.
+            price_filter: Dict with 'ceiling' and 'floor'.
+            volume_filter: Minimum volume capability (Max shipment size).
+            time_filter: Dict with 'start_date' and 'end_date'.
         """
-        # Filter transactions for these subcategories
-        # Note: We removed trade_type='IMPORT' filter because the current dataset has empty trade_type fields
         queryset = Transaction.objects.filter(
             product_item__sub_category_id__in=subcategory_ids
         )
         
-        # Aggregate by seller
-        results = queryset.values('seller', 'country').annotate(
+        # Default Scope
+        scope = scope or 'WORLDWIDE'
+        
+        # Intent & Scope Logic
+        # Mapping: (Intent, Scope) -> (TradeType, TargetField, CountryField)
+        
+        if intent == 'SELL':
+            # User wants to SELL
+            if scope == 'PAKISTAN':
+                # Pakistani seller selling locally (to Pakistani buyers)
+                # Look at Pakistan's IMPORTS (local buyers importing)
+                target_field = 'buyer'
+                country_field = 'destination_country'
+                queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
+            else:
+                # WORLDWIDE: Pakistani seller exporting to world
+                # Look at Pakistan's EXPORTS and find the buyers
+                target_field = 'buyer'
+                country_field = 'destination_country'
+                queryset = queryset.filter(trade_type='EXPORT')
+                
+        else:
+            # User wants to BUY
+            if scope == 'PAKISTAN':
+                # Foreign buyer buying FROM Pakistan
+                # Look at Pakistan's EXPORTS (Pakistani suppliers selling abroad)
+                target_field = 'seller'
+                country_field = 'origin_country'
+                queryset = queryset.filter(trade_type='EXPORT', origin_country='Pakistan')
+            else:
+                # WORLDWIDE: Pakistani buyer importing from world
+                # Look at Pakistan's IMPORTS (foreign suppliers selling TO Pakistan)
+                target_field = 'seller'
+                country_field = 'origin_country'
+                queryset = queryset.filter(trade_type='IMPORT')
+
+        # Apply Filters
+        if country_filter and len(country_filter) > 0:
+            filter_kwargs = {f"{country_field}__in": country_filter}
+            print(f"DEBUG: Applying country filter: {filter_kwargs}")  # DEBUG
+            queryset = queryset.filter(**filter_kwargs)
+            print(f"DEBUG: Queryset count after country filter: {queryset.count()}")  # DEBUG
+            
+        if price_filter:
+            if price_filter.get('ceiling'):
+                queryset = queryset.filter(usd_per_mt__lte=price_filter['ceiling'])
+            if price_filter.get('floor'):
+                queryset = queryset.filter(usd_per_mt__gte=price_filter['floor'])
+
+        if time_filter:
+            if time_filter.get('start_date'):
+                queryset = queryset.filter(reporting_date__gte=time_filter['start_date'])
+            if time_filter.get('end_date'):
+                queryset = queryset.filter(reporting_date__lte=time_filter['end_date'])
+
+        # Aggregate
+        # We need to explicitly select the 'country' related to the counterparty
+        results = queryset.values(target_field, country_field).annotate(
             total_volume=Sum('qty_mt'),
             avg_price=Avg('usd_per_mt'),
             shipment_count=Count('id'),
-            last_shipment_date=Max('reporting_date')
+            last_shipment_date=Max('reporting_date'),
+            max_shipment_vol=Max('qty_mt')
         )
         
-        # Convert to list of dicts and clean up
-        suppliers = []
+        # Apply Volume Filter (Capacity check)
+        # We want suppliers who have demonstrated ability to ship at least X volume
+        if volume_filter:
+            results = results.filter(max_shipment_vol__gte=volume_filter)
+            
+        results = results.order_by('-total_volume')
+        
+        # Convert to list
+        counterparties = []
         for r in results:
-            suppliers.append({
-                "name": r['seller'],
-                "country": r['country'],
+            counterparties.append({
+                "name": r[target_field],
+                "country": r[country_field],
                 "total_volume": float(r['total_volume'] or 0),
                 "avg_price": float(r['avg_price'] or 0),
                 "shipment_count": r['shipment_count'],
-                "last_shipment_date": r['last_shipment_date']
+                "last_shipment_date": r['last_shipment_date'],
+                "max_shipment_vol": float(r['max_shipment_vol'] or 0),
+                "type": "Buyer" if intent == 'SELL' else "Supplier"
             })
             
-        return suppliers
+        return counterparties
+
 
     def get_supplier_details(self, seller_name, subcategory_ids):
         """
@@ -82,14 +155,14 @@ class SupplierAggregator:
                 "id": tx.id,
                 "transaction_hash": tx.tx_reference, # Unique ID
                 "buyer": tx.buyer,
-                "country": tx.country,
+                "country": tx.origin_country,  # Fixed: use origin_country instead of country
                 "quantity": float(tx.qty_mt or 0),
                 "price": float(tx.usd_per_mt or 0),
                 "date": tx.reporting_date
             })
 
         # 4. Filters (Countries & Years)
-        countries = list(queryset.values_list('country', flat=True).distinct().order_by('country'))
+        countries = list(queryset.values_list('origin_country', flat=True).distinct().order_by('origin_country'))
         
         # 5. Typical Shipment Sizes
         # Bucket: 0-25, 25-50, 50-100, 100+

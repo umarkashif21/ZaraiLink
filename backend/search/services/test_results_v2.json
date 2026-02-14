@@ -1,0 +1,38 @@
+[
+  {
+    "query": "I want to buy from an exporter",
+    "status": "PASS"
+  },
+  {
+    "query": "Find sellers in China",
+    "status": "PASS"
+  },
+  {
+    "query": "Buy sugar in China and India",
+    "status": "PASS"
+  },
+  {
+    "query": "Rice suppliers in Pakistaan",
+    "status": "PASS"
+  },
+  {
+    "query": "Demand in U.S.",
+    "status": "PASS"
+  },
+  {
+    "query": "Sugar under 500 EUR",
+    "status": "PASS"
+  },
+  {
+    "query": "Iron ore prices Q1 2025",
+    "status": "PASS"
+  },
+  {
+    "query": "Company X sugar",
+    "status": "PASS"
+  },
+  {
+    "query": "Iron Ore prices",
+    "status": "PASS"
+  }
+]
