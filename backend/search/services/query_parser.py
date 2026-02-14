@@ -220,7 +220,8 @@ class QueryInterpreter:
         # ... (Volume, Price, Time omitted for brevity, logic unchanged) ...
         # --- 3. Volume Extraction ---
         vol_pattern = r'(\d+(?:,\d+)?(?:\.\d+)?)\s*(mt|tons|metric tons|kg|kilo|tonnes)'
-        vol_match = re.search(vol_pattern, remainder)
+        # Use case-insensitive search to catch "100MT"
+        vol_match = re.search(vol_pattern, remainder, flags=re.IGNORECASE)
         if vol_match:
             qty_str = vol_match.group(1).replace(',', '')
             unit = vol_match.group(2)
@@ -236,7 +237,7 @@ class QueryInterpreter:
         # --- 4. Price Extraction (Enhanced) ---
         currency_regex = r'(?:\$|usd|eur|pkr|gbp|cny|rmb)'
         
-        ceil_pattern = r'(?:under|below|<)\s*' + currency_regex + r'?\s*(\d+(?:,\d+)?)' + r'\s*' + currency_regex + r'?'
+        ceil_pattern = r'(?:under|below|<|cheaper than|less than|paying less than)\s*' + currency_regex + r'?\s*(\d+(?:,\d+)?)' + r'\s*' + currency_regex + r'?'
         ceil_match = re.search(ceil_pattern, remainder)
         if ceil_match:
             nums = re.findall(r'(\d+(?:,\d+)?)', ceil_match.group(0))
@@ -244,7 +245,7 @@ class QueryInterpreter:
                 attributes['price_ceiling'] = float(nums[0].replace(',', ''))
                 remainder = remainder.replace(ceil_match.group(0), '')
 
-        floor_pattern = r'(?:above|over|>)\s*' + currency_regex + r'?\s*(\d+(?:,\d+)?)' + r'\s*' + currency_regex + r'?'
+        floor_pattern = r'(?:above|over|>|higher than|more than|paying more than|sell above)\s*' + currency_regex + r'?\s*(\d+(?:,\d+)?)' + r'\s*' + currency_regex + r'?'
         floor_match = re.search(floor_pattern, remainder)
         if floor_match:
              nums = re.findall(r'(\d+(?:,\d+)?)', floor_match.group(0))
@@ -295,6 +296,11 @@ class QueryInterpreter:
         
         # Clean phrases first
         clean_text = remainder
+        
+        # 1. Remove "Top N" / "Best N" phrases specifically to avoid leaving numbers behind
+        # This fixes "Top 3 dextrose" -> "dextrose" (instead of "3 dextrose")
+        clean_text = re.sub(r'\b(?:top|best|first|suggest|rank)\s+\d+\b', '', clean_text, flags=re.IGNORECASE)
+        
         all_phrases = sorted(list(self.BUY_SCORES.keys()) + list(self.SELL_SCORES.keys()), key=len, reverse=True)
         for phrase in all_phrases:
              clean_text = re.sub(r'\b' + re.escape(phrase) + r'\b', '', clean_text)
@@ -306,7 +312,9 @@ class QueryInterpreter:
             " in ", " with ", " for ", " of ", " from ", " to ", " between ",
             "please", "search", "find", "show", "me", "list", 
             "details", "price", "prices", "active", "recent", "data", "who", "is", "are",
-            "import", "export", "importing", "exporting"
+            "import", "export", "importing", "exporting",
+            "and", "&",
+            "importers", "buyers", "buyer", "importer", "buying", "selling"
         ]
         for sw in STOPWORDS:
             clean_text = re.sub(r'\b' + re.escape(sw.strip()) + r'\b', ' ', clean_text)

@@ -38,24 +38,67 @@ class SearchViewSet(viewsets.ViewSet):
         interpreter = QueryInterpreter()
         parsed_query = interpreter.parse(query, explicit_scope=scope_param)
         
-        # Determine search term for NLP (product only or raw query)
-        # Use first sub-intent if multi-intent, for now.
+        # Determine search term and merge parameters
+        nlp_search_term = query
+        active_params = parsed_query
+        
         if parsed_query.get('multi_intent') and parsed_query.get('sub_intents'):
-            # Focus on first intent for visual results to avoid breaking frontend structure
-            active_params = parsed_query['sub_intents'][0]
+            # MERGE Strategy: Combine filters from all sub-intents
+            # Start with the first one as base
+            merged_params = parsed_query['sub_intents'][0].copy()
+            
+            for i in range(1, len(parsed_query['sub_intents'])):
+                sub = parsed_query['sub_intents'][i]
+                
+                # 1. Merge Family (Higher family ID usually means more specific intent like Rec/Comparison)
+                # Specifically, if one part says "suggest" (Fam 6), the whole query is Fam 6.
+                if sub.get('family', 1) > merged_params.get('family', 1):
+                    merged_params['family'] = sub['family']
+                    
+                # 2. Merge Country Filters (Union)
+                if sub.get('country_filter'):
+                    existing = set(merged_params.get('country_filter', []))
+                    existing.update(sub['country_filter'])
+                    merged_params['country_filter'] = list(existing)
+                    
+                # 3. Merge Price (Override if specific provided in later part)
+                if sub.get('price_ceiling'):
+                    merged_params['price_ceiling'] = sub['price_ceiling']
+                if sub.get('price_floor'):
+                    merged_params['price_floor'] = sub['price_floor']
+                    
+                # 4. Merge Volume
+                if sub.get('volume_mt'):
+                    merged_params['volume_mt'] = sub['volume_mt']
+                    
+                # 5. Merge Time
+                if sub.get('time_range'):
+                    merged_params['time_range'] = sub['time_range']
+            
+            active_params = merged_params
+            
+            # Use product from first non-empty product sub-intent or default
+            for sub in parsed_query['sub_intents']:
+                if sub.get('product'):
+                    nlp_search_term = sub['product']
+                    break
         else:
-            active_params = parsed_query
-
-        nlp_search_term = active_params.get('product') or query 
+            nlp_search_term = active_params.get('product') or query 
         
         # Extract Filters from Parser
         intent = active_params.get('intent', 'BUY')
         country_filter = active_params.get('country_filter', [])
+        volume_req = active_params.get('volume_mt')
+        time_range_str = active_params.get('time_range')
+        
         price_filter = {}
         if active_params.get('price_ceiling'):
             price_filter['ceiling'] = active_params['price_ceiling']
         if active_params.get('price_floor'):
             price_filter['floor'] = active_params['price_floor']
+            
+        # Parse time range
+        time_filter = self._parse_time_range(time_range_str) if time_range_str else None
             
         # Extract Manual Filters (Override parser if provided explicitly)
         if request.query_params.get('country'):
@@ -114,13 +157,26 @@ class SearchViewSet(viewsets.ViewSet):
             intent=intent,
             scope=active_params.get('scope', 'WORLDWIDE'),
             country_filter=country_filter,
-            price_filter=price_filter
+            price_filter=price_filter,
+            volume_filter=volume_req,
+            time_filter=time_filter
         )
 
         # 3. Ranking: LTR Ensemble
         from .services.ranking_ltr import RankingEnsemble
         ranker = RankingEnsemble()
         ranked_results = ranker.rank_candidates(results, parsed_query)
+        
+        # 3.5. Family-Based Result Filtering
+        family = active_params.get('family', 1)
+        
+        if family == 6:  # Recommendation/Shortlist
+            # Extract top N from query ("top 3", "best 5", etc.)
+            top_n = self._extract_top_n(query)
+            if top_n:
+                ranked_results = ranked_results[:top_n]
+            else:
+                ranked_results = ranked_results[:5]  # Default to top 5
 
         # 4. Enhance: Add Badges & Market Snapshot
         # ... existing logic ...
@@ -225,3 +281,66 @@ class SearchViewSet(viewsets.ViewSet):
             "query": query,
             "raw_matches": matches
         })
+    
+    def _extract_top_n(self, query):
+        """
+        Extract the number N from queries like 'top 3', 'best 5', 'suggest 10', etc.
+        Returns the number or None if not found.
+        """
+        import re
+        # Match patterns like "top 3", "best 5", "first 10", etc.
+        pattern = r'\b(?:top|best|first|suggest)\s+(\d+)\b'
+        match = re.search(pattern, query.lower())
+        if match:
+            return int(match.group(1))
+        return None
+    
+    def _parse_time_range(self, time_range_str):
+        """
+        Parses strings like "Q1 2025", "2024", "Last 6 Months".
+        Returns dict {start_date, end_date} or None.
+        """
+        import datetime
+        
+        if not time_range_str:
+            return None
+            
+        today = datetime.date.today()
+        start_date = None
+        end_date = None
+        
+        tr = time_range_str.lower().strip()
+        
+        # Simple heuristics
+        if "q1" in tr and "2025" in tr:
+            start_date = datetime.date(2025, 1, 1)
+            end_date = datetime.date(2025, 3, 31)
+        elif "q2" in tr and "2025" in tr:
+            start_date = datetime.date(2025, 4, 1)
+            end_date = datetime.date(2025, 6, 30)
+        elif "q3" in tr and "2025" in tr:
+            start_date = datetime.date(2025, 7, 1)
+            end_date = datetime.date(2025, 9, 30)
+        elif "q4" in tr and "2025" in tr:
+            start_date = datetime.date(2025, 10, 1)
+            end_date = datetime.date(2025, 12, 31)
+        elif "2025" in tr:
+            start_date = datetime.date(2025, 1, 1)
+            end_date = datetime.date(2025, 12, 31)
+        elif "2024" in tr:
+            start_date = datetime.date(2024, 1, 1)
+            end_date = datetime.date(2024, 12, 31)
+        elif "last 6 months" in tr or "last 6 month" in tr:
+            end_date = today
+            start_date = today - datetime.timedelta(days=180)
+        elif "last 3 months" in tr or "last 3 month" in tr:
+            end_date = today
+            start_date = today - datetime.timedelta(days=90)
+        elif "this year" in tr:
+            start_date = datetime.date(today.year, 1, 1)
+            end_date = datetime.date(today.year, 12, 31)
+            
+        if start_date or end_date:
+            return {"start_date": start_date, "end_date": end_date}
+            
+        return None
