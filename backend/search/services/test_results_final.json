@@ -1,0 +1,98 @@
+[
+  {
+    "query": "Buy sugar",
+    "status": "PASS"
+  },
+  {
+    "query": "Sugar suppliers in Brazil",
+    "status": "PASS"
+  },
+  {
+    "query": "Buy 50MT of rice",
+    "status": "PASS"
+  },
+  {
+    "query": "Wheat under $300",
+    "status": "PASS"
+  },
+  {
+    "query": "Active sugar suppliers last 6 months",
+    "status": "PASS"
+  },
+  {
+    "query": "Top sugar suppliers",
+    "status": "PASS"
+  },
+  {
+    "query": "Cheapest rice suppliers",
+    "status": "PASS"
+  },
+  {
+    "query": "Sugar shipment history",
+    "status": "PASS"
+  },
+  {
+    "query": "Suppliers of sugar and rice",
+    "status": "PASS"
+  },
+  {
+    "query": "Sell sugar",
+    "status": "PASS"
+  },
+  {
+    "query": "Sugar buyers in UAE",
+    "status": "PASS"
+  },
+  {
+    "query": "Sell 1000 tons of cement",
+    "status": "PASS"
+  },
+  {
+    "query": "buyers for ethanol above 500 eur",
+    "status": "PASS"
+  },
+  {
+    "query": "Demand for rice Q1 2025",
+    "status": "PASS"
+  },
+  {
+    "query": "Best sugar buyers",
+    "status": "PASS"
+  },
+  {
+    "query": "Highest demand for cotton",
+    "status": "PASS"
+  },
+  {
+    "query": "Cotton buyer transaction records",
+    "status": "PASS"
+  },
+  {
+    "query": "Find buyers for sugar and ethanol",
+    "status": "PASS"
+  },
+  {
+    "query": "I want to buy from an exporter",
+    "status": "PASS"
+  },
+  {
+    "query": "Rice suppliers in Pakistaan",
+    "status": "PASS"
+  },
+  {
+    "query": "Demand in U.S.",
+    "status": "PASS"
+  },
+  {
+    "query": "Company X sugar",
+    "status": "PASS"
+  },
+  {
+    "query": "Buy sugar in China and India",
+    "status": "PASS"
+  },
+  {
+    "query": "Suppliers in China and Buyers in India",
+    "status": "PASS"
+  }
+]

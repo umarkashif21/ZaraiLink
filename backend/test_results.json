@@ -1,0 +1,308 @@
+[
+  {
+    "query": "Who sells dextrose?",
+    "status": "PASS",
+    "expected": {
+      "intent": "BUY",
+      "family": 1,
+      "product": "dextrose"
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 1,
+      "product": "dextrose",
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Suppliers of sugar",
+    "status": "PASS",
+    "expected": {
+      "intent": "BUY",
+      "family": 1,
+      "product": "sugar"
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 1,
+      "product": "sugar",
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Dextrose suppliers in China",
+    "status": "PASS",
+    "expected": {
+      "intent": "BUY",
+      "family": 2,
+      "country_filter": [
+        "China"
+      ],
+      "product": "dextrose"
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 2,
+      "product": "dextrose",
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [
+        "China"
+      ],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Buy 50MT sugar from Brazil",
+    "status": "PASS",
+    "expected": {
+      "intent": "BUY",
+      "family": 3,
+      "volume_mt": 50.0,
+      "country_filter": [
+        "Brazil"
+      ]
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 3,
+      "product": "sugar",
+      "volume_mt": 50.0,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [
+        "Brazil"
+      ],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Buy sugar under $500",
+    "status": "PASS",
+    "expected": {
+      "intent": "BUY",
+      "family": 4,
+      "price_ceiling": 500.0,
+      "product": "sugar"
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 4,
+      "product": "sugar",
+      "volume_mt": null,
+      "price_ceiling": 500.0,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Suppliers active last 6 months",
+    "status": "PASS",
+    "expected": {
+      "intent": "BUY",
+      "family": 5,
+      "time_range": "last 6 months"
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 5,
+      "product": null,
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": "last 6 months",
+      "country_filter": [],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Top 3 suppliers for sugar",
+    "status": "PASS",
+    "expected": {
+      "intent": "BUY",
+      "family": 6
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 6,
+      "product": "3 sugar",
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Cheapest sugar suppliers",
+    "status": "PASS",
+    "expected": {
+      "intent": "BUY",
+      "family": 7
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 7,
+      "product": "sugar",
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Show recent shipments of sugar",
+    "status": "PASS",
+    "expected": {
+      "intent": "BUY",
+      "family": 8
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 8,
+      "product": "sugar",
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Who buys ethanol?",
+    "status": "PASS",
+    "expected": {
+      "intent": "SELL",
+      "family": 1,
+      "product": "ethanol"
+    },
+    "got": {
+      "intent": "SELL",
+      "family": 1,
+      "product": "ethanol",
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Demand for wheat in UAE",
+    "status": "PASS",
+    "expected": {
+      "intent": "SELL",
+      "family": 2,
+      "country_filter": [
+        "UAE"
+      ],
+      "product": "wheat"
+    },
+    "got": {
+      "intent": "SELL",
+      "family": 2,
+      "product": "wheat",
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [
+        "UAE"
+      ],
+      "counterparty_name": null,
+      "multi_intent": false
+    },
+    "failed_keys": []
+  },
+  {
+    "query": "Find suppliers in China and buyers in Pakistan",
+    "status": "PASS",
+    "expected": {
+      "family": 9,
+      "multi_intent": true
+    },
+    "got": {
+      "intent": "BUY",
+      "family": 9,
+      "product": null,
+      "multi_intent": true,
+      "sub_intents": [
+        {
+          "intent": "BUY",
+          "family": 2,
+          "product": null,
+          "volume_mt": null,
+          "price_ceiling": null,
+          "price_floor": null,
+          "time_range": null,
+          "country_filter": [
+            "China"
+          ],
+          "counterparty_name": null
+        },
+        {
+          "intent": "SELL",
+          "family": 2,
+          "product": null,
+          "volume_mt": null,
+          "price_ceiling": null,
+          "price_floor": null,
+          "time_range": null,
+          "country_filter": [
+            "Pakistan"
+          ],
+          "counterparty_name": null
+        }
+      ],
+      "volume_mt": null,
+      "price_ceiling": null,
+      "price_floor": null,
+      "time_range": null,
+      "country_filter": [
+        "China"
+      ],
+      "counterparty_name": null
+    },
+    "failed_keys": []
+  }
+]
