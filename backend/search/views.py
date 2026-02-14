@@ -123,10 +123,17 @@ class SearchViewSet(viewsets.ViewSet):
                 })
 
         # 1. NLP: Match query to subcategories
-        matcher = QueryMatcher()
-        matched_subcategories = matcher.match(nlp_search_term)
+        # For filter-only queries (empty product but has filters), skip NLP
+        has_filters = bool(country_filter or price_filter or volume_req)
+        matched_subcategories = []
+        subcategory_ids = None  # None = all products
         
-        if not matched_subcategories:
+        if nlp_search_term and nlp_search_term.strip():
+            matcher = QueryMatcher()
+            matched_subcategories = matcher.match(nlp_search_term)
+        
+        if not matched_subcategories and not has_filters:
+            # No product match AND no filters — truly empty query
             return Response({
                 "query": query,
                 "parsed_query": parsed_query,
@@ -140,8 +147,8 @@ class SearchViewSet(viewsets.ViewSet):
             try:
                 subcategory_ids = [int(subcategory_id_filter)]
             except ValueError:
-                subcategory_ids = [m['id'] for m in matched_subcategories]
-        else:
+                subcategory_ids = [m['id'] for m in matched_subcategories] if matched_subcategories else None
+        elif matched_subcategories:
             # Default aggregation logic
             top_match = matched_subcategories[0]
             if top_match['score'] > 0.95:
@@ -149,7 +156,8 @@ class SearchViewSet(viewsets.ViewSet):
                 subcategory_ids = [m['id'] for m in matched_subcategories if m['score'] >= threshold]
             else:
                 subcategory_ids = [m['id'] for m in matched_subcategories]
-            
+        # else: subcategory_ids stays None — filter-only query, search all products
+
         aggregator = SupplierAggregator()
         # Pass parser filters to aggregator
         results = aggregator.get_suppliers_for_subcategories(
