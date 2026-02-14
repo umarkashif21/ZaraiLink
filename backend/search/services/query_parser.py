@@ -13,7 +13,7 @@ class QueryInterpreter:
         "Pakistan", "China", "India", "Brazil", "USA", "United States", "UAE", "Dubai",
         "Vietnam", "Thailand", "Indonesia", "Germany", "France", "UK", "United Kingdom",
         "Russia", "Turkey", "Egypt", "Saudi Arabia", "Canada", "Australia", "Malaysia",
-        "Kenya", "Bangladesh", "Sri Lanka", "Japan", "Korea", "South Korea"
+        "Kenya", "Bangladesh", "Sri Lanka", "Japan", "Korea", "South Korea", "Afghanistan"
     ]
     
     COUNTRY_ALIASES = {
@@ -38,11 +38,12 @@ class QueryInterpreter:
         "demand for": 5, "sell to": 5, "i want to sell": 5, "selling": 3, "exports": 2,
         "want to export": 4, "sell": 1, "supply": 2, "available": 2, "exporters": 1,
         "demands": 3,
-        "buyers": 3
+        "buyers": 3, "pay": 3, "pays": 3, "paying": 3, "who pay": 5,
+        "looking to sell": 5, "i have": 5, "can i sell": 5
     }
 
     # Family Parsing Keywords
-    FAM_6_KEYWORDS = ["top", "best", "rank", "suggest", "recommend"]
+    FAM_6_KEYWORDS = ["top", "best", "rank", "suggest", "recommend", "highest", "most", "paying"]
     FAM_7_KEYWORDS = ["cheapest", "lowest price", "highest demand", "compare", "vs"]
     FAM_8_KEYWORDS = ["shipments", "transactions", "history", "record", "proof", "verification", "evidence"]
 
@@ -314,8 +315,21 @@ class QueryInterpreter:
             "details", "price", "prices", "active", "recent", "data", "who", "is", "are",
             "import", "export", "importing", "exporting",
             "and", "&",
-            "importers", "buyers", "buyer", "importer", "buying", "selling"
+            "importers", "buyers", "buyer", "importer", "buying", "selling",
+            "can", "i", "sell", "buy", "have", "looking", "please", "want", "need", "give", "get",
+            "pay", "pays", "paying", "payment",
+            "more", "less", "than", "above", "below", "under", "over"
         ]
+        
+        # Remove common conversational prefixes
+        prefixes = [
+             "can i sell", "can i buy", "i want to sell", "i want to buy", 
+             "looking to sell", "looking to buy", "i have", "i need", "need buyers for"
+        ]
+        text_lower = clean_text.lower()
+        for p in prefixes:
+             if text_lower.startswith(p):
+                 clean_text = re.sub(r'^' + re.escape(p), '', clean_text, flags=re.IGNORECASE).strip()
         for sw in STOPWORDS:
             clean_text = re.sub(r'\b' + re.escape(sw.strip()) + r'\b', ' ', clean_text)
             

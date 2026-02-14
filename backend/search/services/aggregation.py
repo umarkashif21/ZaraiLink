@@ -2,6 +2,7 @@ import datetime
 from django.db.models import Sum, Count, Avg, Max, F
 from django.db.models.functions import TruncMonth
 from trade_data.models import Transaction
+import math
 
 class SupplierAggregator:
     def get_suppliers_for_subcategories(self, subcategory_ids, intent='BUY', scope='WORLDWIDE', country_filter=None, price_filter=None, volume_filter=None, time_filter=None):
@@ -13,30 +14,27 @@ class SupplierAggregator:
             scope: 'WORLDWIDE' or 'PAKISTAN'.
             country_filter: List of countries to filter by.
             price_filter: Dict with 'ceiling' and 'floor'.
-            volume_filter: Minimum volume capability (Max shipment size).
+            volume_filter: Requested volume in MT (used for soft compatibility scoring, NOT hard filter).
             time_filter: Dict with 'start_date' and 'end_date'.
         """
-        queryset = Transaction.objects.filter(
-            product_item__sub_category_id__in=subcategory_ids
-        )
+        queryset = Transaction.objects.all()
+        
+        # Subcategory filter (optional — None means all products for filter-only queries)
+        if subcategory_ids:
+            queryset = queryset.filter(product_item__sub_category_id__in=subcategory_ids)
         
         # Default Scope
         scope = scope or 'WORLDWIDE'
         
         # Intent & Scope Logic
-        # Mapping: (Intent, Scope) -> (TradeType, TargetField, CountryField)
-        
         if intent == 'SELL':
             # User wants to SELL
             if scope == 'PAKISTAN':
-                # Pakistani seller selling locally (to Pakistani buyers)
-                # Look at Pakistan's IMPORTS (local buyers importing)
                 target_field = 'buyer'
                 country_field = 'destination_country'
                 queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
             else:
                 # WORLDWIDE: Pakistani seller exporting to world
-                # Look at Pakistan's EXPORTS and find the buyers
                 target_field = 'buyer'
                 country_field = 'destination_country'
                 queryset = queryset.filter(trade_type='EXPORT')
@@ -44,14 +42,11 @@ class SupplierAggregator:
         else:
             # User wants to BUY
             if scope == 'PAKISTAN':
-                # Foreign buyer buying FROM Pakistan
-                # Look at Pakistan's EXPORTS (Pakistani suppliers selling abroad)
                 target_field = 'seller'
                 country_field = 'origin_country'
                 queryset = queryset.filter(trade_type='EXPORT', origin_country='Pakistan')
             else:
                 # WORLDWIDE: Pakistani buyer importing from world
-                # Look at Pakistan's IMPORTS (foreign suppliers selling TO Pakistan)
                 target_field = 'seller'
                 country_field = 'origin_country'
                 queryset = queryset.filter(trade_type='IMPORT')
@@ -59,9 +54,7 @@ class SupplierAggregator:
         # Apply Filters
         if country_filter and len(country_filter) > 0:
             filter_kwargs = {f"{country_field}__in": country_filter}
-            print(f"DEBUG: Applying country filter: {filter_kwargs}")  # DEBUG
             queryset = queryset.filter(**filter_kwargs)
-            print(f"DEBUG: Queryset count after country filter: {queryset.count()}")  # DEBUG
             
         if price_filter:
             if price_filter.get('ceiling'):
@@ -75,27 +68,20 @@ class SupplierAggregator:
             if time_filter.get('end_date'):
                 queryset = queryset.filter(reporting_date__lte=time_filter['end_date'])
 
-        # Aggregate
-        # We need to explicitly select the 'country' related to the counterparty
+        # Aggregate — NO hard volume filter at DB level
         results = queryset.values(target_field, country_field).annotate(
             total_volume=Sum('qty_mt'),
             avg_price=Avg('usd_per_mt'),
             shipment_count=Count('id'),
             last_shipment_date=Max('reporting_date'),
-            max_shipment_vol=Max('qty_mt')
-        )
+            max_shipment_vol=Max('qty_mt'),
+            avg_shipment_vol=Avg('qty_mt')
+        ).order_by('-total_volume')
         
-        # Apply Volume Filter (Capacity check)
-        # We want suppliers who have demonstrated ability to ship at least X volume
-        if volume_filter:
-            results = results.filter(max_shipment_vol__gte=volume_filter)
-            
-        results = results.order_by('-total_volume')
-        
-        # Convert to list
+        # Convert to list + Volume Compatibility Scoring
         counterparties = []
         for r in results:
-            counterparties.append({
+            entry = {
                 "name": r[target_field],
                 "country": r[country_field],
                 "total_volume": float(r['total_volume'] or 0),
@@ -103,8 +89,46 @@ class SupplierAggregator:
                 "shipment_count": r['shipment_count'],
                 "last_shipment_date": r['last_shipment_date'],
                 "max_shipment_vol": float(r['max_shipment_vol'] or 0),
-                "type": "Buyer" if intent == 'SELL' else "Supplier"
-            })
+                "avg_shipment_vol": float(r['avg_shipment_vol'] or 0),
+                "type": "Buyer" if intent == 'SELL' else "Supplier",
+                "volume_score": None,
+                "volume_fit": "N/A"
+            }
+            
+            if volume_filter and volume_filter > 0:
+                mss = entry['max_shipment_vol']
+                total = entry['total_volume']
+                avg = entry['avg_shipment_vol']
+                V = float(volume_filter)
+                
+                # Soft floor: exclude extreme mismatches (max single < 30% of V)
+                # BUT only if they also have low total volume
+                if mss < 0.3 * V and total < 0.5 * V:
+                    continue
+                
+                # Volume Compatibility Score
+                single_match = min(mss / V, 1.0) if V > 0 else 0
+                capacity_match = min(total / V, 1.0) if V > 0 else 0
+                avg_match = min(avg / V, 1.0) if V > 0 else 0
+                
+                vol_score = 0.5 * single_match + 0.3 * capacity_match + 0.2 * avg_match
+                entry['volume_score'] = round(vol_score, 3)
+                
+                # Label
+                if vol_score >= 0.8:
+                    entry['volume_fit'] = 'Strong'
+                elif vol_score >= 0.5:
+                    entry['volume_fit'] = 'Good'
+                elif vol_score >= 0.3:
+                    entry['volume_fit'] = 'Partial'
+                else:
+                    entry['volume_fit'] = 'Low'
+            
+            counterparties.append(entry)
+        
+        # If volume scoring was applied, sort by volume_score descending
+        if volume_filter and volume_filter > 0:
+            counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
             
         return counterparties
 
