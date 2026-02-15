@@ -2,8 +2,6 @@ import numpy as np
 import datetime
 import logging
 import os
-import json
-import pickle
 
 try:
     import lightgbm as lgb
@@ -25,23 +23,31 @@ except ImportError:
 
 FAMILY_WEIGHTS = {
     1: { # Discovery / Generic
-        'volume_fit': 1.5, 'log_volume': 1.0, 'shipment_freq': 1.0, 'inv_recency': 1.0, 'country_match': 1.0
+        'volume_fit_score': 1.5, 'log_volume': 1.0, 'shipment_freq': 1.0, 'inv_recency': 1.0, 'country_match': 1.0
     },
     2: { # Country-Filtered
-        'country_match': 3.0, 'volume_fit': 1.0, 'log_volume': 1.0, 'inv_recency': 0.5
+        'country_match': 3.0, 'volume_fit_score': 1.0, 'log_volume': 1.0, 'inv_recency': 0.5
     },
     3: { # Volume-Aware
-        'volume_fit': 3.0, 'log_volume': 1.0, 'inv_recency': 0.5
+        'volume_fit_score': 3.0, 'log_volume': 1.0, 'inv_recency': 0.5
     },
     4: { # Price-Constrained
-        'price_fit': 3.0, 'log_price': -1.0, 'volume_fit': 1.0
+        'price_fit': 3.0, 'log_price': -1.0, 'volume_fit_score': 1.0
     },
     5: { # Time-Constrained
-        'inv_recency': 3.0, 'shipment_freq': 1.5, 'volume_fit': 1.0
+        'inv_recency': 3.0, 'shipment_freq': 1.5, 'volume_fit_score': 1.0
     },
-    # Extensions for other families...
+    6: { # Recommendation / Shortlist
+        'volume_fit_score': 2.0, 'log_volume': 1.5, 'shipment_freq': 1.5, 'inv_recency': 1.0, 'country_match': 0.5
+    },
+    7: { # Comparison / Market Intelligence
+        'price_fit': 2.0, 'log_price': -1.5, 'log_volume': 1.0, 'shipment_freq': 1.0, 'country_match': 1.0
+    },
+    8: { # Evidence / Verification
+        'shipment_freq': 3.0, 'log_volume': 1.5, 'inv_recency': 1.5, 'volume_fit_score': 0.5
+    },
     9: { # Hybrid / Default
-        'volume_fit': 1.0, 'log_volume': 1.0, 'inv_recency': 1.0, 'shipment_freq': 1.0, 'country_match': 1.0
+        'volume_fit_score': 1.0, 'log_volume': 1.0, 'inv_recency': 1.0, 'shipment_freq': 1.0, 'country_match': 1.0
     }
 }
 
@@ -60,55 +66,65 @@ class FeatureExtractor:
         """
         Returns a list of feature values (float).
         """
-        # 1. Base Metrics
-        vol = candidate.get('total_volume_mt', 0)
-        price = candidate.get('avg_price_usd_per_mt', 0)
-        freq = candidate.get('num_shipments', 0)
-        
-        # Recency
-        last_date_str = candidate.get('last_trade_date')
-        if last_date_str:
-            last_date = datetime.date.fromisoformat(last_date_str)
-            days_ago = (datetime.date.today() - last_date).days
-            inv_recency = 1.0 / (days_ago + 1.0) # Avoid div/0, higher is more recent
+        # 1. Base Metrics (keys match SupplierAggregator output)
+        vol = candidate.get('total_volume', 0) or 0
+        price = candidate.get('avg_price', 0) or 0
+        freq = candidate.get('shipment_count', 0) or 0
+
+        # Recency — aggregator returns datetime.date, not string
+        last_date = candidate.get('last_shipment_date')
+        if last_date:
+            if isinstance(last_date, str):
+                try:
+                    last_date = datetime.date.fromisoformat(last_date)
+                except (ValueError, TypeError):
+                    last_date = None
+            if last_date and isinstance(last_date, datetime.date):
+                days_ago = (datetime.date.today() - last_date).days
+                inv_recency = 1.0 / (days_ago + 1.0)
+            else:
+                inv_recency = 0.0
         else:
-            days_ago = 9999
             inv_recency = 0.0
-            
+
         # 2. Query Context Matches
         # Volume Fit
         v_fit_str = candidate.get('volume_fit', 'N/A')
         v_fit_map = {'Strong': 3, 'Good': 2, 'Partial': 1, 'Low': 0, 'N/A': 0}
         volume_fit_score = v_fit_map.get(v_fit_str, 0)
-        
-        # Scope Match (Implied by Retrieval, but good to have as feature if retrieval is broad)
-        # If retrieval already filtered strictly, this is constant 1. 
-        # But if we relax retrieval, this matters. Let's assume constant for now or 1.
-        scope_match = 1.0 
-        
-        # Country Match - Did this candidate actually match the requested country?
-        # Retrieval filters by country, so usually 1 if filter present, else 0?
-        # Or if filter was optional?
-        # Let's check if candidate country is in query country list
-        q_countries = parsed_query.get('country_filter', [])
+
+        # Scope Match — check if candidate aligns with the requested scope
+        scope = parsed_query.get('scope', 'WORLDWIDE')
         cand_country = candidate.get('country', '')
-        if q_countries and cand_country in q_countries:
-            country_match = 1.0
+        if scope == 'PAKISTAN':
+            scope_match = 1.0 if cand_country and cand_country.lower() == 'pakistan' else 0.5
+        else:
+            scope_match = 1.0 if cand_country and cand_country.lower() != 'pakistan' else 0.5
+
+        # Country Match
+        q_countries = parsed_query.get('country_filter', [])
+        if q_countries and cand_country:
+            country_match = 1.0 if cand_country in q_countries else 0.0
         elif not q_countries:
-             country_match = 0.5 # Neutral
+            country_match = 0.5
         else:
             country_match = 0.0
-            
-        # Price Fit
-        # Check against ceiling
+
+        # Price Fit — check against both ceiling and floor
         ceiling = parsed_query.get('price_ceiling')
-        if ceiling and price <= ceiling:
-            price_fit = 1.0
+        floor = parsed_query.get('price_floor')
+        if ceiling and floor:
+            if floor <= price <= ceiling:
+                price_fit = 1.0
+            else:
+                price_fit = 0.0
         elif ceiling:
-            price_fit = 0.0
+            price_fit = 1.0 if price <= ceiling else 0.0
+        elif floor:
+            price_fit = 1.0 if price >= floor else 0.0
         else:
-            price_fit = 0.5 # Neutral
-            
+            price_fit = 0.5
+
         return [
             np.log1p(vol),           # log_volume
             np.log1p(price),         # log_price
@@ -227,8 +243,6 @@ class RankingEnsemble:
         ltr_scores = self.ltr_model.predict(X)
         
         # B. Heuristic Score (Fallback / Baseline)
-        # Use simple weighted sum based on family
-        h_gen = PseudoLabelGenerator()
         heuristic_scores = []
         for i, c in enumerate(candidates):
             # Re-calculating score similar to pseudo-labeler but continuous
@@ -255,8 +269,8 @@ class RankingEnsemble:
             c['ranking_score'] = round(final_scores[i], 3)
             # Add feature explanation (optional)
             c['match_features'] = {
-                'vol': candidates[i].get('total_volume_mt'),
-                'fit': candidates[i].get('volume_fit')
+                'vol': candidates[i].get('total_volume'),
+                'fit': candidates[i].get('volume_fit', 'N/A')
             }
             
         # Sort descending

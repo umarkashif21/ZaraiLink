@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Filter, ChevronDown, CheckCircle, BarChart2 } from 'lucide-react';
+import { Filter, CheckCircle, BarChart2 } from 'lucide-react';
 import searchService from '../../services/searchService'; // Ensure this matches actual location
 
 const SearchResults = () => {
@@ -179,11 +179,11 @@ const SearchResults = () => {
                                     <div className="flex gap-6 text-sm text-gray-700">
                                         <div>
                                             <span className="block text-gray-400 text-xs uppercase">Avg Price</span>
-                                            <span className="font-semibold">${supplier.avg_price.toFixed(2)}/MT</span>
+                                            <span className="font-semibold">${supplier.avg_price != null ? supplier.avg_price.toFixed(2) : 'N/A'}/MT</span>
                                         </div>
                                         <div>
                                             <span className="block text-gray-400 text-xs uppercase">Volume</span>
-                                            <span className="font-semibold">{supplier.total_volume.toLocaleString()} MT</span>
+                                            <span className="font-semibold">{supplier.total_volume != null ? supplier.total_volume.toLocaleString() : '0'} MT</span>
                                         </div>
                                         <div>
                                             <span className="block text-gray-400 text-xs uppercase">Shipments</span>
@@ -222,12 +222,11 @@ const SearchResults = () => {
                             <div className="space-y-4">
                                 <div>
                                     <div className="text-sm text-gray-500">Global Avg Price</div>
-                                    <div className="text-xl font-bold text-gray-900">${marketSnapshot.avg_price_global.toFixed(2)}</div>
+                                    <div className="text-xl font-bold text-gray-900">${marketSnapshot.avg_price_global != null ? marketSnapshot.avg_price_global.toFixed(2) : 'N/A'}</div>
                                 </div>
                                 <div>
                                     <div className="text-sm text-gray-500">Active Suppliers</div>
-                                    <div className="text-xl font-bold text-gray-900">{marketSnapshot.total_suppliers}</div>
-                                    <div className="text-xs text-green-600 mt-1">+12% vs last month</div>
+                                    <div className="text-xl font-bold text-gray-900">{marketSnapshot.total_count || 0}</div>
                                 </div>
                                 <div>
                                     <div className="text-sm text-gray-500">Top Origin</div>

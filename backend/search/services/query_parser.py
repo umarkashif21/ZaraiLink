@@ -1,5 +1,5 @@
 import re
-import math
+import datetime
 import difflib
 
 class QueryInterpreter:
@@ -8,19 +8,30 @@ class QueryInterpreter:
     Does NOT perform retrieval or database lookups.
     """
 
-    # Common trading countries (expand as needed or load from DB)
-    COUNTRIES = [
-        "Pakistan", "China", "India", "Brazil", "USA", "United States", "UAE", "Dubai",
+    # Common trading countries — sorted by length desc so "South Korea" matches before "Korea"
+    COUNTRIES = sorted([
+        "Pakistan", "China", "India", "Brazil", "USA", "United States", "UAE",
         "Vietnam", "Thailand", "Indonesia", "Germany", "France", "UK", "United Kingdom",
         "Russia", "Turkey", "Egypt", "Saudi Arabia", "Canada", "Australia", "Malaysia",
-        "Kenya", "Bangladesh", "Sri Lanka", "Japan", "Korea", "South Korea"
-    ]
-    
+        "Kenya", "Bangladesh", "Sri Lanka", "Japan", "South Korea", "Korea",
+        "Afghanistan", "Iran", "Iraq", "Mexico", "South Africa", "Nigeria",
+        "Netherlands", "Belgium", "Italy", "Spain", "Philippines", "Myanmar",
+        "Oman", "Qatar", "Bahrain", "Kuwait", "Jordan", "Lebanon",
+        "Singapore", "New Zealand", "Colombia", "Argentina", "Chile", "Peru",
+        "Morocco", "Tanzania", "Ethiopia", "Ghana", "Uganda", "Mozambique",
+        "Nepal", "Cambodia", "Uzbekistan"
+    ], key=len, reverse=True)
+
     COUNTRY_ALIASES = {
-        "us": "USA", "u.s.": "USA", "united states of america": "USA", "america": "USA",
-        "uae": "UAE", "u.a.e": "UAE", "emirates": "UAE",
-        "uk": "UK", "u.k.": "UK", "britain": "UK",
-        "ksa": "Saudi Arabia"
+        "us": "USA", "u.s.": "USA", "u.s.a": "USA", "u.s.a.": "USA",
+        "united states of america": "USA", "america": "USA",
+        "uae": "UAE", "u.a.e": "UAE", "u.a.e.": "UAE", "emirates": "UAE", "dubai": "UAE",
+        "uk": "UK", "u.k.": "UK", "britain": "UK", "great britain": "UK", "england": "UK",
+        "ksa": "Saudi Arabia", "saudi": "Saudi Arabia",
+        "holland": "Netherlands",
+        "burma": "Myanmar",
+        "republic of korea": "South Korea",
+        "dprk": "North Korea",
     }
 
     # Intent Scoring (Phrase -> Score)
@@ -29,7 +40,7 @@ class QueryInterpreter:
     BUY_SCORES = {
         "who sells": 5, "suppliers of": 5, "supplier": 3, "find exporters": 5, "find suppliers": 5,
         "source from": 5, "buy from": 5, "i want to buy": 5, "buying": 3, "imports": 2,
-        "want to import": 4, "buy": 1, "purchase": 2, "sourcing": 3, "need": 2, "importers": 1,
+        "want to import": 4, "buy": 1, "purchase": 2, "sourcing": 3, "need": 2,
         "suppliers": 3
     }
     
@@ -37,7 +48,7 @@ class QueryInterpreter:
         "who buys": 5, "buyers for": 5, "buyer": 3, "find importers": 5, "find buyers": 5,
         "demand for": 5, "sell to": 5, "i want to sell": 5, "selling": 3, "exports": 2,
         "want to export": 4, "sell": 1, "supply": 2, "available": 2, "exporters": 1,
-        "demands": 3,
+        "importers": 1, "demands": 3,
         "buyers": 3
     }
 
@@ -85,14 +96,12 @@ class QueryInterpreter:
 
         if len(candidates) > 1:
             sub_intents = []
-            distinct_intents = set()
-            
+
             for sq in candidates:
                 if not sq.strip():
                     continue
                 parsed = self._parse_single(sq, explicit_scope)
                 sub_intents.append(parsed)
-                distinct_intents.add(parsed['intent'])
 
             # Only return multi-intent if we found valid sub-intents
             # And if they are actually distinct logic, or just listing?
@@ -164,10 +173,10 @@ class QueryInterpreter:
 
         remainder = raw_query
 
-        # --- 1. Identify Family Keywords ---
-        is_rec = any(x in raw_query for x in self.FAM_6_KEYWORDS)
-        is_mkt = any(x in raw_query for x in self.FAM_7_KEYWORDS)
-        is_evid = any(x in raw_query for x in self.FAM_8_KEYWORDS)
+        # --- 1. Identify Family Keywords (word boundary check) ---
+        is_rec = any(re.search(r'\b' + re.escape(x) + r'\b', raw_query) for x in self.FAM_6_KEYWORDS)
+        is_mkt = any(re.search(r'\b' + re.escape(x) + r'\b', raw_query) for x in self.FAM_7_KEYWORDS)
+        is_evid = any(re.search(r'\b' + re.escape(x) + r'\b', raw_query) for x in self.FAM_8_KEYWORDS)
 
         # --- 2. Country Extraction (Fuzzy & Alias) ---
         found_countries = []
@@ -213,18 +222,18 @@ class QueryInterpreter:
                 c = matches[0]
                 if c not in found_countries:
                     found_countries.append(c)
-                    remainder = remainder.replace(token, '')
+                    remainder = re.sub(r'\b' + re.escape(token) + r'\b', '', remainder)
 
         attributes['country_filter'] = list(set(found_countries))
 
         # ... (Volume, Price, Time omitted for brevity, logic unchanged) ...
         # --- 3. Volume Extraction ---
-        vol_pattern = r'(\d+(?:,\d+)?(?:\.\d+)?)\s*(mt|tons|metric tons|kg|kilo|tonnes)'
+        vol_pattern = r'(\d+(?:,\d{3})*(?:\.\d+)?)\s*(mt|tons|metric tons|kg|kilo|tonnes)'
         # Use case-insensitive search to catch "100MT"
         vol_match = re.search(vol_pattern, remainder, flags=re.IGNORECASE)
         if vol_match:
             qty_str = vol_match.group(1).replace(',', '')
-            unit = vol_match.group(2)
+            unit = vol_match.group(2).lower()
             try:
                 qty = float(qty_str)
                 if unit in ['kg', 'kilo']:
@@ -262,14 +271,19 @@ class QueryInterpreter:
         # --- 5. Time Extraction (Enhanced) ---
         q_match = re.search(r'\b(q[1-4])[\s-]*(\d{4})?\b', remainder)
         if q_match:
-            year = q_match.group(2) or "2025" 
+            year = q_match.group(2) or str(datetime.date.today().year)
             attributes['time_range'] = f"{q_match.group(1).upper()} {year}"
             remainder = remainder.replace(q_match.group(0), '')
 
+        MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june',
+                       'july', 'august', 'september', 'october', 'november', 'december',
+                       'jan', 'feb', 'mar', 'apr', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
         range_match = re.search(r'from\s+(\w+)\s+to\s+(\w+)', remainder)
         if range_match:
-             attributes['time_range'] = f"{range_match.group(1)} to {range_match.group(2)}"
-             remainder = remainder.replace(range_match.group(0), '')
+            g1, g2 = range_match.group(1).lower(), range_match.group(2).lower()
+            if g1 in MONTH_NAMES or g2 in MONTH_NAMES or g1.isdigit() or g2.isdigit():
+                attributes['time_range'] = f"{range_match.group(1)} to {range_match.group(2)}"
+                remainder = remainder.replace(range_match.group(0), '')
 
         time_pattern = r'last\s+(\d+)\s+((?:month|year)s?)'
         time_match = re.search(time_pattern, remainder)
@@ -340,7 +354,7 @@ class QueryInterpreter:
         # We need a way to extract it.
         # Check for known corporate suffixes in token? (Inc, Ltd, Co, Company)
         
-        entity_match = re.search(r'\b(company \w+|[\w\s]+ (?:ltd|inc|co|corp))\b', clean_text)
+        entity_match = re.search(r'\b(company\s+\w+|\S+(?:\s+\S+){0,3}\s+(?:ltd|inc|co|corp))\b', clean_text)
         if entity_match:
             entity = entity_match.group(1)
             attributes['counterparty_name'] = entity.title()

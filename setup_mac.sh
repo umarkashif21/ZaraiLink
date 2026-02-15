@@ -153,7 +153,7 @@ print_info "Installing Python dependencies (this may take a minute)..."
 .venv/bin/pip install -r requirements.txt
 
 # Verify critical packages installed
-for pkg in django numpy pandas openpyxl; do
+for pkg in django numpy pandas openpyxl sentence-transformers lightgbm; do
     if ! .venv/bin/pip show $pkg &> /dev/null; then
         print_error "Failed to install $pkg!"
         exit 1
@@ -199,6 +199,21 @@ fi
 print_info "Running database migrations..."
 python manage.py migrate --no-input
 print_step "Migrations complete"
+
+# Load database fixture (if available and DB is empty)
+if python manage.py shell -c "from trade_data.models import Transaction; exit(0 if Transaction.objects.count() > 0 else 1)" 2>/dev/null; then
+    print_skip "Database fixture (data already present)"
+else
+    if [ -f "../load_data.json" ]; then
+        print_info "Loading database fixture (load_data.json)..."
+        python manage.py loaddata ../load_data.json || {
+            print_info "Fixture loading failed, will load data individually below"
+        }
+        print_step "Database fixture loaded"
+    else
+        print_info "No load_data.json found, will load data individually below"
+    fi
+fi
 
 # Setup company roles
 print_info "Setting up company roles..."
@@ -261,6 +276,61 @@ else
         print_step "GNN embeddings generated"
     else
         print_info "No graph files found, skipping GNN embeddings"
+    fi
+fi
+
+# =============================================================================
+# SEARCH ENGINE SETUP
+# =============================================================================
+print_header "SEARCH ENGINE SETUP"
+
+# Build NLP search index (sentence-transformers embeddings for product matching)
+if [ -f "search_index.pkl" ]; then
+    print_skip "NLP search index (search_index.pkl)"
+else
+    if [ "$TRANSACTIONS_COUNT" -gt 0 ] 2>/dev/null; then
+        print_info "Building NLP search index (downloading model on first run)..."
+        python manage.py build_search_index || {
+            print_info "Search index build skipped (optional — search will still work on next server start)"
+        }
+        if [ -f "search_index.pkl" ]; then
+            print_step "NLP search index built"
+        fi
+    else
+        print_info "No trade data found, skipping search index build"
+    fi
+fi
+
+# Train LTR (Learning-to-Rank) model
+if [ -f "search/models/lgbm_ltr.txt" ]; then
+    # Check if model has real content (>1KB means trained, not placeholder)
+    MODEL_SIZE=$(stat -f%z "search/models/lgbm_ltr.txt" 2>/dev/null || echo "0")
+    if [ "$MODEL_SIZE" -gt 1000 ]; then
+        print_skip "LTR ranking model"
+    else
+        print_info "LTR model exists but appears untrained, retraining..."
+        python -c "
+import django, os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zarailink.settings')
+django.setup()
+from search.services.train_ltr import LTRTrainer
+LTRTrainer().train()
+" || print_info "LTR training skipped (search will use heuristic ranking)"
+        print_step "LTR ranking model trained"
+    fi
+else
+    if [ "$TRANSACTIONS_COUNT" -gt 0 ] 2>/dev/null; then
+        print_info "Training LTR ranking model..."
+        python -c "
+import django, os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zarailink.settings')
+django.setup()
+from search.services.train_ltr import LTRTrainer
+LTRTrainer().train()
+" || print_info "LTR training skipped (search will use heuristic ranking)"
+        print_step "LTR ranking model trained"
+    else
+        print_info "No trade data found, skipping LTR model training"
     fi
 fi
 

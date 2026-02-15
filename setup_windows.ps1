@@ -132,16 +132,21 @@ if (-not (Test-Path ".venv")) {
 & ".\.venv\Scripts\Activate.ps1"
 Print-Step "Virtual environment activated"
 
-# Install Python dependencies
-$djangoPath = ".\.venv\Lib\site-packages\django"
-if (-not (Test-Path $djangoPath)) {
-    Print-Info "Installing Python dependencies..."
-    pip install --upgrade pip -q
-    pip install -r requirements.txt -q
-    Print-Step "Python dependencies installed"
-} else {
-    Print-Skip "Python dependencies"
+# ALWAYS install/upgrade dependencies to ensure all packages are present
+Print-Info "Installing Python dependencies..."
+pip install --upgrade pip -q
+pip install -r requirements.txt -q
+
+# Verify critical packages installed
+$criticalPackages = @("django", "numpy", "pandas", "openpyxl", "sentence-transformers", "lightgbm")
+foreach ($pkg in $criticalPackages) {
+    $result = pip show $pkg 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Print-Error "Failed to install $pkg!"
+        exit 1
+    }
 }
+Print-Step "Python dependencies installed and verified"
 
 # Environment file
 if (-not (Test-Path ".env")) {
@@ -200,6 +205,24 @@ if ($dbExists) {
 Print-Info "Running database migrations..."
 python manage.py migrate --no-input
 Print-Step "Migrations complete"
+
+# Load database fixture (if available and DB is empty)
+$txCount = python manage.py shell -c "from trade_data.models import Transaction; print(Transaction.objects.count())" 2>$null
+if ([int]$txCount -gt 0) {
+    Print-Skip "Database fixture (data already present)"
+} else {
+    if (Test-Path "..\load_data.json") {
+        Print-Info "Loading database fixture (load_data.json)..."
+        try {
+            python manage.py loaddata ..\load_data.json
+            Print-Step "Database fixture loaded"
+        } catch {
+            Print-Info "Fixture loading failed, will load data individually below"
+        }
+    } else {
+        Print-Info "No load_data.json found, will load data individually below"
+    }
+}
 
 # Setup company roles
 Print-Info "Setting up company roles..."
@@ -271,6 +294,64 @@ if ([int]$embeddingCount -gt 0) {
         }
     } else {
         Print-Info "No graph files found, skipping GNN embeddings"
+    }
+}
+
+# =============================================================================
+# SEARCH ENGINE SETUP
+# =============================================================================
+Print-Header "SEARCH ENGINE SETUP"
+
+# Build NLP search index (sentence-transformers embeddings for product matching)
+if (Test-Path "search_index.pkl") {
+    Print-Skip "NLP search index (search_index.pkl)"
+} else {
+    if ([int]$transactionCount -gt 0) {
+        Print-Info "Building NLP search index (downloading model on first run)..."
+        try {
+            python manage.py build_search_index
+            Print-Step "NLP search index built"
+        } catch {
+            Print-Info "Search index build skipped (optional)"
+        }
+    } else {
+        Print-Info "No trade data found, skipping search index build"
+    }
+}
+
+# Train LTR (Learning-to-Rank) model
+$ltrModelPath = "search\models\lgbm_ltr.txt"
+$needsTraining = $false
+
+if (Test-Path $ltrModelPath) {
+    $modelSize = (Get-Item $ltrModelPath).Length
+    if ($modelSize -gt 1000) {
+        Print-Skip "LTR ranking model"
+    } else {
+        Print-Info "LTR model exists but appears untrained, retraining..."
+        $needsTraining = $true
+    }
+} else {
+    if ([int]$transactionCount -gt 0) {
+        $needsTraining = $true
+    } else {
+        Print-Info "No trade data found, skipping LTR model training"
+    }
+}
+
+if ($needsTraining) {
+    Print-Info "Training LTR ranking model..."
+    try {
+        python -c @"
+import django, os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zarailink.settings')
+django.setup()
+from search.services.train_ltr import LTRTrainer
+LTRTrainer().train()
+"@
+        Print-Step "LTR ranking model trained"
+    } catch {
+        Print-Info "LTR training skipped (search will use heuristic ranking)"
     }
 }
 

@@ -37,21 +37,25 @@ const DealDetail = () => {
     if (!data) return null;
 
     const { supplier, comparables, market_context } = data;
+    const stats = supplier?.stats || {};
+    const sparkline = supplier?.sparkline || [];
+    const history = supplier?.history || [];
+    const shipmentSizes = supplier?.shipment_sizes || [];
+    const buyerInsights = supplier?.buyer_insights || {};
+    const filters = supplier?.filters || {};
 
     // Derived data
-    const avgShipmentSize = supplier.stats.shipment_count > 0
-        ? Math.round(supplier.stats.total_volume / supplier.stats.shipment_count)
+    const avgShipmentSize = stats.shipment_count > 0
+        ? Math.round((stats.total_volume || 0) / stats.shipment_count)
         : 0;
 
     // Helper for Price Trend Bars (Quick Stats)
-    // Normalize last 6 months of price data for the mini-chart
-    const priceTrendData = supplier.sparkline.slice(-6).map(d => d.price);
+    const priceTrendData = sparkline.slice(-6).map(d => d.price);
     const maxPrice = Math.max(...priceTrendData, 1);
     const minPrice = Math.min(...priceTrendData, 0);
-    // Simple normalization for visualization
     const normalizedBars = priceTrendData.map(p => {
         const range = maxPrice - minPrice || 1;
-        return ((p - minPrice) / range) * 0.8 + 0.2; // Keep at least 20% height
+        return ((p - minPrice) / range) * 0.8 + 0.2;
     });
 
     return (
@@ -93,7 +97,7 @@ const DealDetail = () => {
                         <div>
                             <p className="text-xs text-gray-500 uppercase font-medium">Volume Traded</p>
                             <p className="text-xl font-bold text-gray-900 flex items-end gap-1">
-                                {supplier.stats.total_volume.toLocaleString()} MT
+                                {(stats.total_volume || 0).toLocaleString()} MT
                                 <TrendingUp size={16} className="text-green-500 mb-1" />
                             </p>
                         </div>
@@ -103,7 +107,7 @@ const DealDetail = () => {
                         <div>
                             <p className="text-xs text-gray-500 uppercase font-medium">Shipments</p>
                             <p className="text-xl font-bold text-gray-900 flex items-end gap-1">
-                                {supplier.stats.shipment_count}
+                                {stats.shipment_count || 0}
                                 <TrendingUp size={16} className="text-green-500 mb-1" />
                             </p>
                         </div>
@@ -113,7 +117,7 @@ const DealDetail = () => {
                         <div>
                             <p className="text-xs text-gray-500 uppercase font-medium">Avg Price</p>
                             <p className="text-xl font-bold text-gray-900 flex items-end gap-1">
-                                ${supplier.stats.avg_price.toFixed(0)}/MT
+                                ${stats.avg_price != null ? stats.avg_price.toFixed(0) : 'N/A'}/MT
                                 <TrendingDown size={16} className="text-red-500 mb-1" />
                             </p>
                         </div>
@@ -146,7 +150,7 @@ const DealDetail = () => {
                                     <label className="text-xs font-medium text-gray-600 block mb-1.5">Countries</label>
                                     <select className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-gray-50">
                                         <option>All Countries</option>
-                                        {supplier.filters?.countries?.map((c, idx) => (
+                                        {filters.countries?.map((c, idx) => (
                                             <option key={idx} value={c}>{c}</option>
                                         )) || <option disabled>No countries</option>}
                                     </select>
@@ -184,13 +188,13 @@ const DealDetail = () => {
                                         )) : <span className="text-xs text-gray-400 p-1">No recent data</span>}
                                     </div>
                                     <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                                        <TrendingUp size={10} /> {market_context.price_trend || "Stable"}
+                                        <TrendingUp size={10} /> {market_context?.price_trend || "Stable"}
                                     </p>
                                 </div>
                                 <div className="border-t border-gray-100 pt-3">
                                     <p className="text-xs text-gray-500 mb-1">Countries Supplied</p>
                                     <div className="flex flex-wrap gap-1">
-                                        {supplier.filters?.countries?.slice(0, 5).map(c => (
+                                        {filters.countries?.slice(0, 5).map(c => (
                                             <span key={c} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{c}</span>
                                         )) || <span className="text-xs text-gray-400">N/A</span>}
                                     </div>
@@ -206,10 +210,10 @@ const DealDetail = () => {
                                     <span className="font-medium text-gray-700">Quantity (MT)</span>
                                     <span className="font-medium text-gray-700">Avg Price</span>
                                 </div>
-                                {supplier.shipment_sizes ? supplier.shipment_sizes.map((item, idx) => (
+                                {shipmentSizes.length > 0 ? shipmentSizes.map((item, idx) => (
                                     <div key={idx} className="flex justify-between items-center py-1">
                                         <span className="text-gray-600">{item.range} <span className="text-gray-400 text-[10px]">({item.count})</span></span>
-                                        <span className="text-gray-900">${item.avg_price.toFixed(0)}/MT</span>
+                                        <span className="text-gray-900">${item.avg_price != null ? item.avg_price.toFixed(0) : 'N/A'}/MT</span>
                                     </div>
                                 )) : <p className="text-gray-400">No data available</p>}
                             </div>
@@ -241,16 +245,15 @@ const DealDetail = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
-                                        {supplier.history.slice(0, 10).map((tx, idx) => (
+                                        {history.slice(0, 10).map((tx, idx) => (
                                             <tr key={tx.id || idx} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-6 py-4 font-medium text-gray-900">{tx.buyer}</td>
-                                                <td className="px-6 py-4">{tx.country}</td>
-                                                <td className="px-6 py-4">{tx.quantity.toLocaleString()}</td>
+                                                <td className="px-6 py-4 font-medium text-gray-900">{tx.counterparty || 'N/A'}</td>
+                                                <td className="px-6 py-4">{tx.country || 'N/A'}</td>
+                                                <td className="px-6 py-4">{tx.quantity != null ? tx.quantity.toLocaleString() : '0'}</td>
                                                 <td className="px-6 py-4">
                                                     <span className="bg-gray-100 px-2 py-1 rounded text-gray-700 font-medium">
-                                                        ${tx.price.toFixed(2)}
+                                                        ${tx.price != null ? tx.price.toFixed(2) : 'N/A'}
                                                     </span>
-                                                    <span className="text-xs text-gray-400 ml-2">Below market</span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">{tx.date}</td>
                                                 <td className="px-6 py-4 text-right">
@@ -302,11 +305,11 @@ const DealDetail = () => {
                                         <div className="space-y-1 text-xs text-gray-600 mb-3">
                                             <div className="flex justify-between">
                                                 <span>Volume Traded:</span>
-                                                <span className="font-medium text-gray-900">{comp.total_volume.toLocaleString()} MT</span>
+                                                <span className="font-medium text-gray-900">{comp.total_volume != null ? comp.total_volume.toLocaleString() : '0'} MT</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span>Avg Price:</span>
-                                                <span className="font-medium text-gray-900">${comp.avg_price.toFixed(0)}/MT</span>
+                                                <span className="font-medium text-gray-900">${comp.avg_price != null ? comp.avg_price.toFixed(0) : 'N/A'}/MT</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span>Shipments:</span>
@@ -333,12 +336,12 @@ const DealDetail = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="border border-gray-100 p-4 rounded bg-gray-50">
                                     <p className="text-xs text-gray-500 font-medium mb-1">Recent Buyers (Last 30 Days)</p>
-                                    <p className="text-2xl font-bold text-gray-900">{supplier.buyer_insights?.recent_buyers || 0}</p>
+                                    <p className="text-2xl font-bold text-gray-900">{buyerInsights.recent_buyers || 0}</p>
                                     <p className="text-xs text-gray-400 mt-1">Active in last month</p>
                                 </div>
                                 <div className="border border-gray-100 p-4 rounded bg-gray-50">
                                     <p className="text-xs text-gray-500 font-medium mb-1">Total Active Relationships</p>
-                                    <p className="text-2xl font-bold text-gray-900">{supplier.buyer_insights?.total_relationships || 0}</p>
+                                    <p className="text-2xl font-bold text-gray-900">{buyerInsights.total_relationships || 0}</p>
                                     <p className="text-xs text-gray-400 mt-1">Lifetime unique buyers</p>
                                 </div>
                             </div>

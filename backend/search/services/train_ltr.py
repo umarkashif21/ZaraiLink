@@ -1,7 +1,6 @@
 import os
 import lightgbm as lgb
 import numpy as np
-import pickle
 from .ltr_evaluation import evaluate_model
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), '../models/lgbm_ltr.txt')
@@ -12,7 +11,7 @@ class LTRTrainer:
         print("Building Dataset...")
         from .ltr_dataset_builder import LTRDatasetBuilder
         builder = LTRDatasetBuilder()
-        X, y, groups = builder.build_dataset(limit_per_product=50) # Use smaller limit for dev speed
+        X, y, groups = builder.build_dataset()
         
         print(f"Dataset Built: {len(X)} samples, {len(groups)} queries.")
         

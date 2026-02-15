@@ -1,5 +1,5 @@
 import datetime
-from django.db.models import Sum, Count, Avg, Max, F
+from django.db.models import Sum, Count, Avg, Max, Case, When, Value, CharField
 from django.db.models.functions import TruncMonth
 from trade_data.models import Transaction
 
@@ -39,7 +39,7 @@ class SupplierAggregator:
                 # Look at Pakistan's EXPORTS and find the buyers
                 target_field = 'buyer'
                 country_field = 'destination_country'
-                queryset = queryset.filter(trade_type='EXPORT')
+                queryset = queryset.filter(trade_type='EXPORT', origin_country='Pakistan')
                 
         else:
             # User wants to BUY
@@ -54,14 +54,12 @@ class SupplierAggregator:
                 # Look at Pakistan's IMPORTS (foreign suppliers selling TO Pakistan)
                 target_field = 'seller'
                 country_field = 'origin_country'
-                queryset = queryset.filter(trade_type='IMPORT')
+                queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
 
         # Apply Filters
         if country_filter and len(country_filter) > 0:
             filter_kwargs = {f"{country_field}__in": country_filter}
-            print(f"DEBUG: Applying country filter: {filter_kwargs}")  # DEBUG
             queryset = queryset.filter(**filter_kwargs)
-            print(f"DEBUG: Queryset count after country filter: {queryset.count()}")  # DEBUG
             
         if price_filter:
             if price_filter.get('ceiling'):
@@ -86,9 +84,13 @@ class SupplierAggregator:
         )
         
         # Apply Volume Filter (Capacity check)
-        # We want suppliers who have demonstrated ability to ship at least X volume
+        # Include suppliers who either shipped volume_filter in a single shipment
+        # OR whose total volume meets the requirement
         if volume_filter:
-            results = results.filter(max_shipment_vol__gte=volume_filter)
+            from django.db.models import Q
+            results = results.filter(
+                Q(max_shipment_vol__gte=volume_filter) | Q(total_volume__gte=volume_filter)
+            )
             
         results = results.order_by('-total_volume')
         
@@ -99,7 +101,7 @@ class SupplierAggregator:
                 "name": r[target_field],
                 "country": r[country_field],
                 "total_volume": float(r['total_volume'] or 0),
-                "avg_price": float(r['avg_price'] or 0),
+                "avg_price": float(r['avg_price']) if r['avg_price'] is not None else None,
                 "shipment_count": r['shipment_count'],
                 "last_shipment_date": r['last_shipment_date'],
                 "max_shipment_vol": float(r['max_shipment_vol'] or 0),
@@ -109,15 +111,20 @@ class SupplierAggregator:
         return counterparties
 
 
-    def get_supplier_details(self, seller_name, subcategory_ids):
+    def get_supplier_details(self, name, subcategory_ids, intent='BUY'):
         """
-        Get detailed stats, sparklines, and history for a specific supplier within a category.
+        Get detailed stats, sparklines, and history for a specific supplier/buyer within a category.
+        For BUY intent, name is a seller. For SELL intent, name is a buyer.
         """
-        # Filter transactions for specific seller and subcategories
-        # Note: Removed trade_type='IMPORT' filter here as well
+        # Determine which field to filter on based on intent
+        if intent == 'SELL':
+            filter_kwargs = {'buyer': name}
+        else:
+            filter_kwargs = {'seller': name}
+
         queryset = Transaction.objects.filter(
-            seller=seller_name,
-            product_item__sub_category_id__in=subcategory_ids
+            product_item__sub_category_id__in=subcategory_ids,
+            **filter_kwargs
         ).order_by('-reporting_date')
 
         if not queryset.exists():
@@ -149,27 +156,33 @@ class SupplierAggregator:
             })
 
         # 3. Transaction History (Top 50 for table)
+        # Use the counterparty field and country field based on intent
+        if intent == 'SELL':
+            counterparty_field = 'seller'
+            country_field_name = 'destination_country'
+        else:
+            counterparty_field = 'buyer'
+            country_field_name = 'origin_country'
+
         history = []
         for tx in queryset[:50]:
             history.append({
                 "id": tx.id,
-                "transaction_hash": tx.tx_reference, # Unique ID
-                "buyer": tx.buyer,
-                "country": tx.origin_country,  # Fixed: use origin_country instead of country
+                "transaction_hash": tx.tx_reference,
+                "counterparty": getattr(tx, counterparty_field),
+                "country": getattr(tx, country_field_name),
                 "quantity": float(tx.qty_mt or 0),
                 "price": float(tx.usd_per_mt or 0),
                 "date": tx.reporting_date
             })
 
         # 4. Filters (Countries & Years)
-        countries = list(queryset.values_list('origin_country', flat=True).distinct().order_by('origin_country'))
+        countries = list(queryset.values_list(country_field_name, flat=True).distinct().order_by(country_field_name))
         
         # 5. Typical Shipment Sizes
         # Bucket: 0-25, 25-50, 50-100, 100+
         # We can do this in Python since we already have the queryset (or optimize with DB conditional aggregation)
         # Given potential volume, let's do DB aggregation for performance
-        from django.db.models import Case, When, Value, CharField
-        
         size_buckets = queryset.annotate(
             bucket=Case(
                 When(qty_mt__lte=25, then=Value('0-25')),
@@ -214,7 +227,7 @@ class SupplierAggregator:
         # Approx: Just return total vs recent for now
         
         return {
-            "name": seller_name,
+            "name": name,
             "stats": {
                 "total_volume": float(stats['total_volume'] or 0),
                 "avg_price": float(stats['avg_price'] or 0),

@@ -9,21 +9,23 @@ from sklearn.metrics.pairwise import cosine_similarity
 class QueryMatcher:
     _model = None
     _index = None
+    _index_mtime = None
 
     @classmethod
     def get_model(cls):
         if cls._model is None:
-            # Load model (downloads on first run)
             cls._model = SentenceTransformer('all-MiniLM-L6-v2')
         return cls._model
 
     @classmethod
     def get_index(cls):
-        if cls._index is None:
-            index_path = os.path.join(settings.BASE_DIR, 'search_index.pkl')
-            if os.path.exists(index_path):
+        index_path = os.path.join(settings.BASE_DIR, 'search_index.pkl')
+        if os.path.exists(index_path):
+            current_mtime = os.path.getmtime(index_path)
+            if cls._index is None or cls._index_mtime != current_mtime:
                 with open(index_path, 'rb') as f:
                     cls._index = pickle.load(f)
+                cls._index_mtime = current_mtime
         return cls._index
 
     def match(self, query):
@@ -35,8 +37,11 @@ class QueryMatcher:
         clean_qs = self._clean_query(query)
         matches = {}
 
+        # Guard: empty query after stopword removal would match everything
+        if not clean_qs or len(clean_qs.strip()) < 2:
+            return []
+
         # 1. Keyword Match (Database ILIKE)
-        # This guarantees "dextrose" finds "Dextrose Monohydrate"
         keyword_hits = ProductSubCategory.objects.filter(name__icontains=clean_qs)
         for hit in keyword_hits:
             matches[hit.id] = {

@@ -9,8 +9,10 @@ def compute_ndcg_at_k(y_true, y_pred, k=5):
     """
     # sklearn expects shape (n_samples, n_labelsargs)
     # But here we pass one query at a time usually
-    if len(y_true) < 2: 
-        return 1.0 if len(y_true) == 0 else (1.0 if y_true[0] > 0 else 0.0) # Trivial
+    if len(y_true) == 0:
+        return 0.0
+    if len(y_true) < 2:
+        return 1.0 if y_true[0] > 0 else 0.0
         
     return ndcg_score([y_true], [y_pred], k=k)
 
