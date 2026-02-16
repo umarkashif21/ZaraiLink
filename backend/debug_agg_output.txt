@@ -1,0 +1,15 @@
+
+Testing: Subcat 717 | Intent BUY | Scope WORLDWIDE
+Results count: 58
+Top result: Seawall Enterprise Ltd (5302.5 MT)
+
+Testing: Subcat 717 | Intent BUY | Scope PAKISTAN
+Results count: 2
+Top result: Rafhan Maize Products Co Ltd (437.525 MT)
+
+Testing: Subcat 726 | Intent BUY | Scope WORLDWIDE
+Results count: 15
+Top result: Honber International Ltd (12.5 MT)
+
+Testing: Subcat 726 | Intent BUY | Scope PAKISTAN
+Results count: 0

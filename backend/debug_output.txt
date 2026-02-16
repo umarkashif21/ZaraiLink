@@ -1,0 +1,7 @@
+
+--- Subcategories matching "dextrose" ---
+717: Dextrose Anhydrous - Tx Count: 508
+
+--- Subcategories matching "fructose" ---
+726: Fructose - Tx Count: 24
+729: High Fructose Corn Syrup - Tx Count: 3

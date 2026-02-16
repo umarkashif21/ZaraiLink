@@ -22,5 +22,7 @@ router = DefaultRouter()
 router.register(r'', SearchViewSet, basename='search')
 
 urlpatterns = [
+    # Explicitly register supplier-detail to avoid Router ambiguity
+    path('supplier-detail/', SearchViewSet.as_view({'get': 'supplier_detail'}), name='supplier-detail'),
     path('', include(router.urls)),
 ]

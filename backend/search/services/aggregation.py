@@ -5,7 +5,7 @@ from trade_data.models import Transaction
 import math
 
 class SupplierAggregator:
-    def get_suppliers_for_subcategories(self, subcategory_ids, intent='BUY', scope='WORLDWIDE', country_filter=None, price_filter=None, volume_filter=None, time_filter=None):
+    def get_suppliers_for_subcategories(self, subcategory_ids, intent='BUY', scope='WORLDWIDE', country_filter=None, price_filter=None, volume_filter=None, time_filter=None, product_item_filter=None):
         """
         Aggregates counterparty data (Suppliers or Buyers) for the given subcategory IDs.
         
@@ -16,12 +16,17 @@ class SupplierAggregator:
             price_filter: Dict with 'ceiling' and 'floor'.
             volume_filter: Requested volume in MT (used for soft compatibility scoring, NOT hard filter).
             time_filter: Dict with 'start_date' and 'end_date'.
+            product_item_filter: List of ProductItem IDs to filter by (specific variants).
         """
         queryset = Transaction.objects.all()
         
         # Subcategory filter (optional — None means all products for filter-only queries)
         if subcategory_ids:
             queryset = queryset.filter(product_item__sub_category_id__in=subcategory_ids)
+            
+        # Specific Product Item (Variant) Filter
+        if product_item_filter:
+            queryset = queryset.filter(product_item__id__in=product_item_filter)
         
         # Default Scope
         scope = scope or 'WORLDWIDE'
@@ -138,9 +143,10 @@ class SupplierAggregator:
         Get detailed stats, sparklines, and history for a specific supplier within a category.
         """
         # Filter transactions for specific seller and subcategories
+        # Filter transactions for specific seller and subcategories
         # Note: Removed trade_type='IMPORT' filter here as well
         queryset = Transaction.objects.filter(
-            seller=seller_name,
+            seller__iexact=seller_name.strip(),
             product_item__sub_category_id__in=subcategory_ids
         ).order_by('-reporting_date')
 
@@ -179,14 +185,14 @@ class SupplierAggregator:
                 "id": tx.id,
                 "transaction_hash": tx.tx_reference, # Unique ID
                 "buyer": tx.buyer,
-                "country": tx.origin_country,  # Fixed: use origin_country instead of country
+                "country": tx.destination_country, 
                 "quantity": float(tx.qty_mt or 0),
                 "price": float(tx.usd_per_mt or 0),
                 "date": tx.reporting_date
             })
 
         # 4. Filters (Countries & Years)
-        countries = list(queryset.values_list('origin_country', flat=True).distinct().order_by('origin_country'))
+        countries = list(queryset.values_list('destination_country', flat=True).distinct().order_by('destination_country'))
         
         # 5. Typical Shipment Sizes
         # Bucket: 0-25, 25-50, 50-100, 100+
@@ -252,6 +258,128 @@ class SupplierAggregator:
             "buyer_insights": {
                 "total_relationships": total_buyers,
                 "recent_buyers": recent_buyers
+            },
+            "sparkline": sparkline,
+            "history": history
+        }
+
+    def get_buyer_details(self, buyer_name, subcategory_ids):
+        """
+        Get detailed stats, sparklines, and history for a specific BUYER within a category.
+        """
+        # Filter transactions where 'buyer' is the target
+        queryset = Transaction.objects.filter(
+            buyer__iexact=buyer_name.strip(),
+            product_item__sub_category_id__in=subcategory_ids
+        ).order_by('-reporting_date')
+
+
+
+        if not queryset.exists():
+            # Fallback: Try finding buyer without product constraint (General Profile)
+            queryset = Transaction.objects.filter(
+                buyer__iexact=buyer_name.strip()
+            ).order_by('-reporting_date')
+            
+            if not queryset.exists():
+                return None
+
+        # 1. High-level Stats (Purchasing)
+        stats = queryset.aggregate(
+            total_volume=Sum('qty_mt'),
+            avg_price=Avg('usd_per_mt'),
+            shipment_count=Count('id'),
+            last_shipment_date=Max('reporting_date')
+        )
+        
+        # 2. Sparklines (Monthly Purchasing)
+        monthly_data = queryset.annotate(
+            month=TruncMonth('reporting_date')
+        ).values('month').annotate(
+            vol=Sum('qty_mt'),
+            price=Avg('usd_per_mt')
+        ).order_by('month')
+
+        sparkline = []
+        for entry in monthly_data:
+            sparkline.append({
+                "date": entry['month'].strftime("%Y-%m-%d"),
+                "volume": float(entry['vol'] or 0),
+                "price": float(entry['price'] or 0)
+            })
+
+        # 3. Transaction History (Top 50 latest purchases)
+        history = []
+        for tx in queryset[:50]:
+            history.append({
+                "id": tx.id,
+                "transaction_hash": tx.tx_reference,
+                "seller": tx.seller,  # Show who they bought from
+                "origin_country": tx.origin_country, # Where it came from
+                "quantity": float(tx.qty_mt or 0),
+                "price": float(tx.usd_per_mt or 0),
+                "date": tx.reporting_date
+            })
+
+        # 4. Filters (Source Countries)
+        countries = list(queryset.values_list('origin_country', flat=True).distinct().order_by('origin_country'))
+        
+        # 5. Typical Order Sizes (Buying habits)
+        from django.db.models import Case, When, Value, CharField
+        size_buckets = queryset.annotate(
+            bucket=Case(
+                When(qty_mt__lte=25, then=Value('0-25')),
+                When(qty_mt__lte=50, then=Value('25-50')),
+                When(qty_mt__lte=100, then=Value('50-100')),
+                default=Value('100+'),
+                output_field=CharField(),
+            )
+        ).values('bucket').annotate(
+            count=Count('id'),
+            avg_price=Avg('usd_per_mt')
+        ).order_by('bucket')
+        
+        shipment_sizes = []
+        bucket_order = ['0-25', '25-50', '50-100', '100+']
+        size_dict = {item['bucket']: item for item in size_buckets}
+        
+        for b in bucket_order:
+            if b in size_dict:
+                shipment_sizes.append({
+                    "range": f"{b} MT",
+                    "count": size_dict[b]['count'],
+                    "avg_price": float(size_dict[b]['avg_price'] or 0)
+                })
+            else:
+                 shipment_sizes.append({
+                    "range": f"{b} MT",
+                    "count": 0,
+                    "avg_price": 0
+                })
+
+        # 6. Returns "Supplier Insights" logic from Buyer perspective
+        # i.e. "Who are they buying from?"
+        total_suppliers = queryset.values('seller').distinct().count()
+        
+        last_month_start = datetime.date.today() - datetime.timedelta(days=30)
+        recent_suppliers = queryset.filter(reporting_date__gte=last_month_start).values('seller').distinct().count()
+        
+        return {
+            "name": buyer_name,
+            "type": "BUYER",
+            "stats": {
+                "total_volume": float(stats['total_volume'] or 0),
+                "avg_price": float(stats['avg_price'] or 0),
+                "shipment_count": stats['shipment_count'],
+                "last_shipment_date": stats['last_shipment_date'],
+            },
+            "filters": {
+                "countries": countries
+            },
+            "shipment_sizes": shipment_sizes,
+            "supplier_insights": {
+                "total_relationships": total_suppliers,
+                "recent_suppliers": recent_suppliers
             },
             "sparkline": sparkline,
             "history": history
