@@ -1,0 +1,8 @@
+
+--- Subcategory ID 717 ---
+IMPORT: 481
+EXPORT: 27
+
+--- Subcategory ID 726 ---
+IMPORT: 24
+EXPORT: 0

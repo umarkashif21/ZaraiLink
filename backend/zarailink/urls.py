@@ -33,4 +33,5 @@ urlpatterns = [
     path('api/trade-lens/', include('trade_lens.urls')),
     path('api/search/', include('search.urls')), # Unified Search
     path("ckeditor5/", include('django_ckeditor_5.urls')),
+    path('api-auth/', include('rest_framework.urls')), # DRF Login
 ]

@@ -1,0 +1,756 @@
+﻿Clearing existing TradeLens data...
+Cleared.
+Reading IMPORT file: c:\Users\Dell\Documents\ZaraiLink\import_data_1year.xlsx
+  + Product: Dextrose Anhydrous (1702.3)
+  + Product: Jelly (Assorted Flavor) (1704.909)
+  + Product: Jeram Mini Fruity Jelly / Fruity Jelly With Nata De Coco / Grab Ngo Mango Jelly (1704.909)
+  + Product: Lactose Mono (1702.111)
+  + Product: Maltodextrin (1702.903)
+  + Product: Dextrose Monohydrate (1702.3)
+  + Product: Caramel Color (1702.902)
+  + Product: Sugar Pearls White (1704.909)
+  + Product: Ice Cream Mallow / Marshmallow Pop / Twist Marshmallow / Twist Stick Marshmallow / Strawberry Marshmallow (1704.909)
+  + Product: Di-Pac Compressible Sugar (1701.999)
+  + Product: Lactose Monohydrate (1702.111)
+  + Product: Namoul Toffee (1704.909)
+  + Product: Invert Sugar (1702.909)
+  + Product: Refined Sugar (1701.991)
+  + Product: Meggletose F200 (1702.111)
+  + Product: Lactose Powder (1702.111)
+  + Product: Lactose (1702.111)
+  + Product: Soft & Mellow Marshmallows (1704.909)
+  + Product: Assorted Jelly (1704.909)
+  + Product: Fox Tin Candy (1704.909)
+  + Product: Mentos Mint (1704.909)
+  + Product: Mentos Spearmint (1704.909)
+  + Product: Mentos Strawberry (1704.909)
+  + Product: Sour Punk Candy (1704.909)
+  + Product: Glucose (1702.3)
+  + Product: Adm Isoglucose (1702.6)
+  + Product: Vizyon Sugar Paste (1704.909)
+  + Product: Popcorn Caramel (1702.902)
+  + Product: Real Coffee Candy / Tamarind Candy (1704.909)
+  + Product: Yummy Gummy Jelly Assorted (1704.909)
+  + Product: Lollypop (1704.909)
+  + Product: Sucrose Instant K1 (Instant Sugar Fine) (1701.999)
+  + Product: Alpenliebe Milk Chew (1704.909)
+  + Product: Fruittella Blackcurrant (1704.909)
+  + Product: Fruittella Lemon (1704.909)
+  + Product: Fruittella Orange (1704.909)
+  + Product: Fruittella Strawberry (1704.909)
+  + Product: Mentos Fruit (1704.909)
+  + Product: Assorted Toffee (1704.909)
+  + Product: Jelly Cola (1704.909)
+  + Product: Meggletose B200 (1702.111)
+  + Product: Marshmallow Pink & White (1704.909)
+  + Product: Marshmallow Strawberry (1704.909)
+  + Product: Strawberry & Cream Sweets / Sf Lemon & Cream Toffee / Sf Cappuccino & Cream Sweets / Sf Mint & Cream Sweets (1704.909)
+  + Product: Tiva Bears (1704.909)
+  + Product: Tiva Fizzy Peach Rings (1704.909)
+  + Product: Tiva Fizzy Strawberry (1704.909)
+  + Product: Tiva Fizzy Watermelon (1704.909)
+  + Product: Tiva Fizzy Worms (1704.909)
+  + Product: Tiva Marshmallow Cube (1704.909)
+  + Product: Tiva Marshmallow Flower (1704.909)
+  + Product: Tiva Marshmallow Heart (1704.909)
+  + Product: Tiva Marshmallow Roller (1704.909)
+  + Product: Tiva Marshmallow Twist (1704.909)
+  + Product: Tiva Mix Fruits (1704.909)
+  + Product: Tiva Multicolor Sticks (1704.909)
+  + Product: Tiva Rainbow Belts (1704.909)
+  + Product: Tiva Sugared Ponpon (1704.909)
+  + Product: Fructose (1702.5)
+  + Product: Fructose (1702.6)
+  + Product: Candy Of Assorted Flavours (1704.909)
+  + Product: Gummy Jelly Assorted (1704.909)
+  + Product: Berries (1704.909)
+  + Product: Fizz Likirr (1704.909)
+  + Product: Fizz Mix (1704.909)
+  + Product: Fizz Worms (1704.909)
+  + Product: Goldbears (1704.909)
+  + Product: Happy Cola (1704.909)
+  + Product: Lactose Anhydrous (1702.111)
+  + Product: Flowlac (1702.111)
+  + Product: Mega Roulette (1704.909)
+  + Product: Phantasia (1704.909)
+  + Product: Starmix (1704.909)
+  + Product: Teeth Candy (1704.909)
+  + Product: Worms (1704.909)
+  + Product: Assorted Sour Fruit & Foam Gums (1704.909)
+  + Product: Granulac (1702.111)
+  + Product: Elif Eclairs Soft Candies (1704.909)
+  + Product: Embassy Supplies Sweets (1704.909)
+  + Product: Kopiko Coffee Candy (1704.909)
+  + Product: Glucose Anhydrous (1702.3)
+  + Product: Fox Candy (1704.909)
+  + Product: Magic Pops Fruit Candy (1704.909)
+  + Product: Maltoswee G 151 (1702.903)
+  + Product: Fruit Candy (1704.909)
+  + Product: Red Sugar (1701.14)
+  + Product: Lycatab Dsh (1702.903)
+  + Product: Assorted Candy (1704.909)
+  + Product: Assorted Flavour Lollipop (1704.909)
+  + Product: Bear Gummy Lollipop (1704.909)
+  + Product: Candy With Toy (1704.909)
+  + Product: Caramel (1702.902)
+  + Product: Joytop Fun Tubes Lollipop (1704.909)
+  + Product: Marshmallow Candy (1704.909)
+  + Product: Dextrose (1702.3)
+  + Product: No. 1 Treacle (1703.1)
+  + Product: Water & Juices (1701.999)
+  + Product: High Fructose Corn Syrup (1702.4)
+  + Product: Lactose Only (1702.111)
+  + Product: Anticristal (Compound For Food) (1702.909)
+  + Product: Assorted Candy (Coffee & Tamarind) (1704.909)
+  + Product: Bebeto Assorted Jelly (1704.909)
+  + Product: Assorted Marshmallow (1704.909)
+  + Product: Lactose (Spray Dried) (1702.19)
+  + Product: Soft Candy Chews Assorted (1704.909)
+  + Product: Cereal Candy (1704.909)
+  + Product: Chocolate Candies (1704.909)
+  + Product: Tablettose (1702.111)
+  + Product: Duralac H (1702.111)
+  + Product: Milk Chocolates (1704.909)
+  + Product: Brown Sugar (1701.999)
+  + Product: Snacks, Liquorice, Gum & Chocolate Eggs (1704.909)
+  + Product: Vida Chewing Gum (1704.909)
+  + Product: Assorted Flavour Popping Candy (1704.909)
+  + Product: Crystalline Fructose (1702.6)
+  + Product: Assorted Toy Candy (1704.909)
+  + Product: Food Supplements (Assorted) (1704.909)
+  + Product: Candy (1704.909)
+  + Product: Luxe Dubai Pistachio Chocolate (1704.909)
+  + Product: Mixed Chocolates (Lindor, Cadbury, Maltesers, Snickers) (1704.909)
+  + Product: Sugar Paste (1704.909)
+  + Product: Chocolate & Candy Gift Pack (1704.909)
+  + Product: Chocolate With Almonds & Pistachio (1704.909)
+  + Product: Gift Chocolates (1704.909)
+  + Product: Chocolate (1704.909)
+  + Product: Mushroom Coffee (1704.909)
+  + Product: Belt Gloves (1704.909)
+  + Product: Jelly / Gummy Candy (1704.909)
+  + Product: Juices, Water, Food Milk (1701.999)
+  + Product: Dry Baklava (1704.909)
+  + Product: Foodstuff (1704.909)
+  + Product: Inhalac (1702.111)
+  + Product: Sweetener (1702.909)
+  + Product: Chocolate Caramel Selection Large (1704.909)
+  + Product: Refined Sugar (1701.999)
+  + Product: Jelly: Waffle Cone Gummy Jumbo Frank Gumy Sandwitch (1704.909)
+  + Product: Marshmallow (Pamerlo Fruit Flavor Jam Center Filled) (1704.909)
+  + Product: Sweets (1704.909)
+  + Product: Assorted Candies And Chocolates (1704.909)
+  + Product: Coverlux Chocolate Milk Compound Drops (1704.901)
+  + Product: Candy Assorted (1704.909)
+  + Product: Chupa Chups Lollipop (1704.909)
+  + Product: Farm Sugar (1701.999)
+  + Product: Lollipop (1704.909)
+  + Product: Sour Punk Candy (1704.1)
+  + Product: Candy Of Assorted Packing & Flavours (1704.909)
+  + Product: Go Fress Papermint Mouth Freshner (1704.909)
+  + Product: Lithuanian Tree Cake Truffles Candy (1704.909)
+  + Product: Marshmellow (1704.909)
+  + Product: Small Candies (1704.909)
+  + Product: Rainbow Lollipop Assorted Flavored (1704.909)
+  + Product: Soft Candy Chews Assorted Varieties (1704.909)
+  + Product: Sucrose (1701.999)
+  + Product: Candies Sweet (1704.909)
+  + Product: Marshmallow Of Assorted Shapes And Packing (1704.909)
+  + Product: Big Letters (1704.909)
+  + Product: Chocloat Bars Chocolat Box (1704.909)
+  + Product: Corn Starch (1704.909)
+  + Product: Fizz Happy Cola (1704.909)
+  + Product: Food Supplement (1704.909)
+  + Product: Jelly Beans (1704.909)
+  + Product: Kledingkleding Plus Cadeau Kaart Plus Chocolade (1704.909)
+  + Product: Sucrose (1701.993)
+  + Product: Peaches (1704.909)
+  + Product: Peaches Ring (1704.909)
+  + Product: Small Numbers (1704.909)
+  + Product: Star (1704.909)
+  + Product: Teeth (1704.909)
+  + Product: Tropi Frutti (1704.909)
+  + Product: Caramel Powder (1702.902)
+  + Product: Fructose Syrup (1702.6)
+  + Product: Mallow Pop Marshmallow (1704.909)
+  + Product: Candy Bars: Chocolate Coated (1704.909)
+  + Product: Dextrose Ball (1702.3)
+  + Product: Hickory Brown P-Ws (1702.909)
+  + Product: Alpavit Lactose Dc / Alpavit Lactose Pharma (1702.909)
+  + Product: Rock Sugar (1701.14)
+  + Product: Vegetable Mama Foodstuff (1704.909)
+  + Product: Wheat (1704.909)
+  + Product: Freeze Dried Candy (1704.909)
+  + Product: Chocolates To Eat (1704.909)
+  + Product: Food Supplement Vital Proteins Marine Collagen (1704.909)
+  + Product: Food Supplement Slim Centric (1704.909)
+  + Product: Honey Bottles (1704.909)
+  + Product: Individual Units Of Candy (1704.909)
+  + Product: Candies (1704.909)
+  + Product: Buttr Scotch Candy (1704.909)
+  + Product: Chocolate & Candy (1704.909)
+  + Product: Chocolates (1704.909)
+  + Product: Gift Box Of Chocolat (1704.909)
+  + Product: Jeram Mini Fruity Jelly (1704.909)
+  + Product: Soft Toys Chocolates (1704.909)
+  + Product: Chocolatesgift (1704.909)
+  + Product: Jelly Candy With Toy (1704.909)
+  + Product: Snickers Bag Chocolate Reeses Cups Bag (1704.909)
+  + Product: Toy Water Gun Jelly Candy (1704.909)
+  + Product: Chocs Confectionery (1704.909)
+  + Product: For My Greatest Treasure Chocolate Toy (1704.909)
+  + Product: Incredible Chew Candy Grape Flavor (1704.909)
+  + Product: Incredible Chew Candy Strawberry Flavor (1704.909)
+  + Product: Incredible Chewi Candy Apple Flavor (1704.909)
+  + Product: Sweetmint Sugar Free Chewing Gum (1704.1)
+  + Product: Tutti Frutti Sugar Free Chewing Gum (1704.1)
+  + Product: Rainbow Candy (1704.909)
+  + Product: White Compound Chocolate Chew (1704.909)
+  + Product: Candy Assorted Flavor (1704.909)
+  + Product: Caramel Flavoured Sauce (1702.902)
+  + Product: Food Supliments (1704.909)
+  + Product: Food Supplements (1704.909)
+  + Product: Turkish Delight (1704.909)
+  + Product: Beans Coffee (1704.909)
+  + Product: Pasta (1704.909)
+  + Product: Jelly Assorted Flavour (1704.909)
+  + Product: Melody Pops Chupa Chups Candy (1704.909)
+  + Product: Mentos Candy (1704.909)
+  + Product: Mentos Pure Fresh Chewing Gum (1704.1)
+  + Product: Mushroom Coffee Powder (1704.909)
+  + Product: Peppermint Gum (1704.1)
+  + Product: Tiffany Eclairs Candy (1704.909)
+  + Product: Trident Chewing Gum (1704.1)
+  + Product: Trident Sugar Free Chewing Gum (1704.1)
+  + Product: Assorted Confectionery (1704.909)
+  + Product: Fruittella B.Currant (1704.909)
+  + Product: Candy In Retail Essential Pe Pouches (1704.909)
+  + Product: Jelaxy Jelly (1704.909)
+  + Product: Jelly Of Assorted Packing (1704.909)
+  + Product: Toffix Center Filled Fruit Chew (1704.909)
+  + Product: Chewing Gum (1704.1)
+  + Product: Sucrose Solution 10% (With Calibration) (1702.909)
+  + Product: Sucrose Solution 30% (1702.909)
+  + Product: Sucrose Solution 30% (With Calibration) (1702.909)
+  + Product: Takis Crisp & Starburst Fruit Chews (1704.909)
+  + Product: Spice Sample (1704.909)
+  + Product: Sucrose Bioxtra (1701.999)
+  + Product: Jelly Candies (1704.909)
+  + Product: Not Chocolate (1704.909)
+  + Product: Coffee Beans (1704.909)
+  + Product: Hard Confectionary Candy (1704.909)
+  + Product: Hickory Brown P-Ws (E-150D) (1702.909)
+  + Product: Kopiko Candy (1704.909)
+  + Product: Jelly Pop (1704.909)
+  + Product: Lolly Pop (1704.909)
+  + Product: Marshmallow (1704.909)
+  + Product: Polo (1704.909)
+  + Product: Smint Chewing Gum (1704.1)
+  + Product: Sweetener Tablets (1702.909)
+  + Product: Assorted Flavoure Jellies (1704.909)
+  + Product: Yupi Gummy Jelly (1704.909)
+  + Product: Fox Coffe World, Fox Crystal Clear Oval Candy, FoxÆS Crystal Clear Candy, Kopico Coffe Hard Candy (1704.909)
+  + Product: Mixed Goods (1704.909)
+  + Product: Vizyon White Sugar Paste (1704.909)
+  + Product: Fini Jelly (Tapi Magiques Jelly Cola, Wild Strawberries) (1704.909)
+  + Product: Candy/Snack Pack (No Chocolate) (1704.909)
+  + Product: Flavour Ed Sour Candy (1704.909)
+  + Product: Jelly Jummy (1704.909)
+  + Product: Optimum Nutrition Serious Mass Protein Powder Chocolate Flavor (1704.909)
+  + Product: Ramadan Gift Box (1704.909)
+  + Product: Marsh Mallows (1704.909)
+  + Product: Regional Sweets (1704.909)
+  + Product: Sweetzone 2P Sour Happy Bear, Sweetzone 2P Oily Happy Bear, Sweetzone 7P Twin Cherries (1704.909)
+  + Product: Extra Spearmint Gum (1704.1)
+  + Product: Pasta Dioul Candy (1704.909)
+  + Product: Tic Tac Mint (1704.1)
+  + Product: Trident Bubble Gum (1704.1)
+  + Product: Big Babol Filly Folly Candy (1704.909)
+  + Product: Chupa Chups Melody Pop Candy (1704.909)
+  + Product: Chupa Chups Sour Belts Candy (1704.909)
+  + Product: Melody Pops Candy (1704.909)
+  + Product: Nerds Candy (1704.909)
+  + Product: Quality Streets Candy (1704.909)
+  + Product: Skittles Candy (1704.909)
+  + Product: Sugar (Sample) (1702.909)
+  + Product: Moroccan Cookies (1704.909)
+  + Product: Jar Of Honey (1704.909)
+  + Product: Mints Confectionery (1704.909)
+  + Product: Toffee (1704.909)
+  + Product: Airwaves Menthol Gum (1704.1)
+  + Product: Chupa Chups Lollypop (1704.909)
+  + Product: Evliya Soft & Hard Candies (1704.909)
+  + Product: Extra Chewing Gum (1704.1)
+  + Product: Extra Sugarfree Chewing Gum (1704.1)
+  + Product: Hubba Bubba Bubble Gum (1704.1)
+  + Product: Mentos Pure Fresh Gum (1704.1)
+  + Product: Sugar Confectionery (1704.909)
+  + Product: Fat Coated Caramel Candy Piece (1704.909)
+  + Product: Maltose Monohydrate (1702.909)
+  + Product: Mixed Nuts (1704.909)
+  + Product: Assorted Hard Candy (1704.909)
+  + Product: Lactohale 300 Milled Lactose Monohydrate (1702.909)
+  + Product: Cat'S Food Items (1704.909)
+  + Product: Foodstuff Wipes (1704.909)
+  + Product: Power Baby Milk (1704.909)
+  + Product: Topping Sprinkles (1704.909)
+  + Product: Traditional Rolled Peanut Candy / Banana Candy / Crunchy Peanut Brittle (1704.909)
+  + Product: Chocolate Bar (1704.909)
+  + Product: Lactopure (1702.111)
+  + Product: Lemon Drops (1704.909)
+  + Product: Grain Sugar (1701.991)
+  + Product: Tegral Cake Donut (1704.909)
+  + Product: Confectionary Items (1704.909)
+  + Product: Fruitella (1704.909)
+  + Product: Mentos Chewing Gum (1704.1)
+  + Product: Peanut Butter Spread (1702.909)
+  + Product: Sweetener Canderel (1702.909)
+  + Product: Tr Chewing Gum (1704.1)
+  + Product: Chocolate Cereal (1704.909)
+  + Product: Mints (1704.909)
+  + Product: Assorted Candy Toy (1704.909)
+  + Product: Whistle Lollipop Candy (1704.909)
+  + Product: Chocolate Beverage Mix (1704.909)
+  + Product: Maltosweet 150 (1702.19)
+  + Product: Caramelized Sugar Sauce (1702.909)
+  + Product: Kids Black Seed + Elderberry Gummie (1704.909)
+  + Product: Food Supplements, Multivitamins (1704.909)
+  + Product: Jelly, Custard Samples (1704.909)
+  + Product: Easter Chocos Eggs (1704.909)
+  + Product: Gummies (1704.909)
+  + Product: Millionaires Caramel Nh (Rspo Sg) (1702.902)
+  + Product: Caramel Sauce (1702.902)
+  + Product: Food Stuff (1704.909)
+  + Product: Jelly Assorted Varieties (1704.909)
+  + Product: Maynards Jelly Babies (1704.909)
+  + Product: Supertab 11Sd Spray Dried Lactose Monohydrate (1702.909)
+  + Product: Chocolate Kinder (1704.909)
+  + Product: English Biscuits, Cereal, Chocolates (1704.909)
+  + Product: Ferrero Rocher Chocolate (1704.909)
+  + Product: Mini Merry Go Round (1704.909)
+  + Product: Puratos Carat Coverlux û White Chocolate Compound Drops (1702.901)
+  + Product: Meggletose« B 600 (1702.19)
+  + Product: Alpine & Mentos Candy (1704.909)
+  + Product: Brain Blasterz Candy (1704.909)
+  + Product: Brain Blasterz Lollipop (1704.909)
+  + Product: Chups Lollipop (1704.909)
+  + Product: Fat Coated Caramel Candy (1704.909)
+  + Product: Sprinkle Ball (1704.909)
+  + Product: Chewing Mentos (1704.909)
+  + Product: Sweetsbox (1704.909)
+  + Product: Crisps, Sweets (1704.909)
+  + Product: Instant Noodles (1704.909)
+  + Product: Sweated Jelly (1704.909)
+  + Product: Oligofructose Powder (1702.4)
+  + Product: Vitamin & Cereal (1704.909)
+  + Product: Gelatines Jelly (1704.909)
+  + Product: Maxmallow (1704.909)
+  + Product: Pakshilajit Shilajit Resin (1704.909)
+  + Product: Yummy Gummy Jelly (1704.909)
+  + Product: Alpenliebe / Chupa Chups Candy (1704.909)
+  + Product: Alpenliebe / Chupa Chups Lollipop (1704.909)
+  + Product: Baby Formula Milk (1704.909)
+  + Product: Chupa Chup / Mentos Candy (1704.909)
+  + Product: Fruittella Black Currant (1704.909)
+  + Product: Snoepjes Food Stuff (1704.909)
+  + Product: Tiva Cola (1704.909)
+  + Product: Tiva Jelly Multicolor Sticks (1704.909)
+  + Product: Tiva Jelly Rainbow Belts (1704.909)
+  + Product: Tiva Marshmallow Pink & White (1704.909)
+  + Product: Tiva Marshmallow Strawberry (1704.909)
+  + Product: Cadbury Crunchie Chocolate (1704.909)
+  + Product: Coconut Jelly (Assorted Flavor) (1704.909)
+  + Product: Crunchy Caramel (1702.909)
+  + Product: Dextrates Hydrated (1702.3)
+  + Product: Kidzvits Gummy (1704.909)
+  + Product: Lollipop With Popping Candy (1704.909)
+  + Product: Popping Candy (1704.909)
+  + Product: China Candy (1704.909)
+  + Product: Dried Fruits (1704.909)
+  + Product: Gum Polish C (1704.909)
+  + Product: Kopiko Tamarin Candy (1704.909)
+  + Product: Tumeric (1704.909)
+  + Product: Coverlux Compound Drops (1704.901)
+  + Product: Dark Chocolate Lubeca Coca (1704.909)
+  + Product: Emdex (Dextrates) (1702.3)
+  + Product: Food Stuffs (Gift) (1704.909)
+  + Product: Poppin Jelly (1704.909)
+  + Product: Big Babol (1704.1)
+  + Product: Extra Gum (1704.1)
+  + Product: Magic Candy (1704.909)
+  + Product: Mentos Gum (1704.1)
+  + Product: Sourpunk Jelly (1704.909)
+  + Product: Tiffany Deluxe Toffee (1704.909)
+  + Product: Wrigley'S 5 Gum (1704.1)
+  + Product: Fox'S Candy (Assorted Flavor) (1704.909)
+  + Product: Potato Chips (1704.909)
+  + Product: Candy Sample (1704.909)
+  + Product: Food Items (Sample) (1704.909)
+  + Product: Gelatin Gums (Sample) (1704.909)
+  + Product: Japanese Lemon Pop (1704.909)
+  + Product: Gum Chocolates (1704.909)
+  + Product: Chocolate Packet Of Mints (1704.909)
+  + Product: Mint Candy Assorted (1704.909)
+  + Product: Baby Milk (1704.909)
+  + Product: Jelly Assorted Favour (Fini) (1704.909)
+  + Product: Colatta White Compound (1704.909)
+  + Product: Jelly (1704.909)
+  + Product: Marshmallows Assorted (1704.909)
+  + Product: Polac Sugar Paste (1702.909)
+  + Product: Supplements (1704.909)
+  + Product: Candy/Snack Pack (1704.909)
+  + Product: Cleanser Chocolate (1704.909)
+  + Product: Coffee Pods (1704.909)
+  + Product: Dark Chocolate Gift (1704.909)
+  + Product: Similac Baby Formula (1704.909)
+  + Product: Chocolate & Flower Gift (1704.909)
+  + Product: Slim Pasta Onion Seeds (1704.909)
+  + Product: Lontion Candys Kids Gift (1704.909)
+  + Product: Maple Syrup (1702.202)
+  + Product: Poppin Jelly Assorted (1704.909)
+  + Product: Chocolate Boxes (1704.909)
+  + Product: Assorted Flavoured Jelly (1704.909)
+  + Product: Confectionaries (1704.909)
+  + Product: Sweet Marshmallows (Haribo) (1704.909)
+  + Product: Choclate Frogc Christmas Ornament (1704.909)
+  + Product: Cup Instant Noodle (1704.909)
+  + Product: Assorted Flavour Candy (Rinda) (1704.909)
+  + Product: Assorted Candy Toy Shapes (1704.909)
+  + Product: Ark Bars (1704.909)
+  + Product: Blouse Food Stuff (1704.909)
+  + Product: Honey Gift (1704.909)
+  + Product: Shelled Walnut (1704.909)
+  + Product: Sugar (Sample) (1701.139)
+  + Product: Mango Passionfruit Piece (1704.909)
+  + Product: Pet Food And Urinary Care Paste (1704.909)
+  + Product: Cane/Beet Sugar & Chemically Pure Sucrose (Refined, Solid Form) (1701.999)
+  + Product: Kool Aid Orange Drink Mix (1704.909)
+  + Product: Pasta And Supplement (1704.909)
+  + Product: Sucrose Solution 50% (With Calibration) (1702.909)
+  + Product: Chips (1704.909)
+  + Product: Kinder Aero Chocolates & Personal Care Set (1704.909)
+  + Product: Candies - Lollipops (1704.909)
+  + Product: Gula Melaka Mini (1704.909)
+  + Product: Lotte Xylitol Chewing Gum (1704.1)
+  + Product: Hafiz Mustafa Assorted Sweets (1704.909)
+  + Product: Assorted Food Stuff (Almond Biscuits, Candy, Dried Mangoes) (1704.909)
+  + Product: Mentos Gum White Spearmint (1704.1)
+  + Product: Mentos Gum White Tutti Frutti (1704.1)
+  + Product: Assorted Candy Fox & Kopiko (1704.909)
+  + Product: White Chocolate (1704.901)
+  + Product: Cappuccino Candy (Kopiko) (1704.909)
+  + Product: Haw Candy (1704.909)
+  + Product: Orbit Chewing Gum (1704.1)
+  + Product: Pet Food (1704.909)
+  + Product: Potato Starch (1704.909)
+  + Product: Fruittella S.Berry (1704.909)
+  + Product: Yummy Gummy Candy Assorted (1704.909)
+  + Product: Invert Sugar From Pmpsa (1702.909)
+  + Product: Spearmint Chewing Gum (1704.1)
+  + Product: Compri M3 (1701.999)
+  + Product: Confectionry Gift (1704.909)
+  + Product: Sucrose (1702.909)
+  + Product: Almond Milk (1704.909)
+  + Product: Dry Fruit Food Stuff (1704.909)
+  + Product: Pudding Pulver Aromet (1704.909)
+  + Product: Gummy Candy - Peach/Watermelon (1704.909)
+  + Product: Meggletose B600 (1702.111)
+  + Product: Assorted Flavour Candy (1704.909)
+  + Product: Candy (Kopiko) (1704.909)
+  + Product: My Chew Candy Assorted Flavours (1704.909)
+  + Product: Frozen Specialities (Sample) (1704.909)
+  + Product: Praline Pecans / Chocolate Chip Cookie Dough (1704.909)
+  + Product: Etiopia Bombe Lavado Coffee (1704.909)
+  + Product: Food Starch (1704.909)
+  + Product: Hard Candy - Cherry Flavor (1704.909)
+  + Product: Allulose (1702.909)
+  + Product: Assorted Chocolate (1704.909)
+  + Product: Hard Candy - Butterscotch (1704.909)
+  + Product: Isomaltulose (1702.909)
+  + Product: Cacau Show Bar Chocolates (1704.909)
+  + Product: Suglets (1701.999)
+  + Product: Various Sweets (1704.909)
+  + Product: Kitkat Chocolates (1704.909)
+  + Product: Alpenliebe / Mentos Candy (1704.909)
+  + Product: Chupa Chups Jelly Assorted (1704.909)
+  + Product: Chupa Chups Minis Jelly (1704.909)
+  + Product: Fruitella & Big Babol Assorted (1704.909)
+  + Product: Hbc (Isomalt) (1702.909)
+  + Product: Sugar Paste Assorted Colors (1704.909)
+  + Product: Biscuit (Snack) (1704.909)
+  + Product: Candy/Snack Pack (Sugar Free) (1704.909)
+  + Product: Duralac H (1702.909)
+  + Product: Cake Box (Sample) (1704.909)
+  + Product: Candy Toys (1704.909)
+  + Product: Coffee Samples (1704.909)
+  + Product: Praline Pecans (1704.909)
+  + Product: Assorted Gummy Candy (1704.909)
+  + Product: Refined Sugar (Sample) (1701.999)
+  + Product: Food Samples (Probiotics) (1704.909)
+  + Product: Assorted Confectionery Marshmallow (1704.909)
+  + Product: Gum (Sugar Free) (1704.909)
+  + Product: Sucrose (Instant Sugar) (1701.999)
+  + Product: Assorted Bubble Gum Balls (1704.1)
+  + Product: Coffee Flavour Candy (Kopiko) (1704.909)
+  + Product: Jellys Assorted Varieties (1704.909)
+  + Product: Candies And Biscuits (1704.909)
+  + Product: Mentos Sberry (1704.909)
+  + Product: Aromaferm Rye & Malt Ferment (1704.909)
+  + Product: Baby Food (1704.909)
+  + Product: Omani Sweet (1704.909)
+  + Product: Caramel Glaze Pop (1702.902)
+  + Product: Lactose (100 Mesh) (1702.19)
+  + Product: Cadbury Chocolates (1704.909)
+  + Product: Lollies / Lollipops (1704.909)
+  + Product: Candy With Toys Assorted (1704.909)
+  + Product: Chicken Paste (1704.909)
+  + Product: Pasta / Minoxidil & Tretinoin (1704.909)
+  + Product: Netulia Chocolate (1704.909)
+  + Product: Cereal Bars (Sample) (1704.909)
+  + Product: Food Additive (Profina) (1704.909)
+  + Product: Imtiaz Chewing Gum (1704.1)
+  + Product: Sulphur Ammonia Caramel (E150D) (1702.909)
+  + Product: Haribo Gold Bear (1704.909)
+  + Product: Haribo Happy Cola (1704.909)
+  + Product: Haribo Worms (1704.909)
+  + Product: Jeram Mini Fruity Pudding (1704.909)
+  + Product: Glucose Monohydrate Crs (1702.3)
+  + Product: Assorted Candy And Chips (1704.909)
+  + Product: Fox Fruity Mints Candy (1704.909)
+  + Product: Fox Mints Candy (1704.909)
+  + Product: Nom Moms Marshmallow (1704.909)
+  + Product: Cappuccino Candy (1704.909)
+  + Product: D-(+)-Maltose Monohydrate (Bioultra) (1702.909)
+  + Product: Maltose (1702.901)
+  + Product: Gummy (1704.1)
+  + Product: Food Items (1704.909)
+  + Product: Listerine Cool Mint (1704.909)
+  + Product: Gofress Paper Mouth Freshener (1704.909)
+  + Product: Hai Candy / Menta Sugar Free Candy / Foxs Candy (1704.909)
+  + Product: Zafiro White (1704.909)
+  + Product: Agarose (1704.909)
+  + Product: Fresh Breath Papermint Candy (1704.909)
+  + Product: Assorted Shapes Candy Toy (1704.909)
+  + Product: Dextrose Anhydrous Ar (1702.909)
+  + Product: Chua Chups Lollipop (1704.909)
+  + Product: Multi Flavours Candies (1704.909)
+  + Product: Multi Flavours Jelly (1704.909)
+  + Product: Nicorette Fruit Lozenge (1704.1)
+  + Product: Tiva Jelly Bears (1704.909)
+  + Product: Tiva Jelly Cola (1704.909)
+  + Product: Tiva Jelly Fizzy Peach Rings (1704.909)
+  + Product: Tiva Jelly Fizzy Strawberry (1704.909)
+  + Product: Tiva Jelly Fizzy Watermelon (1704.909)
+  + Product: Tiva Jelly Fizzy Worms (1704.909)
+  + Product: Tiva Jelly Mix Fruits (1704.909)
+  + Product: Tiva Jelly Sugared Ponpon (1704.909)
+  + Product: Caramel E150A (Brown, Clear Liquid) (1702.902)
+  + Product: Brown Sugar Dark, Brown Sugar Light, Pure Cane Granulated Sugar, Pure Granulated Sugar (1701.14)
+  + Product: Sprinkle Cake Topping (1704.909)
+  + Product: Maltodextrin De 15-20 (1702.909)
+  + Product: Caramel & Creamy Toffee / Eclairs Toffee (1704.909)
+  + Product: Damel Assorted Flavour Jelly (1704.909)
+  + Product: Vivinal Gos Syrup (1702.909)
+  + Product: Eye Ball Soft Gummy Candy (1704.909)
+  + Product: Food Items Noodles Etc (1704.909)
+  + Product: Gummy Jellies (1704.909)
+  + Product: My Chew Candy (1704.909)
+  + Product: Glucose Bioultra Anhydrous (1702.3)
+  + Product: Paper Mint Candy (1704.909)
+  + Product: Soft Gummy / Paper Mint / Jelly Candy (1704.909)
+  + Product: Feastable Chocolates (1704.909)
+  + Product: Candy Assorted Fox (1704.909)
+  + Product: Glucose Monohydrate (1702.3)
+  + Product: Original Konnyaku Jelly Ball (1704.909)
+  + Product: Glucose Monohydrate (1702.4)
+  + Product: Kopiko Assorted Flavour Candy (1704.909)
+  + Product: Assorted Flavoured/Sizes Candy (1704.909)
+  + Product: Jolly Dolly Soft Candies (1704.909)
+  + Product: Dulceplus Jelly Assorted Flavors (1704.909)
+  + Product: Kopiko Candy Real Coffee / Sugar Free (1704.909)
+  + Product: Maltosweet 150 (1702.909)
+  + Product: Quality Street Candies (1704.909)
+  + Product: Cake Sweet Sprinkles (1704.909)
+  + Product: Haribo Assorted Jelly (1704.909)
+  + Product: Haribo Kids Jelly (1704.909)
+  + Product: Bumble Bee Fruit Fudge Gummies (1704.909)
+  + Product: Bumble Bee Ice Blaster Mint Candy (1704.909)
+  + Product: Soft Sugar Free Bubble Gum (1704.1)
+  + Product: Fruit Bites Banana Jelly Candy (1704.909)
+  + Product: Refined Sugar (1701.992)
+  Batch 1: 1000/2232
+  Batch 2: 2000/2232
+  Batch 3: 2232/2232
+python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python manage.py 
+populate_tradelens 
+--clear 
+--import-file 
+"c:\Users\D ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Traceba   
+ ck (most recent     
+call last)::Stri    
+ng) [], RemoteEx    
+ception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  File "C:\Users\Dell
+\Documents\ZaraiLink\
+backend\manage.py", 
+line 21, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\Dell
+\Documents\ZaraiLink\
+backend\manage.py", 
+line 17, in main
+    execute_from_comm
+and_line(sys.argv)
+    ~~~~~~~~~~~~~~~~~
+~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Dell
+\AppData\Local\Progra
+ms\Python\Python313\L
+ib\site-packages\djan
+go\core\management\__
+init__.py", line 
+442, in execute_from_
+command_line
+    utility.execute()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\Dell
+\AppData\Local\Progra
+ms\Python\Python313\L
+ib\site-packages\djan
+go\core\management\__
+init__.py", line 
+436, in execute
+    self.fetch_comman
+d(subcommand).run_fro
+m_argv(self.argv)
+    ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~^^^^^^^^^^^
+  File "C:\Users\Dell
+\AppData\Local\Progra
+ms\Python\Python313\L
+ib\site-packages\djan
+go\core\management\ba
+se.py", line 412, in 
+run_from_argv
+    
+self.execute(*args, 
+**cmd_options)
+    ~~~~~~~~~~~~^^^^^
+^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dell
+\AppData\Local\Progra
+ms\Python\Python313\L
+ib\site-packages\djan
+go\core\management\ba
+se.py", line 458, in 
+execute
+    output = 
+self.handle(*args, 
+**options)
+  File "C:\Users\Dell
+\Documents\ZaraiLink\
+backend\trade_lens\ma
+nagement\commands\pop
+ulate_tradelens.py", 
+line 88, in handle
+    self.stdout.write
+(self.style.SUCCESS(f
+"  \u2192 {count} 
+IMPORT transactions 
+created"))
+    ~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^
+  File "C:\Users\Dell
+\AppData\Local\Progra
+ms\Python\Python313\L
+ib\site-packages\djan
+go\core\management\ba
+se.py", line 180, in 
+write
+    self._out.write(s
+tyle_func(msg))
+    ~~~~~~~~~~~~~~~^^
+^^^^^^^^^^^^^^^
+  File "C:\Users\Dell
+\AppData\Roaming\Pyth
+on\Python313\site-pac
+kages\colorama\ansito
+win32.py", line 47, 
+in write
+    self.__convertor.
+write(text)
+    ~~~~~~~~~~~~~~~~~
+~~~~~^^^^^^
+  File "C:\Users\Dell
+\AppData\Roaming\Pyth
+on\Python313\site-pac
+kages\colorama\ansito
+win32.py", line 177, 
+in write
+    self.write_and_co
+nvert(text)
+    ~~~~~~~~~~~~~~~~~
+~~~~~^^^^^^
+  File "C:\Users\Dell
+\AppData\Roaming\Pyth
+on\Python313\site-pac
+kages\colorama\ansito
+win32.py", line 205, 
+in write_and_convert
+    self.write_plain_
+text(text, cursor, 
+len(text))
+    ~~~~~~~~~~~~~~~~~
+~~~~^^^^^^^^^^^^^^^^^
+^^^^^^^^
+  File "C:\Users\Dell
+\AppData\Roaming\Pyth
+on\Python313\site-pac
+kages\colorama\ansito
+win32.py", line 210, 
+in write_plain_text
+    self.wrapped.writ
+e(text[start:end])
+    ~~~~~~~~~~~~~~~~~
+~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Dell
+\AppData\Local\Progra
+ms\Python\Python313\L
+ib\encodings\cp1252.p
+y", line 19, in 
+encode
+    return codecs.cha
+rmap_encode(input,sel
+f.errors,encoding_tab
+le)[0]
+           ~~~~~~~~~~
+~~~~~~~~~~~^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^
+UnicodeEncodeError: 
+'charmap' codec 
+can't encode 
+character '\u2192' 
+in position 2: 
+character maps to 
+<undefined>

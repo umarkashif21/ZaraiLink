@@ -158,6 +158,42 @@ class SearchViewSet(viewsets.ViewSet):
                 subcategory_ids = [m['id'] for m in matched_subcategories]
         # else: subcategory_ids stays None — filter-only query, search all products
 
+        # 1.5 Variant / ProductItem Logic
+        product_item_filter = None
+        
+        # A. Explicit Filter from Sidebar (Query Param)
+        # Supports ?product_item=123
+        req_item_id = request.query_params.get('product_item')
+        if req_item_id:
+            try:
+                product_item_filter = [int(req_item_id)]
+            except ValueError:
+                pass
+                
+        # B. Auto-Filter from NLP (Specific Search)
+        # If user searched "Dextrose Anhydrous", we might have multiple matches (dupes).
+        # We must collect matched variants from ALL subcategories that matched.
+        if not product_item_filter and matched_subcategories:
+             auto_variants = []
+             # Collect from all subcategories we are about to search
+             # (i.e. those that made it into subcategory_ids)
+             target_subcat_ids = set(subcategory_ids) if subcategory_ids else set()
+             
+             for match in matched_subcategories:
+                 if match['id'] in target_subcat_ids and match.get('matched_variants'):
+                     auto_variants.extend(match['matched_variants'])
+            
+             if auto_variants:
+                 product_item_filter = list(set(auto_variants)) # Unique IDs
+
+        # C. Fetch Available Variants for Sidebar
+        # For the found subcategories, get all their items to show as filter options
+        available_variants = []
+        if subcategory_ids:
+            from trade_data.models import ProductItem
+            items = ProductItem.objects.filter(sub_category_id__in=subcategory_ids).values('id', 'name', 'sub_category_id')
+            available_variants = list(items)
+
         aggregator = SupplierAggregator()
         # Pass parser filters to aggregator
         results = aggregator.get_suppliers_for_subcategories(
@@ -167,7 +203,8 @@ class SearchViewSet(viewsets.ViewSet):
             country_filter=country_filter,
             price_filter=price_filter,
             volume_filter=volume_req,
-            time_filter=time_filter
+            time_filter=time_filter,
+            product_item_filter=product_item_filter # NEW
         )
 
         # 3. Ranking: LTR Ensemble
@@ -198,6 +235,8 @@ class SearchViewSet(viewsets.ViewSet):
             "query": query,
             "parsed_query": parsed_query, # Debug info
             "matched_subcategories": matched_subcategories,
+            "available_variants": available_variants, # For Sidebar
+            "active_variant": product_item_filter[0] if product_item_filter else None,
             "results": ranked_results,
             "market_snapshot": market_snapshot,
             "count": len(ranked_results)
@@ -216,37 +255,44 @@ class SearchViewSet(viewsets.ViewSet):
             return Response({"error": "Params 'name' and 'query' are required"}, status=400)
 
         # 1. Re-match query to get context (subcategory IDs)
-        # In a real app, we might pass subcategory_id directly from frontend to save NLP step
+        # Use Interpreter to extract "dextrose" from "Import dextrose from China..."
+        interpreter = QueryInterpreter()
+        parsed_query = interpreter.parse(query)
+        nlp_search_term = parsed_query.get('product') or query
+
         matcher = QueryMatcher()
-        matched_subcategories = matcher.match(query)
+        matched_subcategories = matcher.match(nlp_search_term)
         subcategory_ids = [m['id'] for m in matched_subcategories]
         
         # 2. Get Detail Stats
+        # 2. Get Detail Stats based on Intent
+        intent = parsed_query.get('intent', 'BUY')
         aggregator = SupplierAggregator()
-        details = aggregator.get_supplier_details(seller_name, subcategory_ids)
+        
+        if intent == 'SELL':
+            # User is selling, so we are looking for a BUYER
+            details = aggregator.get_buyer_details(seller_name, subcategory_ids)
+        else:
+            # User is buying, so we are looking for a SUPPLIER
+            details = aggregator.get_supplier_details(seller_name, subcategory_ids)
         
         if not details:
-            return Response({"error": "Supplier not found for this product"}, status=404)
+            return Response({"error": f"{'Buyer' if intent == 'SELL' else 'Supplier'} not found for this product"}, status=404)
             
         # 3. Get Comparables
-        # We need to fetch 'all suppliers' for this product to find comparables
-        # Optimization: We could cache this or have a specialized query
-        all_suppliers = aggregator.get_suppliers_for_subcategories(subcategory_ids)
+        # Fetch appropriate candidates (Buyers or Suppliers)
+        all_candidates = aggregator.get_suppliers_for_subcategories(subcategory_ids, intent=intent)
         
-        # Rank them using LTR so comparables are high quality
+        # Rank them using LTR
         from .services.ranking_ltr import RankingEnsemble
         ranker = RankingEnsemble()
-        # Parse query might be minimal here, construct dummy if needed or pass context
-        # If 'query' param exists, parse it.
-        from .services.query_parser import QueryInterpreter
-        context_query = QueryInterpreter().parse(query) if query else {}
+        context_query = parsed_query if parsed_query else {}
         
-        ranked_all = ranker.rank_candidates(all_suppliers, context_query)
+        ranked_candidates = ranker.rank_candidates(all_candidates, context_query)
         
         finder = ComparableFinder()
-        comparables = finder.find_comparables(seller_name, subcategory_ids, ranked_all)
+        comparables = finder.find_comparables(seller_name, subcategory_ids, ranked_candidates)
         
-
         # 4. Market Context (Dynamic)
         market_context = {
             "sentiment": "Neutral",
@@ -257,6 +303,8 @@ class SearchViewSet(viewsets.ViewSet):
             first = details['sparkline'][0]['price']
             last = details['sparkline'][-1]['price']
             
+            # For Buyers, high price is good? Or bad?
+            # Typically price trend is market price.
             if first > 0:
                 change = (last - first) / first
                 if change > 0.05:
@@ -267,9 +315,10 @@ class SearchViewSet(viewsets.ViewSet):
                     market_context['sentiment'] = "Bearish"
 
         return Response({
-            "supplier": details,
+            "supplier": details, # Frontend expects 'supplier' key for now, we can rename or keep it
             "comparables": comparables,
-            "market_context": market_context
+            "market_context": market_context,
+            "type": "BUYER" if intent == 'SELL' else "SUPPLIER"
         })
 
     @action(detail=False, methods=['get'])
