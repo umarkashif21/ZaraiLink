@@ -4,12 +4,13 @@ import { Search } from 'lucide-react';
 
 const SearchHome = () => {
     const [query, setQuery] = useState('');
+    const [scope, setScope] = useState('WORLDWIDE');
     const navigate = useNavigate();
 
     const handleSearch = (e) => {
         e.preventDefault();
         if (query.trim()) {
-            navigate(`/search/results?q=${encodeURIComponent(query)}`);
+            navigate(`/search/results?q=${encodeURIComponent(query)}&scope=${scope}`);
         }
     };
 
@@ -48,6 +49,31 @@ const SearchHome = () => {
                         </button>
                     </div>
                 </form>
+
+                {/* Scope Toggle */}
+                <div className="flex justify-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setScope('WORLDWIDE')}
+                        className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'WORLDWIDE'
+                                ? 'bg-indigo-600 text-white shadow-md'
+                                : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500'
+                            }`}
+                    >
+                        Worldwide
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setScope('PAKISTAN')}
+                        className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'PAKISTAN'
+                                ? 'bg-indigo-600 text-white shadow-md'
+                                : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500'
+                            }`}
+                    >
+                        Pakistan
+                    </button>
+                </div>
+
 
                 {/* Intent Pills */}
                 <div className="flex flex-wrap justify-center gap-3">
