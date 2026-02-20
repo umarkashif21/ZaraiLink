@@ -260,7 +260,8 @@ class SupplierAggregator:
                 "recent_buyers": recent_buyers
             },
             "sparkline": sparkline,
-            "history": history
+            "history": history,
+            "intelligence": self._calculate_intelligence(queryset, is_buyer=False, entity_name=seller_name)
         }
 
     def get_buyer_details(self, buyer_name, subcategory_ids):
@@ -382,5 +383,104 @@ class SupplierAggregator:
                 "recent_suppliers": recent_suppliers
             },
             "sparkline": sparkline,
-            "history": history
+            "history": history,
+            "intelligence": self._calculate_intelligence(queryset, is_buyer=True, entity_name=buyer_name)
+        }
+
+    def _calculate_intelligence(self, queryset, is_buyer=False, entity_name=""):
+        """
+        Calculates dynamic intelligence metrics based on a queryset of transactions.
+        """
+        if not queryset.exists():
+            return None
+
+        # 1. Repeat Ratio
+        # Counterparty field depends on perspective
+        cp_field = 'seller' if is_buyer else 'buyer'
+        total_tx = queryset.count()
+        
+        # Count counterparties with more than 1 transaction in this data
+        cp_counts = queryset.values(cp_field).annotate(count=Count('id')).filter(count__gt=1)
+        repeat_counts_sum = sum(c['count'] for c in cp_counts)
+        
+        repeat_ratio = round((repeat_counts_sum / total_tx) * 100) if total_tx > 0 else 0
+        
+        repeat_label = "Strong" if repeat_ratio > 70 else "Moderate" if repeat_ratio > 30 else "Low"
+
+        # 2. Concentration Ratio (Top 3 counterparties by volume)
+        total_vol = queryset.aggregate(total=Sum('qty_mt'))['total'] or 0
+        top_cp_vol = queryset.values(cp_field).annotate(vol=Sum('qty_mt')).order_by('-vol')[:3]
+        top_3_vol = sum(c['vol'] for c in top_cp_vol)
+        
+        concentration_ratio = round((top_3_vol / total_vol) * 100) if total_vol > 0 else 0
+        concentration_label = "High" if concentration_ratio > 60 else "Moderate" if concentration_ratio > 30 else "Low"
+
+        # 3. Pricing Label
+        # Based on price trend and volatility
+        # Cast to float — Django Avg() returns Decimal which breaks math.sqrt / division
+        avg_price = float(queryset.aggregate(avg=Avg('usd_per_mt'))['avg'] or 0)
+        prices = [float(p) for p in queryset.values_list('usd_per_mt', flat=True)]
+        
+        # Simple Volatility (Std Dev approximation)
+        if len(prices) > 1:
+            variance = sum((p - avg_price) ** 2 for p in prices) / len(prices)
+            volatility = math.sqrt(variance)
+            vol_ratio = volatility / avg_price if avg_price > 0 else 0
+        else:
+            vol_ratio = 0
+
+        # Price Trend (Latest vs First in the dataset)
+        latest_tx = queryset.order_by('-reporting_date').first()
+        earliest_tx = queryset.order_by('reporting_date').first()
+        
+        if latest_tx and earliest_tx and latest_tx.qty_mt > 0:
+            price_change = (latest_tx.usd_per_mt - earliest_tx.usd_per_mt) / earliest_tx.usd_per_mt if earliest_tx.usd_per_mt > 0 else 0
+        else:
+            price_change = 0
+
+        if is_buyer:
+            # Buyer perspective: Price Sensitivity
+            if vol_ratio > 0.15: pricing_label = "Opportunistic"
+            elif price_change < -0.05: pricing_label = "High Sensitivity"
+            else: pricing_label = "Stable Procurement"
+        else:
+            # Supplier perspective: Pricing Power
+            if price_change > 0.05 and repeat_ratio > 50: pricing_label = "Premium"
+            elif price_change < -0.05: pricing_label = "Competitive"
+            else: pricing_label = "Stable"
+
+        # 4. Momentum Label
+        # Based on shipment growth in last 90 days vs previous 90
+        today = datetime.date.today()
+        last_90 = today - datetime.timedelta(days=90)
+        prev_90 = today - datetime.timedelta(days=180)
+        
+        vol_recent = queryset.filter(reporting_date__gte=last_90).aggregate(s=Sum('qty_mt'))['s'] or 0
+        vol_prev = queryset.filter(reporting_date__gte=prev_90, reporting_date__lt=last_90).aggregate(s=Sum('qty_mt'))['s'] or 0
+        
+        growth = (vol_recent - vol_prev) / vol_prev if vol_prev > 0 else 0
+        
+        if growth > 0.1: momentum_label = "Growing"
+        elif growth < -0.1: momentum_label = "Declining"
+        else: momentum_label = "Stable"
+        
+        # If no recent volume but has history
+        if vol_recent == 0 and total_vol > 0:
+            momentum_label = "Declining"
+
+        # 5. Generated Summary
+        summary = ""
+        if is_buyer:
+             summary = f"is a {momentum_label.lower()} buyer with {concentration_label.lower()} supplier concentration. They show {pricing_label.lower()} behavior in recent transactions."
+        else:
+             summary = f"maintains a {momentum_label.lower()} market position with {repeat_label.lower()} customer loyalty and {pricing_label.lower()} pricing characteristics."
+
+        return {
+            "repeat_ratio": repeat_ratio,
+            "repeat_label": repeat_label,
+            "concentration_ratio": concentration_ratio,
+            "concentration_label": concentration_label,
+            "pricing_label": pricing_label,
+            "momentum_label": momentum_label,
+            "generated_summary": summary
         }

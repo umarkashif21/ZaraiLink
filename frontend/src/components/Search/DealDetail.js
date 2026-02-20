@@ -11,9 +11,93 @@ const DealDetail = () => {
     const query = searchParams.get('q') || '';
     const navigate = useNavigate();
 
+    // ── Styling helpers for intelligence labels ──────────────────────────────
+    const labelColor = (label) => {
+        if (!label) return 'bg-gray-100 text-gray-500';
+        const l = label.toLowerCase();
+        if (['strong', 'growing', 'premium', 'low'].includes(l)) return 'bg-emerald-100 text-emerald-700';
+        if (['moderate', 'stable', 'stable procurement', 'opportunistic'].includes(l)) return 'bg-amber-100 text-amber-700';
+        if (['low', 'declining', 'high sensitivity', 'high', 'competitive'].includes(l)) return 'bg-red-100 text-red-700';
+        return 'bg-indigo-100 text-indigo-700';
+    };
+
+    const IndicatorCard = ({ title, value, label }) => (
+        <div style={{
+            background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)',
+            border: '1px solid #bbf7d0',
+            borderRadius: '1rem',
+            padding: '1.25rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.4rem',
+            boxShadow: '0 2px 8px rgba(16,185,129,0.07)'
+        }}>
+            <p style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280' }}>{title}</p>
+            <p style={{ fontSize: '1.6rem', fontWeight: 900, color: '#111827', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>{value || '—'}</p>
+            {label && (
+                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full w-fit ${labelColor(label)}`}>{label}</span>
+            )}
+        </div>
+    );
+
+    const IntelligenceBox = ({ isBuyer, intelligence, entityName }) => {
+        if (!intelligence) return null;
+        return (
+            <div style={{
+                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                border: '2px solid #6ee7b7',
+                borderRadius: '1.25rem',
+                padding: '2rem',
+                boxShadow: '0 4px 24px rgba(16,185,129,0.10)'
+            }}>
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                    <span style={{ background: '#059669', borderRadius: '50%', padding: '0.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <CheckCircle size={16} color="white" />
+                    </span>
+                    <h4 style={{ fontWeight: 900, fontSize: '1.1rem', color: '#064e3b', margin: 0 }}>
+                        {isBuyer ? 'Buyer Intelligence Snapshot' : 'Supplier Intelligence Snapshot'}
+                    </h4>
+                    <span style={{ marginLeft: 'auto', fontSize: '0.65rem', fontWeight: 700, color: '#059669', background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '999px', padding: '0.2rem 0.75rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Live Data</span>
+                </div>
+                {/* Summary */}
+                <p style={{ color: '#065f46', fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '1.5rem', fontWeight: 500 }}>
+                    <strong style={{ fontWeight: 800 }}>{entityName}</strong>{' '}{intelligence.generated_summary || 'Dynamic intelligence profile based on verified transaction data.'}
+                </p>
+                {/* Cards Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.875rem' }} className="md:grid-cols-4">
+                    <IndicatorCard
+                        title={isBuyer ? 'Repeat Suppliers' : 'Repeat Buyers'}
+                        value={intelligence.repeat_ratio != null ? `${intelligence.repeat_ratio}%` : '—'}
+                        label={intelligence.repeat_label}
+                    />
+                    <IndicatorCard
+                        title={isBuyer ? 'Supplier Concentration' : 'Buyer Concentration'}
+                        value={intelligence.concentration_ratio != null ? `${intelligence.concentration_ratio}%` : '—'}
+                        label={intelligence.concentration_label}
+                    />
+                    <IndicatorCard
+                        title={isBuyer ? 'Price Sensitivity' : 'Pricing Power'}
+                        value={intelligence.pricing_label}
+                    />
+                    <IndicatorCard
+                        title={isBuyer ? 'Procurement Momentum' : 'Momentum'}
+                        value={intelligence.momentum_label}
+                    />
+                </div>
+            </div>
+        );
+    };
+
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // ── Filter state ─────────────────────────────────────────────────────────
+    const [filterDateRange, setFilterDateRange] = useState('all');
+    const [filterCountry, setFilterCountry] = useState('all');
+    const [filterVolMax, setFilterVolMax] = useState(null);   // set after data loads
+    const [filterPriceMax, setFilterPriceMax] = useState(null); // set after data loads
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -31,6 +115,42 @@ const DealDetail = () => {
         };
         if (name) fetchDetails();
     }, [name, query]);
+
+    // ── Derived filter bounds (computed once data loads) ──────────────────────
+    const allHistory = data?.supplier?.history || [];
+    const volMax = allHistory.length > 0 ? Math.ceil(Math.max(...allHistory.map(t => t.quantity))) : 10000;
+    const priceMax = allHistory.length > 0 ? Math.ceil(Math.max(...allHistory.map(t => t.price))) : 5000;
+
+    // Initialise slider ceilings lazily after data arrives
+    const effectiveVolMax = filterVolMax ?? volMax;
+    const effectivePriceMax = filterPriceMax ?? priceMax;
+
+    // ── Filtering logic ───────────────────────────────────────────────────────
+    const getDateCutoff = () => {
+        const now = new Date();
+        if (filterDateRange === '3m') return new Date(now.setMonth(now.getMonth() - 3));
+        if (filterDateRange === '6m') return new Date(now.setMonth(now.getMonth() - 6));
+        if (filterDateRange === '12m') return new Date(now.setFullYear(now.getFullYear() - 1));
+        return null;
+    };
+
+    const filteredHistory = allHistory.filter(tx => {
+        const country = tx.origin_country || tx.country || tx.destination_country || '';
+        const txDate = tx.date ? new Date(tx.date) : null;
+        const cutoff = getDateCutoff();
+        if (cutoff && txDate && txDate < cutoff) return false;
+        if (filterCountry !== 'all' && country !== filterCountry) return false;
+        if (tx.quantity > effectiveVolMax) return false;
+        if (tx.price > effectivePriceMax) return false;
+        return true;
+    });
+
+    const resetFilters = () => {
+        setFilterDateRange('all');
+        setFilterCountry('all');
+        setFilterVolMax(null);
+        setFilterPriceMax(null);
+    };
 
     if (loading) return <div className="flex justify-center items-center min-h-screen text-gray-500 font-medium">Loading details...</div>;
     if (error) return <div className="flex justify-center items-center min-h-screen text-red-500 font-medium">{error}</div>;
@@ -162,46 +282,83 @@ const DealDetail = () => {
                     {/* LEFT SIDEBAR (FILTERS & INSIGHTS) - Cols 3/12 */}
                     <div className="lg:col-span-3 space-y-6">
 
-                        {/* Filters - Reverted to clean style */}
-                        <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                        {/* Filters */}
+                        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Filters</h3>
-                                <button className="text-xs text-gray-500 hover:text-emerald-600 flex items-center gap-1 font-medium transition-colors">
-                                    Refresh
-                                </button>
+                                <button
+                                    onClick={resetFilters}
+                                    className="text-xs text-emerald-600 hover:text-emerald-800 font-bold transition-colors"
+                                >Reset</button>
                             </div>
                             <div className="space-y-5">
+                                {/* Date Range */}
                                 <div>
                                     <label className="text-xs font-bold text-gray-600 block mb-2">Date Range</label>
-                                    <select className="w-full text-sm border border-gray-300 rounded-md shadow-sm focus:border-emerald-500 focus:ring-emerald-500 bg-gray-50 py-2">
-                                        <option>Last 3 Months</option>
-                                        <option>Last 6 Months</option>
-                                        <option>Last 12 Months</option>
-                                        <option>All Time</option>
+                                    <select
+                                        value={filterDateRange}
+                                        onChange={e => setFilterDateRange(e.target.value)}
+                                        className="w-full text-sm border border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 bg-gray-50 py-2 px-2"
+                                    >
+                                        <option value="all">All Time</option>
+                                        <option value="3m">Last 3 Months</option>
+                                        <option value="6m">Last 6 Months</option>
+                                        <option value="12m">Last 12 Months</option>
                                     </select>
                                 </div>
+                                {/* Country */}
                                 <div>
                                     <label className="text-xs font-bold text-gray-600 block mb-2">{labels.countries}</label>
-                                    <select className="w-full text-sm border border-gray-300 rounded-md shadow-sm focus:border-emerald-500 focus:ring-emerald-500 bg-gray-50 py-2">
-                                        <option>All Countries</option>
+                                    <select
+                                        value={filterCountry}
+                                        onChange={e => setFilterCountry(e.target.value)}
+                                        className="w-full text-sm border border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 bg-gray-50 py-2 px-2"
+                                    >
+                                        <option value="all">All Countries</option>
                                         {supplier.filters?.countries?.map((c, idx) => (
                                             <option key={idx} value={c}>{c}</option>
-                                        )) || <option disabled>No countries</option>}
+                                        ))}
                                     </select>
                                 </div>
+                                {/* Volume Range */}
                                 <div>
-                                    <label className="text-xs font-bold text-gray-600 block mb-2 flex justify-between">
+                                    <label className="text-xs font-bold text-gray-600 flex justify-between mb-2">
                                         <span>Volume Range (MT)</span>
+                                        <span className="text-emerald-600 font-mono">≤ {effectiveVolMax.toLocaleString()}</span>
                                     </label>
-                                    <input type="range" className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                                    <input
+                                        type="range" min={0} max={volMax} step={Math.max(1, Math.round(volMax / 100))}
+                                        value={effectiveVolMax}
+                                        onChange={e => setFilterVolMax(Number(e.target.value))}
+                                        className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                    />
+                                    <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                                        <span>0</span><span>{volMax.toLocaleString()}</span>
+                                    </div>
                                 </div>
+                                {/* Price Range */}
                                 <div>
-                                    <label className="text-xs font-bold text-gray-600 block mb-2 flex justify-between">
+                                    <label className="text-xs font-bold text-gray-600 flex justify-between mb-2">
                                         <span>Price Range ($/MT)</span>
+                                        <span className="text-emerald-600 font-mono">≤ ${effectivePriceMax.toLocaleString()}</span>
                                     </label>
-                                    <input type="range" className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                                    <input
+                                        type="range" min={0} max={priceMax} step={Math.max(1, Math.round(priceMax / 100))}
+                                        value={effectivePriceMax}
+                                        onChange={e => setFilterPriceMax(Number(e.target.value))}
+                                        className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                    />
+                                    <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                                        <span>$0</span><span>${priceMax.toLocaleString()}</span>
+                                    </div>
                                 </div>
                             </div>
+                            {/* Active filter count badge */}
+                            {(filterDateRange !== 'all' || filterCountry !== 'all' || filterVolMax !== null || filterPriceMax !== null) && (
+                                <p className="mt-4 text-xs text-emerald-700 font-bold text-center">
+                                    {filteredHistory.length} of {allHistory.length} rows shown
+                                </p>
+                            )}
                         </div>
 
                         {/* Quick Stats - Reverted to clean style */}
@@ -261,12 +418,15 @@ const DealDetail = () => {
                             <div className="px-6 py-5 border-b-2 border-gray-100 flex justify-between items-center bg-gray-50">
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900">Historical Shipments</h3>
-                                    <p className="text-sm text-gray-500 font-medium">Verified transaction history</p>
+                                    <p className="text-sm text-gray-500 font-medium">
+                                        Showing <span className="font-bold text-gray-800">{filteredHistory.length}</span> of <span className="font-bold text-gray-800">{allHistory.length}</span> verified transactions
+                                    </p>
                                 </div>
                             </div>
-                            <div className="overflow-x-auto">
+                            {/* Fixed-height scrollable table */}
+                            <div style={{ maxHeight: '480px', overflowY: 'auto', overflowX: 'auto' }}>
                                 <table className="w-full text-left text-sm text-gray-600">
-                                    <thead className="bg-white text-gray-500 font-bold uppercase text-xs tracking-wider border-b-2 border-gray-100">
+                                    <thead className="text-gray-500 font-bold uppercase text-xs tracking-wider border-b-2 border-gray-100 sticky top-0 bg-white z-10">
                                         <tr>
                                             <th className="px-6 py-4">{labels.tableEntity}</th>
                                             <th className="px-6 py-4">{labels.tableOrigin}</th>
@@ -276,7 +436,7 @@ const DealDetail = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
-                                        {supplier.history.slice(0, 10).map((tx, idx) => (
+                                        {filteredHistory.length > 0 ? filteredHistory.map((tx, idx) => (
                                             <tr key={tx.id || idx} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4 font-bold text-gray-900">{tx.seller || tx.buyer || 'Unknown'}</td>
                                                 <td className="px-6 py-4 font-medium">{tx.origin_country || tx.country || tx.destination_country}</td>
@@ -288,40 +448,30 @@ const DealDetail = () => {
                                                 </td>
                                                 <td className="px-6 py-4 text-right font-medium text-gray-500 font-sans">{tx.date}</td>
                                             </tr>
-                                        ))}
+                                        )) : (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-10 text-center text-gray-400 font-medium">
+                                                    No transactions match the current filters.
+                                                </td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-
-                        {/* Insights Box */}
-                        <div className="action-card bg-emerald-50 border-emerald-100" style={{ padding: '2rem', cursor: 'default', background: '#ecfdf5', borderColor: '#d1fae5' }}>
-                            <h4 className="font-bold text-emerald-900 mb-3 text-lg flex items-center gap-2">
-                                <span className="bg-emerald-200 p-1 rounded-full text-emerald-700"><CheckCircle size={16} /></span>
-                                {labels.insightTitle}
-                            </h4>
-                            <p className="text-emerald-800 mb-6 leading-relaxed font-medium">
-                                <span className="font-bold">{supplier.name}</span> {labels.insightText}
-                            </p>
-                            <div className="grid grid-cols-4 gap-4 text-center">
-                                <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
-                                    <p className="text-xs text-gray-500 uppercase mb-1 font-bold">{isBuyer ? 'Order Frequency' : 'Reliability Score'}</p>
-                                    <p className="text-2xl font-bold text-gray-900 font-sans">High</p>
-                                </div>
-                                <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
-                                    <p className="text-xs text-gray-500 uppercase mb-1 font-bold">{isBuyer ? 'Return Rate' : 'On-Time Delivery'}</p>
-                                    <p className="text-2xl font-bold text-gray-900 font-sans">98%</p>
-                                </div>
-                                <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
-                                    <p className="text-xs text-gray-500 uppercase mb-1 font-bold">{isBuyer ? 'Repeat Suppliers' : 'Repeat Buyers'}</p>
-                                    <p className="text-2xl font-bold text-gray-900 font-sans">82%</p>
-                                </div>
-                                <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
-                                    <p className="text-xs text-gray-500 uppercase mb-1 font-bold">Market Position</p>
-                                    <p className="text-2xl font-bold text-gray-900 font-sans">#1</p>
-                                </div>
+                            {/* Footer: total count */}
+                            <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 text-center">
+                                <p className="text-xs text-gray-400 font-medium">
+                                    {filteredHistory.length} transaction{filteredHistory.length !== 1 ? 's' : ''} • scroll to see all
+                                </p>
                             </div>
                         </div>
+
+                        {/* Intelligence Box */}
+                        <IntelligenceBox
+                            isBuyer={isBuyer}
+                            intelligence={supplier.intelligence}
+                            entityName={supplier.name}
+                        />
 
                         {/* Comparables */}
                         <div>
