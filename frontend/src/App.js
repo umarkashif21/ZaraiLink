@@ -126,11 +126,7 @@ function App() {
                 { }
                 <Route
                   path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
+                  element={<Dashboard />}
                 />
 
                 { }
@@ -286,27 +282,15 @@ function App() {
                 {/* Search Module Routes */}
                 <Route
                   path="/search"
-                  element={
-                    <ProtectedRoute>
-                      <SearchHome />
-                    </ProtectedRoute>
-                  }
+                  element={<SearchHome />}
                 />
                 <Route
                   path="/search/results"
-                  element={
-                    <ProtectedRoute>
-                      <SearchResults />
-                    </ProtectedRoute>
-                  }
+                  element={<SearchResults />}
                 />
                 <Route
                   path="/search/supplier/:name"
-                  element={
-                    <ProtectedRoute>
-                      <DealDetail />
-                    </ProtectedRoute>
-                  }
+                  element={<DealDetail />}
                 />
                 { }
                 <Route
