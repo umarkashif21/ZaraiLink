@@ -1,439 +1,441 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
-import { SkeletonCard } from '../Common/Skeleton';
 import EmptyState from '../Common/EmptyState';
 import Pagination from '../Common/Pagination';
-import SortSelector from '../Common/SortSelector';
 import ExportButton from '../Common/ExportButton';
 import Breadcrumb from '../Common/Breadcrumb';
 import WatchlistButton from '../Common/WatchlistButton';
 import useWatchlist from '../../hooks/useWatchlist';
 import useDebounce from '../../hooks/useDebounce';
-import { isNA, formatCurrency, formatPercent } from '../../utils/formatUtils';
 import './TradeIntelligence.css';
+
+// Company type badge colours
+const TYPE_COLORS = {
+  'Pakistani Buyer': { bg: '#dbeafe', color: '#1d4ed8', label: 'PK Buyer' },
+  'Pakistani Seller': { bg: '#dcfce7', color: '#15803d', label: 'PK Seller' },
+  'Pakistani Trader': { bg: '#fef9c3', color: '#854d0e', label: 'PK Trader' },
+  'Foreign Buyer': { bg: '#fce7f3', color: '#9d174d', label: 'FOR Buyer' },
+  'Foreign Seller': { bg: '#ede9fe', color: '#6d28d9', label: 'FOR Seller' },
+};
+
+const COMPANY_TYPES = [
+  'Pakistani Buyer',
+  'Pakistani Seller',
+  'Pakistani Trader',
+  'Foreign Buyer',
+  'Foreign Seller',
+];
 
 const TradeLedger = () => {
   const navigate = useNavigate();
   const [comps, setComps] = useState([]);
-  const [cats, setCats] = useState([]);
   const [load, setLoad] = useState(true);
-  const [stats, setStats] = useState(null);
-  
-  
+  const [stats, setStats] = useState(null);   // computed from ALL loaded companies
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
-  
-  
-  const [sortBy, setSortBy] = useState('name_asc');
-  
-  
+
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
-  
-  
-  const [hideNA, setHideNA] = useState(false);
-  
-  const [filts, setFilts] = useState({
-    country: '',
-    product: '',
-    type: '',
-    dateFrom: '',
-    dateTo: ''
-  });
-  
-  
-  const debouncedCountry = useDebounce(filts.country, 300);
 
-  useEffect(() => {
-    loadCats();
-    loadComps();
-  }, []);
+  // ── Filters (all client-side) ────────────────────────────
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const debouncedSearch = useDebounce(search, 250);
 
-  useEffect(() => {
-    loadComps();
-  }, [filts]);
+  // ── Sort ─────────────────────────────────────────────────
+  const SORT_OPTIONS = [
+    { value: 'volume_desc', label: 'Volume (High→Low)' },
+    { value: 'volume_asc', label: 'Volume (Low→High)' },
+    { value: 'value_desc', label: 'Value (High→Low)' },
+    { value: 'value_asc', label: 'Value (Low→High)' },
+    { value: 'name_asc', label: 'Name (A→Z)' },
+    { value: 'name_desc', label: 'Name (Z→A)' },
+    { value: 'date_asc', label: 'First Trade (Old)' },
+    { value: 'date_desc', label: 'First Trade (New)' },
+  ];
+  const [sortBy, setSortBy] = useState('volume_desc');
 
-  const loadCats = async () => {
-    try {
-      
-      const res = await fetch('http://localhost:8000/api/product-clusters/', { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        
-        const categories = data.clusters ? data.clusters.map((name, idx) => ({ id: idx + 1, name })) : [];
-        setCats(categories);
-      }
-    } catch (err) {
-      console.error('Failed to load categories:', err);
-    }
-  };
+  // ── Load data once on mount ───────────────────────────────
+  useEffect(() => { loadComps(); }, []);
 
   const loadComps = async () => {
     setLoad(true);
     try {
-      const p = new URLSearchParams();
-      p.append('direction', 'both'); 
-      if (filts.country) p.append('country', filts.country);
-      if (filts.dateFrom) p.append('date_from', filts.dateFrom);
-      if (filts.dateTo) p.append('date_to', filts.dateTo);
-      p.append('limit', '1000'); 
+      const res = await fetch(
+        'http://localhost:8000/api/explorer/?direction=both&limit=2000',
+        { credentials: 'include' }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
 
-      
-      const res = await fetch(`http://localhost:8000/api/explorer/?${p}`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        
-        const transformedComps = (data.results || []).map((item, idx) => {
-          const volume = parseFloat(item.total_volume) || 0;
-          const avgPrice = parseFloat(item.avg_price) || 0;
-          const totalValue = parseFloat(item.total_value) || (avgPrice * volume);
-          const yoyGrowth = item.yoy_growth !== null && item.yoy_growth !== undefined 
-            ? parseFloat(item.yoy_growth) 
-            : null;
-          
-          return {
-            id: idx + 1,
-            company: {
-              name: item.company,
-              province: '',
-              country: item.country || ''
-            },
-            estimated_revenue: totalValue,
-            trade_volume: volume,
-            is_exporter: false,
-            is_importer: true,
-            active_since: item.first_trade,
-            top_products: item.top_products || [],
-            segment_tag: item.segment_tag || 'Other',
-            yoy_growth: !isNaN(yoyGrowth) ? yoyGrowth : null,
-            transaction_count: parseInt(item.transaction_count) || 0,
-            avg_price: avgPrice,
-          };
-        });
-        setComps(transformedComps);
-        
-        
-        const totalVolume = transformedComps.reduce((sum, c) => sum + c.trade_volume, 0);
-        const totalRevenue = transformedComps.reduce((sum, c) => sum + c.estimated_revenue, 0);
-        const avgPrice = transformedComps.length > 0 
-          ? transformedComps.reduce((sum, c) => sum + c.avg_price, 0) / transformedComps.length 
-          : 0;
-        const validGrowth = transformedComps.filter(c => c.yoy_growth !== null && !isNaN(c.yoy_growth));
-        const avgYoyGrowth = validGrowth.length > 0
-          ? validGrowth.reduce((sum, c) => sum + c.yoy_growth, 0) / validGrowth.length
-          : null;
-        
-        setStats({
-          avg_price: avgPrice,
-          avg_yoy_growth: avgYoyGrowth,
-          total_volume: totalVolume,
-          total_companies: transformedComps.length,
-          total_value: totalRevenue,
-        });
-      }
+      const rows = (data.results || []).map((item, idx) => ({
+        id: idx + 1,
+        company: item.company || '',
+        country: item.country || '',
+        company_type: item.company_type || 'Unknown',
+        trade_volume: parseFloat(item.total_volume) || 0,
+        import_volume: parseFloat(item.import_volume) || 0,
+        export_volume: parseFloat(item.export_volume) || 0,
+        total_value: parseFloat(item.total_value) || 0,
+        import_value: parseFloat(item.import_value) || 0,
+        export_value: parseFloat(item.export_value) || 0,
+        transaction_count: parseInt(item.transaction_count) || 0,
+        first_trade: item.first_trade || null,
+        last_trade: item.last_trade || null,
+        segment_tag: item.segment_tag || '',
+      }));
+
+      setComps(rows);
+
+      // Global metrics (ALL companies, ignoring filters)
+      const impVol = rows.reduce((s, c) => s + c.import_volume, 0);
+      const expVol = rows.reduce((s, c) => s + c.export_volume, 0);
+      const impVal = rows.reduce((s, c) => s + c.import_value, 0);
+      const expVal = rows.reduce((s, c) => s + c.export_value, 0);
+      setStats({
+        total_companies: rows.length,
+        import_volume: impVol,
+        export_volume: expVol,
+        import_value: impVal,
+        export_value: expVal,
+      });
     } catch (err) {
-      console.error('Failed to load companies:', err);
+      console.error('TradeLedger: failed to load companies:', err);
     } finally {
       setLoad(false);
     }
   };
 
-  const onFiltChange = (f, v) => {
-    setFilts(prev => ({ ...prev, [f]: v }));
-  };
-
-  const onCompClick = (companyName) => {
-    
-    const encodedName = encodeURIComponent(companyName);
-    navigate(`/trade-intelligence/company/${encodedName}/overview`);
-  };
+  // ── Format helpers ────────────────────────────────────────
+  const fmtNum = (v, decimals = 0) =>
+    new Intl.NumberFormat('en-US', { maximumFractionDigits: decimals }).format(v);
 
   const fmtCurr = (v) => {
-    if (!v) return '';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(v);
+    if (!v) return '—';
+    if (v >= 1_000_000) return `$${fmtNum(v / 1_000_000, 1)}M`;
+    if (v >= 1_000) return `$${fmtNum(v / 1_000, 0)}K`;
+    return `$${fmtNum(v)}`;
   };
 
-  const fmtPct = (v) => {
-    if (v === null || v === undefined) return '';
-    const num = typeof v === 'number' ? v : parseFloat(v);
-    if (isNaN(num)) return '';
-    return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
+  const fmtDate = (d) => {
+    if (!d) return '—';
+    try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }); }
+    catch { return d; }
   };
 
-  
+  // ── Client-side filtering + sorting ──────────────────────
   const sortedComps = useMemo(() => {
-    let sorted = [...comps];
-    
-    
-    if (hideNA) {
-      sorted = sorted.filter(c => {
-        
-        return c.trade_volume > 0 && 
-               c.company.country !== 'N/A' && 
-               c.company.country !== '';
-      });
-    }
-    
-    const [field, direction] = sortBy.split('_');
-    sorted.sort((a, b) => {
-      let valA, valB;
-      if (field === 'name') {
-        valA = a.company.name.toLowerCase();
-        valB = b.company.name.toLowerCase();
-      } else if (field === 'revenue') {
-        valA = a.estimated_revenue || 0;
-        valB = b.estimated_revenue || 0;
-      } else if (field === 'volume') {
-        valA = a.trade_volume || 0;
-        valB = b.trade_volume || 0;
-      } else {
-        valA = a.company.name.toLowerCase();
-        valB = b.company.name.toLowerCase();
-      }
-      if (direction === 'asc') return valA > valB ? 1 : -1;
-      return valA < valB ? 1 : -1;
-    });
-    return sorted;
-  }, [comps, sortBy, hideNA]);
+    let rows = [...comps];
 
-  
+    // Search: company name OR country
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
+      rows = rows.filter(c =>
+        c.company.toLowerCase().includes(q) ||
+        c.country.toLowerCase().includes(q)
+      );
+    }
+
+    // Company type filter
+    if (typeFilter) {
+      rows = rows.filter(c => c.company_type === typeFilter);
+    }
+
+    // Sort
+    rows.sort((a, b) => {
+      switch (sortBy) {
+        case 'volume_desc': return b.trade_volume - a.trade_volume;
+        case 'volume_asc': return a.trade_volume - b.trade_volume;
+        case 'value_desc': return b.total_value - a.total_value;
+        case 'value_asc': return a.total_value - b.total_value;
+        case 'name_asc': return a.company.localeCompare(b.company);
+        case 'name_desc': return b.company.localeCompare(a.company);
+        case 'date_asc': return (a.first_trade || '') < (b.first_trade || '') ? -1 : 1;
+        case 'date_desc': return (a.first_trade || '') > (b.first_trade || '') ? -1 : 1;
+        default: return b.trade_volume - a.trade_volume;
+      }
+    });
+
+    return rows;
+  }, [comps, debouncedSearch, typeFilter, sortBy]);
+
+  // ── Derived metrics (update live with filters) ────────────
+  const filteredStats = useMemo(() => ({
+    total: sortedComps.length,
+    impVol: sortedComps.reduce((s, c) => s + c.import_volume, 0),
+    expVol: sortedComps.reduce((s, c) => s + c.export_volume, 0),
+    impVal: sortedComps.reduce((s, c) => s + c.import_value, 0),
+    expVal: sortedComps.reduce((s, c) => s + c.export_value, 0),
+  }), [sortedComps]);
+
+  // ── Pagination ────────────────────────────────────────────
   const totalPages = Math.ceil(sortedComps.length / itemsPerPage);
   const paginatedComps = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return sortedComps.slice(start, start + itemsPerPage);
-  }, [sortedComps, currentPage, itemsPerPage]);
+  }, [sortedComps, currentPage]);
 
-  
+  // ── Export ────────────────────────────────────────────────
   const exportColumns = [
-    { key: 'company.name', label: 'Company Name' },
-    { key: 'company.country', label: 'Country' },
-    { key: 'trade_volume', label: 'Trade Volume (MT)' },
-    { key: 'estimated_revenue', label: 'Total Value (USD)' },
-    { key: 'yoy_growth', label: 'YoY Growth %' },
-    { key: 'top_products_str', label: 'Top Products' },
-    { key: 'segment_tag', label: 'Segment' },
+    { key: 'company', label: 'Company Name' },
+    { key: 'country', label: 'Country' },
+    { key: 'company_type', label: 'Company Type' },
+    { key: 'trade_volume_fmt', label: 'Trade Volume (MT)' },
+    { key: 'import_volume_fmt', label: 'Import Volume (MT)' },
+    { key: 'export_volume_fmt', label: 'Export Volume (MT)' },
+    { key: 'total_value_fmt', label: 'Est. Value (USD)' },
+    { key: 'first_trade', label: 'First Trade' },
   ];
 
-  
-  const exportData = comps.map(c => ({
-    'company.name': c.company.name,
-    'company.country': c.company.country || '',
-    trade_volume: typeof c.trade_volume === 'number' ? c.trade_volume.toFixed(2) : '',
-    estimated_revenue: fmtCurr(c.estimated_revenue),
-    yoy_growth: c.yoy_growth !== null && c.yoy_growth !== undefined && !isNaN(c.yoy_growth) ? fmtPct(c.yoy_growth) : '',
-    top_products_str: c.top_products?.join(', ') || '',
-    segment_tag: c.segment_tag || '',
+  const exportData = sortedComps.map(c => ({
+    company: c.company,
+    country: c.country,
+    company_type: c.company_type,
+    trade_volume_fmt: c.trade_volume.toFixed(2),
+    import_volume_fmt: c.import_volume.toFixed(2),
+    export_volume_fmt: c.export_volume.toFixed(2),
+    total_value_fmt: c.total_value.toFixed(2),
+    first_trade: c.first_trade || '',
   }));
+
+  // ── Render ────────────────────────────────────────────────
+  const TypeBadge = ({ type }) => {
+    const { bg = '#f3f4f6', color = '#374151', label = type } = TYPE_COLORS[type] || {};
+    return (
+      <span style={{
+        display: 'inline-block',
+        padding: '2px 10px',
+        borderRadius: '999px',
+        fontSize: '0.72rem',
+        fontWeight: 600,
+        letterSpacing: '0.02em',
+        background: bg,
+        color,
+        whiteSpace: 'nowrap',
+      }}>
+        {label}
+      </span>
+    );
+  };
+
   return (
     <>
       <Navbar />
       <div className="trade-ledger-container">
         <Breadcrumb />
-        
+
+        {/* Header */}
         <div className="trade-ledger-header">
           <div>
             <h1>Trade Ledger</h1>
             <p>Comprehensive trade intelligence and company analytics</p>
           </div>
           <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <SortSelector value={sortBy} onChange={setSortBy} />
-            <ExportButton 
-              data={exportData} 
-              columns={exportColumns} 
-              filename="trade-ledger-companies"
+            {/* Sort */}
+            <select
+              value={sortBy}
+              onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
+              style={{
+                padding: '0.45rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.15)',
+                background: 'rgba(255,255,255,0.08)',
+                color: 'inherit',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+              }}
+            >
+              {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <ExportButton
+              data={exportData}
+              columns={exportColumns}
+              filename="trade-ledger"
               title="Trade Ledger Export"
             />
           </div>
         </div>
 
+        {/* Filters */}
         <div className="filters-section">
-          <div className="filters-grid">
-            <div className="filter-group">
-              <label>Country</label>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div className="filter-group" style={{ flex: '1 1 280px' }}>
+              <label>Search</label>
               <input
                 type="text"
-                placeholder="Search by country..."
-                value={filts.country}
-                onChange={(e) => onFiltChange('country', e.target.value)}
+                placeholder="Company name or country..."
+                value={search}
+                onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
               />
             </div>
 
-            <div className="filter-group">
-              <label>Product Category</label>
+            <div className="filter-group" style={{ flex: '0 1 210px' }}>
+              <label>Company Type</label>
               <select
-                value={filts.product}
-                onChange={(e) => onFiltChange('product', e.target.value)}
+                value={typeFilter}
+                onChange={e => { setTypeFilter(e.target.value); setCurrentPage(1); }}
               >
-                <option value="">All Products</option>
-                {cats.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                <option value="">All Types</option>
+                {COMPANY_TYPES.map(t => (
+                  <option key={t} value={t}>{t}</option>
                 ))}
               </select>
             </div>
 
-            <div className="filter-group">
-              <label>Company Type</label>
-              <select
-                value={filts.type}
-                onChange={(e) => onFiltChange('type', e.target.value)}
-              >
-                <option value="">All Types</option>
-                <option value="exporter">Exporter</option>
-                <option value="importer">Importer</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label>Date From</label>
-              <input
-                type="date"
-                value={filts.dateFrom}
-                onChange={(e) => onFiltChange('dateFrom', e.target.value)}
-              />
-            </div>
-
-            <div className="filter-group">
-              <label>Date To</label>
-              <input
-                type="date"
-                value={filts.dateTo}
-                onChange={(e) => onFiltChange('dateTo', e.target.value)}
-              />
-            </div>
-            
-            <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
-              <input
-                type="checkbox"
-                id="hideNA"
-                checked={hideNA}
-                onChange={(e) => setHideNA(e.target.checked)}
-                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-              />
-              <label htmlFor="hideNA" style={{ cursor: 'pointer', fontWeight: 'normal' }}>
-                Hide entries with missing data
-              </label>
-            </div>
+            {(search || typeFilter) && (
+              <div className="filter-group" style={{ flex: '0 0 auto', paddingTop: '1.5rem' }}>
+                <button
+                  onClick={() => { setSearch(''); setTypeFilter(''); setCurrentPage(1); }}
+                  style={{
+                    padding: '0.45rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    background: 'transparent',
+                    color: 'inherit',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  Clear
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
+        {/* Metrics row — updates live with filters */}
         {stats && (
           <div className="metrics-row">
             <div className="metric-card">
-              <h3>Total Companies</h3>
-              <div className="metric-value">{stats.total_companies || comps.length}</div>
-              <p className="metric-subtext">In current view</p>
+              <h3>Companies</h3>
+              <div className="metric-value">{fmtNum(filteredStats.total)}</div>
+              <p className="metric-subtext">
+                {(search || typeFilter) ? 'Matching filter' : 'Total loaded'}
+              </p>
             </div>
-            {stats.total_volume > 0 && (
+
+            {filteredStats.impVol > 0 && (
               <div className="metric-card">
-                <h3>Total Volume</h3>
-                <div className="metric-value">
-                  {new Intl.NumberFormat('en-US', {maximumFractionDigits: 0}).format(stats.total_volume)} MT
-                </div>
-                <p className="metric-subtext">Combined volume</p>
+                <h3>Import Volume</h3>
+                <div className="metric-value">{fmtNum(filteredStats.impVol)} MT</div>
+                <p className="metric-subtext">Goods into Pakistan</p>
               </div>
             )}
-            {stats.total_value > 0 && (
+
+            {filteredStats.expVol > 0 && (
               <div className="metric-card">
-                <h3>Total Value</h3>
-                <div className="metric-value">{fmtCurr(stats.total_value)}</div>
-                <p className="metric-subtext">Trade value (USD)</p>
+                <h3>Export Volume</h3>
+                <div className="metric-value">{fmtNum(filteredStats.expVol)} MT</div>
+                <p className="metric-subtext">Goods out of Pakistan</p>
               </div>
             )}
-            {stats.avg_yoy_growth !== null && stats.avg_yoy_growth !== undefined && !isNaN(stats.avg_yoy_growth) && (
+
+            {filteredStats.impVal > 0 && (
               <div className="metric-card">
-                <h3>Avg YoY Growth</h3>
-                <div className="metric-value" style={{
-                  color: stats.avg_yoy_growth >= 0 ? '#22c55e' : '#ef4444'
-                }}>
-                  {fmtPct(stats.avg_yoy_growth)}
-                </div>
-                <p className="metric-subtext">Year-over-year</p>
+                <h3>Import Value</h3>
+                <div className="metric-value">{fmtCurr(filteredStats.impVal)}</div>
+                <p className="metric-subtext">USD</p>
+              </div>
+            )}
+
+            {filteredStats.expVal > 0 && (
+              <div className="metric-card">
+                <h3>Export Value</h3>
+                <div className="metric-value">{fmtCurr(filteredStats.expVal)}</div>
+                <p className="metric-subtext">USD</p>
               </div>
             )}
           </div>
         )}
 
+        {/* Table */}
         {load ? (
           <div className="loading-container">
-            <div className="spinner"></div>
+            <div className="spinner" />
             <p>Loading companies...</p>
           </div>
-        ) : comps.length === 0 ? (
+        ) : sortedComps.length === 0 ? (
           <EmptyState
             title="No companies found"
-            description="Try adjusting your filters or search criteria"
-            actionLabel="Clear Filters"
-            onAction={() => setFilts({ country: '', product: '', type: '', dateFrom: '', dateTo: '' })}
+            description="Try adjusting your search or filter"
+            actionLabel="Clear"
+            onAction={() => { setSearch(''); setTypeFilter(''); }}
           />
         ) : (
           <>
-            <div className="trade-ledger-table-container">
-              <table className="trade-ledger-table">
-                <thead>
+            <div className="trade-ledger-table-container" style={{ fontFamily: "'Satoshi', 'Inter', -apple-system, sans-serif", border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', background: '#fafafa', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+              <table className="trade-ledger-table" style={{ borderCollapse: 'collapse', width: '100%', background: '#ffffff', textAlign: 'left' }}>
+                <thead style={{ background: '#fafafa', borderBottom: '1px solid #e5e7eb' }}>
                   <tr>
-                    <th>Company Name</th>
-                    <th>Country</th>
-                    <th>Trade Volume</th>
-                    <th>YoY Growth</th>
-                    <th>Top Products</th>
-                    <th>Segment</th>
-                    <th></th>
+                    <th style={{ padding: '1.25rem 1.5rem', color: '#6b7280', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Company</th>
+                    <th style={{ padding: '1.25rem 1.5rem', color: '#6b7280', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Type</th>
+                    <th style={{ padding: '1.25rem 1.5rem', color: '#6b7280', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Trade Volume</th>
+                    <th style={{ padding: '1.25rem 1.5rem', color: '#6b7280', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Est. Value</th>
+                    <th style={{ padding: '1.25rem 1.5rem', width: 40 }}></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedComps.map(c => (
-                    <tr 
+                  {paginatedComps.map((c, i) => (
+                    <tr
                       key={c.id}
-                      onClick={() => onCompClick(c.company.name)}
-                      className="table-row-clickable"
+                      onClick={() => navigate(`/trade-intelligence/company/${encodeURIComponent(c.company)}/overview`)}
+                      style={{
+                        borderBottom: i === paginatedComps.length - 1 ? 'none' : '1px solid #f3f4f6',
+                        transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f9fafb'; e.currentTarget.style.boxShadow = 'inset 2px 0 0 #3b82f6'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; }}
                     >
-                      <td>
-                        <div className="company-name-cell">
-                          <strong>{c.company.name}</strong>
-                          {c.company.province && (
-                            <span className="company-location-sub">
-                              {c.company.province}
-                            </span>
-                          )}
+                      {/* Company & Country */}
+                      <td style={{ padding: '1.25rem 1.5rem' }}>
+                        <div style={{ color: '#111827', fontWeight: 600, fontSize: '0.95rem', letterSpacing: '-0.01em', marginBottom: '0.2rem' }}>
+                          {c.company}
+                        </div>
+                        <div style={{ color: '#6b7280', fontSize: '0.8rem', fontWeight: 400 }}>
+                          {c.country && c.country !== 'Unknown' ? c.country : 'Unknown Location'}
                         </div>
                       </td>
-                      <td>{c.company.country && c.company.country !== 'N/A' ? c.company.country : ''}</td>
-                      <td><strong>{c.trade_volume > 0 ? fmtCurr(c.trade_volume) : ''}</strong></td>
-                      <td>
-                        {c.yoy_growth !== null && c.yoy_growth !== undefined && !isNaN(c.yoy_growth) ? (
-                          <span className={`growth-badge ${c.yoy_growth >= 0 ? 'positive' : 'negative'}`}>
-                            {fmtPct(c.yoy_growth)}
-                          </span>
-                        ) : null}
+
+                      {/* Clean Text Type */}
+                      <td style={{ padding: '1.25rem 1.5rem' }}>
+                        <div style={{ color: '#374151', fontSize: '0.85rem', fontWeight: 500 }}>
+                          {c.company_type || 'Unknown'}
+                        </div>
                       </td>
-                      <td>
-                        {c.top_products && c.top_products.length > 0 ? (
-                          <div className="products-cell">
-                            {c.top_products.slice(0, 2).map((prod, idx) => (
-                              <span key={idx} className="product-pill">{prod}</span>
-                            ))}
-                            {c.top_products.length > 2 && (
-                              <span className="more-products">+{c.top_products.length - 2}</span>
+
+                      {/* Trade Volume */}
+                      <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
+                        {c.trade_volume > 0 ? (
+                          <div>
+                            <div style={{ color: '#111827', fontWeight: 600, fontSize: '0.95rem', fontFeatureSettings: '"tnum"' }}>
+                              {fmtNum(c.trade_volume, 0)} <span style={{ color: '#6b7280', fontWeight: 400, fontSize: '0.8rem' }}>MT</span>
+                            </div>
+                            {(c.import_volume > 0 || c.export_volume > 0) && (
+                              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', fontSize: '0.75rem', fontWeight: 500, color: '#9ca3af', marginTop: '0.2rem' }}>
+                                {c.import_volume > 0 && <span>IMP {fmtNum(c.import_volume, 0)}</span>}
+                                {c.export_volume > 0 && <span>EXP {fmtNum(c.export_volume, 0)}</span>}
+                              </div>
                             )}
                           </div>
-                        ) : null}
+                        ) : <span style={{ color: '#d1d5db' }}>—</span>}
                       </td>
-                      <td>
-                        {c.segment_tag && c.segment_tag !== 'Other' ? (
-                          <span className="segment-badge">{c.segment_tag}</span>
-                        ) : null}
+
+                      {/* Est Value */}
+                      <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
+                        {c.total_value > 0 ? (
+                          <div style={{ color: '#111827', fontWeight: 600, fontSize: '0.95rem', fontFeatureSettings: '"tnum"' }}>
+                            {fmtCurr(c.total_value)}
+                          </div>
+                        ) : <span style={{ color: '#d1d5db' }}>—</span>}
                       </td>
-                      <td onClick={(e) => e.stopPropagation()}>
+
+                      {/* Watchlist */}
+                      <td style={{ padding: '1.25rem 1.5rem' }} onClick={e => e.stopPropagation()}>
                         <WatchlistButton
-                          isWatched={isInWatchlist(c.company.name)}
-                          onToggle={() => {
-                            toggleWatchlist({ id: c.company.name, name: c.company.name });
-                          }}
+                          isWatched={isInWatchlist(c.company)}
+                          onToggle={() => toggleWatchlist({ id: c.company, name: c.company })}
                           size="small"
                         />
                       </td>
@@ -442,13 +444,12 @@ const TradeLedger = () => {
                 </tbody>
               </table>
             </div>
-            
-            {}
+
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
-              totalItems={comps.length}
+              totalItems={sortedComps.length}
               itemsPerPage={itemsPerPage}
             />
           </>

@@ -32,7 +32,7 @@ const LinkPrediction = React.lazy(() => import("./components/TradeIntelligence/L
 const CompanyOverview = React.lazy(() => import("./components/TradeIntelligence/CompanyOverview"));
 const CompanyProducts = React.lazy(() => import("./components/TradeIntelligence/CompanyProducts"));
 const CompanyPartners = React.lazy(() => import("./components/TradeIntelligence/CompanyPartners"));
-const CompanyTrends = React.lazy(() => import("./components/TradeIntelligence/CompanyTrends"));
+
 const CompareCompanies = React.lazy(() => import("./components/TradeIntelligence/CompareCompanies"));
 
 // Search Module
@@ -270,14 +270,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route
-                  path="/trade-intelligence/company/:id/trends"
-                  element={
-                    <ProtectedRoute>
-                      <CompanyTrends />
-                    </ProtectedRoute>
-                  }
-                />
+
 
                 {/* Search Module Routes */}
                 <Route

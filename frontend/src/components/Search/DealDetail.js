@@ -528,7 +528,10 @@ const DealDetail = () => {
                                 <span className="font-bold text-gray-900 text-lg">{labels.ctaContact}</span>
                                 <span className="text-xs text-gray-500 mt-1 font-medium group-hover:text-emerald-700">{labels.ctaSub}</span>
                             </button>
-                            <button className="flex flex-col items-center justify-center p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-emerald-500 hover:shadow-lg transition-all group bg-gradient-to-br from-white to-gray-50 hover:to-emerald-50 cursor-pointer">
+                            <button
+                                onClick={() => navigate(`/trade-intelligence/company/${encodeURIComponent(supplier.name)}/overview`)}
+                                className="flex flex-col items-center justify-center p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-emerald-500 hover:shadow-lg transition-all group bg-gradient-to-br from-white to-gray-50 hover:to-emerald-50 cursor-pointer"
+                            >
                                 <div className="p-4 bg-gray-100 text-gray-600 rounded-full mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
                                     <BarChart2 size={28} />
                                 </div>

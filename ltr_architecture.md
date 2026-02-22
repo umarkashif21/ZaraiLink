@@ -5,81 +5,132 @@ Learn to Rank (LTR) is a class of machine learning techniques that applies super
 
 ---
 
-## Comparative Architecture: Industry vs. ZaraiLink
-
-This diagram shows how we replaced the "Human Feedback Loop" with a "Heuristic Knowledge Loop" to bypass the lack of initial user data.
+## Comparative Architecture: Knowledge-Driven vs. Data-Driven LTR
 
 ```mermaid
 graph LR
-    subgraph "Industry Standard (Feedback-Driven)"
-        Clicks[("User Clicks/Orders")] -- "Ground Truth" --> LabelsA["Target Labels"]
-        FeaturesA["Supplier Features"] --> ModelA["LTR Model"]
-        LabelsA --> ModelA
+    subgraph "Standard Data-Driven (Future Goal)"
+        Clicks[("Implicit Feedback: User Clicks")] -- "Future Path" -.-> LabelsA["Ground Truth"]
     end
 
-    subgraph "ZaraiLink (Heuristic-Driven)"
-        Expert["Expert Knowledge / Heuristics"] -- "Pseudo Scoring" --> LabelsB["Target Labels"]
-        FeaturesB["Supplier Features"] --> ModelB["LTR Model"]
+    subgraph "ZaraiLink Knowledge-Driven (CURRENT)"
+        Expert["Expert Heuristics: Domain Rules"] -- "Pseudo-Labeling" --> LabelsB["Silver Standard Labels"]
+        FeaturesB["Feature Extraction: Domain-Specific"] --> ModelB["LTR Model: LambdaMART"]
         LabelsB --> ModelB
     end
 
-    ModelA --> RankA["Final Ranking"]
-    ModelB --> RankB["Final Ranking"]
+    ModelB --> RankB["Hybrid Ensemble Score"]
+    Expert -->|Primary Weight 70%| RankB
+    ModelB -->|Secondary Weight 30%| RankB
 
     style Expert fill:#f96,stroke:#333,stroke-width:2px
-    style Clicks fill:#6cf,stroke:#333,stroke-width:2px
+    style Clicks fill:#ddd,stroke:#999,stroke-dasharray: 5 5
 ```
 
 ---
 
-## Why did we do it this way?
+## Deep Dive: The Synthetic Dataset & Pseudo-Labeling
 
-We chose this **"Heuristic-to-Model"** approach for three critical reasons:
+In a standard LTR system, you use **Real Clicks**. In ZaraiLink, we use **Synthetic Data**.
 
-### 1. The "Cold Start" Problem
-In a new platform, you have zero click data. If you wait for months to collect enough clicks to train a model, your search remains "dumb" during the most critical early growth phase. By using heuristics (Volume, Recency, Price) as a "Teacher," we give the model a starting point (V0) so the search is intelligent from Day 1.
+### 1. What is the usual LTR flow? (Industry Standard)
+In companies like Netflix or Amazon, the flow is:
+- **User clicks** "Buy" on Item A.
+- The system records: "For Query X, Item A is highly relevant (Label = 1)."
+- Over millions of clicks, you get a **Training Set** of what humans actually like.
 
-### 2. Generalization
-A simple sorting algorithm (e.g., `ORDER BY volume`) is rigid. A Machine Learning model trained on those same rules is "softer." It learns the *weighted relationships* between features. This allows it to handle edge cases—like a supplier with slightly lower volume but much better recency—more gracefully than a hard-coded script could.
+### 2. What is "Pseudo-Labeling"? (The ZaraiLink Approach)
+Since we don't have users yet, we had to "pretend" to be a perfect user.
+- **Pseudo-Labeling** means we use a **Mathematical Formula** (the Expert Rules) to assign a "Relevance Grade" to companies automatically.
+- We act as the "Teacher" who tells the AI: *"Based on math, Company A is a 5-star result, and Company B is a 2-star result."*
 
-### 3. Future-Proofing (The Bridge)
-The architecture we built is a bridge. 
-- **Today:** The `PseudoLabelGenerator` feeds simulated "ideal" rankings to the model.
-- **Tomorrow:** We simply swap the `PseudoLabelGenerator` with a "Click Log Processor." 
-
-Because the rest of the pipeline (Feature Extraction, LightGBM Inference, Ensemble) is already in place, upgrading the "brain" will require zero changes to the core search infrastructure.
-
-
-### The 3 Stages of LTR Inference
-1.  **Retrieval (Recall):** Quickly narrowing down millions of documents to a few hundred using cheap algorithms (like keyword matching or vector search).
-2.  **Scoring (Precision):** Using the LTR model to re-rank those few hundred candidates using expensive math and many features.
-3.  **Post-Processing:** Applying business rules (e.g., "don't show duplicate products").
+### 3. How did we make the Dataset? (`LTRDatasetBuilder`)
+Our code follows this automated pipeline:
+1.  **Query Simulation:** The builder generates thousands of "Fake Queries" (e.g., "Find exporters for Rice over 100MT").
+2.  **Historical Retrieval:** For each fake query, it pulls real data from the **Transaction Database** to see who actually traded those products in the past.
+3.  **Feature Extraction:** It calculates metrics for those companies (How much they traded? How recently?).
+4.  **The Labeling Step:** 
+    - It uses the **Expert Rules** to calculate a raw score for each company.
+    - It then **Bins** these scores: The top 20% of companies get a **Label of 4** (Perfect), the next 20% get a **3**, and so on.
+5.  **Output:** This results in a massive table of **Features + Labels** that we feed into the **LightGBM** trainer.
 
 ---
 
-## Comparison: Industry Standard vs. ZaraiLink
+## Technical Definition: LambdaRank
+We use the **LambdaRank** objective within LightGBM. Instead of teaching the AI to predict a number, we teach it to **Rank a List**. The AI's only goal is to minimize the "reordering" errors (e.g., it gets penalized if it puts a 2-star result above a 4-star result).
+### Explaining the Reality:
+- **Heuristic Supervision (The "Teacher"):** Because we are in a "Cold Start" Phase (no users yet), we use trade mathematical rules to **teach** the AI.
+- **Silver Standard Labels:** Instead of real user data, our training data is "Silver" (expert-made) rather than "Gold" (user-made).
+- **The Click Log (Future):** We have built the *pipes* for click logs, but they are not currently driving the model training.
 
-Our current implementation is a **"Cold Start" LTR Architecture**. Since we don't have years of user click logs yet, we use **Heuristics** to teach the model.
+## The LTR Bootstrapping Pipeline (How it's built)
 
-| Feature | Industry Standard | ZaraiLink Implementation |
+This diagram shows the 100% accurate flow of how we built the intelligence in ZaraiLink.
+
+```mermaid
+graph TD
+    subgraph "Step 1: Dataset Generation (Offline)"
+        Trans[(Historical Transactions)] --> Rules[Expert Trade Rules]
+        Rules -->|Pseudo-Labels| Data[(Synthetic Training Set)]
+    end
+
+    subgraph "Step 2: Model Training (Offline)"
+        Data --> Trainer[LightGBM LambdaMART]
+        Trainer --> ModelFile[lgbm_ltr.txt: The Neural Brain]
+    end
+
+    subgraph "Step 3: Online Ranking (Real-time)"
+        Query[User Search] --> Candidates[(Company Candidates)]
+        ModelFile -->|Inference Score 30%| Ensemble{Hybrid Ensemble}
+        Rules -->|Direct Rule Score 70%| Ensemble
+        Ensemble --> Results([Final Ranked List])
+    end
+
+    style Step1 fill:#f5f5f5
+    style Step2 fill:#f5f5f5
+    style Step3 fill:#e1f5fe,stroke:#01579b
+```
+
+### Explaining the Process:
+1.  **Synthetic Labeling:** Since we don't have user clicks yet, we use **Historical Transactions** and **Expert Rules** (like "Volume is good") to label companies. We call this "Pseudo-Labeling."
+2.  **LambdaMART Training:** We use a high-performance algorithm called **LambdaMART** (via LightGBM) to learn these rules. It results in a small file (`lgbm_ltr.txt`) that acts as the search engine's "Brain."
+3.  **Hybrid Ensemble:** When a user searches, we check the results using both the **AI Model** and the **Original Rules**. We combine them (70% Rules / 30% AI) to ensure the search is both smart and safe.
+
+---
+
+## Why did we implement LTR? (The Rationale)
+
+Evaluators will ask: *"What was the need for a complex AI model? Why not just sort by volume?"*
+
+1.  **Multidimensional Balancing:** It is impossible to manually determine the perfect "balance" between 6 different business factors (price vs volume vs recency) in a single SQL query. LTR uses **LambdaMART** to find that mathematical sweet spot.
+2.  **Addressing the "Cold Start":** Most search engines need millions of clicks to learn. Our architecture uses **Heuristic Supervision** (Rules + AI) to be intelligent from Day 1.
+3.  **Self-Learning (Future-Proof):** We built the "pipes" now so that when real users start clicking, the model can update itself automatically. We won't have to rewrite any code to make it "smarter."
+
+### The "Expert Rules" (What the AI learned)
+The AI was trained on a **Synthetic Dataset** using these 6 high-level trade rules:
+
+| Rule (Feature) | What it specifically measures |
+| :--- | :--- |
+| **Volume Fit** | Does their typical shipment size match what the user is asking for? |
+| **Trade Velocity** | How frequently does this company trade? (higher = more reliable) |
+| **Trade Recency** | How many days since their last major shipment? (lower = more active) |
+| **Global Scale** | Their total historical trade volume (in Metric Tons). |
+| **Geo-Relevance** | Is the company located in the origin country the user requested? |
+| **Price Consistency** | Does their price history match the user's "Budget" (Price Ceiling)? |
+
+---
+
+## Technical Comparison
+
+| Feature | ZaraiLink "Cold Start" LTR | Standard Industry LTR |
 | :--- | :--- | :--- |
-| **Labels (y)** | **Implicit Feedback**: Derived from real user clicks and purchases. | **Pseudo-Labels**: Derived from a "Gold Standard" heuristic score. |
-| **Retrieval** | Multi-stage (Elasticsearch -> LTR). | SBERT Vector Search -> LTR. |
-| **Training** | Continuous online retraining. | Manual offline training script (`train_ltr.py`). |
-| **Model** | Complex Gradient Boosted Trees or DNNs. | **LightGBM (LambdaRank)** - State of the art for tabular ranking. |
-| **Ensemble** | Often pure model output. | **Hybrid Ensemble**: 70% Heuristic + 30% Model (Safeguard). |
-
-### Why did we choose this approach?
-In industry, the biggest challenge is the "Cold Start": how do you rank if you have no clicks? 
-1.  **The Labeler:** We built a `PseudoLabelGenerator` that acts as a "Teacher." It uses our best business knowledge (Volume + Recency + Price) to create labels.
-2.  **The Student:** The `lgbm_ltr.txt` model is the "Student." It generalizes the teacher's rules so it can handle edge cases the teacher might miss.
-3.  **The Evolution:** As ZaraiLink grows and users start clicking, we can replace the **Pseudo-Labels** with **Real Clicks**, making the system truly "intelligent" without changing the code structure.
+| **Learning Signal** | **Expert Rules** (Pseudo-Labels) | **User Clicks** (Implicit Feedback) |
+| **Algorithm** | **LambdaMART** (LightGBM) | Deep Neural Networks (DNN) |
+| **Safeguard** | **Hybrid Ensemble** (AI + Rules) | Pure Model Output |
 
 ---
 
-## How ZaraiLink LTR Works (End-to-End)
-
-1.  **Input:** Your query (e.g., "High volume sugar").
-2.  **Features:** Our `FeatureExtractor` looks at each supplier's `log_volume`, `days_since_last_trade`, and `price_fit`.
-3.  **Brain:** The `lgbm_ltr.txt` file (binary decision trees) processes these numbers.
-4.  **Result:** It outputs a relevance score that ranks a small-scale reliable supplier higher if the query emphasizes "Reliability" over "Volume."
+## Presentation Cheat Sheet
+- **What it is:** A semi-supervised learning system for search ranking.
+- **The "How":** We used **Expert Trade Rules** to teach a **LambdaMART** model how to rank candidates.
+- **The "Why":** To go beyond "exact matches" and provides "smart" results that balance reliability, price, and volume.

@@ -29,8 +29,19 @@ def get_yoy_growth_for_product(company_name, product_item_id, direction='import'
     return round(((vol_t12 - vol_prior) / vol_prior) * 100, 2)
 
 def get_company_product_performance(company_name, direction='import', **filters):
+    from django.db.models import Sum, F, Count, Case, When, CharField, Q, FloatField
+
     qs = Transaction.objects.all()
     qs = apply_transaction_filters(qs, direction=direction, company_name=company_name, **filters)
+
+    import_cond = Q(destination_country__icontains='Pakistan')
+    export_cond = Q(origin_country__icontains='Pakistan')
+    
+    counterparty_expr = Case(
+        When(buyer=company_name, then=F('seller')),
+        default=F('buyer'),
+        output_field=CharField()
+    )
 
     results = (
         qs.filter(product_item__isnull=False)
@@ -40,12 +51,16 @@ def get_company_product_performance(company_name, direction='import', **filters)
             subcat=F('product_item__sub_category__name'),
         )
         .annotate(
-            volume=Sum('qty_mt'),
-            avg_price=Avg('usd_per_mt'),
+            total_volume=Sum('qty_mt'),
+            total_value=Sum(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()),
+            import_volume=Sum('qty_mt', filter=import_cond),
+            export_volume=Sum('qty_mt', filter=export_cond),
+            avg_price=Sum(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()) / Sum('qty_mt', output_field=FloatField()),
+            shipment_count=Count('id'),
+            unique_partners=Count(counterparty_expr, distinct=True)
         )
-        .order_by('-volume')
+        .order_by('-total_volume')
     )
-    
     
     enriched_results = []
     for r in results:
@@ -54,16 +69,64 @@ def get_company_product_performance(company_name, direction='import', **filters)
         
     return enriched_results
 
-def get_avg_price_trend_monthly(company_name, product_item_id, direction='import', **filters):
-    qs = Transaction.objects.filter(product_item_id=product_item_id)
+def get_avg_price_trend_monthly(company_name, product_item_id=None, direction='import', **filters):
+    from django.db.models import Sum, F, FloatField
+    qs = Transaction.objects.all()
+    if product_item_id:
+        qs = qs.filter(product_item_id=product_item_id)
     qs = apply_transaction_filters(qs, direction=direction, company_name=company_name, **filters)
 
     return (
         qs.annotate(month=models.functions.TruncMonth('reporting_date'))
         .values('month')
-        .annotate(avg_price=Avg('usd_per_mt'))
+        .annotate(
+            volume=Sum('qty_mt'),
+            revenue=Sum(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()),
+            avg_price=Sum(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()) / Sum('qty_mt', output_field=FloatField())
+        )
         .order_by('month')
     )
+
+def get_product_partner_matrix(company_name, top_n_products=5, direction='import', **filters):
+    from django.db.models import Sum, F, FloatField, Case, When, CharField
+    qs = Transaction.objects.filter(product_item__isnull=False)
+    qs = apply_transaction_filters(qs, direction=direction, company_name=company_name, **filters)
+    
+    counterparty_expr = Case(
+        When(buyer=company_name, then=F('seller')),
+        default=F('buyer'),
+        output_field=CharField()
+    )
+    
+    top_products = list(
+        qs.values('product_item__id')
+        .annotate(vol=Sum('qty_mt'))
+        .order_by('-vol')[:top_n_products]
+    )
+    top_pids = [p['product_item__id'] for p in top_products]
+    
+    if not top_pids: return []
+    
+    matrix = (
+        qs.filter(product_item__id__in=top_pids)
+        .annotate(partner=counterparty_expr)
+        .values('product_item__name', 'partner')
+        .annotate(
+            volume=Sum('qty_mt'),
+            revenue=Sum(F('qty_mt') * F('usd_per_mt'), output_field=FloatField())
+        )
+        .order_by('product_item__name', '-volume')
+    )
+    return list(matrix)
+
+def get_top_partner_per_product(company_name, top_n_products=5, direction='import', **filters):
+    matrix = get_product_partner_matrix(company_name, top_n_products=top_n_products, direction=direction, **filters)
+    res = {}
+    for row in matrix:
+        pname = row['product_item__name']
+        if pname not in res:
+            res[pname] = row
+    return list(res.values())
 
 def get_volume_share(company_name, direction='import', **filters):
     qs = Transaction.objects.all()

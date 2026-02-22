@@ -26,7 +26,6 @@ def _parse_date(date_str):
 
 
 
-@cache_page(60 * 15)  
 def explorer_api(request):
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
@@ -60,13 +59,13 @@ def explorer_api(request):
     for c in companies:
         c['segment_tag'] = embedding_map.get(c['company'], "Other")
 
+    print(f"[explorer_api] direction={direction}, country={country}, companies_found={len(companies)}")
     return JsonResponse({"results": companies})
 
 
 
 
 
-@cache_page(60 * 60)  
 def company_overview_api(request, company_name):
     from .services.gnn import get_similar_companies
     from trade_data.models import Transaction
@@ -80,15 +79,22 @@ def company_overview_api(request, company_name):
     product_subcategory_id = request.GET.get('product_subcategory_id')
     product_item_id = request.GET.get('product_item_id')
 
+    # Collect all filter parameters into a dictionary
+    filters = {
+        'direction': direction,
+        'date_from': date_from,
+        'date_to': date_to,
+        'country': country,
+        'product_category_id': product_category_id,
+        'product_subcategory_id': product_subcategory_id,
+        'product_item_id': product_item_id,
+    }
+    # Remove None values from filters
+    filters = {k: v for k, v in filters.items() if v is not None}
+
     metrics = get_company_overview_metrics(
         company_name=company_name,
-        direction=direction,
-        date_from=date_from,
-        date_to=date_to,
-        country=country,
-        product_category_id=product_category_id,
-        product_subcategory_id=product_subcategory_id,
-        product_item_id=product_item_id
+        **filters # Pass dynamic filters
     )
 
     
@@ -112,47 +118,22 @@ def company_overview_api(request, company_name):
         print(f"Error getting similar companies: {e}")
         metrics['similar_companies'] = []
     
-    
-    company_field = 'buyer' if direction == 'import' else 'seller'
-    country_dist_qs = (
-        Transaction.objects.filter(**{company_field: company_name})
-        .values('country')
-        .annotate(volume=Sum('qty_mt'), value=Sum('usd'))
-        .order_by('-volume')[:10]
-    )
-    metrics['country_distribution'] = [
-        {
-            'name': row['country'] or 'Unknown',
-            'volume': float(row['volume'] or 0),
-            'value': float(row['value'] or 0)
-        }
-        for row in country_dist_qs
-    ]
-    
-    
-    
-    if 'top_products' in metrics:
-        
-        metrics['products'] = [
-            {
-                'name': p.get('name'),
-                'product_name': p.get('name'),
-                'vol': float(p.get('vol', 0)),
-                'volume': float(p.get('vol', 0)),
-                'share_pct': p.get('share_pct'),
-                'subcat': p.get('subcat'),
-                'cat': p.get('cat'),
-            }
-            for p in metrics['top_products']
-        ]
-        metrics['total_products'] = len(metrics['top_products'])
-    else:
-        metrics['products'] = []
-        metrics['total_products'] = 0
-    
-    
-    metrics['total_volume'] = metrics.get('total_volume_mt', 0)
+    # Legacy aliases for backward compatibility with other pages
+    metrics['total_volume']   = metrics.get('total_volume_mt', 0)
     metrics['total_partners'] = metrics.get('active_partners', 0)
+    metrics['products'] = [
+        {
+            'name': p.get('product'), 'product_name': p.get('product'),
+            'vol': p.get('volume', 0), 'volume': p.get('volume', 0),
+            'share_pct': p.get('percent', 0),
+        }
+        for p in metrics.get('top_products', [])
+    ]
+    metrics['total_products'] = len(metrics.get('top_products', []))
+    metrics['country_distribution'] = [
+        {'name': g.get('country'), 'volume': g.get('volume', 0), 'value': g.get('value', 0)}
+        for g in metrics.get('partner_geography', [])
+    ]
 
     return JsonResponse(metrics)
 
@@ -162,10 +143,33 @@ def company_overview_api(request, company_name):
 
 
 def company_products_api(request, company_name):
+    from .services.products import (
+        get_company_product_performance,
+        get_avg_price_trend_monthly,
+        get_product_partner_matrix,
+        get_top_partner_per_product
+    )
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
     date_to = _parse_date(request.GET.get('date_to'))
     country = request.GET.get('country')
+    product_name_filter = request.GET.get('product_name')
+
+    filters = {}
+    if date_from: filters['date_from'] = date_from
+    if date_to: filters['date_to'] = date_to
+    if country: filters['country'] = country
+    # Note: apply_transaction_filters might not support product_item__name__icontains directly, 
+    # but we can filter the performance list or handle it there. 
+    # We will pass the product_name straight to the filter if the generic filter handles it, 
+    # but since apply_transaction_filters doesn't handle product_name directly, we do it via QS.
+    # Actually, apply_transaction_filters accepts kwargs? No, it only accepts specific named args.
+    # WAIT! Looking at apply_transaction_filters, it does NOT accept **kwargs.
+    
+    # Let's import Transaction and apply the product filter explicitly before calling services if possible?
+    # No, services instantiate qs inside. 
+    # So we'll pass product_name as search query or just filter the results in python for product_name.
+    # Since product list is small, python filter is fine for `product_name_filter`.
 
     performance = list(get_company_product_performance(
         company_name=company_name,
@@ -175,103 +179,102 @@ def company_products_api(request, company_name):
         country=country
     ))
 
-    volume_share = list(get_volume_share(
-        company_name=company_name,
-        direction=direction,
-        date_from=date_from,
-        date_to=date_to,
-        country=country
-    ))
+    if product_name_filter:
+        performance = [p for p in performance if product_name_filter.lower() in p['product_name'].lower()]
 
-    
-    top_product = performance[0] if performance else None
-    price_trend = []
-    co_trade_network = []
-    
-    if top_product:
-        try:
-            
-            pid = top_product['product_id']
-            price_trend = list(get_avg_price_trend_monthly(
-                company_name=company_name,
-                product_item_id=pid,
-                direction=direction,
-                date_from=date_from,
-                date_to=date_to,
-                country=country
-            ))
-            
-            
-            co_trade_network = get_co_traded_products(pid, top_k=5)
-            
-        except Exception as e:
-            print(f"Error fetching product analytics: {e}")
+    summary = {
+        "total_products": len(performance),
+        "total_volume": sum((p.get('total_volume') or 0) for p in performance),
+        "total_value": sum((p.get('total_value') or 0) for p in performance),
+    }
 
-    
-    product_clusters = get_product_clusters(company_name, direction)
+    # Fetch top 5 products trend
+    top_5_pids = [p['product_id'] for p in performance[:5]]
+    trend_data = {}
+    for pid in top_5_pids:
+        pname = next(p['product_name'] for p in performance if p['product_id'] == pid)
+        trend = list(get_avg_price_trend_monthly(
+            company_name=company_name,
+            product_item_id=pid,
+            direction=direction,
+            date_from=date_from,
+            date_to=date_to,
+            country=country
+        ))
+        trend_data[pname] = trend
+
+    matrix = get_product_partner_matrix(company_name, top_n_products=5, direction=direction, date_from=date_from, date_to=date_to, country=country)
+    top_partners = get_top_partner_per_product(company_name, top_n_products=5, direction=direction, date_from=date_from, date_to=date_to, country=country)
 
     return JsonResponse({
-        "product_performance": performance,
-        "avg_price_trend": price_trend,
-        "volume_share": volume_share,
-        "product_clusters": product_clusters,
-        "co_trade_network": co_trade_network
+        "summary": summary,
+        "products": performance,
+        "avg_price_trend": trend_data,
+        "product_partner_matrix": matrix,
+        "top_partner_per_product": top_partners
     })
 
 
 
 
 
-@cache_page(60 * 60)  
 def company_partners_api(request, company_name):
+    from .services.partners import (
+        get_top_partners,
+        get_trade_volume_by_country,
+        get_partner_trends,
+        get_product_mix_per_partner
+    )
     direction = request.GET.get('direction', 'import')
     date_from = _parse_date(request.GET.get('date_from'))
     date_to = _parse_date(request.GET.get('date_to'))
     country = request.GET.get('country')
+    product_name_filter = request.GET.get('product_name')
+
+    filters = {}
+    if date_from: filters['date_from'] = date_from
+    if date_to: filters['date_to'] = date_to
+    if country: filters['country'] = country
+    if product_name_filter: filters['product_name'] = product_name_filter
 
     top_partners = list(get_top_partners(
         company_name=company_name,
         direction=direction,
-        date_from=date_from,
-        date_to=date_to,
-        country=country,
-        limit=10
+        limit=10,
+        **filters
     ))
 
     trade_by_country = list(get_trade_volume_by_country(
         company_name=company_name,
         direction=direction,
-        date_from=date_from,
-        date_to=date_to,
-        country=country
+        **filters
     ))
 
     partner_trends = list(get_partner_trends(
         company_name=company_name,
         direction=direction,
-        date_from=date_from,
-        date_to=date_to,
-        country=country,
-        limit=5
+        top_n=5,
+        **filters
     ))
 
-    product_mix = {}
-    for partner in top_partners[:3]:
-        partner_name = partner['partner']
-        mix = list(get_product_mix_per_partner(
-            company_name=company_name,
-            partner_name=partner_name,
-            direction=direction,
-            date_from=date_from,
-            date_to=date_to,
-            country=country
-        ))
-        product_mix[partner_name] = mix
+    product_mix = list(get_product_mix_per_partner(
+        company_name=company_name,
+        direction=direction,
+        top_n_partners=5,
+        **filters
+    ))
+    
+    summary = {
+        "total_partners": len(top_partners),
+        "total_volume": sum((p.get('total_volume') or 0) for p in top_partners),
+        "total_value": sum((p.get('total_value') or 0) for p in top_partners),
+    }
 
     return JsonResponse({
+        "summary": summary,
         "top_partners": top_partners,
-        "trade_volume_by_country": trade_by_country,
-        "partner_trends": partner_trends,
+        "volume_by_country": trade_by_country,
+        "monthly_partner_trends": partner_trends,
         "product_mix_per_partner": product_mix
     })
 

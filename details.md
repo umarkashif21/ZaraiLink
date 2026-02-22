@@ -2,60 +2,49 @@
 
 This document outlines the architecture and pipelines of the ZaraiLink search ecosystem.
 
-## a) Search Engine Architecture
-
-The ZaraiLink search engine follows a decoupled, service-oriented architecture designed for scalability and precision.
+## a) Search Engine Architecture (Horizontal Phases)
 
 ```mermaid
 graph LR
-    UI["Frontend (React SearchHome.js)"] --> API["Django SearchViewSet"]
-    
-    subgraph "Service Layer"
-        API --> Parser["QueryInterpreter (NLP Parser)"]
-        API --> Retrieval["QueryMatcher (SBERT Retrieval)"]
-        API --> Aggregator["SupplierAggregator (Metric Aggregation)"]
-        API --> Ranker["RankingEnsemble (LTR + Heuristics)"]
-    end
-    
-    subgraph "Processing Logic"
-        Parser --> Intent["Intent/Scope/Filter Extraction"]
-        Retrieval --> VectorMatch["Subcategory & Item Mapping"]
-        Aggregator --> DBQuery["PostgreSQL (Trade Data Transactions)"]
-        Ranker --> LTR["LightGBM Ranker"]
-    end
-    
-    subgraph "Data Layer"
-        DBQuery --> PGDB[("PostgreSQL")]
-        LTR --> ModelFile["lgbm_ltr.txt (Model Binary)"]
+    subgraph "NLU (Interpreter)"
+        API[Search API] --> Parser[Tokenization]
+        Parser --> Intent{Intent Classification}
     end
 
-    Response["JSON Response"] --> UI
-    Ranker --> Response
+    subgraph "Retrieval Engine"
+        API --> Dense[Dense: SBERT Matcher]
+        API --> Sparse[Sparse: SQL Aggregator]
+    end
+
+    subgraph "Ranking Engine"
+        Dense & Sparse --> Ranker[Ranking Ensemble]
+        Ranker --> LTR[LTR: LambdaMART]
+    end
+    
+    subgraph "Persistence"
+        Sparse --> DB[("Postgres DB")]
+        LTR --> ModelFile[[lgbm_ltr.txt]]
+    end
+
+    Ranker --> UI[JSON Response]
 ```
 
 ---
 
-## b) Search Engine Pipeline
-
-The pipeline processes a natural language query through several stages to produce ranked results.
+## b) Pipeline Sequence Execution
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant Q as QueryInterpreter
-    participant N as QueryMatcher
-    participant A as SupplierAggregator
-    participant R as RankingEnsemble
+    participant Q as Interpreter (NLU)
+    participant R as Retrieval (Dense/Sparse)
+    participant L as Ranking (LTR)
     
-    U->>Q: "Import dextrose from China"
-    Q-->>U: Intent: BUY, Product: Dextrose, Country: [China]
-    U->>N: Search: "Dextrose"
-    N-->>U: Subcategory IDs: [716, 12221]
-    U->>A: Aggregate IDs for [716, 12221] + Country: China
-    A-->>U: Candidate Candidates (Metric JSONs)
-    U->>R: Rank Candidates + Query Context
-    R->>R: Feature Extraction -> LTR Inference -> Weighted Ensemble
-    R-->>U: Sorted Results (Ranked by Score)
+    Note over Q, L: Query Execution Lifecycle
+    Q->>R: Structured Metadata + HS Codes
+    R->>R: Parallel Vector Search & SQL Joins
+    R->>L: Unranked Candidates
+    L->>L: Feature Vectorization & LambdaMART Inference
+    L-->>Q: Precision-Ranked JSON
 ```
 
 ---

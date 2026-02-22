@@ -1,473 +1,359 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import Navbar from '../Layout/Navbar';
-import ExportButton from '../Common/ExportButton';
-import './TradeIntelligence.css';
+
+const fmtN = (num) => new Intl.NumberFormat('en-US').format(Math.round(num || 0));
+const fmtM = (num) => {
+  if (!num) return '0';
+  if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
+  return `$${new Intl.NumberFormat('en-US').format(num)}`;
+};
 
 const CompanyProducts = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const loc = useLocation();
   const query = new URLSearchParams(loc.search);
+
   const [direction, setDirection] = useState(query.get('direction') || 'import');
-  const dateFrom = query.get('date_from') || '';
-  const dateTo = query.get('date_to') || '';
-  const [prods, setProds] = useState(null);
-  const [load, setLoad] = useState(true);
+  const [pendingProductName, setPendingProductName] = useState('');
+  const [productName, setProductName] = useState('');
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
   const companyName = decodeURIComponent(id);
-  const tab = loc.pathname.split('/').pop();
+  const _tab = 'products'; // ensure tab highlight
 
   useEffect(() => {
-    loadProds();
-  }, [id, direction, dateFrom, dateTo]);
+    let cancel = false;
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        let url = `http://localhost:8000/api/company/${encodeURIComponent(companyName)}/products/?direction=${direction}`;
+        if (productName) url += `&product_name=${encodeURIComponent(productName)}`;
 
-  const loadProds = async () => {
-    setLoad(true);
-    setError(null);
-    try {
-      
-      
-      const res = await fetch(`http://localhost:8000/api/company/${id}/products/?direction=${direction}&date_from=${dateFrom}&date_to=${dateTo}&_t=${new Date().getTime()}`, {
-        credentials: 'include'
-      });
-      if (res.ok) {
-        const data = await res.json();
-        
-        if (data.product_performance) {
-            data.product_performance = data.product_performance.map(p => ({
-                ...p,
-                volume: parseFloat(p.volume || p.total_volume || p.vol || 0)
-            }));
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.ok) {
+          const json = await res.json();
+          if (!cancel) setData(json);
+        } else {
+          if (!cancel) setError('Failed to fetch product insights');
         }
-        setProds(data);
-      } else {
-        setError('Could not load products');
+      } catch (e) {
+        if (!cancel) setError('Network error loading product insights');
+      } finally {
+        if (!cancel) setLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to load products:', err);
-      setError('Failed to load products data');
-    } finally {
-      setLoad(false);
-    }
+    };
+    loadData();
+    return () => { cancel = true; };
+  }, [companyName, direction, productName]);
+
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#14b8a6', '#f43f5e', '#6366f1', '#84cc16'];
+
+  const processedTrendData = React.useMemo(() => {
+    const avg_price_trend = data?.avg_price_trend;
+    if (!avg_price_trend) return [];
+    const allMonths = new Set();
+    Object.values(avg_price_trend).forEach(arr => arr.forEach(d => allMonths.add(d.month)));
+    const sortedMonths = Array.from(allMonths).sort((a, b) => new Date(a) - new Date(b));
+    return sortedMonths.map(m => {
+      const row = { monthStr: new Date(m).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) };
+      Object.keys(avg_price_trend).forEach(p => {
+        const match = avg_price_trend[p].find(d => d.month === m);
+        if (match) row[p] = match.avg_price;
+      });
+      return row;
+    });
+  }, [data]);
+
+  const partnerLabel = direction === 'import' ? 'Supplier' : 'Buyer';
+  const partnerLabelPlural = direction === 'import' ? 'Suppliers' : 'Buyers';
+
+  if (loading && !data) return <><Navbar /><div style={{ padding: '4rem', textAlign: 'center' }}>Loading products...</div></>;
+  if (error) return <><Navbar /><div style={{ padding: '4rem', color: 'red' }}>{error}</div></>;
+  if (!data) return null;
+
+  const { summary, products, avg_price_trend, product_partner_matrix, top_partner_per_product } = data;
+
+  const applyFilters = () => {
+    setProductName(pendingProductName);
   };
 
-  const navTab = (t) => {
-    navigate(`/trade-intelligence/company/${id}/${t}`);
+  const clearFilters = () => {
+    setPendingProductName('');
+    setProductName('');
   };
-
-  const fmtCurr = (v) => {
-    if (!v) return '';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: v.currency || 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(v);
-  };
-
-  const fmtPct = (v) => {
-    if (v === null || v === undefined) return '';
-    return `${v >= 0 ? '+' : ''}${parseFloat(v).toFixed(2)}%`;
-  };
-
-  if (load) {
-    return (
-      <>
-        <Navbar />
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading products...</p>
-        </div>
-      </>
-    );
-  }
 
   return (
-    <>
-      <Navbar />
-      <div className="company-detail-container">
-        <div className="company-detail-header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <h1>{companyName}</h1>
-              <p>Trade Intelligence Profile</p>
-            </div>
-            {prods?.product_performance && prods.product_performance.length > 0 && (
-              <ExportButton
-                data={prods.product_performance.map(p => ({
-                  product_name: p.product_name,
-                  hs_code: p.hs_code || '',
-                  category: p.category_name || '',
-                  avg_price: p.avg_price,
-                  volume: p.volume,
-                  unit: p.unit,
-                  yoy_growth: p.yoy_growth,
-                }))}
-                columns={[
-                  { key: 'product_name', label: 'Product Name' },
-                  { key: 'hs_code', label: 'HS Code' },
-                  { key: 'category', label: 'Category' },
-                  { key: 'avg_price', label: 'Avg Price (USD)' },
-                  { key: 'volume', label: 'Volume' },
-                  { key: 'unit', label: 'Unit' },
-                  { key: 'yoy_growth', label: 'YoY Growth %' },
-                ]}
-                filename={`products-${companyName}`}
-                title={`${companyName} - Products`}
-              />
-            )}
-          </div>
-          
-          <div className="filters-bar" style={{ marginTop: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-             <div className="filter-group">
-                <label style={{ marginRight: '0.5rem', fontWeight: 500 }}>Direction:</label>
-                <select 
-                  value={direction} 
-                  onChange={(e) => setDirection(e.target.value)}
-                  style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #cbd5e0' }}
-                >
-                  <option value="import">Import (As Buyer)</option>
-                  <option value="export">Export (As Seller)</option>
-                </select>
-             </div>
+    <><Navbar />
+      <div style={{ padding: '2rem', background: '#fafafa', minHeight: '100vh', fontFamily: "'Satoshi', 'Inter', -apple-system, sans-serif" }}>
+
+        {/* ── Header ─────────────────────────────────────── */}
+        <div style={{ marginBottom: '2rem' }}>
+          <button onClick={() => navigate('/trade-intelligence/ledger')}
+            style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.85rem', padding: 0, marginBottom: '0.75rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            ← Back to Trade Ledger
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <h1 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1.1 }}>{companyName}</h1>
           </div>
         </div>
 
-        <div className="tab-navigation">
-          <button
-            className={`tab-button ${tab === 'overview' ? 'active' : ''}`}
-            onClick={() => navTab('overview')}
-          >
-            Overview
-          </button>
-          <button
-            className={`tab-button ${tab === 'products' ? 'active' : ''}`}
-            onClick={() => navTab('products')}
-          >
-            Products
-          </button>
-          <button
-            className={`tab-button ${tab === 'partners' ? 'active' : ''}`}
-            onClick={() => navTab('partners')}
-          >
-            Partners
-          </button>
-          <button
-            className={`tab-button ${tab === 'trends' ? 'active' : ''}`}
-            onClick={() => navTab('trends')}
-          >
-            Trends
-          </button>
+        <div style={{ display: 'inline-flex', background: '#f1f5f9', padding: '4px', borderRadius: '10px', marginBottom: '2rem', gap: '4px', border: '1px solid #e2e8f0' }}>
+          {['overview', 'products', 'partners'].map(t => (
+            <button key={t}
+              onClick={() => navigate(`/trade-intelligence/company/${encodeURIComponent(companyName)}/${t}?direction=${direction}`)}
+              style={{
+                background: t === _tab ? 'white' : 'transparent',
+                border: 'none',
+                padding: '0.6rem 1.25rem',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: t === _tab ? 600 : 500,
+                color: t === _tab ? '#111827' : '#64748b',
+                borderRadius: '8px',
+                boxShadow: t === _tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.2s ease-in-out',
+                WebkitUserSelect: 'none'
+              }}
+            >
+              {t === 'products' ? `Products (${summary?.total_products || 0})` : t.charAt(0).toUpperCase() + t.slice(1)}
+            </button>
+          ))}
         </div>
 
-        <div className="tab-content">
-          <h2>Product Performance</h2>
+        {/* ── SECTION 1: Products Summary Header ────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ background: 'white', borderRadius: '8px', padding: '1.25rem 1.5rem', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Total Products</p>
+            <div style={{ fontSize: '2rem', fontWeight: 600, color: '#111827', fontFeatureSettings: '"tnum"', letterSpacing: '-0.01em', lineHeight: 1.1 }}>{summary?.total_products || 0}</div>
+          </div>
+          <div style={{ background: 'white', borderRadius: '8px', padding: '1.25rem 1.5rem', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Total Volume</p>
+            <div style={{ fontSize: '2rem', fontWeight: 600, color: '#111827', fontFeatureSettings: '"tnum"', letterSpacing: '-0.01em', lineHeight: 1.1 }}>{fmtN(summary?.total_volume)} <span style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 400 }}>MT</span></div>
+          </div>
+          <div style={{ background: 'white', borderRadius: '8px', padding: '1.25rem 1.5rem', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Total Est. Value</p>
+            <div style={{ fontSize: '2rem', fontWeight: 600, color: '#111827', fontFeatureSettings: '"tnum"', letterSpacing: '-0.01em', lineHeight: 1.1 }}>{fmtM(summary?.total_value)}</div>
+          </div>
+        </div>
 
-          {error ? (
-            <div className="empty-state">
-              <p>{error}</p>
+        {/* ── SECTION 7: Filters ────────────────────────── */}
+        <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+          <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Filter Analysis</h3>
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div style={{ flex: '1 1 200px' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, color: '#6b7280', marginBottom: 6 }}>Trade Direction</label>
+              <select value={direction} onChange={e => setDirection(e.target.value)}
+                style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.9rem', color: '#111827', outline: 'none', appearance: 'none', background: '#f9fafb' }}>
+                <option value="import">Import Activity</option>
+                <option value="export">Export Activity</option>
+                <option value="both">Both Directions</option>
+              </select>
             </div>
-          ) : !prods || !prods.product_performance || prods.product_performance.length === 0 ? (
-            <div className="empty-state">
-              <p>No products found</p>
+            <div style={{ flex: '1 1 200px' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, color: '#6b7280', marginBottom: 6 }}>Product Search</label>
+              <input type="text" placeholder="e.g. Sugar, Iron" value={pendingProductName}
+                onChange={e => setPendingProductName(e.target.value)}
+                style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
             </div>
-          ) : (
-            <table className="products-table">
+            <div style={{ display: 'flex', gap: '0.75rem', flex: '0 0 auto' }}>
+              <button onClick={clearFilters}
+                style={{ padding: '0.6rem 1rem', background: '#f3f4f6', border: 'none', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 500, color: '#374151', cursor: 'pointer', transition: 'background 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#e5e7eb'} onMouseLeave={e => e.currentTarget.style.background = '#f3f4f6'}>
+                Clear
+              </button>
+              <button onClick={applyFilters}
+                style={{ padding: '0.6rem 1.25rem', background: '#111827', border: 'none', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 500, color: 'white', cursor: 'pointer', transition: 'background 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#374151'} onMouseLeave={e => e.currentTarget.style.background = '#111827'}>
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── SECTION 2/3: Products Table & Dist ────────── */}
+        <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+          {/* Section 2: Products Table */}
+          <div style={{ flex: '2 1 600px', background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
+              <h3 style={{ margin: '0', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Product Portfolio</h3>
+              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: '#6b7280' }}>Key traded products sorted by overall volume</p>
+            </div>
+            <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '400px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: '#f9fafb' }}>
+                  <tr style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.04em', boxShadow: '0 1px 0 #e5e7eb' }}>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 500 }}>Product Details</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 500, textAlign: 'right' }}>Total Volume (MT)</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 500, textAlign: 'right' }}>Est. Value</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 500, textAlign: 'right' }}>Avg Price</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 500, textAlign: 'right' }}>{partnerLabelPlural}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((p, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #f3f4f6', transition: 'background 0.2s', cursor: 'default' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#f9fafb'; }} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <td style={{ padding: '1.25rem 1.5rem' }}>
+                        <div style={{ color: '#111827', fontWeight: 500, fontSize: '0.85rem', whiteSpace: 'normal', maxWidth: '300px', lineHeight: 1.4 }}>
+                          {p.product_name}
+                        </div>
+                        <div style={{ color: '#6b7280', fontSize: '0.75rem', marginTop: 4 }}>{p.subcat || 'Unknown'}</div>
+                      </td>
+                      <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 500, color: '#111827', fontSize: '0.85rem', fontFeatureSettings: '"tnum"' }}>
+                        {fmtN(p.total_volume)}
+                      </td>
+                      <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 500, color: '#4b5563', fontSize: '0.85rem', fontFeatureSettings: '"tnum"' }}>
+                        ${fmtN(p.total_value)}
+                      </td>
+                      <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 500, color: '#4b5563', fontSize: '0.85rem', fontFeatureSettings: '"tnum"' }}>
+                        {p.avg_price ? `$${Math.round(p.avg_price)}` : '-'}
+                      </td>
+                      <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 500, color: '#6b7280', fontSize: '0.85rem', fontFeatureSettings: '"tnum"' }}>
+                        {p.unique_partners}
+                      </td>
+                    </tr>
+                  ))}
+                  {products.length === 0 && (
+                    <tr><td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#9ca3af', fontSize: '0.9rem' }}>No products found</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Section 3: Product Distribution */}
+          <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+              <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Volume Distribution</h3>
+              <div style={{ height: 300 }}>
+                {products.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                      <Pie
+                        data={products.slice(0, 5).map(p => ({ name: p.subcat ? (p.subcat.length > 15 ? p.subcat.substring(0, 15) + '...' : p.subcat) : 'Other', value: parseFloat(p.total_volume) }))}
+                        cx="50%" cy="50%" innerRadius={50} outerRadius={85} fill="#8884d8" dataKey="value" stroke="none"
+                        nameKey="name"
+                        labelLine={false}
+                        label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+                          if (percent < 0.05) return null;
+                          const radius = outerRadius + 15;
+                          const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
+                          const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
+                          return (
+                            <text x={x} y={y} fill="#4b5563" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={10} fontWeight={500}>
+                              {name} ({(percent * 100).toFixed(0)}%)
+                            </text>
+                          );
+                        }}
+                      >
+                        {products.slice(0, 5).map((e, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip formatter={(v) => `${fmtN(v)} MT`} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '0.85rem' }}>No data</div>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── SECTION 4 & 5: Trend & Matrix ──────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+
+          {/* Section 4: Avg Price Trend */}
+          <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <h3 style={{ margin: '0', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Average Price Trends</h3>
+            <p style={{ margin: '0.25rem 0 1.25rem 0', fontSize: '0.85rem', color: '#6b7280' }}>Monthly USD/MT trajectory for leading products</p>
+            <div style={{ height: 280 }}>
+              {processedTrendData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={processedTrendData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                    <XAxis dataKey="monthStr" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} width={40} />
+                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '0.85rem' }}
+                      formatter={v => `$${Math.round(v)}`} />
+                    {Object.keys(avg_price_trend).map((productName, idx) => (
+                      <Line key={productName} dataKey={productName} connectNulls
+                        name={productName.substring(0, 15) + '...'} type="monotone"
+                        stroke={COLORS[idx % COLORS.length]} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '0.85rem' }}>No trend data</div>}
+            </div>
+          </div>
+
+          {/* Section 5: Matrix Table */}
+          <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', overflowY: 'auto', maxHeight: '370px' }}>
+            <h3 style={{ margin: '0', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Top {partnerLabelPlural} by Product</h3>
+            <p style={{ margin: '0.25rem 0 1.25rem 0', fontSize: '0.85rem', color: '#6b7280' }}>Revenue concentration amongst counterparties</p>
+            {product_partner_matrix?.length > 0 ? (
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                {product_partner_matrix.slice(0, 15).map((row, i) => (
+                  <li key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', padding: '10px 0', borderBottom: '1px solid #f3f4f6' }}>
+                    <div style={{ flex: 1, overflow: 'hidden', paddingRight: 10 }}>
+                      <div style={{ color: '#111827', fontWeight: 500, textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>{row.partner}</div>
+                      <div style={{ color: '#6b7280', fontSize: '0.75rem', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>{row.product_item__name}</div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ color: '#111827', fontWeight: 600, fontFeatureSettings: '"tnum"' }}>${fmtM(row.revenue)}</div>
+                      <div style={{ color: '#6b7280', fontSize: '0.75rem', fontFeatureSettings: '"tnum"' }}>{fmtN(row.volume)} MT</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '0.85rem', height: '100%' }}>No partner data</div>}
+          </div>
+        </div>
+
+        {/* ── SECTION 6: Top Partner Per Product ────────── */}
+        <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+          <h3 style={{ margin: '0', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Primary {partnerLabel} per Product</h3>
+          <p style={{ margin: '0.25rem 0 1.25rem 0', fontSize: '0.85rem', color: '#6b7280' }}>Identify the leading counterparties driving product volume</p>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
               <thead>
-                <tr>
-                  <th>Product Name</th>
-                  <th>Category</th>
-                  <th>Avg Price</th>
-                  <th>{direction === 'import' ? 'Import Volume (MT)' : 'Export Volume (MT)'}</th>
-                  <th>YoY Growth</th>
+                <tr style={{ background: '#f9fafb', fontSize: '0.75rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.04em' }}>
+                  <th style={{ padding: '1rem 1.5rem', fontWeight: 500 }}>Product</th>
+                  <th style={{ padding: '1rem 1.5rem', fontWeight: 500 }}>Primary {partnerLabel}</th>
+                  <th style={{ padding: '1rem 1.5rem', fontWeight: 500, textAlign: 'right' }}>{partnerLabel} Volume</th>
+                  <th style={{ padding: '1rem 1.5rem', fontWeight: 500, textAlign: 'right' }}>{partnerLabel} Revenue</th>
                 </tr>
               </thead>
               <tbody>
-                {prods.product_performance.map((p, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <strong>{p.product_name}</strong>
-                      {p.hs_code && (
-                        <div style={{ fontSize: '0.85rem', color: '#718096' }}>
-                          HS Code: {p.hs_code}
-                        </div>
-                      )}
+                {top_partner_per_product?.map((row, i) => (
+                  <tr key={i} style={{ borderTop: '1px solid #f3f4f6', transition: 'background 0.2s', cursor: 'default' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#f9fafb'; }} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <td style={{ padding: '1.25rem 1.5rem', color: '#111827', fontWeight: 500, fontSize: '0.85rem', whiteSpace: 'normal', maxWidth: '300px', lineHeight: 1.4 }}>
+                      {row.product_item__name}
                     </td>
-                    <td>{p.subcat || p.category_name || '-'}</td>
-                    <td>
-                      {p.avg_price > 0 && !isNaN(p.avg_price) ? (
-                        new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: p.currency || 'USD'
-                        }).format(p.avg_price)
-                      ) : '-'}
+                    <td style={{ padding: '1.25rem 1.5rem', color: '#4b5563', fontSize: '0.85rem', fontWeight: 500 }}>
+                      {row.partner}
                     </td>
-                    <td>
-                      {p.volume > 0 && !isNaN(p.volume) ? (
-                        `${new Intl.NumberFormat('en-US').format(p.volume)} ${p.unit || ''}`
-                      ) : '-'}
+                    <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 500, color: '#111827', fontSize: '0.85rem', fontFeatureSettings: '"tnum"' }}>
+                      {fmtN(row.volume)} MT
                     </td>
-                    <td>
-                      {p.yoy_growth !== null && p.yoy_growth !== undefined && !isNaN(parseFloat(p.yoy_growth)) ? (
-                        <span className={`growth-badge ${parseFloat(p.yoy_growth) >= 0 ? 'positive' : 'negative'}`}>
-                          {parseFloat(p.yoy_growth) >= 0 ? '+' : ''}{parseFloat(p.yoy_growth).toFixed(2)}%
-                        </span>
-                      ) : '-'}
+                    <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 500, color: '#4b5563', fontSize: '0.85rem', fontFeatureSettings: '"tnum"' }}>
+                      ${fmtN(row.revenue)}
                     </td>
                   </tr>
                 ))}
+                {(!top_partner_per_product || top_partner_per_product.length === 0) && (
+                  <tr><td colSpan="4" style={{ padding: '2rem', textAlign: 'center', color: '#9ca3af', fontSize: '0.9rem' }}>No top partner data</td></tr>
+                )}
               </tbody>
             </table>
-          )}
-
-          {}
-          {prods && prods.avg_price_trend && (
-            <div style={{ marginTop: '2rem' }}>
-              <h3>Avg Price Trend (Monthly)</h3>
-              <p style={{ color: '#718096', fontSize: '0.9rem' }}>Trend for top product</p>
-              {prods.avg_price_trend.length > 0 ? (
-                <div style={{ width: '100%', height: 300, marginTop: '1rem' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={prods.avg_price_trend.map(t => ({
-                      ...t,
-                      month: new Date(t.month).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-                    }))} margin={{ top: 20, right: 30, left: 20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                      <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                      <YAxis 
-                        tickFormatter={(v) => `$${v}`}
-                        domain={['auto', 'auto']}
-                      />
-                      <Tooltip formatter={(v) => `$${new Intl.NumberFormat('en-US').format(v)}`} />
-                      <Line type="monotone" dataKey="avg_price" stroke="#8884d8" strokeWidth={2} name="Avg Price (USD/MT)" dot={{ r: 4 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="empty-state" style={{ marginTop: '1rem', padding: '2rem' }}>
-                  <p>No price trend data available for the top product.</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {prods && prods.product_performance && prods.product_performance.filter(p => p.volume > 0).length > 0 && (
-            <div style={{ marginTop: '2rem' }}>
-              <h3>Product Volume Distribution</h3>
-              <div style={{ width: '100%', height: 350, marginTop: '1rem' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={prods.product_performance.filter(p => p.volume > 0).slice(0, 8).map(p => ({
-                      name: p.product_name?.substring(0, 20) + (p.product_name?.length > 20 ? '...' : ''),
-                      volume: parseFloat(p.volume) || 0,
-                      value: (parseFloat(p.avg_price) || 0) * (parseFloat(p.volume) || 0),
-                    }))}
-                    margin={{ top: 40, right: 30, left: 20, bottom: 60 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis 
-                      dataKey="name" 
-                      angle={-45} 
-                      textAnchor="end" 
-                      interval={0}
-                      tick={{ fontSize: 11 }}
-                      height={80}
-                    />
-                    <YAxis
-                      tickFormatter={(v) => {
-                        const num = parseFloat(v);
-                        if (isNaN(num)) return '0';
-                        if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
-                        return num.toFixed(0);
-                      }}
-                      label={{ value: 'Volume (MT)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
-                    />
-                    <Tooltip 
-                      formatter={(value, name) => [
-                        name === 'volume' 
-                          ? `${new Intl.NumberFormat('en-US').format(value)} MT`
-                          : `$${new Intl.NumberFormat('en-US').format(value)}`,
-                        name === 'volume' ? 'Volume' : 'Value'
-                      ]}
-                    />
-                    <Legend />
-                    <Bar dataKey="volume" fill="#10b981" name="Volume (MT)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-          
-          {}
-          {prods && prods.volume_share && prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).length > 0 && (
-            <div style={{ marginTop: '4rem' }}>
-              <h3>Volume by Category</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {}
-                <div style={{ width: '100%', height: 300 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                      <Pie
-                        data={prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).slice(0, 8).map((item) => ({
-                          name: item.category || item.product_name || 'Unknown',
-                          value: parseFloat(item.volume) || parseFloat(item.share) || 0,
-                        }))}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                          const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                          const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
-                          const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-                          return percent > 0.05 ? (
-                            <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11}>
-                              {(percent * 100).toFixed(0)}%
-                            </text>
-                          ) : null;
-                        }}
-                        outerRadius={120}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).slice(0, 8).map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'][index % 8]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => `${new Intl.NumberFormat('en-US').format(value)} MT`} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {}
-                <div style={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  gap: '1rem', 
-                  justifyContent: 'center', 
-                  marginTop: '1rem',
-                  maxWidth: '100%' 
-                }}>
-                  {prods.volume_share.filter(item => (parseFloat(item.volume) || parseFloat(item.share) || 0) > 0).slice(0, 8).map((item, index) => (
-                    <div key={index} style={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem', color: '#4a5568' }}>
-                      <div style={{ 
-                        width: '12px', 
-                        height: '12px', 
-                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'][index % 8],
-                        borderRadius: '2px',
-                        marginRight: '8px'
-                      }}></div>
-                      <span>
-                        {item.category || item.product_name || 'Unknown'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {}
-          {prods && prods.co_trade_network && prods.co_trade_network.length > 0 && (
-            <div style={{ marginTop: '2rem' }}>
-              <h3>Product Co-Trade Network (GNN)</h3>
-              <p style={{ color: '#718096', fontSize: '0.9rem' }}>Frequently traded together with top product</p>
-              
-              <div style={{ 
-                width: '100%', 
-                height: '450px', 
-                background: '#f8fafc', 
-                borderRadius: '8px',
-                marginTop: '1rem',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                overflow: 'hidden'
-              }}>
-                <svg width="600" height="450" viewBox="0 0 600 450">
-                  <defs>
-                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="42" refY="3.5" orient="auto">
-                      <polygon points="0 0, 10 3.5, 0 7" fill="#cbd5e1" />
-                    </marker>
-                  </defs>
-                  
-                  {}
-                  {prods.co_trade_network.slice(0, 5).map((_, idx) => {
-                    const angle = (idx * (360 / Math.min(prods.co_trade_network.length, 5))) * (Math.PI / 180);
-                    const x = 300 + 160 * Math.cos(angle);
-                    const y = 225 + 160 * Math.sin(angle);
-                    return (
-                      <line 
-                        key={`line-${idx}`} 
-                        x1="300" y1="225" 
-                        x2={x} y2={y} 
-                        stroke="#cbd5e1" 
-                        strokeWidth="2"
-                        markerEnd="url(#arrowhead)"
-                      />
-                    );
-                  })}
-                  
-                  {}
-                  <circle cx="300" cy="225" r="60" fill="#3b82f6" />
-                  <text x="300" y="225" dy=".3em" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold">
-                    {(prods.product_performance?.[0]?.product_name || 'Primary').substring(0, 10)}
-                  </text>
-                  
-                  {}
-                  {prods.co_trade_network.slice(0, 5).map((p, idx) => {
-                    const angle = (idx * (360 / Math.min(prods.co_trade_network.length, 5))) * (Math.PI / 180);
-                    const x = 300 + 160 * Math.cos(angle);
-                    const y = 225 + 160 * Math.sin(angle);
-                    return (
-                      <g key={`node-${idx}`}>
-                        <circle cx={x} cy={y} r="40" fill="white" stroke="#94a3b8" strokeWidth="2" />
-                        <text x={x} y={y} dy="-0.2em" textAnchor="middle" fill="#1e293b" fontSize="9" fontWeight="bold">
-                          {p.name?.substring(0, 10)}
-                        </text>
-                        <text x={x} y={y} dy="1em" textAnchor="middle" fill="#64748b" fontSize="8">
-                          {p.frequency} trades
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
-              </div>
-            </div>
-          )}
-
-          {}
-          {prods && prods.product_clusters && (
-            <div style={{ marginTop: '2rem' }}>
-              <h3>Product Latent Clusters (GNN)</h3>
-              <p style={{ color: '#718096', fontSize: '0.9rem' }}>Automated product categorization clusters</p>
-              {prods.product_clusters.length > 0 ? (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
-                    {prods.product_clusters.slice(0, 5).map((cluster, idx) => (
-                    <div key={idx} style={{
-                        background: 'white', border: '1px solid #e2e8f0',
-                        borderRadius: '8px', padding: '1.5rem',
-                        minWidth: '200px', flex: '1'
-                    }}>
-                        <h4 style={{ margin: 0, color: '#475569' }}>{cluster.cluster_tag}</h4>
-                        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#3b82f6', marginTop: '0.5rem' }}>
-                        {cluster.count}
-                        </div>
-                        <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Products in cluster</div>
-                    </div>
-                    ))}
-                </div>
-              ) : (
-                <div className="empty-state" style={{ marginTop: '1rem', padding: '2rem' }}>
-                  <p>No AI product clusters generated for this company yet.</p>
-                </div>
-              )}
-            </div>
-          )}
+          </div>
         </div>
+
       </div>
     </>
   );

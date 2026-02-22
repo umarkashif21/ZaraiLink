@@ -11,6 +11,7 @@ def apply_transaction_filters(
     product_category_id=None,
     product_subcategory_id=None,
     product_item_id=None,
+    product_name=None,
 ):
     """
     Applies all supported filters to a Transaction QuerySet.
@@ -23,21 +24,20 @@ def apply_transaction_filters(
         if company_name:
             qs = qs.filter(seller=company_name)
     else:
-        
         if company_name:
             qs = qs.filter(models.Q(buyer=company_name) | models.Q(seller=company_name))
 
-    
     if date_from:
         qs = qs.filter(reporting_date__gte=date_from)
     if date_to:
         qs = qs.filter(reporting_date__lte=date_to)
 
-    
     if country:
-        qs = qs.filter(country=country)
+        qs = qs.filter(origin_country__icontains=country)
+        
+    if product_name:
+        qs = qs.filter(product_item__name__icontains=product_name)
 
-    
     if product_item_id:
         qs = qs.filter(product_item_id=product_item_id)
     elif product_subcategory_id:
