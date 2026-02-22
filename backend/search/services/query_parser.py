@@ -481,8 +481,15 @@ class QueryInterpreter:
         if f == 7 and len(attributes['country_filter']) <= 1:
             AMBIGUOUS_F7 = {'cheapest', 'lowest price', 'compare', 'vs'}
             triggered = [kw for kw in self.FAM_7_KEYWORDS if kw in raw_query]
-            if triggered and all(kw in AMBIGUOUS_F7 for kw in triggered):
-                f = 4 if (attributes['price_ceiling'] or attributes['price_floor']) else 1
+            # Don't downgrade if query explicitly mentions "countr" (country/countries)
+            query_has_country_word = bool(re.search(r'\bcountr', raw_query))
+            if triggered and all(kw in AMBIGUOUS_F7 for kw in triggered) and not query_has_country_word:
+                if attributes['price_ceiling'] or attributes['price_floor']:
+                    f = 4
+                elif attributes['country_filter']:
+                    f = 2
+                else:
+                    f = 1
                 attributes['family'] = f
 
         # Family 7 intent override:
