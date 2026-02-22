@@ -82,13 +82,17 @@ class QueryInterpreter:
              for part in parts[1:]:
                  # Check complexity of part
                  # 1. Has explicit intent keyword?
-                 has_intent = self._detect_intent_score(part)[0] != 'AMBIGUOUS' 
-                 
-                 # 2. Or has Country AND Product structure? (Heuristic)
-                 # If it's just a country "China", do NOT split.
-                 # If "China and India", 'India' has no intent, likely just country.
-                 
-                 if has_intent:
+                 has_intent = self._detect_intent_score(part)[0] != 'AMBIGUOUS'
+
+                 # 2. Or has structural family keyword (F6/F7/F8) that implies a separate query type?
+                 part_lower = part.strip().lower()
+                 has_structural_intent = (
+                     any(kw in part_lower for kw in self.FAM_7_KEYWORDS) or
+                     any(kw in part_lower for kw in self.FAM_8_KEYWORDS) or
+                     any(kw in part_lower for kw in self.FAM_6_KEYWORDS)
+                 )
+
+                 if has_intent or has_structural_intent:
                      final_segments.append(current_segment)
                      current_segment = part
                  else:
