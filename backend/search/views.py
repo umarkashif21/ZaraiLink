@@ -83,7 +83,18 @@ class SearchViewSet(viewsets.ViewSet):
                     nlp_search_term = sub['product']
                     break
         else:
-            nlp_search_term = active_params.get('product') or query 
+            product_term = active_params.get('product') or ''
+            # For F8 (buyer evidence) with a named buyer but no explicit product,
+            # do NOT fall back to the raw query string. The raw query contains buyer
+            # name / evidence keywords — feeding it to the NLP matcher produces false
+            # subcategory matches that then incorrectly filter EvidenceRetriever's
+            # queryset to zero transactions.
+            f8_no_product = (
+                active_params.get('family') == 8
+                and bool(active_params.get('counterparty_name'))
+                and not product_term
+            )
+            nlp_search_term = '' if f8_no_product else (product_term or query)
         
         # Extract Filters from Parser
         intent = active_params.get('intent', 'BUY')
@@ -132,7 +143,13 @@ class SearchViewSet(viewsets.ViewSet):
             matcher = QueryMatcher()
             matched_subcategories = matcher.match(nlp_search_term)
         
-        if not matched_subcategories and not has_filters:
+        # F8 with a named buyer is valid even without a product match —
+        # the user wants that buyer's transaction history regardless of product.
+        is_f8_with_buyer = (
+            active_params.get('family') == 8
+            and bool(active_params.get('counterparty_name'))
+        )
+        if not matched_subcategories and not has_filters and not is_f8_with_buyer:
             # No product match AND no filters — truly empty query
             return Response({
                 "query": query,
@@ -186,42 +203,103 @@ class SearchViewSet(viewsets.ViewSet):
              if auto_variants:
                  product_item_filter = list(set(auto_variants)) # Unique IDs
 
-        # C. Fetch Available Variants for Sidebar
-        # For the found subcategories, get all their items to show as filter options
+        # 3. Family-Based Routing — determine family before aggregation
+        family = active_params.get('family', 1)
+
+        # C. Fetch Available Variants for Sidebar (not needed for Family 7)
         available_variants = []
-        if subcategory_ids:
+        if family != 7 and subcategory_ids:
             from trade_data.models import ProductItem
             items = ProductItem.objects.filter(sub_category_id__in=subcategory_ids).values('id', 'name', 'sub_category_id')
             available_variants = list(items)
 
+        # Family 7: go straight to CountryComparator, skip aggregator + ranker entirely
+        if family == 7:
+            from .services.aggregation import CountryComparator
+            comparator = CountryComparator()
+            cc_result = comparator.compare_countries(
+                subcategory_ids,
+                intent=intent,
+                country_filter=country_filter if country_filter else None,
+                time_filter=time_filter,
+                product_item_filter=product_item_filter,
+            )
+            country_data = cc_result['results']
+            country_warnings = cc_result['warnings']
+            country_data_context = cc_result['data_context']
+
+            f7_market_snapshot = None
+            if country_data:
+                f7_market_snapshot = {
+                    "total_count": len(country_data),
+                    "avg_price_global": sum(c['avg_price'] for c in country_data) / len(country_data),
+                    "top_country": country_data[0]['country'],
+                }
+
+            return Response({
+                "query": query,
+                "parsed_query": parsed_query,
+                "matched_subcategories": matched_subcategories,
+                "family": 7,
+                "type": "country_comparison",
+                "country_comparison": country_data,
+                "country_warnings": country_warnings,
+                "data_context": country_data_context,
+                "market_snapshot": f7_market_snapshot,
+                "results": [],
+                "count": 0,
+            })
+
+        # Family 8: direct evidence retrieval — skip aggregator + ranker
+        if family == 8:
+            from .services.aggregation import EvidenceRetriever
+            retriever = EvidenceRetriever()
+            buyer_name = active_params.get('counterparty_name') or None
+            # If no product was parsed, use None (no subcat filter) not an empty list
+            f8_subcats = subcategory_ids if subcategory_ids else None
+            evidence = retriever.get_transaction_evidence(
+                subcategory_ids=f8_subcats,
+                buyer_name=buyer_name,
+                country_filter=country_filter if country_filter else None,
+                time_filter=time_filter,
+            )
+            return Response({
+                "query": query,
+                "parsed_query": parsed_query,
+                "matched_subcategories": matched_subcategories,
+                "family": 8,
+                "type": "transaction_evidence",
+                "transactions": evidence['transactions'],
+                "buyer_summary": evidence['buyer_summary'],
+                "buyer_found": evidence['buyer_found'],
+                "similar_buyers": evidence['similar_buyers'],
+                "total_shown": evidence['total_shown'],
+                "results": [],
+                "count": 0,
+            })
+
         aggregator = SupplierAggregator()
-        # Pass parser filters to aggregator
         results = aggregator.get_suppliers_for_subcategories(
-            subcategory_ids, 
+            subcategory_ids,
             intent=intent,
             scope=active_params.get('scope', 'WORLDWIDE'),
             country_filter=country_filter,
             price_filter=price_filter,
             volume_filter=volume_req,
             time_filter=time_filter,
-            product_item_filter=product_item_filter # NEW
+            product_item_filter=product_item_filter
         )
 
-        # 3. Ranking: LTR Ensemble
         from .services.ranking_ltr import RankingEnsemble
         ranker = RankingEnsemble()
         ranked_results = ranker.rank_candidates(results, parsed_query)
-        
-        # 3.5. Family-Based Result Filtering
-        family = active_params.get('family', 1)
-        
+
         if family == 6:  # Recommendation/Shortlist
-            # Extract top N from query ("top 3", "best 5", etc.)
             top_n = self._extract_top_n(query)
             if top_n:
                 ranked_results = ranked_results[:top_n]
             else:
-                ranked_results = ranked_results[:5]  # Default to top 5
+                ranked_results = ranked_results[:5]
 
         # 4. Enhance: Add Badges & Market Snapshot
         # ... existing logic ...

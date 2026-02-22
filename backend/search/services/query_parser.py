@@ -39,13 +39,27 @@ class QueryInterpreter:
         "want to export": 4, "sell": 1, "supply": 2, "available": 2, "exporters": 1,
         "demands": 3,
         "buyers": 3, "pay": 3, "pays": 3, "paying": 3, "who pay": 5,
-        "looking to sell": 5, "i have": 5, "can i sell": 5
+        "looking to sell": 5, "i have": 5, "can i sell": 5,
+        "buys": 5, "export": 2
     }
 
     # Family Parsing Keywords
     FAM_6_KEYWORDS = ["top", "best", "rank", "suggest", "recommend", "highest", "most", "paying"]
-    FAM_7_KEYWORDS = ["cheapest", "lowest price", "highest demand", "compare", "vs"]
-    FAM_8_KEYWORDS = ["shipments", "transactions", "history", "record", "proof", "verification", "evidence"]
+    FAM_7_KEYWORDS = ["cheapest", "lowest price", "highest demand", "demand highest",
+                      "compare", "vs",
+                      "which country", "which countries", "best market", "best country",
+                      "most demand", "top market", "top country", "country comparison",
+                      "by country", "per country", "export destinations", "import sources",
+                      "buyers by country", "country breakdown", "breakdown by country",
+                      "where is demand", "where is highest"]
+    FAM_8_KEYWORDS = [
+        "shipments", "transactions", "transaction", "history", "record", "proof",
+        "verification", "evidence", "invoices", "invoice", "verify",
+        "purchased before", "bought before", "past purchases", "paper trail",
+        "deal evidence", "has purchased", "has bought",
+    ]
+    # Noise words to strip from the product field specifically for F8 queries
+    FAM_8_PRODUCT_NOISE = ["purchased", "bought", "before", "provide", "deal"]
 
     def parse(self, query, explicit_scope=None):
         """
@@ -168,7 +182,11 @@ class QueryInterpreter:
         # --- 1. Identify Family Keywords ---
         is_rec = any(x in raw_query for x in self.FAM_6_KEYWORDS)
         is_mkt = any(x in raw_query for x in self.FAM_7_KEYWORDS)
-        is_evid = any(x in raw_query for x in self.FAM_8_KEYWORDS)
+        is_evid = (
+            any(x in raw_query for x in self.FAM_8_KEYWORDS)
+            # "Has [NAME] purchased/bought [product]" — name can be 1-5 words
+            or bool(re.search(r'\bhas\s+\S+(?:\s+\S+){0,4}\s+(?:purchased|bought)\b', raw_query))
+        )
 
         # --- 2. Country Extraction (Fuzzy & Alias) ---
         found_countries = []
@@ -302,23 +320,40 @@ class QueryInterpreter:
         # This fixes "Top 3 dextrose" -> "dextrose" (instead of "3 dextrose")
         clean_text = re.sub(r'\b(?:top|best|first|suggest|rank)\s+\d+\b', '', clean_text, flags=re.IGNORECASE)
         
-        all_phrases = sorted(list(self.BUY_SCORES.keys()) + list(self.SELL_SCORES.keys()), key=len, reverse=True)
+        # Merge FAM_7 multi-word phrases into this sorted list so that e.g.
+        # "export destinations" (18 chars) is removed before the single word
+        # "export" (6 chars) can fragment it.
+        fam7_multiword = [w for w in self.FAM_7_KEYWORDS if ' ' in w]
+        all_phrases = sorted(
+            list(self.BUY_SCORES.keys()) + list(self.SELL_SCORES.keys()) + fam7_multiword,
+            key=len, reverse=True
+        )
         for phrase in all_phrases:
              clean_text = re.sub(r'\b' + re.escape(phrase) + r'\b', '', clean_text)
-        for w in self.FAM_6_KEYWORDS + self.FAM_7_KEYWORDS + self.FAM_8_KEYWORDS:
+        # Sort longest phrases first so multi-word FAM_7 phrases (e.g. "top country")
+        # are removed before their constituent FAM_6 single words (e.g. "top").
+        all_fam_keywords = sorted(
+            self.FAM_6_KEYWORDS + self.FAM_7_KEYWORDS + self.FAM_8_KEYWORDS,
+            key=len, reverse=True
+        )
+        for w in all_fam_keywords:
              clean_text = re.sub(r'\b' + re.escape(w) + r'\b', '', clean_text)
         
         # Stopwords
         STOPWORDS = [
             " in ", " with ", " for ", " of ", " from ", " to ", " between ",
-            "please", "search", "find", "show", "me", "list", 
+            "please", "search", "find", "show", "me", "list",
             "details", "price", "prices", "active", "recent", "data", "who", "is", "are",
             "import", "export", "importing", "exporting",
             "and", "&",
             "importers", "buyers", "buyer", "importer", "buying", "selling",
             "can", "i", "sell", "buy", "have", "looking", "please", "want", "need", "give", "get",
             "pay", "pays", "paying", "payment",
-            "more", "less", "than", "above", "below", "under", "over"
+            "more", "less", "than", "above", "below", "under", "over",
+            # Family-7 residual noise
+            "the", "a", "an", "country", "countries", "market", "markets",
+            "has", "do", "does", "where", "buys", "by", "per",
+            "demand", "globally",
         ]
         
         # Remove common conversational prefixes
@@ -374,5 +409,91 @@ class QueryInterpreter:
         else: f = 1
         
         attributes['family'] = f
-        
+
+        # --- F8: Buyer name extraction (run on original-case query) ---
+        # Always runs for F8 and overrides the generic entity_match result, which
+        # can pick up noise words (e.g., "provide ... corp" → "Provide Corp").
+        if f == 8:
+            buyer_name_extracted = None
+
+            # Pattern 1: "Has <BUYER> purchased/bought [product]"
+            m = re.search(r'\bhas\s+(.+?)\s+(?:purchased|bought)\b', query, re.IGNORECASE)
+            if m:
+                buyer_name_extracted = m.group(1).strip()
+
+            # Pattern 2: "shipments (from X) to <BUYER>"
+            if not buyer_name_extracted:
+                m = re.search(r'\bshipments\s+(?:\w+\s+\w+\s+)?to\s+(.+?)(?:\?|$)', query, re.IGNORECASE)
+                if m:
+                    buyer_name_extracted = m.group(1).strip().rstrip('?').strip()
+
+            # Pattern 3: "evidence/invoices/history/record/verify for <BUYER>"
+            # Only matches if the name begins with an uppercase letter (proper noun / company name).
+            # This prevents product names like "dextrose" from being misidentified as buyers.
+            if not buyer_name_extracted:
+                m = re.search(
+                    r'\b(?:evidence|invoices?|history|record|verification|proof|verify)\s+(?:for|of|by)\s+([A-Z]\w[\w\s]*?)(?:\?|$)',
+                    query  # original-case query — NOT re.IGNORECASE
+                )
+                if m:
+                    buyer_name_extracted = m.group(1).strip().rstrip('?').strip()
+
+            # Set (or clear if no F8 pattern matched) — override generic entity_match noise
+            attributes['counterparty_name'] = buyer_name_extracted
+
+            # Remove countries that are embedded within the buyer company name from country_filter.
+            # e.g. "Pakistan" in "Nestle Pakistan Ltd" is part of the name, not a geo-filter.
+            if buyer_name_extracted and attributes['country_filter']:
+                buyer_lower = buyer_name_extracted.lower()
+                attributes['country_filter'] = [
+                    c for c in attributes['country_filter']
+                    if c.lower() not in buyer_lower
+                ]
+
+            # Strip the buyer name from the extracted product to avoid contamination.
+            # Try full phrase first; if not found, strip individual tokens (≥4 chars).
+            if buyer_name_extracted and attributes['product']:
+                cn_lower = buyer_name_extracted.lower()
+                p = attributes['product']
+                if cn_lower in p.lower():
+                    p = re.sub(re.escape(cn_lower), '', p, flags=re.IGNORECASE)
+                else:
+                    for token in cn_lower.split():
+                        if len(token) >= 4:
+                            p = re.sub(r'\b' + re.escape(token) + r'\b', '', p, flags=re.IGNORECASE)
+                attributes['product'] = re.sub(r'\s+', ' ', p).strip()
+
+            # Strip F8-specific noise words from product (e.g., "purchased", "before", "deal")
+            if attributes['product']:
+                p = attributes['product']
+                for noise in self.FAM_8_PRODUCT_NOISE:
+                    p = re.sub(r'\b' + re.escape(noise) + r'\b', '', p, flags=re.IGNORECASE)
+                attributes['product'] = re.sub(r'\s+', ' ', p).strip()
+
+        # Guard: if family=7 was triggered solely by ambiguous non-country keywords
+        # (compare, vs, cheapest, lowest price) and fewer than 2 countries were extracted,
+        # it is a product/price comparison, not a country comparison — downgrade.
+        # A single country is not a comparison (e.g. "cheapest dextrose from China" → Family 2/4).
+        if f == 7 and len(attributes['country_filter']) <= 1:
+            AMBIGUOUS_F7 = {'cheapest', 'lowest price', 'compare', 'vs'}
+            triggered = [kw for kw in self.FAM_7_KEYWORDS if kw in raw_query]
+            if triggered and all(kw in AMBIGUOUS_F7 for kw in triggered):
+                f = 4 if (attributes['price_ceiling'] or attributes['price_floor']) else 1
+                attributes['family'] = f
+
+        # Family 7 intent override:
+        # Phrases like "which country buys", "by country", "buyers by country" clearly
+        # ask for BUYER markets — i.e. the user is a SELLER looking for destinations.
+        # Without this override, the word "buy/buys" would push intent to BUY incorrectly.
+        if f == 7 and attributes['intent'] == 'BUY':
+            BUYER_MARKET_PHRASES = [
+                'which country', 'which countries', 'by country', 'per country',
+                'buyers by country', 'country breakdown', 'breakdown by country',
+                'highest demand', 'most demand', 'where is demand', 'where is highest',
+                'best market', 'best country', 'top market', 'top country',
+                'export destinations',
+            ]
+            if any(phrase in raw_query for phrase in BUYER_MARKET_PHRASES):
+                attributes['intent'] = 'SELL'
+
         return attributes

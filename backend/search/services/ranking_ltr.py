@@ -39,7 +39,9 @@ FAMILY_WEIGHTS = {
     5: { # Time-Constrained
         'inv_recency': 3.0, 'shipment_freq': 1.5, 'volume_fit': 1.0
     },
-    # Extensions for other families...
+    7: { # Market/Country Comparison — secondary buyer list ranking
+        'log_volume': 1.0, 'inv_recency': 1.0, 'country_match': 2.0, 'shipment_freq': 1.0
+    },
     9: { # Hybrid / Default
         'volume_fit': 1.0, 'log_volume': 1.0, 'inv_recency': 1.0, 'shipment_freq': 1.0, 'country_match': 1.0
     }
@@ -61,18 +63,18 @@ class FeatureExtractor:
         Returns a list of feature values (float).
         """
         # 1. Base Metrics
-        vol = candidate.get('total_volume_mt', 0)
-        price = candidate.get('avg_price_usd_per_mt', 0)
-        freq = candidate.get('num_shipments', 0)
-        
+        vol = candidate.get('total_volume', 0)
+        price = candidate.get('avg_price', 0)
+        freq = candidate.get('shipment_count', 0)
+
         # Recency
-        last_date_str = candidate.get('last_trade_date')
-        if last_date_str:
-            last_date = datetime.date.fromisoformat(last_date_str)
-            days_ago = (datetime.date.today() - last_date).days
-            inv_recency = 1.0 / (days_ago + 1.0) # Avoid div/0, higher is more recent
+        last_date_val = candidate.get('last_shipment_date')
+        if last_date_val:
+            if isinstance(last_date_val, str):
+                last_date_val = datetime.date.fromisoformat(last_date_val)
+            days_ago = (datetime.date.today() - last_date_val).days
+            inv_recency = 1.0 / (days_ago + 1.0)  # Avoid div/0, higher is more recent
         else:
-            days_ago = 9999
             inv_recency = 0.0
             
         # 2. Query Context Matches
@@ -255,7 +257,7 @@ class RankingEnsemble:
             c['ranking_score'] = round(final_scores[i], 3)
             # Add feature explanation (optional)
             c['match_features'] = {
-                'vol': candidates[i].get('total_volume_mt'),
+                'vol': candidates[i].get('total_volume'),
                 'fit': candidates[i].get('volume_fit')
             }
             
