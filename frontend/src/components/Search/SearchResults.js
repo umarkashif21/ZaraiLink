@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Filter, CheckCircle, BarChart2, TrendingUp, TrendingDown, Globe, FileText } from 'lucide-react';
+import { Filter, CheckCircle, BarChart2, TrendingUp, TrendingDown, Globe, FileText, Layers } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
 import '../Dashboard/Dashboard.css'; // Import shared styles
 import searchService from '../../services/searchService';
@@ -27,6 +27,10 @@ const SearchResults = () => {
     const [expandedCountry, setExpandedCountry] = useState(null);
     const [countryWarnings, setCountryWarnings] = useState([]);
     const [countryDataContext, setCountryDataContext] = useState(null);
+
+    // Multi-Intent (Family 9)
+    const [isMultiIntent, setIsMultiIntent] = useState(false);
+    const [multiIntentSections, setMultiIntentSections] = useState([]);
 
     // Transaction Evidence (Family 8)
     const [isBuyerEvidence, setIsBuyerEvidence] = useState(false);
@@ -71,6 +75,8 @@ const SearchResults = () => {
                     setBuyerSummary(null);
                     setSimilarBuyers([]);
                     setBuyerFound(false);
+                    setIsMultiIntent(false);
+                    setMultiIntentSections([]);
 
                     // Family 7 — Country Comparison
                     if (data.type === 'country_comparison' && data.country_comparison) {
@@ -87,6 +93,12 @@ const SearchResults = () => {
                         setBuyerSummary(data.buyer_summary || null);
                         setSimilarBuyers(data.similar_buyers || []);
                         setBuyerFound(data.buyer_found || false);
+                    }
+
+                    // Family 9 — Multi-Intent
+                    if (data.type === 'multi_intent') {
+                        setIsMultiIntent(true);
+                        setMultiIntentSections(data.sections || []);
                     }
 
                     // Extract unique countries for filter if not already set
@@ -560,8 +572,135 @@ const SearchResults = () => {
                         </div>
                     )}
 
-                    {/* ── STANDARD Results (Families 1–6, 9) ── */}
-                    {!loading && !error && !isCountryComparison && !isBuyerEvidence && (
+                    {/* ── FAMILY 9: Multi-Intent Stacked Sections ── */}
+                    {!loading && !error && isMultiIntent && (
+                        <div>
+                            {/* Header */}
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                                    <Layers size={22} />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-800">Multi-Part Answer</h2>
+                                    <p className="text-sm text-gray-500 font-medium">
+                                        {multiIntentSections.length} parts found for "{query}"
+                                    </p>
+                                </div>
+                            </div>
+
+                            {multiIntentSections.map((section, si) => (
+                                <div key={si} className="mb-10">
+                                    {/* Section label strip */}
+                                    <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-gray-100">
+                                        <span className="px-2.5 py-0.5 text-xs bg-purple-100 text-purple-700 font-bold rounded-full">
+                                            Part {si + 1}
+                                        </span>
+                                        <h3 className="text-lg font-bold text-gray-800">{section.label}</h3>
+                                        <span className="text-sm text-gray-400 font-medium">— {section.intent_answered}</span>
+                                    </div>
+
+                                    {/* F7 — compact country comparison table */}
+                                    {section.family === 7 && (
+                                        <div className="bg-white rounded-xl shadow-sm border-2 border-gray-100 overflow-hidden">
+                                            {section.country_comparison && section.country_comparison.length > 0 ? (
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left text-sm text-gray-700">
+                                                        <thead className="bg-gray-50 text-gray-500 font-bold uppercase text-xs tracking-wider border-b-2 border-gray-100">
+                                                            <tr>
+                                                                <th className="px-4 py-3">#</th>
+                                                                <th className="px-4 py-3">Country</th>
+                                                                <th className="px-4 py-3">Total Volume</th>
+                                                                <th className="px-4 py-3">Avg Price</th>
+                                                                <th className="px-4 py-3">Buyers</th>
+                                                                <th className="px-4 py-3">YoY Growth</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100">
+                                                            {section.country_comparison.slice(0, 8).map((c, ci) => (
+                                                                <tr key={ci} className="hover:bg-gray-50 transition-colors">
+                                                                    <td className="px-4 py-3 text-gray-400 font-bold">{ci + 1}</td>
+                                                                    <td className="px-4 py-3 font-bold text-gray-900">{c.country}</td>
+                                                                    <td className="px-4 py-3 font-bold text-gray-800 font-sans">
+                                                                        {c.total_volume.toLocaleString(undefined, { maximumFractionDigits: 0 })} MT
+                                                                    </td>
+                                                                    <td className="px-4 py-3 font-bold text-gray-800 font-sans">
+                                                                        ${c.avg_price.toFixed(2)}/MT
+                                                                    </td>
+                                                                    <td className="px-4 py-3">
+                                                                        <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-bold rounded text-xs border border-indigo-100">
+                                                                            {c.supplier_count}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="px-4 py-3">
+                                                                        {c.demand_growth_pct === 0 ? (
+                                                                            <span className="text-gray-400 text-xs">Flat</span>
+                                                                        ) : (
+                                                                            <span className={`flex items-center gap-1 font-bold text-sm ${c.demand_growth_pct > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                                                                {c.demand_growth_pct > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                                                                                {c.demand_growth_pct > 0 ? '+' : ''}{c.demand_growth_pct}%
+                                                                            </span>
+                                                                        )}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-8 text-gray-400 font-medium">
+                                                    No country data found for this part of your query.
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* F1–F6 — compact buyer/supplier cards */}
+                                    {section.family !== 7 && (
+                                        <div>
+                                            {!section.results || section.results.length === 0 ? (
+                                                <div className="text-center py-8 text-gray-400 font-medium">
+                                                    No results for this part of your query.
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    {section.results.slice(0, 10).map((supplier, idx) => (
+                                                        <div key={idx} className="action-card bg-white mb-3 hover:border-emerald-500 transition-all cursor-default relative overflow-visible group" style={{ padding: '0.875rem 1.25rem', marginBottom: '0.625rem' }}>
+                                                            <div className="flex justify-between items-center">
+                                                                <div>
+                                                                    <h4 className="text-base font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">{supplier.name}</h4>
+                                                                    <div className="text-xs text-gray-500 font-medium">{supplier.country}</div>
+                                                                    <div className="flex gap-4 text-xs text-gray-700 mt-1.5">
+                                                                        <span><span className="text-gray-400 uppercase font-bold tracking-wider">Avg Price </span><span className="font-bold">${supplier.avg_price.toFixed(2)}/MT</span></span>
+                                                                        <span><span className="text-gray-400 uppercase font-bold tracking-wider">Volume </span><span className="font-bold">{supplier.total_volume.toLocaleString(undefined, { maximumFractionDigits: 0 })} MT</span></span>
+                                                                        <span><span className="text-gray-400 uppercase font-bold tracking-wider">Shipments </span><span className="font-bold">{supplier.shipment_count}</span></span>
+                                                                    </div>
+                                                                </div>
+                                                                <Link
+                                                                    to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}`}
+                                                                    className="stat-action text-center flex-shrink-0"
+                                                                    style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
+                                                                >
+                                                                    View
+                                                                </Link>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    {section.results.length > 10 && (
+                                                        <p className="text-xs text-gray-400 text-center mt-2 font-medium">
+                                                            Showing top 10 of {section.results.length} results
+                                                        </p>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* ── STANDARD Results (Families 1–6) ── */}
+                    {!loading && !error && !isCountryComparison && !isBuyerEvidence && !isMultiIntent && (
                         <div>
                             <h2 className="text-2xl font-bold text-gray-800 mb-6 font-primary">
                                 {results.length} {parsedIntent === 'SELL' ? 'Buyers' : 'Suppliers'} found for "{query}"

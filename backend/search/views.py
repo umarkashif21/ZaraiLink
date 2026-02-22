@@ -43,45 +43,22 @@ class SearchViewSet(viewsets.ViewSet):
         active_params = parsed_query
         
         if parsed_query.get('multi_intent') and parsed_query.get('sub_intents'):
-            # MERGE Strategy: Combine filters from all sub-intents
-            # Start with the first one as base
-            merged_params = parsed_query['sub_intents'][0].copy()
-            
-            for i in range(1, len(parsed_query['sub_intents'])):
-                sub = parsed_query['sub_intents'][i]
-                
-                # 1. Merge Family (Higher family ID usually means more specific intent like Rec/Comparison)
-                # Specifically, if one part says "suggest" (Fam 6), the whole query is Fam 6.
-                if sub.get('family', 1) > merged_params.get('family', 1):
-                    merged_params['family'] = sub['family']
-                    
-                # 2. Merge Country Filters (Union)
-                if sub.get('country_filter'):
-                    existing = set(merged_params.get('country_filter', []))
-                    existing.update(sub['country_filter'])
-                    merged_params['country_filter'] = list(existing)
-                    
-                # 3. Merge Price (Override if specific provided in later part)
-                if sub.get('price_ceiling'):
-                    merged_params['price_ceiling'] = sub['price_ceiling']
-                if sub.get('price_floor'):
-                    merged_params['price_floor'] = sub['price_floor']
-                    
-                # 4. Merge Volume
-                if sub.get('volume_mt'):
-                    merged_params['volume_mt'] = sub['volume_mt']
-                    
-                # 5. Merge Time
-                if sub.get('time_range'):
-                    merged_params['time_range'] = sub['time_range']
-            
-            active_params = merged_params
-            
-            # Use product from first non-empty product sub-intent or default
+            # F9: Hybrid / Multi-Intent — run each sub-intent through its own module
+            # and return stacked sections. Return early before the single-intent pipeline.
+            sections = []
             for sub in parsed_query['sub_intents']:
-                if sub.get('product'):
-                    nlp_search_term = sub['product']
-                    break
+                section = self._run_sub_intent(sub, query)
+                if section:
+                    sections.append(section)
+            return Response({
+                "query": query,
+                "parsed_query": parsed_query,
+                "type": "multi_intent",
+                "family": 9,
+                "sections": sections,
+                "results": [],
+                "count": len(sections),
+            })
         else:
             product_term = active_params.get('product') or ''
             # For F8 (buyer evidence) with a named buyer but no explicit product,
@@ -477,5 +454,99 @@ class SearchViewSet(viewsets.ViewSet):
             
         if start_date or end_date:
             return {"start_date": start_date, "end_date": end_date}
-            
+
         return None
+
+    def _run_sub_intent(self, sub_params, raw_query):
+        """
+        Run a single parsed sub-intent through its appropriate family module.
+        Returns a section dict for inclusion in a Family 9 multi-intent response,
+        or None if the sub-intent produces no usable output.
+        """
+        from .services.nlp import QueryMatcher
+        from .services.aggregation import SupplierAggregator, CountryComparator
+        from .services.ranking_ltr import RankingEnsemble
+
+        family = sub_params.get('family', 1)
+        product = sub_params.get('product') or ''
+        country_filter = sub_params.get('country_filter', [])
+        volume_req = sub_params.get('volume_mt')
+        time_range_str = sub_params.get('time_range')
+        intent = sub_params.get('intent', 'BUY')
+
+        price_filter = {}
+        if sub_params.get('price_ceiling'):
+            price_filter['ceiling'] = sub_params['price_ceiling']
+        if sub_params.get('price_floor'):
+            price_filter['floor'] = sub_params['price_floor']
+
+        time_filter = self._parse_time_range(time_range_str) if time_range_str else None
+
+        # NLP → subcategory IDs (only when a product term exists)
+        matched_subcategories = []
+        subcategory_ids = None
+        if product:
+            matcher = QueryMatcher()
+            matched_subcategories = matcher.match(product)
+            if matched_subcategories:
+                top_match = matched_subcategories[0]
+                if top_match['score'] > 0.95:
+                    threshold = top_match['score'] - 0.05
+                    subcategory_ids = [m['id'] for m in matched_subcategories if m['score'] >= threshold]
+                else:
+                    subcategory_ids = [m['id'] for m in matched_subcategories]
+
+        SECTION_META = {
+            1: ("Buyer Discovery",        "Who buys this product?"),
+            2: ("Country-Filtered Buyers","Buyers in specific countries"),
+            3: ("Volume-Matched Buyers",  "Buyers matching your order size"),
+            4: ("Price-Filtered Buyers",  "Buyers at your target price"),
+            5: ("Active Recent Buyers",   "Buyers who purchased recently"),
+            6: ("Top Recommendations",    "Best buyers to approach first"),
+            7: ("Country Comparison",     "Which countries have the most demand?"),
+        }
+        label, intent_answered = SECTION_META.get(family, ("Results", "Query results"))
+
+        # Family 7 → CountryComparator
+        if family == 7:
+            comparator = CountryComparator()
+            cc_result = comparator.compare_countries(
+                subcategory_ids,
+                intent=intent,
+                country_filter=country_filter if country_filter else None,
+                time_filter=time_filter,
+            )
+            return {
+                "label": label,
+                "family": 7,
+                "intent_answered": intent_answered,
+                "country_comparison": cc_result['results'],
+                "country_warnings": cc_result['warnings'],
+                "data_context": cc_result['data_context'],
+            }
+
+        # Families 1–6 → SupplierAggregator + RankingEnsemble
+        aggregator = SupplierAggregator()
+        results = aggregator.get_suppliers_for_subcategories(
+            subcategory_ids,
+            intent=intent,
+            scope=sub_params.get('scope', 'WORLDWIDE'),
+            country_filter=country_filter,
+            price_filter=price_filter,
+            volume_filter=volume_req,
+            time_filter=time_filter,
+        )
+        ranker = RankingEnsemble()
+        ranked_results = ranker.rank_candidates(results, sub_params)
+
+        if family == 6:
+            top_n = self._extract_top_n(raw_query) or 5
+            ranked_results = ranked_results[:top_n]
+
+        return {
+            "label": label,
+            "family": family,
+            "intent_answered": intent_answered,
+            "results": ranked_results,
+            "matched_subcategories": matched_subcategories,
+        }
