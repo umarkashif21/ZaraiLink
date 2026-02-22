@@ -742,8 +742,27 @@ class EvidenceRetriever:
                     if top_name:
                         matched_buyer_name = top_name['buyer']
                 else:
+                    # 2b. Normalize "and" ↔ "&" (e.g. "Muller and Phipps" → "Muller & Phipps")
+                    import re as _re
+                    alt_name = _re.sub(r'\band\b', '&', name, flags=_re.IGNORECASE)
+                    if alt_name == name:
+                        alt_name = name.replace('&', 'and')
+                    if alt_name != name:
+                        alt_qs = queryset.filter(buyer__icontains=alt_name)
+                        if alt_qs.exists():
+                            queryset = alt_qs
+                            buyer_found = True
+                            top_name = (
+                                alt_qs.values('buyer')
+                                .annotate(cnt=Count('id'))
+                                .order_by('-cnt')
+                                .first()
+                            )
+                            if top_name:
+                                matched_buyer_name = top_name['buyer']
+
+                if not buyer_found:
                     # 3. No match — fuzzy suggest from all buyers in this product
-                    buyer_found = False
                     all_buyers = list(
                         queryset.values_list('buyer', flat=True).distinct()[:300]
                     )

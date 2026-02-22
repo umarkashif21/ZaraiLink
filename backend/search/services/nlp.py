@@ -13,8 +13,14 @@ class QueryMatcher:
     @classmethod
     def get_model(cls):
         if cls._model is None:
-            # Load model (downloads on first run)
-            cls._model = SentenceTransformer('all-MiniLM-L6-v2')
+            # Disable accelerate's meta-device lazy loading (low_cpu_mem_usage=True is
+            # the default when accelerate is installed, but it causes NotImplementedError
+            # "Cannot copy out of meta tensor" in the Django server process).
+            cls._model = SentenceTransformer(
+                'all-MiniLM-L6-v2',
+                device='cpu',
+                model_kwargs={'low_cpu_mem_usage': False},
+            )
         return cls._model
 
     @classmethod
