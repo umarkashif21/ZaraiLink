@@ -45,8 +45,19 @@ class SearchViewSet(viewsets.ViewSet):
         if parsed_query.get('multi_intent') and parsed_query.get('sub_intents'):
             # F9: Hybrid / Multi-Intent — run each sub-intent through its own module
             # and return stacked sections. Return early before the single-intent pipeline.
+            sub_intents = parsed_query['sub_intents']
+            # Carry-over: find the first meaningful product (len > 3) across all sub-intents.
+            # Sub-intents like "who are the top buyers there?" parse to product="there" (anaphora);
+            # sub-intents like "show country comparison" parse to product="" (no product term).
+            # In both cases, reuse the context product from the first non-trivial sub-intent.
+            context_product = next(
+                (s.get('product', '') for s in sub_intents if len(s.get('product', '')) > 3),
+                ''
+            )
             sections = []
-            for sub in parsed_query['sub_intents']:
+            for sub in sub_intents:
+                if context_product and len(sub.get('product', '')) <= 3:
+                    sub = {**sub, 'product': context_product}
                 section = self._run_sub_intent(sub, query)
                 if section:
                     sections.append(section)
@@ -526,11 +537,18 @@ class SearchViewSet(viewsets.ViewSet):
             }
 
         # Families 1–6 → SupplierAggregator + RankingEnsemble
+        # The DB only has IMPORT records. SELL+WORLDWIDE → EXPORT → 0 results.
+        # For buyer-discovery sub-intents (F1-F6) with SELL intent, fall back to
+        # PAKISTAN scope so we query IMPORT records for Pakistani buyers.
+        effective_scope = sub_params.get('scope', 'WORLDWIDE')
+        if intent == 'SELL' and effective_scope == 'WORLDWIDE':
+            effective_scope = 'PAKISTAN'
+
         aggregator = SupplierAggregator()
         results = aggregator.get_suppliers_for_subcategories(
             subcategory_ids,
             intent=intent,
-            scope=sub_params.get('scope', 'WORLDWIDE'),
+            scope=effective_scope,
             country_filter=country_filter,
             price_filter=price_filter,
             volume_filter=volume_req,
