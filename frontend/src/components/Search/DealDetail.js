@@ -9,6 +9,7 @@ const DealDetail = () => {
     const { name } = useParams();
     const [searchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
+    const scopeParam = searchParams.get('scope') || '';
     const navigate = useNavigate();
 
     // ── Styling helpers for intelligence labels ──────────────────────────────
@@ -58,7 +59,6 @@ const DealDetail = () => {
                     <h4 style={{ fontWeight: 900, fontSize: '1.1rem', color: '#064e3b', margin: 0 }}>
                         {isBuyer ? 'Buyer Intelligence Snapshot' : 'Supplier Intelligence Snapshot'}
                     </h4>
-                    <span style={{ marginLeft: 'auto', fontSize: '0.65rem', fontWeight: 700, color: '#059669', background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '999px', padding: '0.2rem 0.75rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Live Data</span>
                 </div>
                 {/* Summary */}
                 <p style={{ color: '#065f46', fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '1.5rem', fontWeight: 500 }}>
@@ -104,7 +104,7 @@ const DealDetail = () => {
             setLoading(true);
             try {
                 const decodedName = decodeURIComponent(name);
-                const result = await searchService.getSupplierDetails(decodedName, query);
+                const result = await searchService.getSupplierDetails(decodedName, query, scopeParam);
                 setData(result);
             } catch (err) {
                 console.error("Failed to fetch details", err);
@@ -114,7 +114,7 @@ const DealDetail = () => {
             }
         };
         if (name) fetchDetails();
-    }, [name, query]);
+    }, [name, query, scopeParam]);
 
     // ── Derived filter bounds (computed once data loads) ──────────────────────
     const allHistory = data?.supplier?.history || [];
@@ -508,12 +508,20 @@ const DealDetail = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="border border-gray-200 p-5 rounded-xl bg-gray-50">
                                     <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-2">Recent {isBuyer ? 'Suppliers' : 'Buyers'}</p>
-                                    <p className="text-3xl font-bold text-gray-900 font-sans">{supplier.supplier_insights?.recent_buyers || supplier.supplier_insights?.recent_suppliers || 0}</p>
+                                    <p className="text-3xl font-bold text-gray-900 font-sans">
+                                        {supplier.buyer_insights?.recent_buyers
+                                            || supplier.supplier_insights?.recent_suppliers
+                                            || 0}
+                                    </p>
                                     <p className="text-xs text-emerald-600 mt-2 font-medium flex items-center gap-1"><CheckCircle size={10} /> Active in last month</p>
                                 </div>
                                 <div className="border border-gray-200 p-5 rounded-xl bg-gray-50">
                                     <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-2">Total {isBuyer ? 'Suppliers' : 'Relationships'}</p>
-                                    <p className="text-3xl font-bold text-gray-900 font-sans">{supplier.supplier_insights?.total_relationships || 0}</p>
+                                    <p className="text-3xl font-bold text-gray-900 font-sans">
+                                        {supplier.buyer_insights?.total_relationships
+                                            || supplier.supplier_insights?.total_relationships
+                                            || 0}
+                                    </p>
                                     <p className="text-xs text-gray-400 mt-2 font-medium">Lifetime unique connections</p>
                                 </div>
                             </div>
@@ -521,7 +529,15 @@ const DealDetail = () => {
 
                         {/* Take Action */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                            <button className="flex flex-col items-center justify-center p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-emerald-500 hover:shadow-lg transition-all group bg-gradient-to-br from-white to-gray-50 hover:to-emerald-50 cursor-pointer">
+                            <button
+                                onClick={() => {
+                                    if (data.company_id) {
+                                        navigate(`/trade-directory/company/${data.company_id}`);
+                                    }
+                                }}
+                                className="flex flex-col items-center justify-center p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-emerald-500 hover:shadow-lg transition-all group bg-gradient-to-br from-white to-gray-50 hover:to-emerald-50 cursor-pointer"
+                                style={{ opacity: data.company_id ? 1 : 0.6 }}
+                            >
                                 <div className="p-4 bg-gray-100 text-gray-600 rounded-full mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
                                     <FileText size={28} />
                                 </div>
@@ -538,7 +554,16 @@ const DealDetail = () => {
                                 <span className="font-bold text-gray-900 text-lg">{labels.ctaLedger}</span>
                                 <span className="text-xs text-gray-500 mt-1 font-medium group-hover:text-emerald-700">See full history</span>
                             </button>
-                            <button className="flex flex-col items-center justify-center p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-emerald-500 hover:shadow-lg transition-all group bg-gradient-to-br from-white to-gray-50 hover:to-emerald-50 cursor-pointer">
+                            <button
+                                onClick={() => {
+                                    if (data.trade_lens_product_id) {
+                                        navigate(`/trade-intelligence/lens/${data.trade_lens_product_id}/overview`);
+                                    } else {
+                                        navigate(`/trade-intelligence/lens?search=${encodeURIComponent(query)}`);
+                                    }
+                                }}
+                                className="flex flex-col items-center justify-center p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-emerald-500 hover:shadow-lg transition-all group bg-gradient-to-br from-white to-gray-50 hover:to-emerald-50 cursor-pointer"
+                            >
                                 <div className="p-4 bg-gray-100 text-gray-600 rounded-full mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
                                     <TrendingUp size={28} />
                                 </div>

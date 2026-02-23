@@ -264,17 +264,52 @@ class SearchViewSet(viewsets.ViewSet):
         matched_subcategories = matcher.match(nlp_search_term)
         subcategory_ids = [m['id'] for m in matched_subcategories]
         
+        # 1.4 Variant / ProductItem Logic
+        # Mirror the logic from the search list endpoint to ensure exact product match
+        product_item_filter = None
+        if matched_subcategories:
+             auto_variants = []
+             target_subcat_ids = set(subcategory_ids) if subcategory_ids else set()
+             
+             for match in matched_subcategories:
+                 if match['id'] in target_subcat_ids and match.get('matched_variants'):
+                     auto_variants.extend(match['matched_variants'])
+            
+             if auto_variants:
+                 product_item_filter = list(set(auto_variants))
+        
+        # 1.5 Find corresponding TradeLensProduct ID
+        trade_lens_product_id = None
+        try:
+            from trade_lens.models import TradeLensProduct
+            # Try to match by the parsed search term first
+            tl_product = TradeLensProduct.objects.filter(name__icontains=nlp_search_term).first()
+            if tl_product:
+                trade_lens_product_id = tl_product.id
+            elif matched_subcategories:
+                # If no direct match, try matching by the top matched subcategory name
+                for m in matched_subcategories:
+                    tl = TradeLensProduct.objects.filter(name__icontains=m['name']).first()
+                    if tl:
+                        trade_lens_product_id = tl.id
+                        break
+        except Exception as e:
+            print(f"Error looking up TradeLensProduct: {e}")
+            pass
+        
         # 2. Get Detail Stats
         # 2. Get Detail Stats based on Intent
         intent = parsed_query.get('intent', 'BUY')
+        req_scope = request.query_params.get('scope')
+        scope = req_scope if req_scope else parsed_query.get('scope', 'WORLDWIDE')
         aggregator = SupplierAggregator()
         
         if intent == 'SELL':
             # User is selling, so we are looking for a BUYER
-            details = aggregator.get_buyer_details(seller_name, subcategory_ids)
+            details = aggregator.get_buyer_details(seller_name, subcategory_ids, product_item_filter=product_item_filter, scope=scope)
         else:
             # User is buying, so we are looking for a SUPPLIER
-            details = aggregator.get_supplier_details(seller_name, subcategory_ids)
+            details = aggregator.get_supplier_details(seller_name, subcategory_ids, product_item_filter=product_item_filter, scope=scope)
         
         if not details:
             return Response({"error": f"{'Buyer' if intent == 'SELL' else 'Supplier'} not found for this product"}, status=404)
@@ -314,11 +349,23 @@ class SearchViewSet(viewsets.ViewSet):
                     market_context['price_trend'] = "Downtrend"
                     market_context['sentiment'] = "Bearish"
 
+        # 5. Resolve Company ID for Trade Directory link
+        company_id = None
+        try:
+            from companies.models import Company
+            company = Company.objects.filter(name__iexact=seller_name.strip()).first()
+            if company:
+                company_id = company.id
+        except Exception:
+            pass
+
         return Response({
             "supplier": details, # Frontend expects 'supplier' key for now, we can rename or keep it
             "comparables": comparables,
             "market_context": market_context,
-            "type": "BUYER" if intent == 'SELL' else "SUPPLIER"
+            "trade_lens_product_id": trade_lens_product_id,
+            "type": "BUYER" if intent == 'SELL' else "SUPPLIER",
+            "company_id": company_id
         })
 
     @action(detail=False, methods=['get'])

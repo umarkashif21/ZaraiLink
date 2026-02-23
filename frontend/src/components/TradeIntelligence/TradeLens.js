@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowUpRight, ArrowDownRight, Package, Box } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
 import Breadcrumb from '../Common/Breadcrumb';
@@ -22,12 +22,15 @@ const fmtN = (v) => {
 
 const TradeLens = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+
   const [data, setData] = useState({ summary: {}, products: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [appliedFilters, setAppliedFilters] = useState({
-    search: '',
+    search: initialSearch,
     category: '',
     date_from: '',
     date_to: '',
@@ -35,12 +38,14 @@ const TradeLens = () => {
   });
 
   const [pendingFilters, setPendingFilters] = useState({
-    search: '',
+    search: initialSearch,
     category: '',
     date_from: '',
     date_to: '',
     trade_type: ''
   });
+
+  const [sortConfig, setSortConfig] = useState({ key: '', direction: 'desc' });
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -84,7 +89,15 @@ const TradeLens = () => {
   };
 
   const summary = data.summary || {};
-  const products = data.products || [];
+  let products = [...(data.products || [])];
+
+  if (sortConfig.key) {
+    products.sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
 
   return (
     <>
@@ -92,13 +105,14 @@ const TradeLens = () => {
       <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '4rem', fontFamily: '"Satoshi", "Inter", sans-serif' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 2rem' }}>
 
-          <div style={{ padding: '2rem 0' }}>
+          <div style={{ padding: '2rem 0 1rem 0' }}>
             <Breadcrumb />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1rem' }}>
-              <div>
-                <h1 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em' }}>Trade Lens</h1>
-                <p style={{ margin: '0.5rem 0 0', color: '#64748b', fontSize: '1rem' }}>Product-centric trade intelligence dashboard.</p>
-              </div>
+          </div>
+
+          <div className="trade-ledger-header" style={{ marginBottom: '1.5rem' }}>
+            <div>
+              <h1>Trade Lens</h1>
+              <p>Product-centric trade intelligence dashboard.</p>
             </div>
           </div>
 
@@ -127,6 +141,28 @@ const TradeLens = () => {
                   <option value="">All Directions</option>
                   <option value="IMPORT">Import</option>
                   <option value="EXPORT">Export</option>
+                </select>
+              </div>
+
+              <div style={{ flex: '1 1 200px' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sort By</label>
+                <select
+                  value={`${sortConfig.key}-${sortConfig.direction}`}
+                  onChange={(e) => {
+                    const [key, direction] = e.target.value.split('-');
+                    setSortConfig({ key, direction });
+                  }}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', background: '#f8fafc' }}
+                >
+                  <option value="-desc">Default</option>
+                  <option value="import_quantity-desc">Import Volume (High to Low)</option>
+                  <option value="import_quantity-asc">Import Volume (Low to High)</option>
+                  <option value="import_value-desc">Import Value (High to Low)</option>
+                  <option value="import_value-asc">Import Value (Low to High)</option>
+                  <option value="export_quantity-desc">Export Volume (High to Low)</option>
+                  <option value="export_quantity-asc">Export Volume (Low to High)</option>
+                  <option value="export_value-desc">Export Value (High to Low)</option>
+                  <option value="export_value-asc">Export Value (Low to High)</option>
                 </select>
               </div>
 

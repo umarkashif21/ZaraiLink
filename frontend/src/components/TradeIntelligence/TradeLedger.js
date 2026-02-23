@@ -231,30 +231,6 @@ const TradeLedger = () => {
             <h1>Trade Ledger</h1>
             <p>Comprehensive trade intelligence and company analytics</p>
           </div>
-          <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            {/* Sort */}
-            <select
-              value={sortBy}
-              onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
-              style={{
-                padding: '0.45rem 0.75rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(255,255,255,0.15)',
-                background: 'rgba(255,255,255,0.08)',
-                color: 'inherit',
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-              }}
-            >
-              {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-            <ExportButton
-              data={exportData}
-              columns={exportColumns}
-              filename="trade-ledger"
-              title="Trade Ledger Export"
-            />
-          </div>
         </div>
 
         {/* Filters */}

@@ -201,7 +201,7 @@ const SearchResults = () => {
 
                                 <div className="flex flex-col gap-3">
                                     <Link
-                                        to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}`}
+                                        to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scope)}`}
                                         className="stat-action text-center"
                                         style={{ textDecoration: 'none' }}
                                     >

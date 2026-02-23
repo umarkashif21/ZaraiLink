@@ -19,10 +19,14 @@ const searchService = {
      * @param {string} query - The original query (context)
      * @returns {Promise<Object>} - The supplier details
      */
-    getSupplierDetails: async (sellerName, query) => {
+    getSupplierDetails: async (sellerName, query, scope) => {
         // New Endpoint: /api/search/supplier-detail/
+        const params = { name: sellerName, query: query };
+        if (scope) {
+            params.scope = scope;
+        }
         const response = await api.get(`/search/supplier-detail/`, {
-            params: { name: sellerName, query: query }
+            params: params
         });
         return response.data;
     }

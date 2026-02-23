@@ -333,8 +333,15 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",      
     "http://127.0.0.1:3000",      
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
     "http://localhost:4000",
     "http://127.0.0.1:4000",
+]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
 ]
 CORS_ALLOW_CREDENTIALS = True  
 CORS_ALLOW_HEADERS = [
@@ -362,6 +369,8 @@ CORS_ALLOW_METHODS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
     "http://localhost:4000",
     "http://127.0.0.1:4000",
 ]

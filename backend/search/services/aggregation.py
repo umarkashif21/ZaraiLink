@@ -138,17 +138,24 @@ class SupplierAggregator:
         return counterparties
 
 
-    def get_supplier_details(self, seller_name, subcategory_ids):
+    def get_supplier_details(self, seller_name, subcategory_ids, product_item_filter=None, scope='WORLDWIDE'):
         """
         Get detailed stats, sparklines, and history for a specific supplier within a category.
         """
         # Filter transactions for specific seller and subcategories
-        # Filter transactions for specific seller and subcategories
-        # Note: Removed trade_type='IMPORT' filter here as well
         queryset = Transaction.objects.filter(
             seller__iexact=seller_name.strip(),
             product_item__sub_category_id__in=subcategory_ids
         ).order_by('-reporting_date')
+        
+        scope = scope or 'WORLDWIDE'
+        if scope == 'PAKISTAN':
+            queryset = queryset.filter(trade_type='EXPORT', origin_country='Pakistan')
+        else:
+            queryset = queryset.filter(trade_type='IMPORT')
+
+        if product_item_filter:
+            queryset = queryset.filter(product_item__id__in=product_item_filter)
 
         if not queryset.exists():
             return None
@@ -233,15 +240,14 @@ class SupplierAggregator:
                 })
 
         # 6. Buyer Insights
-        # Unique buyers total
-        total_buyers = queryset.values('buyer').distinct().count()
+        # Unique buyers total — across ALL transactions for this seller (not scoped to product)
+        total_unique_buyers = Transaction.objects.filter(
+            seller__iexact=seller_name.strip()
+        ).values('buyer').distinct().count()
         
         # Unique buyers last 30d (approx, since reporting_date is date)
         last_month_start = datetime.date.today() - datetime.timedelta(days=30)
         recent_buyers = queryset.filter(reporting_date__gte=last_month_start).values('buyer').distinct().count()
-        
-        # New buyers (First time seen in last 30d vs history) - Expensive query, let's skip for now or approx
-        # Approx: Just return total vs recent for now
         
         return {
             "name": seller_name,
@@ -256,7 +262,7 @@ class SupplierAggregator:
             },
             "shipment_sizes": shipment_sizes,
             "buyer_insights": {
-                "total_relationships": total_buyers,
+                "total_relationships": total_unique_buyers,
                 "recent_buyers": recent_buyers
             },
             "sparkline": sparkline,
@@ -264,7 +270,7 @@ class SupplierAggregator:
             "intelligence": self._calculate_intelligence(queryset, is_buyer=False, entity_name=seller_name)
         }
 
-    def get_buyer_details(self, buyer_name, subcategory_ids):
+    def get_buyer_details(self, buyer_name, subcategory_ids, product_item_filter=None, scope='WORLDWIDE'):
         """
         Get detailed stats, sparklines, and history for a specific BUYER within a category.
         """
@@ -273,6 +279,15 @@ class SupplierAggregator:
             buyer__iexact=buyer_name.strip(),
             product_item__sub_category_id__in=subcategory_ids
         ).order_by('-reporting_date')
+        
+        scope = scope or 'WORLDWIDE'
+        if scope == 'PAKISTAN':
+            queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
+        else:
+            queryset = queryset.filter(trade_type='EXPORT')
+        
+        if product_item_filter:
+            queryset = queryset.filter(product_item__id__in=product_item_filter)
 
 
 
@@ -281,6 +296,11 @@ class SupplierAggregator:
             queryset = Transaction.objects.filter(
                 buyer__iexact=buyer_name.strip()
             ).order_by('-reporting_date')
+            
+            if scope == 'PAKISTAN':
+                queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
+            else:
+                queryset = queryset.filter(trade_type='EXPORT')
             
             if not queryset.exists():
                 return None
@@ -358,9 +378,11 @@ class SupplierAggregator:
                     "avg_price": 0
                 })
 
-        # 6. Returns "Supplier Insights" logic from Buyer perspective
-        # i.e. "Who are they buying from?"
-        total_suppliers = queryset.values('seller').distinct().count()
+        # 6. Supplier Insights from Buyer perspective — "Who are they buying from?"
+        # Total unique sellers across ALL transactions for this buyer (lifetime)
+        total_unique_sellers = Transaction.objects.filter(
+            buyer__iexact=buyer_name.strip()
+        ).values('seller').distinct().count()
         
         last_month_start = datetime.date.today() - datetime.timedelta(days=30)
         recent_suppliers = queryset.filter(reporting_date__gte=last_month_start).values('seller').distinct().count()
@@ -379,7 +401,7 @@ class SupplierAggregator:
             },
             "shipment_sizes": shipment_sizes,
             "supplier_insights": {
-                "total_relationships": total_suppliers,
+                "total_relationships": total_unique_sellers,
                 "recent_suppliers": recent_suppliers
             },
             "sparkline": sparkline,
