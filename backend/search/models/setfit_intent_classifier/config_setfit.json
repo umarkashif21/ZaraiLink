@@ -1,0 +1,13 @@
+{
+  "labels": [
+    "BUY",
+    "F3_VOLUME",
+    "F4_PRICE",
+    "F5_TIME",
+    "F6_TOPK",
+    "F7_COMPARE",
+    "F8_EVIDENCE",
+    "SELL"
+  ],
+  "normalize_embeddings": false
+}

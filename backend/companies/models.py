@@ -299,6 +299,36 @@ class AdminAnnouncement(models.Model):
         return self.title
 
 
+class CanonicalCompanyLink(models.Model):
+    """
+    Maps a raw company name variant to its canonical (golden) entity.
+    Populated by the resolve_entities management command.
+    """
+    raw_name = models.CharField(max_length=500, db_index=True)
+    canonical_name = models.CharField(max_length=500, db_index=True)
+    canonical_id = models.CharField(max_length=100, db_index=True)
+    confidence = models.FloatField(default=1.0)
+    method = models.CharField(
+        max_length=20,
+        choices=[('exact', 'Exact'), ('fuzzy', 'Fuzzy EM'), ('manual', 'Manual')],
+        default='fuzzy'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [('raw_name',)]
+        indexes = [
+            models.Index(fields=['canonical_id']),
+            models.Index(fields=['raw_name', 'canonical_name']),
+        ]
+        verbose_name = 'Canonical Company Link'
+        verbose_name_plural = 'Canonical Company Links'
+
+    def __str__(self):
+        return f"{self.raw_name} → {self.canonical_name}"
+
+
 from auditlog.registry import auditlog
 auditlog.register(Company)
 auditlog.register(CompanyProduct)

@@ -51,75 +51,138 @@ DEFAULT_WEIGHTS = FAMILY_WEIGHTS[9]
 
 class FeatureExtractor:
     """
-    Converts Candidate Dict + Query -> Feature Vector
+    Converts Candidate Dict + Query -> Feature Vector.
+
+    v2: 15 features (8 original + 7 new from Phase 3-G)
     """
     FEATURE_NAMES = [
-        'log_volume', 'log_price', 'shipment_freq', 'inv_recency', 
-        'volume_fit_score', 'scope_match', 'country_match', 'price_fit'
+        # --- Original 8 features ---
+        'log_volume',           # log1p(total_volume_mt)
+        'log_price',            # log1p(avg_price_usd_mt)
+        'shipment_freq',        # shipment_count
+        'inv_recency',          # 1 / (days_since_last_shipment + 1)
+        'volume_fit_score',     # Strong=3, Good=2, Partial=1, Low=0
+        'scope_match',          # 1.0 (retrieval guarantees scope)
+        'country_match',        # 1.0 if requested country, 0.5 neutral, 0 mismatch
+        'price_fit',            # 1.0 if ≤ price ceiling, 0.5 neutral, 0 over ceiling
+        # --- New 7 features (Phase 3-G) ---
+        'recency_decay_volume',  # total_volume * exp(-0.001 * days_since_last)
+        'trade_diversity_score', # log1p(unique_subcategories_traded)
+        'country_diversity_score', # log1p(unique_countries_traded_with)
+        'bm25_score',            # BM25 score from hybrid retrieval (Stage 2)
+        'dense_similarity',      # cosine similarity from FAISS (Stage 2)
+        'entity_confidence',     # 1.0 resolved entity, 0.5 singleton
+        'volume_trend',          # (vol_last_6mo - vol_prev_6mo) / (vol_prev_6mo + 1e-6)
     ]
-    
+
     def extract(self, candidate, parsed_query):
         """
-        Returns a list of feature values (float).
-        """
-        # 1. Base Metrics
-        vol = candidate.get('total_volume', 0)
-        price = candidate.get('avg_price', 0)
-        freq = candidate.get('shipment_count', 0)
+        Returns a list of 15 feature values (float).
 
-        # Recency
+        Candidates enriched by aggregation carry pre-computed values for the
+        new features in fields: bm25_score, dense_similarity, entity_confidence,
+        trade_diversity, country_diversity, volume_6mo, volume_prev_6mo.
+        If absent, safe defaults (0.0 / 0.5) are used.
+        """
+        # ---------------------------------------------------------------
+        # Original 8 features
+        # ---------------------------------------------------------------
+        vol = candidate.get('total_volume', 0) or 0
+        price = candidate.get('avg_price', 0) or 0
+        freq = candidate.get('shipment_count', 0) or 0
+
+        # Recency + days_ago (reused for recency_decay_volume)
         last_date_val = candidate.get('last_shipment_date')
+        days_ago = None
         if last_date_val:
             if isinstance(last_date_val, str):
-                last_date_val = datetime.date.fromisoformat(last_date_val)
-            days_ago = (datetime.date.today() - last_date_val).days
-            inv_recency = 1.0 / (days_ago + 1.0)  # Avoid div/0, higher is more recent
-        else:
-            inv_recency = 0.0
-            
-        # 2. Query Context Matches
-        # Volume Fit
+                try:
+                    last_date_val = datetime.date.fromisoformat(last_date_val)
+                except ValueError:
+                    last_date_val = None
+            if last_date_val:
+                days_ago = max(0, (datetime.date.today() - last_date_val).days)
+        inv_recency = 1.0 / ((days_ago if days_ago is not None else 0) + 1.0)
+
         v_fit_str = candidate.get('volume_fit', 'N/A')
         v_fit_map = {'Strong': 3, 'Good': 2, 'Partial': 1, 'Low': 0, 'N/A': 0}
         volume_fit_score = v_fit_map.get(v_fit_str, 0)
-        
-        # Scope Match (Implied by Retrieval, but good to have as feature if retrieval is broad)
-        # If retrieval already filtered strictly, this is constant 1. 
-        # But if we relax retrieval, this matters. Let's assume constant for now or 1.
-        scope_match = 1.0 
-        
-        # Country Match - Did this candidate actually match the requested country?
-        # Retrieval filters by country, so usually 1 if filter present, else 0?
-        # Or if filter was optional?
-        # Let's check if candidate country is in query country list
+
+        scope_match = 1.0
+
         q_countries = parsed_query.get('country_filter', [])
         cand_country = candidate.get('country', '')
         if q_countries and cand_country in q_countries:
             country_match = 1.0
         elif not q_countries:
-             country_match = 0.5 # Neutral
+            country_match = 0.5
         else:
             country_match = 0.0
-            
-        # Price Fit
-        # Check against ceiling
+
         ceiling = parsed_query.get('price_ceiling')
         if ceiling and price <= ceiling:
             price_fit = 1.0
         elif ceiling:
             price_fit = 0.0
         else:
-            price_fit = 0.5 # Neutral
-            
+            price_fit = 0.5
+
+        # ---------------------------------------------------------------
+        # New 7 features (Phase 3-G)
+        # ---------------------------------------------------------------
+
+        # 9. recency_decay_volume: penalizes dormant companies
+        # When no date available, set to 0 (unknown recency = no bonus)
+        if days_ago is not None:
+            recency_decay_volume = float(vol) * np.exp(-0.001 * days_ago)
+        else:
+            recency_decay_volume = 0.0
+
+        # 10. trade_diversity_score: variety of products this company trades
+        trade_div = candidate.get('trade_diversity') or candidate.get('unique_subcategories', 0)
+        trade_diversity_score = float(np.log1p(trade_div))
+
+        # 11. country_diversity_score: how many countries this company trades with
+        country_div = candidate.get('country_diversity') or candidate.get('unique_countries', 0)
+        country_diversity_score = float(np.log1p(country_div))
+
+        # 12. bm25_score: BM25 score from hybrid retrieval (Stage 2)
+        #     Passed through from HybridRetriever results if available
+        bm25_score = float(candidate.get('bm25_score') or 0.0)
+
+        # 13. dense_similarity: cosine similarity from FAISS (Stage 2)
+        dense_similarity = float(candidate.get('dense_similarity') or 0.0)
+
+        # 14. entity_confidence: 1.0 for resolved canonical entity, 0.5 for singletons
+        entity_confidence = float(candidate.get('entity_confidence') or 0.5)
+
+        # 15. volume_trend: (recent - prev) / (prev + 1e-6), clamped to [-2, 2]
+        vol_6mo = float(candidate.get('volume_6mo') or 0.0)
+        vol_prev_6mo = float(candidate.get('volume_prev_6mo') or 0.0)
+        if vol_6mo > 0 or vol_prev_6mo > 0:
+            trend = (vol_6mo - vol_prev_6mo) / (vol_prev_6mo + 1e-6)
+            volume_trend = float(np.clip(trend, -2.0, 2.0))
+        else:
+            volume_trend = 0.0
+
         return [
-            np.log1p(vol),           # log_volume
-            np.log1p(price),         # log_price
-            float(freq),             # shipment_freq
-            inv_recency,             # inv_recency
-            float(volume_fit_score), # volume_fit_score
+            # Original 8
+            np.log1p(vol),
+            np.log1p(price),
+            float(freq),
+            inv_recency,
+            float(volume_fit_score),
             scope_match,
             country_match,
-            price_fit
+            price_fit,
+            # New 7
+            recency_decay_volume,
+            trade_diversity_score,
+            country_diversity_score,
+            bm25_score,
+            dense_similarity,
+            entity_confidence,
+            volume_trend,
         ]
 
 class PseudoLabelGenerator:
@@ -159,8 +222,11 @@ class LTRModel:
     """
     def __init__(self, model_path=None):
         if model_path is None:
-             # Default path relative to this file
-             self.model_path = os.path.join(os.path.dirname(__file__), '../models/lgbm_ltr.txt')
+            models_dir = os.path.join(os.path.dirname(__file__), '../models')
+            # Prefer v2 (15 features) over v1 (8 features)
+            v2_path = os.path.join(models_dir, 'lgbm_ltr_v2.txt')
+            v1_path = os.path.join(models_dir, 'lgbm_ltr.txt')
+            self.model_path = v2_path if os.path.exists(v2_path) else v1_path
         else:
             self.model_path = model_path
         self.model = None

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Filter, CheckCircle, BarChart2, TrendingUp, TrendingDown, Globe, FileText, Layers } from 'lucide-react';
+import { Filter, CheckCircle, BarChart2, TrendingUp, TrendingDown, Globe, FileText, Layers, Search } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
 import '../Dashboard/Dashboard.css'; // Import shared styles
 import searchService from '../../services/searchService';
@@ -13,6 +13,7 @@ const SearchResults = () => {
     const initialScope = queryParams.get('scope') || 'WORLDWIDE';
 
     const [query, setQuery] = useState(initialQuery);
+    const [submittedQuery, setSubmittedQuery] = useState(initialQuery);
     const [scope, setScope] = useState(initialScope);
     const [results, setResults] = useState([]);
     const [matchedSubcategories, setMatchedSubcategories] = useState([]);
@@ -55,7 +56,7 @@ const SearchResults = () => {
                 if (selectedSubcategory) filters.subcategory_id = selectedSubcategory;
                 if (selectedCountry) filters.country = selectedCountry;
 
-                const data = await searchService.search(query, filters);
+                const data = await searchService.search(submittedQuery, filters);
 
                 if (data.results) {
                     setResults(data.results);
@@ -119,18 +120,19 @@ const SearchResults = () => {
             }
         };
 
-        if (query) {
+        if (submittedQuery) {
             fetchResults();
         }
-    }, [query, scope, selectedSubcategory, selectedCountry]);
+    }, [submittedQuery, scope, selectedSubcategory, selectedCountry]);
 
-    // Handle new search from top bar
+    // Handle new search from top bar — only fires on explicit submit
     const handleSearch = (e) => {
         e.preventDefault();
-        // Reset filters on new search
+        if (!query.trim()) return;
         setSelectedSubcategory(null);
         setSelectedCountry(null);
-        navigate(`/search/results?q=${encodeURIComponent(query)}&scope=${scope}`);
+        setSubmittedQuery(query.trim());
+        navigate(`/search/results?q=${encodeURIComponent(query.trim())}&scope=${scope}`);
     };
 
     const clearFilters = () => {
@@ -145,14 +147,23 @@ const SearchResults = () => {
             {/* Search & Filter Bar (sticky below navbar) */}
             <div className="bg-white border-b-2 border-gray-100 sticky top-0 z-10 shadow-sm">
                 <div className="dashboard-container" style={{ padding: '1rem 2rem', maxWidth: '1400px', margin: '0 auto' }}>
-                    <form onSubmit={handleSearch} className="w-full relative">
+                    <form onSubmit={handleSearch} className="w-full flex gap-2">
                         <input
                             type="text"
-                            value={query} onChange={(e) => setQuery(e.target.value)}
-                            className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-gray-200 focus:border-emerald-500 focus:ring-0 transition-all font-medium text-gray-700 placeholder-gray-400"
-                            placeholder="Search details..."
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+                            className="flex-1 pl-4 pr-4 py-3 rounded-full border-2 border-gray-200 focus:border-emerald-500 focus:ring-0 transition-all font-medium text-gray-700 placeholder-gray-400"
+                            placeholder="Search trade data..."
                             style={{ fontSize: '1rem' }}
                         />
+                        <button
+                            type="submit"
+                            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full transition-colors flex-shrink-0"
+                        >
+                            <Search size={16} />
+                            Search
+                        </button>
                     </form>
                 </div>
             </div>

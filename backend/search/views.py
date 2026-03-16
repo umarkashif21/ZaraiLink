@@ -1,17 +1,26 @@
 
+import time
+import logging
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny # Kept as it was not explicitly removed by the instruction
-# from django.conf import settings # Removed as it's not used in the new code
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
+from django.conf import settings
 
 from .services.nlp import QueryMatcher
 from .services.aggregation import SupplierAggregator
-from .services.ranking import SupplierRanker, ComparableFinder # Added ComparableFinder
-# Import models if needed for simple lookups
-from trade_data.models import ProductSubCategory # Added
+from .services.ranking import SupplierRanker, ComparableFinder
+from .services.semantic_cache import get_cache
+from trade_data.models import ProductSubCategory
 
-from .services.query_parser import QueryInterpreter # Added
+from .services.query_parser import QueryInterpreter
+
+USE_SUPPLIER_RERANKER = getattr(settings, 'SEARCH_USE_SUPPLIER_RERANKER', True)
+
+logger = logging.getLogger(__name__)
+
 
 class SearchViewSet(viewsets.ViewSet):
     """
@@ -23,20 +32,37 @@ class SearchViewSet(viewsets.ViewSet):
         """
         GET /api/search/query/?q=...
         """
+        t_start = time.perf_counter()
+
         query = request.query_params.get('q', '').strip()
         scope_param = request.query_params.get('scope', None)
-        
+        no_cache = request.query_params.get('no_cache', '').lower() in ('1', 'true')
+
         # Support POST body for complex queries if needed
         if not query and request.method == 'POST':
             query = request.data.get('q', '')
             scope_param = request.data.get('scope', None)
-            
+
         if not query:
             return Response({"error": "Query parameter 'q' is required"}, status=400)
 
+        # ── Stage 0: Semantic cache lookup ───────────────────────────────────
+        if not no_cache:
+            cache = get_cache()
+            cached = cache.get(query)
+            if cached is not None:
+                cached['_cache'] = 'hit'
+                cached['_latency_ms'] = round((time.perf_counter() - t_start) * 1000, 1)
+                return Response(cached)
+
+        # Timing accumulators — set to 0 so early-return branches never hit NameError
+        t_parse_ms = t_retrieval_ms = t_aggregation_ms = t_ranking_ms = 0.0
+
         # 0. Query Interpretation (with explicit scope)
+        t_parse_start = time.perf_counter()
         interpreter = QueryInterpreter()
         parsed_query = interpreter.parse(query, explicit_scope=scope_param)
+        t_parse_ms = round((time.perf_counter() - t_parse_start) * 1000, 1)
         
         # Determine search term and merge parameters
         nlp_search_term = query
@@ -127,9 +153,11 @@ class SearchViewSet(viewsets.ViewSet):
         matched_subcategories = []
         subcategory_ids = None  # None = all products
         
+        t_retrieval_start = time.perf_counter()
         if nlp_search_term and nlp_search_term.strip():
             matcher = QueryMatcher()
             matched_subcategories = matcher.match(nlp_search_term)
+        t_retrieval_ms = round((time.perf_counter() - t_retrieval_start) * 1000, 1)
         
         # F8 with a named buyer is valid even without a product match —
         # the user wants that buyer's transaction history regardless of product.
@@ -266,6 +294,7 @@ class SearchViewSet(viewsets.ViewSet):
                 "count": 0,
             })
 
+        t_aggregation_start = time.perf_counter()
         aggregator = SupplierAggregator()
         results = aggregator.get_suppliers_for_subcategories(
             subcategory_ids,
@@ -277,10 +306,23 @@ class SearchViewSet(viewsets.ViewSet):
             time_filter=time_filter,
             product_item_filter=product_item_filter
         )
+        t_aggregation_ms = round((time.perf_counter() - t_aggregation_start) * 1000, 1)
 
+        t_ranking_start = time.perf_counter()
         from .services.ranking_ltr import RankingEnsemble
         ranker = RankingEnsemble()
         ranked_results = ranker.rank_candidates(results, parsed_query)
+
+        t_ranking_ms = round((time.perf_counter() - t_ranking_start) * 1000, 1)
+
+        # Phase 3-E: Supplier cross-encoder re-ranking
+        if USE_SUPPLIER_RERANKER and ranked_results:
+            try:
+                from .services.reranker import get_supplier_reranker
+                reranker = get_supplier_reranker()
+                ranked_results = reranker.rerank(query, ranked_results, parsed_query, top_k=len(ranked_results))
+            except Exception as e:
+                logger.warning(f"Supplier reranker failed: {e}")
 
         if family == 6:  # Recommendation/Shortlist
             top_n = self._extract_top_n(query)
@@ -288,6 +330,23 @@ class SearchViewSet(viewsets.ViewSet):
                 ranked_results = ranked_results[:top_n]
             else:
                 ranked_results = ranked_results[:5]
+
+        # Phase 4-A: Anomaly warnings — flag companies with suspicious price/volume patterns
+        if ranked_results and subcategory_ids:
+            try:
+                from .services.anomaly_detector import get_anomaly_detector
+                detector = get_anomaly_detector()
+                for result in ranked_results:
+                    cname = result.get('name') or result.get('company_name', '')
+                    for subcat_id in (subcategory_ids or []):
+                        anomaly_info = detector.score_company(cname, subcat_id)
+                        if anomaly_info.get('pct_suspicious_transactions', 0) > 0.3:
+                            result['data_warning'] = (
+                                "High price variance — verify independently"
+                            )
+                        break  # use first matched subcat
+            except Exception:
+                pass  # anomaly detection is non-critical
 
         # 4. Enhance: Add Badges & Market Snapshot
         # ... existing logic ...
@@ -297,16 +356,41 @@ class SearchViewSet(viewsets.ViewSet):
             "top_country": ranked_results[0]['country'] if ranked_results else "N/A"
         }
 
-        return Response({
+        response_data = {
             "query": query,
-            "parsed_query": parsed_query, # Debug info
+            "parsed_query": parsed_query,
             "matched_subcategories": matched_subcategories,
-            "available_variants": available_variants, # For Sidebar
+            "available_variants": available_variants,
             "active_variant": product_item_filter[0] if product_item_filter else None,
             "results": ranked_results,
             "market_snapshot": market_snapshot,
-            "count": len(ranked_results)
-        })
+            "count": len(ranked_results),
+            "_cache": "miss",
+            "_latency_ms": round((time.perf_counter() - t_start) * 1000, 1),
+            "_timing": {
+                "t_parse_ms": t_parse_ms,
+                "t_retrieval_ms": t_retrieval_ms,
+                "t_aggregation_ms": t_aggregation_ms,
+                "t_ranking_ms": t_ranking_ms,
+            },
+        }
+        if parsed_query.get('ambiguous_query'):
+            response_data['clarification_hint'] = (
+                "Your query was ambiguous. Try specifying: product name, country, volume, "
+                "or intent (e.g., 'find suppliers of X from Y')."
+            )
+
+        # Store in semantic cache (non-blocking, best-effort)
+        if not no_cache and ranked_results:
+            try:
+                cache = get_cache()
+                cacheable = {k: v for k, v in response_data.items()
+                             if not k.startswith('_')}
+                cache.set(query, cacheable, subcategory_ids)
+            except Exception:
+                pass
+
+        return Response(response_data)
 
     @action(detail=False, methods=['get'], url_path='supplier-detail')
     def supplier_detail(self, request):

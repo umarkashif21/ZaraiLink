@@ -1,0 +1,36 @@
+{
+  "labels": [
+    "BUY",
+    "F3_VOLUME",
+    "F4_PRICE",
+    "F5_TIME",
+    "F6_TOPK",
+    "F7_COMPARE",
+    "F8_EVIDENCE",
+    "SELL"
+  ],
+  "label2id": {
+    "BUY": 0,
+    "F3_VOLUME": 1,
+    "F4_PRICE": 2,
+    "F5_TIME": 3,
+    "F6_TOPK": 4,
+    "F7_COMPARE": 5,
+    "F8_EVIDENCE": 6,
+    "SELL": 7
+  },
+  "base_model": "sentence-transformers/all-mpnet-base-v2",
+  "overall_accuracy": 0.9846153846153847,
+  "per_class_accuracy": {
+    "BUY": 1.0,
+    "F3_VOLUME": 1.0,
+    "F4_PRICE": 1.0,
+    "F5_TIME": 1.0,
+    "F6_TOPK": 1.0,
+    "F7_COMPARE": 1.0,
+    "F8_EVIDENCE": 1.0,
+    "SELL": 0.8888888888888888
+  },
+  "train_size": 257,
+  "holdout_size": 65
+}

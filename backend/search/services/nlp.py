@@ -1,21 +1,140 @@
+"""
+backend/search/services/nlp.py
+
+QueryMatcher: matches a raw query string to ProductSubCategory IDs.
+
+v2: Routes through HybridRetriever (BM25 + FAISS-HNSW + RRF + nomic-embed-text-v1)
+    + optional cross-encoder re-ranking of top subcategory candidates.
+
+Feature flags (settings.py):
+    SEARCH_USE_HYBRID_RETRIEVAL (default True)
+        True  → BM25 + FAISS + RRF (nomic-embed-text-v1)
+        False → Legacy brute-force cosine (all-MiniLM-L6-v2)
+    SEARCH_USE_CROSS_ENCODER (default True)
+        True  → cross-encoder/ms-marco-MiniLM-L6-v2 re-ranks top-15 → top-5
+        False → use retrieval order as-is
+"""
+
 import os
 import pickle
+import logging
 import numpy as np
 from django.conf import settings
-from trade_data.models import ProductSubCategory
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
+
+logger = logging.getLogger(__name__)
+
+# Feature flags
+USE_HYBRID = getattr(settings, 'SEARCH_USE_HYBRID_RETRIEVAL', True)
+USE_CROSS_ENCODER = getattr(settings, 'SEARCH_USE_CROSS_ENCODER', True)
+
 
 class QueryMatcher:
+    """
+    Matches natural language queries to ProductSubCategory IDs.
+
+    Returns list of dicts: {id, name, hs_code, score, method, matched_variants}
+    sorted by descending score.
+    """
+
+    # Legacy v1 singletons (kept for fallback)
     _model = None
     _index = None
+
+    # -----------------------------------------------------------------------
+    # Public interface
+    # -----------------------------------------------------------------------
+
+    def match(self, query: str) -> list[dict]:
+        """
+        Main entry point.
+
+        Returns up to 10 matching ProductSubCategory dicts with scores.
+
+        If the full query phrase returns no results, falls back to trying
+        each individual token — so partial words like "sug" still find
+        "sugar" via the keyword icontains path.
+        """
+        results = self._match_core(query)
+        if not results and len(query.split()) > 1:
+            # Multi-word phrase failed — try longest individual token
+            tokens = sorted(query.split(), key=len, reverse=True)
+            for token in tokens:
+                if len(token) >= 3:
+                    results = self._match_core(token)
+                    if results:
+                        logger.info(f"Token fallback: {query!r} → {token!r} → {len(results)} results")
+                        break
+        return results
+
+    def _match_core(self, query: str) -> list[dict]:
+        """Internal: run hybrid or legacy match for a single query string."""
+        if USE_HYBRID:
+            try:
+                return self._match_hybrid(query)
+            except Exception as e:
+                logger.warning(f"Hybrid retrieval failed ({e}), falling back to legacy")
+                return self._match_legacy(query)
+        else:
+            return self._match_legacy(query)
+
+    # -----------------------------------------------------------------------
+    # Hybrid path (BM25 + FAISS + RRF)
+    # -----------------------------------------------------------------------
+
+    def _match_hybrid(self, query: str) -> list[dict]:
+        """Route to HybridRetriever, optionally cross-encoder re-rank, enrich with variants."""
+        from search.services.retrieval import HybridRetriever
+
+        retriever = HybridRetriever()
+
+        if USE_CROSS_ENCODER:
+            # Fetch more candidates so CE has a wider pool to re-rank
+            from search.services.cross_encoder import (
+                get_reranker, TOP_K_RETRIEVE, TOP_K_RETURN,
+            )
+            raw_results = retriever.retrieve(query, top_k=TOP_K_RETRIEVE)
+            reranker = get_reranker()
+            results = reranker.rerank(query, raw_results, top_k=TOP_K_RETURN)
+        else:
+            results = retriever.retrieve(query, top_k=10)
+
+        # Enrich each result with matched_variants (for sidebar + product-item filtering)
+        clean_q = query.lower()
+        for r in results:
+            if not r.get('matched_variants'):
+                r['matched_variants'] = self._find_variants(r['id'], clean_q)
+
+        return results
+
+    def _find_variants(self, subcat_id: int, clean_query: str) -> list[int]:
+        """Find ProductItem IDs within a subcategory that match the query."""
+        from trade_data.models import ProductItem
+        from difflib import SequenceMatcher
+
+        variants = []
+        items = ProductItem.objects.filter(sub_category_id=subcat_id).values('id', 'name')
+
+        for item in items:
+            item_name_lower = item['name'].lower()
+            # Exact substring match
+            if clean_query in item_name_lower or item_name_lower in clean_query:
+                variants.append(item['id'])
+                continue
+            # Fuzzy match for typos
+            ratio = SequenceMatcher(None, clean_query, item_name_lower).ratio()
+            if ratio > 0.85:
+                variants.append(item['id'])
+
+        return variants
+
+    # -----------------------------------------------------------------------
+    # Legacy path (all-MiniLM-L6-v2, brute-force cosine)
+    # -----------------------------------------------------------------------
 
     @classmethod
     def get_model(cls):
         if cls._model is None:
-            # Disable accelerate's meta-device lazy loading (low_cpu_mem_usage=True is
-            # the default when accelerate is installed, but it causes NotImplementedError
-            # "Cannot copy out of meta tensor" in the Django server process).
+            from sentence_transformers import SentenceTransformer
             cls._model = SentenceTransformer(
                 'all-MiniLM-L6-v2',
                 device='cpu',
@@ -32,131 +151,85 @@ class QueryMatcher:
                     cls._index = pickle.load(f)
         return cls._index
 
-    def match(self, query):
-        """
-        Hybrid matching:
-        1. Keyword match (High precision for exact substrings like "dextrose")
-        2. Semantic match (High recall for synonyms/concepts)
-        """
+    def _match_legacy(self, query: str) -> list[dict]:
+        """Legacy brute-force cosine matching (all-MiniLM-L6-v2)."""
+        from sklearn.metrics.pairwise import cosine_similarity
+        from trade_data.models import ProductSubCategory, ProductItem
+        from difflib import SequenceMatcher
+
         clean_qs = self._clean_query(query)
         matches = {}
 
-        # 1. Keyword Match (Database ILIKE)
-        # Check ProductSubCategory (Broad)
+        # Keyword match
         subcat_hits = ProductSubCategory.objects.filter(name__icontains=clean_qs)
         for hit in subcat_hits:
             matches[hit.id] = {
-                "id": hit.id,
-                "name": hit.name,
-                "score": 1.0, 
-                "hs_code": hit.hs_code,
-                "method": "keyword_subcat",
-                "matched_variants": []
+                'id': hit.id, 'name': hit.name, 'score': 1.0,
+                'hs_code': hit.hs_code, 'method': 'keyword_subcat',
+                'matched_variants': [],
             }
-            
-        # Check ProductItem (Specific Variant)
-        # e.g. "Dextrose Anhydrous" -> matches Item -> maps to Dextrose SubCat
-        from trade_data.models import ProductItem
-        item_hits = ProductItem.objects.filter(name__icontains=clean_qs).select_related('sub_category')
+
+        item_hits = ProductItem.objects.filter(
+            name__icontains=clean_qs
+        ).select_related('sub_category')
         for item in item_hits:
             parent = item.sub_category
-            # If we already matched the parent (e.g. searching "Dextrose"), we normally keep it.
-            # BUT if we matched a SPECIFIC item ("Dextrose Anhydrous"), we want to record that specificity.
-            
             if parent.id in matches:
-                # Append to existing list of matched variants
-                if "matched_variants" not in matches[parent.id]:
-                     matches[parent.id]["matched_variants"] = []
-                
-                if item.id not in matches[parent.id]["matched_variants"]:
-                    matches[parent.id]["matched_variants"].append(item.id)
-                    matches[parent.id]["variant_name"] = item.name # Update name to last found (display purposes)
+                if item.id not in matches[parent.id]['matched_variants']:
+                    matches[parent.id]['matched_variants'].append(item.id)
+                    matches[parent.id]['variant_name'] = item.name
             else:
                 matches[parent.id] = {
-                    "id": parent.id,
-                    "name": parent.name,
-                    "score": 1.0,
-                    "hs_code": parent.hs_code,
-                    "method": "keyword_item",
-                    "matched_variants": [item.id],
-                    "variant_name": item.name
+                    'id': parent.id, 'name': parent.name, 'score': 1.0,
+                    'hs_code': parent.hs_code, 'method': 'keyword_item',
+                    'matched_variants': [item.id], 'variant_name': item.name,
                 }
 
-        # 2. Semantic Search (Vector)
+        # Semantic search
         index = self.get_index()
         if index and index.get('embeddings') is not None:
             model = self.get_model()
             query_vec = model.encode([clean_qs])
-            
-            # Compute cosine similarity
-            # shape: (1, embedding_dim) x (num_categories, embedding_dim).T -> (1, num_categories)
             scores = cosine_similarity(query_vec, index['embeddings'])[0]
-            
-            # Get top N candidates (e.g., top 10)
             top_indices = np.argsort(scores)[::-1][:10]
-            
-            for idx in top_indices:
-                score = float(scores[idx])
-                if score < 0.4: # Filter low relevance
+
+            for idx_i in top_indices:
+                score = float(scores[idx_i])
+                if score < 0.4:
                     continue
-                    
-                cat_id = index['ids'][idx]
-                
-                # If already found by keyword, keep the 1.0 score, otherwise add
+                cat_id = index['ids'][idx_i]
                 if cat_id not in matches:
                     matches[cat_id] = {
-                        "id": cat_id,
-                        "name": index['names'][idx],
-                        "score": score,
-                        "hs_code": index['hs_codes'][idx],
-                        "method": "semantic"
+                        'id': cat_id, 'name': index['names'][idx_i],
+                        'score': score, 'hs_code': index['hs_codes'][idx_i],
+                        'method': 'semantic', 'matched_variants': [],
                     }
 
-        # 3. Fuzzy Variant Matching (Catch typos like "MONOYDRATE")
-        # For ALL matched subcategories (from keyword or semantic), check their items for near-matches
+        # Fuzzy variant matching
         try:
-            from difflib import SequenceMatcher
-            from trade_data.models import ProductItem
-            
-            # Get all matched subcategory IDs
             matched_subcat_ids = list(matches.keys())
-            
             if matched_subcat_ids:
-                # Fetch all items for these subcategories
-                candidate_items = ProductItem.objects.filter(sub_category_id__in=matched_subcat_ids).values('id', 'name', 'sub_category_id')
-                
+                candidate_items = ProductItem.objects.filter(
+                    sub_category_id__in=matched_subcat_ids
+                ).values('id', 'name', 'sub_category_id')
                 for item in candidate_items:
-                    # Skip if already matched
                     parent_id = item['sub_category_id']
                     if item['id'] in matches[parent_id].get('matched_variants', []):
                         continue
-                        
-                    # Calculate similarity
-                    # clean_qs is lower, item name to lower
                     ratio = SequenceMatcher(None, clean_qs, item['name'].lower()).ratio()
-                    
-                    if ratio > 0.85: # Threshold for typos
-                        if "matched_variants" not in matches[parent_id]:
-                             matches[parent_id]["matched_variants"] = []
-                        
-                        matches[parent_id]["matched_variants"].append(item['id'])
-                        
-                        # Only update variant_name if it's the *best* match? 
-                        # Or just leave broad name if vaguely matched.
-                        # Ideally we want to show the USER what they found.
-                        # If query was "Dextrose Monohydrate", and we found "Dextrose Monoydrate", 
-                        # we probably implicitly just want to include it in the filter.
+                    if ratio > 0.85:
+                        if 'matched_variants' not in matches[parent_id]:
+                            matches[parent_id]['matched_variants'] = []
+                        matches[parent_id]['matched_variants'].append(item['id'])
         except Exception as e:
-            print(f"Fuzzy match error: {e}")
+            logger.warning(f"Fuzzy match error: {e}")
 
-        # Convert to list and sort by score
         results = list(matches.values())
         results.sort(key=lambda x: x['score'], reverse=True)
         return results
 
-    def _clean_query(self, query):
-        # Remove common "stop phrases" that confuse search
-        stopwords = ["i", "want", "to", "buy", "suppliers", "sell", "who", "sells", "find", "search", "for", "please", "looking"]
+    def _clean_query(self, query: str) -> str:
+        stopwords = ['i', 'want', 'to', 'buy', 'suppliers', 'sell', 'who',
+                     'sells', 'find', 'search', 'for', 'please', 'looking']
         words = query.lower().split()
-        clean_words = [w for w in words if w not in stopwords]
-        return " ".join(clean_words)
+        return ' '.join(w for w in words if w not in stopwords)

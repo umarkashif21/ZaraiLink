@@ -2,6 +2,15 @@ import re
 import math
 import difflib
 
+try:
+    from django.conf import settings as _dj_settings
+    _USE_GLINER = getattr(_dj_settings, 'SEARCH_USE_GLINER_NER', True)
+    _USE_SETFIT = getattr(_dj_settings, 'SEARCH_USE_SETFIT', True)
+except Exception:
+    _USE_GLINER = False
+    _USE_SETFIT = False
+
+
 class QueryInterpreter:
     """
     Parses natural language queries into structured intent and attributes.
@@ -29,18 +38,25 @@ class QueryInterpreter:
     BUY_SCORES = {
         "who sells": 5, "suppliers of": 5, "supplier": 3, "find exporters": 5, "find suppliers": 5,
         "source from": 5, "buy from": 5, "i want to buy": 5, "buying": 3, "imports": 2,
-        "want to import": 4, "buy": 1, "purchase": 2, "sourcing": 3, "need": 2, "importers": 1,
-        "suppliers": 3
+        "want to import": 4, "buy": 1, "purchase": 2, "sourcing": 3, "need": 2,
+        "suppliers": 3,
+        # "exporters" = companies that export TO Pakistan = foreign suppliers = BUY intent
+        "exporters": 3, "exporter": 3,
+        # "sellers" = companies selling to Pakistani buyers = BUY intent
+        "sellers": 3, "seller": 3,
     }
-    
+
     SELL_SCORES = {
         "who buys": 5, "buyers for": 5, "buyer": 3, "find importers": 5, "find buyers": 5,
         "demand for": 5, "sell to": 5, "i want to sell": 5, "selling": 3, "exports": 2,
-        "want to export": 4, "sell": 1, "supply": 2, "available": 2, "exporters": 1,
+        "want to export": 4, "sell": 1, "supply": 2, "available": 2,
         "demands": 3,
         "buyers": 3, "pay": 3, "pays": 3, "paying": 3, "who pay": 5,
         "looking to sell": 5, "i have": 5, "can i sell": 5,
-        "buys": 5, "export": 2
+        "buys": 5, "export": 2,
+        "give away": 5, "giving away": 5, "want to give": 4, "offload": 4, "dispose": 3,
+        # "importers" = Pakistani companies that import = they are the buyers = SELL intent
+        "importers": 2, "importer": 2,
     }
 
     # Family Parsing Keywords
@@ -130,6 +146,31 @@ class QueryInterpreter:
         # Single intent path
         result = self._parse_single(query, explicit_scope)
         result["multi_intent"] = False
+
+        # --- Phase 3-D: SetFit intent classifier ---
+        # Overrides regex-derived intent/family when classifier confidence >= 0.70.
+        result['classifier_confidence'] = 0.0
+        if _USE_SETFIT:
+            try:
+                from search.services.setfit_classifier import (
+                    get_setfit_classifier, SETFIT_TO_FAMILY, CONFIDENCE_THRESHOLD
+                )
+                clf = get_setfit_classifier()
+                if clf.is_ready():
+                    sf_label, sf_conf = clf.predict(query)
+                    result['classifier_confidence'] = sf_conf
+                    if sf_conf >= CONFIDENCE_THRESHOLD and sf_label in SETFIT_TO_FAMILY:
+                        sf_intent, sf_family = SETFIT_TO_FAMILY[sf_label]
+                        # For filter-only classes (F3–F8), preserve regex intent when
+                        # it confidently detected SELL — SetFit only classifies the
+                        # *structure* of these queries, not the buy/sell direction.
+                        if sf_label not in ('BUY', 'SELL') and result.get('intent') == 'SELL':
+                            sf_intent = 'SELL'
+                        result['intent'] = sf_intent
+                        result['family'] = sf_family
+            except Exception:
+                pass  # SetFit failure must never break the pipeline
+
         return result
 
     def _detect_intent_score(self, text):
@@ -351,7 +392,7 @@ class QueryInterpreter:
             "import", "export", "importing", "exporting",
             "and", "&",
             "importers", "buyers", "buyer", "importer", "buying", "selling",
-            "can", "i", "sell", "buy", "have", "looking", "please", "want", "need", "give", "get",
+            "can", "i", "sell", "buy", "have", "looking", "please", "want", "need", "give", "get", "away",
             "pay", "pays", "paying", "payment",
             "more", "less", "than", "above", "below", "under", "over",
             # Family-7 residual noise
@@ -473,6 +514,74 @@ class QueryInterpreter:
                 for noise in self.FAM_8_PRODUCT_NOISE:
                     p = re.sub(r'\b' + re.escape(noise) + r'\b', '', p, flags=re.IGNORECASE)
                 attributes['product'] = re.sub(r'\s+', ' ', p).strip()
+
+        # --- GLiNER NER: fill gaps from regex extraction ---
+        # Runs after all regex steps; only fills fields that regex left as None.
+        attributes['ner_confidence'] = 1.0
+        attributes['ambiguous_query'] = False
+        if _USE_GLINER:
+            try:
+                from search.services.ner_extractor import get_ner_extractor
+                extractor = get_ner_extractor()
+                gliner_result = extractor.extract(query)
+
+                # Build regex_result aligned with GLiNER field names
+                # Regex takes precedence; GLiNER fills gaps.
+                # Exception: if the regex product starts with a quantity word (e.g. "fifty
+                # metric tons dextrose ..."), pass None so GLiNER can clean it up.
+                _QUANTITY_WORDS_SET = {'zero','one','two','three','four','five','six','seven',
+                                       'eight','nine','ten','twenty','thirty','forty','fifty',
+                                       'sixty','seventy','eighty','ninety','hundred','thousand',
+                                       'million','dozen','metric','tons','ton','mt','kg','kgs'}
+                _raw_prod = attributes.get('product') or None
+                _prod_is_qty_polluted = bool(
+                    _raw_prod and _raw_prod.lower().split()[0] in _QUANTITY_WORDS_SET
+                )
+                regex_aligned = {
+                    'product':             None if _prod_is_qty_polluted else _raw_prod,
+                    'quantity':            attributes.get('volume_mt'),
+                    'unit':                None,  # unit was already applied to volume_mt
+                    'origin_country':      attributes['country_filter'][0] if attributes['country_filter'] else None,
+                    'destination_country': None,
+                    'price_ceiling':       attributes.get('price_ceiling'),
+                    'price_floor':         attributes.get('price_floor'),
+                    'hs_code':             None,
+                    'company_name':        attributes.get('counterparty_name'),
+                    'time_period':         attributes.get('time_range'),
+                }
+                merged = extractor.merge_with_regex(gliner_result, regex_aligned)
+
+                # Apply merged values back to attributes (fill gaps only)
+                if (not attributes.get('product') or _prod_is_qty_polluted) and merged.get('product'):
+                    attributes['product'] = merged['product']
+
+                if attributes.get('volume_mt') is None and merged.get('quantity'):
+                    qty = merged['quantity']
+                    # Convert to MT if unit is KG
+                    if merged.get('unit') == 'KG':
+                        qty = qty / 1000.0
+                    attributes['volume_mt'] = qty
+
+                if not attributes['country_filter'] and merged.get('origin_country'):
+                    attributes['country_filter'] = [merged['origin_country']]
+
+                if attributes.get('price_ceiling') is None and merged.get('price_ceiling'):
+                    attributes['price_ceiling'] = merged['price_ceiling']
+
+                if attributes.get('price_floor') is None and merged.get('price_floor'):
+                    attributes['price_floor'] = merged['price_floor']
+
+                if not attributes.get('counterparty_name') and merged.get('company_name'):
+                    attributes['counterparty_name'] = merged['company_name']
+
+                if not attributes.get('time_range') and merged.get('time_period'):
+                    attributes['time_range'] = merged['time_period']
+
+                attributes['ner_confidence'] = gliner_result.get('ner_confidence', 1.0)
+                if attributes['ner_confidence'] < 0.40:
+                    attributes['ambiguous_query'] = True
+            except Exception:
+                pass  # GLiNER failure must never break the pipeline
 
         # Guard: if family=7 was triggered solely by ambiguous non-country keywords
         # (compare, vs, cheapest, lowest price) and fewer than 2 countries were extracted,

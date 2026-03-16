@@ -20,5 +20,11 @@ yarn-error.log*
 .env 
 .vscode/ 
 .idea/ 
-.DS_Store 
-Thumbs.db 
+.DS_Store
+Thumbs.db
+
+# Large ML model files (exceed GitHub 100MB limit — store separately or use LFS)
+*.safetensors
+optimizer.pt
+*.bin
+backend/search/models/setfit_intent_classifier/checkpoint-*/

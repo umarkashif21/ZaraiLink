@@ -27,8 +27,22 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY', '')
 
-
 DEBUG = True
+
+# ─── Search Engine Feature Flags ───────────────────────────────────────────
+# Phase 2+3: Enable BM25 + FAISS + RRF + nomic-embed-text-v1 hybrid retrieval
+SEARCH_USE_HYBRID_RETRIEVAL = True
+# Phase 5: Cross-encoder re-ranking of subcategory candidates
+SEARCH_USE_CROSS_ENCODER = True
+# Phase 5: Cross-encoder re-ranking of final supplier results
+SEARCH_USE_SUPPLIER_RERANKER = True
+# Phase 3-A/B: GLiNER zero-shot NER to fill gaps from regex extraction
+SEARCH_USE_GLINER_NER = True
+# Phase 4-B: HyDE (Hypothetical Document Embeddings) for short F1 queries
+SEARCH_USE_HYDE = True
+# Phase 3-C/D: SetFit intent classifier (overrides regex when confidence >= 0.70)
+SEARCH_USE_SETFIT = True
+
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -58,6 +72,7 @@ INSTALLED_APPS = [
     'trade_ledger',
     'trade_lens',
     'search', # Search & Trade Facilitator
+    'entity_resolution',  # Entity deduplication & canonical company records
 ]
 
 MIDDLEWARE = [
@@ -374,7 +389,13 @@ SESSION_COOKIE_SECURE = False
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
-SESSION_COOKIE_AGE = 1209600  
+SESSION_COOKIE_AGE = 1209600
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+
+# ─── OpenSearch ────────────────────────────────────────────────────────────────
+OPENSEARCH_HOST = os.environ.get('OPENSEARCH_HOST', 'localhost')
+OPENSEARCH_PORT = int(os.environ.get('OPENSEARCH_PORT', 9200))
+SEARCH_USE_OPENSEARCH = os.environ.get('SEARCH_USE_OPENSEARCH', 'true').lower() == 'true'
 

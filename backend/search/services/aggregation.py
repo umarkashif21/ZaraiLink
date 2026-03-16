@@ -1,9 +1,13 @@
 import datetime
 import difflib
+import logging
+from django.conf import settings
 from django.db.models import Sum, Count, Avg, Max, Min, F
 from django.db.models.functions import TruncMonth
 from trade_data.models import Transaction
 import math
+
+logger = logging.getLogger(__name__)
 
 class SupplierAggregator:
     def get_suppliers_for_subcategories(self, subcategory_ids, intent='BUY', scope='WORLDWIDE', country_filter=None, price_filter=None, volume_filter=None, time_filter=None, product_item_filter=None):
@@ -19,6 +23,43 @@ class SupplierAggregator:
             time_filter: Dict with 'start_date' and 'end_date'.
             product_item_filter: List of ProductItem IDs to filter by (specific variants).
         """
+        # ── OpenSearch fast path ──────────────────────────────────────────────
+        if getattr(settings, 'SEARCH_USE_OPENSEARCH', False):
+            try:
+                from search.services.opensearch_client import get_os_client, search_suppliers
+                client = get_os_client()
+                results = search_suppliers(
+                    client, subcategory_ids,
+                    intent=intent, country_filter=country_filter,
+                    price_ceiling=price_filter.get('ceiling') if price_filter else None,
+                    price_floor=price_filter.get('floor') if price_filter else None,
+                )
+                if results:
+                    return results
+            except Exception as e:
+                logger.warning(f"OpenSearch fast path failed ({e}), falling back to PostgreSQL")
+        # ── End OpenSearch fast path ──────────────────────────────────────────
+
+        # ── Fast path: use pre-aggregated CompanyProductStats ────────────────
+        # Eligible when: subcategory_ids provided, no time/price/product_item filter
+        # (country_filter and volume_filter are applied in memory after fetch)
+        _can_use_stats = (
+            subcategory_ids
+            and not time_filter
+            and not price_filter
+            and not product_item_filter
+        )
+        if _can_use_stats:
+            try:
+                result = self._get_from_stats_table(
+                    subcategory_ids, intent, scope, country_filter, volume_filter
+                )
+                if result is not None:
+                    return result
+            except Exception as e:
+                logger.warning(f"Stats table fast path failed ({e}), falling back to live DB")
+        # ── End fast path ─────────────────────────────────────────────────────
+
         queryset = Transaction.objects.all()
         
         # Subcategory filter (optional — None means all products for filter-only queries)
@@ -135,9 +176,103 @@ class SupplierAggregator:
         # If volume scoring was applied, sort by volume_score descending
         if volume_filter and volume_filter > 0:
             counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
-            
+
         return counterparties
 
+    def _get_from_stats_table(self, subcategory_ids, intent, scope, country_filter, volume_filter):
+        """
+        Fast path: query CompanyProductStats instead of raw Transaction GROUP BY.
+
+        Returns list of counterparty dicts (same format as get_suppliers_for_subcategories),
+        or None if the fast path is not applicable / fails.
+        """
+        from trade_data.models import CompanyProductStats
+
+        entity_role = 'BUYER' if intent == 'SELL' else 'SELLER'
+
+        # Scope filter
+        scope = scope or 'WORLDWIDE'
+        qs = CompanyProductStats.objects.filter(
+            sub_category_id__in=subcategory_ids,
+            entity_role=entity_role,
+        )
+
+        if scope == 'PAKISTAN':
+            qs = qs.filter(country='Pakistan')
+        elif intent == 'SELL':
+            # WORLDWIDE buyers: all buyers
+            pass
+        # else: WORLDWIDE sellers — all origins
+
+        # Country filter
+        if country_filter:
+            qs = qs.filter(country__in=country_filter)
+
+        # Aggregate across country-level rows → per (company, role) totals
+        # because stats table is (company, subcat, role, country)
+        from django.db.models import Sum, Avg, Max, Min, Count
+        agg = (
+            qs.values('company_name', 'country')
+            .annotate(
+                total_volume=Sum('total_volume_mt'),
+                avg_price=Avg('avg_price_usd_mt'),
+                shipment_count=Sum('shipment_count'),
+                last_shipment_date=Max('last_shipment_date'),
+                max_shipment_vol=Max('max_shipment_vol_mt'),
+                avg_shipment_vol=Avg('avg_shipment_vol_mt'),
+            )
+            .order_by('-total_volume')
+        )
+
+        counterparties = []
+        for r in agg:
+            entry = {
+                'name': r['company_name'],
+                'country': r['country'],
+                'total_volume': float(r['total_volume'] or 0),
+                'avg_price': float(r['avg_price'] or 0),
+                'shipment_count': r['shipment_count'] or 0,
+                'last_shipment_date': r['last_shipment_date'],
+                'max_shipment_vol': float(r['max_shipment_vol'] or 0),
+                'avg_shipment_vol': float(r['avg_shipment_vol'] or 0),
+                'type': 'Buyer' if intent == 'SELL' else 'Supplier',
+                'volume_score': None,
+                'volume_fit': 'N/A',
+                '_source': 'stats_table',  # debug marker
+            }
+
+            # Volume compatibility scoring (same logic as live path)
+            if volume_filter and volume_filter > 0:
+                mss = entry['max_shipment_vol']
+                total = entry['total_volume']
+                avg = entry['avg_shipment_vol']
+                V = float(volume_filter)
+
+                if mss < 0.3 * V and total < 0.5 * V:
+                    continue
+
+                single_match = min(mss / V, 1.0) if V > 0 else 0
+                capacity_match = min(total / V, 1.0) if V > 0 else 0
+                avg_match = min(avg / V, 1.0) if V > 0 else 0
+
+                vol_score = 0.5 * single_match + 0.3 * capacity_match + 0.2 * avg_match
+                entry['volume_score'] = round(vol_score, 3)
+
+                if vol_score >= 0.8:
+                    entry['volume_fit'] = 'Strong'
+                elif vol_score >= 0.5:
+                    entry['volume_fit'] = 'Good'
+                elif vol_score >= 0.3:
+                    entry['volume_fit'] = 'Partial'
+                else:
+                    entry['volume_fit'] = 'Low'
+
+            counterparties.append(entry)
+
+        if volume_filter and volume_filter > 0:
+            counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
+
+        return counterparties
 
     def get_supplier_details(self, seller_name, subcategory_ids):
         """

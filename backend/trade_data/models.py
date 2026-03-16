@@ -143,6 +143,60 @@ class Transaction(models.Model):
 
 
 # -------------------------
+# PRE-AGGREGATED STATS
+# -------------------------
+
+class CompanyProductStats(models.Model):
+    """
+    Pre-aggregated per-(company, subcategory) statistics.
+
+    Replaces the live GROUP BY aggregation on Transaction for common search queries.
+    Refreshed nightly (or on-demand) by the refresh_company_stats management command.
+
+    entity_role: 'SELLER' or 'BUYER' (which side of the transaction this company is on)
+    """
+
+    ROLE_CHOICES = [
+        ('SELLER', 'Seller'),
+        ('BUYER', 'Buyer'),
+    ]
+
+    company_name = models.CharField(max_length=500, db_index=True)
+    sub_category = models.ForeignKey(
+        'ProductSubCategory',
+        on_delete=models.CASCADE,
+        related_name='company_stats',
+    )
+    entity_role = models.CharField(max_length=10, choices=ROLE_CHOICES, db_index=True)
+    country = models.CharField(max_length=100, blank=True, db_index=True)
+
+    # Aggregated stats
+    total_volume_mt = models.FloatField(default=0.0)
+    shipment_count = models.IntegerField(default=0)
+    avg_price_usd_mt = models.FloatField(default=0.0)
+    max_shipment_vol_mt = models.FloatField(default=0.0)
+    avg_shipment_vol_mt = models.FloatField(default=0.0)
+    first_shipment_date = models.DateField(null=True, blank=True)
+    last_shipment_date = models.DateField(null=True, blank=True)
+
+    refreshed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Company Product Stats'
+        verbose_name_plural = 'Company Product Stats'
+        unique_together = [('company_name', 'sub_category', 'entity_role', 'country')]
+        indexes = [
+            models.Index(fields=['company_name', 'entity_role']),
+            models.Index(fields=['sub_category', 'entity_role', 'country']),
+            models.Index(fields=['entity_role', 'country', 'total_volume_mt']),
+            models.Index(fields=['last_shipment_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.company_name} | {self.sub_category.name} | {self.entity_role}"
+
+
+# -------------------------
 # EMBEDDINGS
 # -------------------------
 

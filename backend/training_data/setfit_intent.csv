@@ -1,0 +1,323 @@
+text,label
+who sells dextrose,BUY
+find sugar importers,BUY
+I want to buy cotton from China,BUY
+looking for wheat suppliers,BUY
+source palm oil,BUY
+need lactose supplier,BUY
+buy rice from Vietnam,BUY
+find salt exporters,BUY
+want to import maize,BUY
+dextrose suppliers please,BUY
+where can I buy glucose syrup,BUY
+find me sucrose suppliers,BUY
+I need citric acid from Europe,BUY
+show me white sugar suppliers,BUY
+sourcing dextrose anhydrous,BUY
+lactose monohydrate exporters worldwide,BUY
+best dextrose anhydrous suppliers,BUY
+wheat flour suppliers from India,BUY
+palm oil suppliers Malaysia,BUY
+sodium chloride exporters from China,BUY
+starch suppliers from Europe,BUY
+find fructose exporters,BUY
+casein protein suppliers,BUY
+looking to purchase whey protein,BUY
+import maize starch to Pakistan,BUY
+sugar cane suppliers from Brazil,BUY
+find me glucose exporters,BUY
+want to buy soy lecithin,BUY
+suppliers for maltodextrin,BUY
+need a source for pectin,BUY
+where to buy sorbitol,BUY
+find sunflower oil suppliers,BUY
+canola oil importers worldwide,BUY
+palm kernel oil exporters,BUY
+find good rice starch supplier,BUY
+want to import tapioca starch,BUY
+looking for xanthan gum suppliers,BUY
+need carrageenan from Philippines,BUY
+buy guar gum from India,BUY
+calcium carbonate suppliers from China,BUY
+who buys wheat,SELL
+find buyers for our cotton,SELL
+which countries import Pakistani mangoes,SELL
+sell sugar to,SELL
+demand for rice,SELL
+exporters of cotton,SELL
+markets for our wheat,SELL
+sell lactose,SELL
+export palm oil,SELL
+selling dextrose,SELL
+who imports sugar,SELL
+find me buyers for citric acid,SELL
+which companies import our wheat starch,SELL
+buyers for our sodium chloride,SELL
+I want to sell my dextrose,SELL
+looking for buyers of our palm oil,SELL
+where to export our maize,SELL
+find international buyers for cotton,SELL
+who will buy our lactose monohydrate,SELL
+sell our wheat flour to,SELL
+export destinations for sugar,SELL
+buyers for pharmaceutical glucose,SELL
+I have dextrose anhydrous to sell,SELL
+can I sell maize starch,SELL
+need buyers for our rice,SELL
+who purchases soy lecithin,SELL
+find importers of palm kernel oil,SELL
+which company buys tapioca starch,SELL
+buyers for calcium carbonate,SELL
+I want to export sunflower oil,SELL
+looking to sell xanthan gum,SELL
+find customers for our guar gum,SELL
+who pays for lactose powder,SELL
+buyers for our citric acid,SELL
+export our glucose syrup,SELL
+top 5 dextrose anhydrous suppliers,F6_TOPK
+best dextrose suppliers by volume,F6_TOPK
+rank cotton buyers,F6_TOPK
+top 3 wheat importers,F6_TOPK
+highest volume rice sellers,F6_TOPK
+top 10 palm oil exporters,F6_TOPK
+best 5 sugar suppliers,F6_TOPK
+top suppliers of lactose,F6_TOPK
+recommend top wheat flour suppliers,F6_TOPK
+suggest 5 best glucose importers,F6_TOPK
+highest paying buyers for dextrose,F6_TOPK
+top ranked sucrose exporters,F6_TOPK
+best 3 starch suppliers by shipments,F6_TOPK
+top maize importers worldwide,F6_TOPK
+highest volume sodium chloride sellers,F6_TOPK
+rank 5 palm oil buyers,F6_TOPK
+top paying importers of citric acid,F6_TOPK
+recommend 3 casein suppliers,F6_TOPK
+best buyers of tapioca starch ranked,F6_TOPK
+top 5 cocoa butter suppliers,F6_TOPK
+most active dextrose sellers,F6_TOPK
+best sources for lactose monohydrate by volume,F6_TOPK
+top 3 whey protein exporters,F6_TOPK
+highest volume rice starch buyers,F6_TOPK
+suggest best sunflower oil suppliers,F6_TOPK
+rank top glucose syrup suppliers,F6_TOPK
+top 5 vitamin C suppliers,F6_TOPK
+best wheat starch exporters,F6_TOPK
+suggest top suppliers for xanthan gum,F6_TOPK
+highest volume maize starch buyers,F6_TOPK
+which countries import cotton most,F7_COMPARE
+compare sugar demand by country,F7_COMPARE
+highest wheat importing countries,F7_COMPARE
+compare rice exporters by country,F7_COMPARE
+best markets for lactose,F7_COMPARE
+which countries buy the most palm oil,F7_COMPARE
+country breakdown for dextrose imports,F7_COMPARE
+where is highest demand for sugar,F7_COMPARE
+buyers by country for citric acid,F7_COMPARE
+country comparison for sodium chloride,F7_COMPARE
+which country imports most wheat starch,F7_COMPARE
+compare global demand for maize,F7_COMPARE
+best export destinations for dextrose,F7_COMPARE
+which country buys most sucrose,F7_COMPARE
+country analysis for palm kernel oil imports,F7_COMPARE
+import breakdown by country for glucose,F7_COMPARE
+top importing countries for lactose,F7_COMPARE
+compare markets for rice starch,F7_COMPARE
+which countries have highest demand for starch,F7_COMPARE
+best country for selling soy lecithin,F7_COMPARE
+which markets import most sunflower oil,F7_COMPARE
+country comparison for whey protein buyers,F7_COMPARE
+where does Pakistan import most sugar from,F7_COMPARE
+import sources by country for citric acid,F7_COMPARE
+global comparison of wheat importers,F7_COMPARE
+breakdown of palm oil imports by origin,F7_COMPARE
+compare dextrose buyers across countries,F7_COMPARE
+which countries export most tapioca starch,F7_COMPARE
+country breakdown for cocoa butter imports,F7_COMPARE
+top markets for guar gum globally,F7_COMPARE
+has Nestle purchased palm oil,F8_EVIDENCE
+did Company X buy sugar,F8_EVIDENCE
+show me transactions for ABC Corp,F8_EVIDENCE
+verify shipments from XYZ Ltd,F8_EVIDENCE
+evidence of rice purchase by company,F8_EVIDENCE
+has Al Khaleej Sugar bought dextrose,F8_EVIDENCE
+transaction history for Friesland Campina,F8_EVIDENCE
+show invoices for Nestle Pakistan,F8_EVIDENCE
+verify lactose purchases by Fonterra,F8_EVIDENCE
+record of palm oil deals by IOI Group,F8_EVIDENCE
+did Shandong Pharma import dextrose,F8_EVIDENCE
+proof that Company A buys citric acid,F8_EVIDENCE
+shipments received by Muller Phipps,F8_EVIDENCE
+show me past purchases by P&G,F8_EVIDENCE
+verification of sugar transactions for Engro,F8_EVIDENCE
+has Novartis bought pharmaceutical sugar,F8_EVIDENCE
+evidence of wheat purchases by Allied Milling,F8_EVIDENCE
+transaction record for ICI Pakistan,F8_EVIDENCE
+invoices showing starch purchases by Reckitt,F8_EVIDENCE
+show all deals for Lakson Group,F8_EVIDENCE
+past purchases of maize starch by GSK,F8_EVIDENCE
+verify sodium chloride imports by Searle,F8_EVIDENCE
+deal history for Atlas Group,F8_EVIDENCE
+has Shan Foods bought palm oil,F8_EVIDENCE
+transaction proof for Unilever Pakistan,F8_EVIDENCE
+history of casein purchases by Dairy Farm,F8_EVIDENCE
+show me what Agro Processors bought,F8_EVIDENCE
+evidence that Olam buys palm kernel oil,F8_EVIDENCE
+verification of citric acid deals by BF Suma,F8_EVIDENCE
+has Bayer purchased starch,F8_EVIDENCE
+100 MT dextrose suppliers,F3_VOLUME
+50 ton sugar suppliers,F3_VOLUME
+500 kg cotton exporters,F3_VOLUME
+1000 metric ton wheat,F3_VOLUME
+I need 200 MT lactose monohydrate,F3_VOLUME
+looking for 50 MT palm oil,F3_VOLUME
+suppliers for 300 metric tons of rice,F3_VOLUME
+buy 150 MT citric acid,F3_VOLUME
+500 ton sodium chloride shipment,F3_VOLUME
+need 1000 MT maize starch,F3_VOLUME
+purchase 75 MT whey protein concentrate,F3_VOLUME
+250 metric tons sucrose suppliers,F3_VOLUME
+2000 MT glucose syrup per month,F3_VOLUME
+I need 100 MT starch,F3_VOLUME
+order 500 tons palm kernel oil,F3_VOLUME
+looking for 20 MT soy lecithin,F3_VOLUME
+want to buy 400 MT cotton,F3_VOLUME
+supply of 600 MT tapioca starch,F3_VOLUME
+500 kg sorbitol supplier,F3_VOLUME
+3000 MT sugar cane supplier,F3_VOLUME
+20 MT xanthan gum suppliers,F3_VOLUME
+100 MT calcium carbonate,F3_VOLUME
+need 800 MT canola oil,F3_VOLUME
+1500 tons sunflower oil order,F3_VOLUME
+500 MT wheat flour required,F3_VOLUME
+looking for 50 ton pectin,F3_VOLUME
+50 metric tons casein,F3_VOLUME
+need 2000 MT rice starch,F3_VOLUME
+supply 100 metric tons maltodextrin,F3_VOLUME
+1000 MT maize import required,F3_VOLUME
+dextrose under $400/MT,F4_PRICE
+sugar above $350,F4_PRICE
+cotton below $1.20/kg,F4_PRICE
+cheap wheat suppliers,F4_PRICE
+expensive rice buyers,F4_PRICE
+lactose monohydrate below $800 per MT,F4_PRICE
+palm oil under $1200/MT,F4_PRICE
+glucose syrup priced above $300,F4_PRICE
+starch cheaper than $200/MT,F4_PRICE
+citric acid below $1500 per ton,F4_PRICE
+sodium chloride under $150/MT,F4_PRICE
+wheat flour cheap suppliers under $400,F4_PRICE
+maize above $220 per metric ton,F4_PRICE
+sucrose suppliers priced below $600,F4_PRICE
+affordable lactose exporters,F4_PRICE
+find dextrose anhydrous cheaper than $380,F4_PRICE
+palm kernel oil above $900,F4_PRICE
+casein protein below $8000 per MT,F4_PRICE
+sorbitol under $600/MT,F4_PRICE
+whey protein cheaper than $3000,F4_PRICE
+best priced tapioca starch below $200,F4_PRICE
+xanthan gum below $4000 per MT,F4_PRICE
+guar gum above $700/MT buyers,F4_PRICE
+sunflower oil cheaper than $1100 per ton,F4_PRICE
+canola oil under $1000/MT,F4_PRICE
+soy lecithin below $1500,F4_PRICE
+affordable pectin suppliers,F4_PRICE
+maltodextrin priced under $500 per MT,F4_PRICE
+calcium carbonate below $200/MT,F4_PRICE
+starch exporters paying above $250/ton,F4_PRICE
+Q1 2024 sugar suppliers,F5_TIME
+last 6 months cotton,F5_TIME
+2023 dextrose,F5_TIME
+recent wheat buyers,F5_TIME
+this year palm oil,F5_TIME
+suppliers active in 2024,F5_TIME
+recent 6 months lactose monohydrate exporters,F5_TIME
+2023 Q2 sodium chloride,F5_TIME
+last year citric acid imports,F5_TIME
+this quarter dextrose shipments,F5_TIME
+Q3 2024 sugar exporters,F5_TIME
+last 3 months maize starch,F5_TIME
+most recent palm kernel oil buyers,F5_TIME
+2024 starch suppliers active,F5_TIME
+recent shipments of glucose syrup,F5_TIME
+active in last year tapioca starch,F5_TIME
+2024 lactose powder suppliers,F5_TIME
+current year wheat flour exporters,F5_TIME
+last 12 months casein buyers,F5_TIME
+Q4 2023 sucrose suppliers,F5_TIME
+recently active soy lecithin exporters,F5_TIME
+2024 Q1 sunflower oil,F5_TIME
+last 6 months sorbitol suppliers,F5_TIME
+recent calcium carbonate imports,F5_TIME
+2023 xanthan gum buyers,F5_TIME
+active suppliers this year for guar gum,F5_TIME
+last quarter maltodextrin buyers,F5_TIME
+recent Q2 2024 pectin suppliers,F5_TIME
+canola oil shipments last 6 months,F5_TIME
+most recent cocoa butter deals in 2024,F5_TIME
+looking for buyers of our maize starch,SELL
+which companies purchase starch,SELL
+I want to sell glucose syrup,SELL
+find buyers for calcium carbonate,SELL
+who will purchase our soy lecithin,SELL
+need customers for our sunflower oil,SELL
+find importers of our guar gum,SELL
+top 5 citric acid buyers by volume,F6_TOPK
+best 3 starch importers worldwide,F6_TOPK
+top ranked sodium chloride buyers,F6_TOPK
+recommend top 5 maize starch suppliers,F6_TOPK
+best paying glucose buyers,F6_TOPK
+highest ranked pectin importers,F6_TOPK
+top 10 tapioca starch sellers,F6_TOPK
+recommend best sorbitol suppliers,F6_TOPK
+top buyers of calcium carbonate by volume,F6_TOPK
+best 5 canola oil sellers globally,F6_TOPK
+global markets for starch products,F7_COMPARE
+compare calcium carbonate demand by region,F7_COMPARE
+which country exports most glucose syrup,F7_COMPARE
+import sources for sorbitol by country,F7_COMPARE
+country comparison of pectin demand,F7_COMPARE
+where do buyers of canola oil come from,F7_COMPARE
+which countries are top tapioca importers,F7_COMPARE
+compare market demand for soy lecithin by country,F7_COMPARE
+top importing countries for xanthan gum,F7_COMPARE
+country analysis for maize starch exports,F7_COMPARE
+has Nestle imported dextrose anhydrous,F8_EVIDENCE
+shipments of lactose to Reckitt Benckiser,F8_EVIDENCE
+evidence of palm oil purchases by Procter and Gamble,F8_EVIDENCE
+transaction record for Rafhan Maize Products,F8_EVIDENCE
+verify starch imports by Colgate Palmolive,F8_EVIDENCE
+history of glucose purchases by Fauji Foods,F8_EVIDENCE
+did Quaker Oats buy wheat starch,F8_EVIDENCE
+past deals for Ghandara Industries,F8_EVIDENCE
+has Dawlance purchased calcium carbonate,F8_EVIDENCE
+verification of sorbitol deals by Brooke Bond,F8_EVIDENCE
+I need 350 MT glucose syrup,F3_VOLUME
+supply 450 metric tons starch,F3_VOLUME
+need 60 MT tapioca starch per shipment,F3_VOLUME
+looking for 900 MT sunflower oil,F3_VOLUME
+order 120 MT guar gum,F3_VOLUME
+want 250 MT pectin,F3_VOLUME
+buy 700 MT sorbitol,F3_VOLUME
+2500 MT palm kernel oil required,F3_VOLUME
+need 80 tons xanthan gum,F3_VOLUME
+supply 1800 MT canola oil order,F3_VOLUME
+tapioca starch below $180 per MT,F4_PRICE
+glucose syrup priced under $500,F4_PRICE
+sorbitol above $400 per ton,F4_PRICE
+affordable guar gum under $900 per MT,F4_PRICE
+cocoa butter below $4000/MT,F4_PRICE
+cheap starch exporters,F4_PRICE
+maize above $200/MT buyers,F4_PRICE
+pectin cheaper than $6000 per MT,F4_PRICE
+find soy lecithin above $1200 per ton,F4_PRICE
+casein below $7000/MT,F4_PRICE
+active this year palm kernel oil suppliers,F5_TIME
+recent 2024 glucose importers,F5_TIME
+last 6 months sorbitol exports,F5_TIME
+2023 guar gum shipments,F5_TIME
+active last quarter starch suppliers,F5_TIME
+Q2 2024 tapioca starch buyers,F5_TIME
+recent pectin buyers in 2024,F5_TIME
+2023 Q4 calcium carbonate,F5_TIME
+last 6 months maize starch activity,F5_TIME
+current year soy lecithin importers,F5_TIME
