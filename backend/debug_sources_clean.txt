@@ -1,0 +1,4 @@
+../export_data.xlsx: 14390 rows
+C:\Users\Dell\Documents\ZaraiLink\export_data.xlsx: 7195 rows
+../import_data_1year.xlsx: 4464 rows
+C:\Users\Dell\Documents\ZaraiLink\import_data_1year.xlsx: 2232 rows

@@ -1,5 +1,5 @@
 import datetime
-from django.db.models import Sum, Count, Avg, Max, F
+from django.db.models import Sum, Count, Avg, Max, F, ExpressionWrapper, FloatField
 from django.db.models.functions import TruncMonth
 from trade_data.models import Transaction
 import math
@@ -42,7 +42,8 @@ class SupplierAggregator:
                 # WORLDWIDE: Pakistani seller exporting to world
                 target_field = 'buyer'
                 country_field = 'destination_country'
-                queryset = queryset.filter(trade_type='EXPORT')
+                # Exclude domestic transactions that misreport as export
+                queryset = queryset.filter(trade_type='EXPORT').exclude(destination_country='Pakistan')
                 
         else:
             # User wants to BUY
@@ -54,18 +55,13 @@ class SupplierAggregator:
                 # WORLDWIDE: Pakistani buyer importing from world
                 target_field = 'seller'
                 country_field = 'origin_country'
-                queryset = queryset.filter(trade_type='IMPORT')
+                # Exclude domestic transactions that misreport as import
+                queryset = queryset.filter(trade_type='IMPORT').exclude(origin_country='Pakistan')
 
         # Apply Filters
         if country_filter and len(country_filter) > 0:
             filter_kwargs = {f"{country_field}__in": country_filter}
             queryset = queryset.filter(**filter_kwargs)
-            
-        if price_filter:
-            if price_filter.get('ceiling'):
-                queryset = queryset.filter(usd_per_mt__lte=price_filter['ceiling'])
-            if price_filter.get('floor'):
-                queryset = queryset.filter(usd_per_mt__gte=price_filter['floor'])
 
         if time_filter:
             if time_filter.get('start_date'):
@@ -73,11 +69,19 @@ class SupplierAggregator:
             if time_filter.get('end_date'):
                 queryset = queryset.filter(reporting_date__lte=time_filter['end_date'])
 
+        # NOTE: Price filter is NOT applied here (not a row-level WHERE).
+        # It will be applied AFTER aggregation on the computed avg_price.
+        # Rationale: filtering individual rows by usd_per_mt would exclude a supplier
+        # if even ONE of their shipments was above the ceiling, even if their average
+        # price is well within the limit.  The correct semantic is supplier-level.
+
+        import logging; logging.getLogger(__name__).warning(f"[Aggregator] after country filter count={queryset.count()} | SQL={str(queryset.query)}")
+
         # Aggregate — NO hard volume filter at DB level
         results = queryset.values(target_field, country_field).annotate(
             total_volume=Sum('qty_mt'),
-            avg_price=Avg('usd_per_mt'),
-            shipment_count=Count('id'),
+            weighted_price_sum=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField())),
+            shipment_count=Count('tx_reference', distinct=True),
             last_shipment_date=Max('reporting_date'),
             max_shipment_vol=Max('qty_mt'),
             avg_shipment_vol=Avg('qty_mt')
@@ -86,11 +90,33 @@ class SupplierAggregator:
         # Convert to list + Volume Compatibility Scoring
         counterparties = []
         for r in results:
+            tv = float(r['total_volume'] or 0)
+            wps = float(r.get('weighted_price_sum') or 0)
+            avg_price = round(wps / tv, 2) if tv > 0 else 0.0
+
+            # Post-aggregation price filter (HAVING-equivalent on computed avg_price)
+            # This is the correct level: filter based on supplier's weighted average price,
+            # not individual transaction row prices.
+            if price_filter:
+                ceiling = price_filter.get('ceiling')
+                floor = price_filter.get('floor')
+                supplier_name = r.get(target_field, '?')
+
+                if ceiling is not None:
+                    passes = avg_price <= ceiling
+                    if not passes:
+                        continue
+
+                if floor is not None:
+                    passes = avg_price == 0 or avg_price >= floor
+                    if not passes:
+                        continue
+
             entry = {
                 "name": r[target_field],
                 "country": r[country_field],
-                "total_volume": float(r['total_volume'] or 0),
-                "avg_price": float(r['avg_price'] or 0),
+                "total_volume": tv,
+                "avg_price": avg_price,
                 "shipment_count": r['shipment_count'],
                 "last_shipment_date": r['last_shipment_date'],
                 "max_shipment_vol": float(r['max_shipment_vol'] or 0),
@@ -135,6 +161,8 @@ class SupplierAggregator:
         if volume_filter and volume_filter > 0:
             counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
             
+        import logging; logging.getLogger(__name__).warning(f"[Aggregator] after price filter supplier_count={len(results)}")
+        import logging; logging.getLogger(__name__).warning(f"[Aggregator] returning {len(counterparties)} suppliers")
         return counterparties
 
 

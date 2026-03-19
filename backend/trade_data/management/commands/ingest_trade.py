@@ -104,7 +104,7 @@ class Command(BaseCommand):
                 sub_category, _ = ProductSubCategory.objects.get_or_create(
                     category=category,
                     hs_code=hs_code_full,
-                    defaults={"name": sub_category_name}
+                    name=sub_category_name
                 )
 
                 product_item, _ = ProductItem.objects.get_or_create(

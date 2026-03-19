@@ -27,6 +27,9 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY', '')
 
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
+
+
 
 DEBUG = True
 
@@ -58,6 +61,7 @@ INSTALLED_APPS = [
     'trade_ledger',
     'trade_lens',
     'search', # Search & Trade Facilitator
+    'django.contrib.postgres',
 ]
 
 MIDDLEWARE = [

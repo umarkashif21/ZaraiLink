@@ -44,7 +44,7 @@ class ProductCategory(models.Model):
 class ProductSubCategory(models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, related_name="sub_categories")
     name = models.CharField(max_length=1000)
-    hs_code = models.CharField(max_length=50, unique=True)
+    hs_code = models.CharField(max_length=50)
 
     def __str__(self):
         return f"{self.name} ({self.hs_code})"
@@ -181,7 +181,7 @@ class ProductEmbedding(models.Model):
 # AUDIT LOG
 # -------------------------
 
-auditlog.register(Product)
-auditlog.register(ProductCategory)
-auditlog.register(ProductSubCategory)
-auditlog.register(ProductItem)
+# auditlog.register(Product)
+# auditlog.register(ProductCategory)
+# auditlog.register(ProductSubCategory)
+# auditlog.register(ProductItem)
