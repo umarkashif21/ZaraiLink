@@ -35,7 +35,7 @@ def apply_transaction_filters(
 
     
     if country:
-        qs = qs.filter(country=country)
+        qs = qs.filter(origin_country=country)
 
     
     if product_item_id:

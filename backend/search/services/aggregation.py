@@ -24,21 +24,42 @@ class SupplierAggregator:
             product_item_filter: List of ProductItem IDs to filter by (specific variants).
         """
         # ── OpenSearch fast path ──────────────────────────────────────────────
-        if getattr(settings, 'SEARCH_USE_OPENSEARCH', False):
+        # Skip when time_filter is set — OpenSearch doesn't apply it, would return stale data
+        if getattr(settings, 'SEARCH_USE_OPENSEARCH', False) and not time_filter:
             try:
+                import search.services.opensearch_client as _os_mod
                 from search.services.opensearch_client import get_os_client, search_suppliers
                 client = get_os_client()
+                # Strip 'Pakistan' from country_filter for BUY+WORLDWIDE (import-only DB)
+                _os_country_filter = country_filter
+                if intent == 'BUY' and scope == 'WORLDWIDE' and country_filter:
+                    _os_country_filter = [c for c in country_filter if c.lower() != 'pakistan']
                 results = search_suppliers(
                     client, subcategory_ids,
-                    intent=intent, country_filter=country_filter,
+                    intent=intent, country_filter=_os_country_filter or None,
                     price_ceiling=price_filter.get('ceiling') if price_filter else None,
                     price_floor=price_filter.get('floor') if price_filter else None,
                 )
                 if results:
                     return results
             except Exception as e:
+                # Reset the singleton so the next request gets a fresh connection
+                try:
+                    _os_mod._os_client = None
+                except Exception:
+                    pass
                 logger.warning(f"OpenSearch fast path failed ({e}), falling back to PostgreSQL")
         # ── End OpenSearch fast path ──────────────────────────────────────────
+
+        # ── Normalize country_filter before all paths ────────────────────────
+        # SELL+WORLDWIDE: country_filter refers to buyer's destination country —
+        # not available in the Pakistan-import-only DB. Clear it to avoid 0 results.
+        _scope = scope or 'WORLDWIDE'
+        if intent == 'SELL' and _scope == 'WORLDWIDE' and country_filter:
+            country_filter = None
+        # BUY+WORLDWIDE: strip 'Pakistan' (it's always destination, never origin)
+        if intent == 'BUY' and _scope == 'WORLDWIDE' and country_filter:
+            country_filter = [c for c in country_filter if c.lower() != 'pakistan'] or None
 
         # ── Fast path: use pre-aggregated CompanyProductStats ────────────────
         # Eligible when: subcategory_ids provided, no time/price/product_item filter
@@ -81,11 +102,15 @@ class SupplierAggregator:
                 country_field = 'destination_country'
                 queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
             else:
-                # WORLDWIDE: Pakistani seller exporting to world
+                # WORLDWIDE: Look for buyers. The DB is Pakistan import-only so
+                # EXPORT records don't exist. Fall back to IMPORT records — the
+                # companies that import TO Pakistan are real buyers of these goods
+                # and are the best proxy for "who would buy this product".
                 target_field = 'buyer'
-                country_field = 'destination_country'
-                queryset = queryset.filter(trade_type='EXPORT')
-                
+                country_field = 'origin_country'
+                queryset = queryset.filter(trade_type='IMPORT')
+                # country_filter already cleared for SELL+WORLDWIDE above
+
         else:
             # User wants to BUY
             if scope == 'PAKISTAN':
@@ -98,8 +123,8 @@ class SupplierAggregator:
                 country_field = 'origin_country'
                 queryset = queryset.filter(trade_type='IMPORT')
 
-        # Apply Filters
-        if country_filter and len(country_filter) > 0:
+        # Apply Filters (country_filter already normalized above)
+        if country_filter:
             filter_kwargs = {f"{country_field}__in": country_filter}
             queryset = queryset.filter(**filter_kwargs)
             
@@ -204,7 +229,7 @@ class SupplierAggregator:
             pass
         # else: WORLDWIDE sellers — all origins
 
-        # Country filter
+        # Country filter (already normalized by get_suppliers_for_subcategories)
         if country_filter:
             qs = qs.filter(country__in=country_filter)
 
@@ -756,26 +781,27 @@ class CountryComparator:
             ).values(country_field).annotate(vol=Sum('qty_mt'))
         }
 
-        # --- Top 3 suppliers per country ---
+        # --- Top 3 suppliers per country (single batched query, no N+1) ---
         country_stats_list = list(country_stats)
-        all_countries = [r[country_field] for r in country_stats_list if r[country_field]]
         top_buyers_by_country = {}
-        for country in all_countries:
-            rows = (
-                queryset.filter(**{country_field: country})
-                .values(entity_field)
-                .annotate(vol=Sum('qty_mt'), avg_p=Avg('usd_per_mt'), cnt=Count('id'))
-                .order_by('-vol')[:3]
-            )
-            top_buyers_by_country[country] = [
-                {
-                    'name': r[entity_field],
-                    'volume': float(r['vol'] or 0),
-                    'avg_price': float(r['avg_p'] or 0),
-                    'shipment_count': r['cnt'],
-                }
-                for r in rows
-            ]
+        all_seller_rows = (
+            queryset
+            .values(country_field, entity_field)
+            .annotate(vol=Sum('qty_mt'), avg_p=Avg('usd_per_mt'), cnt=Count('id'))
+            .order_by(country_field, '-vol')
+        )
+        for row in all_seller_rows:
+            country = row[country_field]
+            if not country:
+                continue
+            bucket = top_buyers_by_country.setdefault(country, [])
+            if len(bucket) < 3:
+                bucket.append({
+                    'name': row[entity_field],
+                    'volume': float(row['vol'] or 0),
+                    'avg_price': float(row['avg_p'] or 0),
+                    'shipment_count': row['cnt'],
+                })
 
         # --- Build result list ---
         results = []

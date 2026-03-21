@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Filter, CheckCircle, BarChart2, TrendingUp, TrendingDown, Globe, FileText, Layers, Search } from 'lucide-react';
+import { Filter, CheckCircle, BarChart2, TrendingUp, TrendingDown, Globe, FileText, Layers, Search, Package, Download } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
 import '../Dashboard/Dashboard.css'; // Import shared styles
 import searchService from '../../services/searchService';
 
-const SearchResults = () => {
+function SearchResults() {
     const location = useLocation();
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
@@ -21,6 +21,7 @@ const SearchResults = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [parsedIntent, setParsedIntent] = useState('BUY');
+    const [parsedProduct, setParsedProduct] = useState('');
 
     // Country Comparison (Family 7)
     const [isCountryComparison, setIsCountryComparison] = useState(false);
@@ -47,6 +48,22 @@ const SearchResults = () => {
 
 
 
+    // Sync state when URL changes (e.g. "View Full Market Report" navigate())
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const urlQuery = params.get('q') || '';
+        const urlScope = params.get('scope') || 'WORLDWIDE';
+        if (urlQuery && urlQuery !== submittedQuery) {
+            setQuery(urlQuery);
+            setSubmittedQuery(urlQuery);
+            setSelectedSubcategory(null);
+            setSelectedCountry(null);
+        }
+        if (urlScope !== scope) {
+            setScope(urlScope);
+        }
+    }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
+
     useEffect(() => {
         const fetchResults = async () => {
             setLoading(true);
@@ -64,6 +81,11 @@ const SearchResults = () => {
                     setMarketSnapshot(data.market_snapshot);
                     if (data.parsed_query && data.parsed_query.intent) {
                         setParsedIntent(data.parsed_query.intent);
+                    }
+                    if (data.parsed_query && data.parsed_query.product) {
+                        setParsedProduct(data.parsed_query.product);
+                    } else {
+                        setParsedProduct('');
                     }
 
                     // Reset all special-family states
@@ -713,6 +735,49 @@ const SearchResults = () => {
                     {/* ── STANDARD Results (Families 1–6) ── */}
                     {!loading && !error && !isCountryComparison && !isBuyerEvidence && !isMultiIntent && (
                         <div>
+                            {/* ── Product Section (shown when a product was matched) ── */}
+                            {matchedSubcategories.length > 0 && (
+                                <div className="bg-white rounded-xl border-2 border-emerald-100 p-5 mb-6 shadow-sm">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg">
+                                            <Package size={16} />
+                                        </div>
+                                        <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Product</span>
+                                    </div>
+                                    <p className="text-base font-bold text-gray-800 mb-3 capitalize">
+                                        {parsedProduct || submittedQuery}
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {matchedSubcategories.map(sub => (
+                                            <button
+                                                key={sub.id}
+                                                onClick={() => setSelectedSubcategory(selectedSubcategory === sub.id ? null : sub.id)}
+                                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
+                                                    selectedSubcategory === sub.id
+                                                        ? 'bg-emerald-600 text-white border-emerald-600'
+                                                        : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:border-emerald-500'
+                                                }`}
+                                            >
+                                                {sub.name}
+                                                {sub.hs_code && (
+                                                    <span className={`text-xs font-normal ${selectedSubcategory === sub.id ? 'text-emerald-100' : 'text-emerald-500'}`}>
+                                                        HS {sub.hs_code}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {selectedSubcategory && (
+                                        <button
+                                            onClick={() => setSelectedSubcategory(null)}
+                                            className="mt-3 text-xs text-gray-400 hover:text-gray-600 font-medium"
+                                        >
+                                            × Clear filter — show all matched products
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
                             <h2 className="text-2xl font-bold text-gray-800 mb-6 font-primary">
                                 {results.length} {parsedIntent === 'SELL' ? 'Buyers' : 'Suppliers'} found for "{query}"
                             </h2>
@@ -789,8 +854,95 @@ const SearchResults = () => {
                             </div>
 
                             <div className="mt-4 pt-4 border-t-2 border-gray-100 w-full">
-                                <button className="w-full py-2 bg-emerald-50 text-emerald-700 text-sm font-bold rounded hover:bg-emerald-100 transition-colors">
-                                    View Full Market Report
+                                <button
+                                    onClick={async () => {
+                                        const jspdfModule = await import('jspdf');
+                                        const jsPDF = jspdfModule.jsPDF || jspdfModule.default;
+                                        const { default: autoTable } = await import('jspdf-autotable');
+                                        const product = parsedProduct || submittedQuery;
+                                        const doc = new jsPDF();
+                                        const pageW = doc.internal.pageSize.getWidth();
+
+                                        // Header bar
+                                        doc.setFillColor(5, 150, 105); // emerald-600
+                                        doc.rect(0, 0, pageW, 28, 'F');
+                                        doc.setTextColor(255, 255, 255);
+                                        doc.setFontSize(18);
+                                        doc.setFont('helvetica', 'bold');
+                                        doc.text('Zarailink Market Report', 14, 12);
+                                        doc.setFontSize(10);
+                                        doc.setFont('helvetica', 'normal');
+                                        doc.text(`Generated: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`, 14, 22);
+
+                                        // Product title
+                                        doc.setTextColor(30, 30, 30);
+                                        doc.setFontSize(22);
+                                        doc.setFont('helvetica', 'bold');
+                                        doc.text(product.charAt(0).toUpperCase() + product.slice(1), 14, 42);
+
+                                        // Subcategories
+                                        if (matchedSubcategories.length > 0) {
+                                            doc.setFontSize(9);
+                                            doc.setFont('helvetica', 'normal');
+                                            doc.setTextColor(80, 80, 80);
+                                            doc.text('HS Categories: ' + matchedSubcategories.map(s => s.name + (s.hs_code ? ` (${s.hs_code})` : '')).join(' · '), 14, 50, { maxWidth: pageW - 28 });
+                                        }
+
+                                        // Market snapshot box
+                                        let yPos = 60;
+                                        if (marketSnapshot) {
+                                            doc.setFillColor(240, 253, 244); // very light green
+                                            doc.setDrawColor(5, 150, 105);
+                                            doc.roundedRect(14, yPos, pageW - 28, 22, 3, 3, 'FD');
+                                            doc.setFont('helvetica', 'bold');
+                                            doc.setFontSize(10);
+                                            doc.setTextColor(5, 150, 105);
+                                            doc.text('MARKET SNAPSHOT', 20, yPos + 8);
+                                            doc.setTextColor(30, 30, 30);
+                                            doc.setFont('helvetica', 'normal');
+                                            doc.setFontSize(9);
+                                            doc.text(`Global Avg Price: $${marketSnapshot.avg_price_global?.toFixed(2) || 'N/A'}/MT`, 20, yPos + 16);
+                                            doc.text(`Top Origin: ${marketSnapshot.top_country || 'N/A'}`, 110, yPos + 16);
+                                            yPos += 30;
+                                        }
+
+                                        // Suppliers table
+                                        const tableData = results.slice(0, 30).map((s, i) => [
+                                            i + 1,
+                                            s.name || '',
+                                            s.country || '',
+                                            s.avg_price != null ? `$${s.avg_price.toFixed(2)}` : 'N/A',
+                                            s.total_volume != null ? `${s.total_volume.toLocaleString()} MT` : 'N/A',
+                                            s.shipment_count || 0,
+                                            s.last_shipment_date || '',
+                                        ]);
+
+                                        autoTable(doc, {
+                                            startY: yPos,
+                                            head: [['#', parsedIntent === 'SELL' ? 'Buyer' : 'Supplier', 'Country', 'Avg Price', 'Total Volume', 'Shipments', 'Last Active']],
+                                            body: tableData,
+                                            headStyles: { fillColor: [5, 150, 105], fontStyle: 'bold', fontSize: 9 },
+                                            bodyStyles: { fontSize: 8 },
+                                            alternateRowStyles: { fillColor: [245, 255, 250] },
+                                            columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 55 }, 2: { cellWidth: 28 } },
+                                            margin: { left: 14, right: 14 },
+                                        });
+
+                                        // Footer
+                                        const pageCount = doc.internal.getNumberOfPages();
+                                        for (let i = 1; i <= pageCount; i++) {
+                                            doc.setPage(i);
+                                            doc.setFontSize(7);
+                                            doc.setTextColor(150, 150, 150);
+                                            doc.text(`Zarailink — Confidential — Page ${i} of ${pageCount}`, pageW / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
+                                        }
+
+                                        doc.save(`zarailink_${product.replace(/\s+/g, '_')}_market_report.pdf`);
+                                    }}
+                                    className="w-full py-2 bg-emerald-600 text-white text-sm font-bold rounded hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Download size={14} />
+                                    Download Market Report
                                 </button>
                             </div>
                         </div>
@@ -800,6 +952,6 @@ const SearchResults = () => {
             </div>
         </div>
     );
-};
+}
 
 export default SearchResults;

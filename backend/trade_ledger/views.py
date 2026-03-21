@@ -116,13 +116,13 @@ def company_overview_api(request, company_name):
     company_field = 'buyer' if direction == 'import' else 'seller'
     country_dist_qs = (
         Transaction.objects.filter(**{company_field: company_name})
-        .values('country')
+        .values('origin_country')
         .annotate(volume=Sum('qty_mt'), value=Sum('usd'))
         .order_by('-volume')[:10]
     )
     metrics['country_distribution'] = [
         {
-            'name': row['country'] or 'Unknown',
+            'name': row['origin_country'] or 'Unknown',
             'volume': float(row['volume'] or 0),
             'value': float(row['value'] or 0)
         }

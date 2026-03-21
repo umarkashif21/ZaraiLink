@@ -53,6 +53,18 @@ class SearchViewSet(viewsets.ViewSet):
             if cached is not None:
                 cached['_cache'] = 'hit'
                 cached['_latency_ms'] = round((time.perf_counter() - t_start) * 1000, 1)
+                # Log cache hit (best-effort)
+                try:
+                    from .models import SearchInteractionLog
+                    SearchInteractionLog.objects.create(
+                        user=request.user if request.user.is_authenticated else None,
+                        query_text=query,
+                        result_count=cached.get('count', 0),
+                        cache_hit=True,
+                        latency_ms=cached['_latency_ms'],
+                    )
+                except Exception:
+                    pass
                 return Response(cached)
 
         # Timing accumulators — set to 0 so early-return branches never hit NameError
@@ -182,13 +194,11 @@ class SearchViewSet(viewsets.ViewSet):
             except ValueError:
                 subcategory_ids = [m['id'] for m in matched_subcategories] if matched_subcategories else None
         elif matched_subcategories:
-            # Default aggregation logic
-            top_match = matched_subcategories[0]
-            if top_match['score'] > 0.95:
-                threshold = top_match['score'] - 0.05
-                subcategory_ids = [m['id'] for m in matched_subcategories if m['score'] >= threshold]
-            else:
-                subcategory_ids = [m['id'] for m in matched_subcategories]
+            # Include all matched subcategories — the matcher already filters for
+            # relevance. The old `top_score - 0.05` threshold was too strict: a
+            # top match of 1.0 for "Dextrose" would exclude "Dextrose Anhydrous"
+            # (score ~0.57) which is clearly a related product.
+            subcategory_ids = [m['id'] for m in matched_subcategories]
         # else: subcategory_ids stays None — filter-only query, search all products
 
         # 1.5 Variant / ProductItem Logic
@@ -204,20 +214,24 @@ class SearchViewSet(viewsets.ViewSet):
                 pass
                 
         # B. Auto-Filter from NLP (Specific Search)
-        # If user searched "Dextrose Anhydrous", we might have multiple matches (dupes).
-        # We must collect matched variants from ALL subcategories that matched.
+        # Only apply variant auto-filter when the top match is extremely specific
+        # (score >= 0.98 AND a single subcategory was matched). For broad category
+        # searches like "dextrose over 100 MT", matched_variants are niche sub-items
+        # that would incorrectly narrow results to a handful of transactions.
         if not product_item_filter and matched_subcategories:
-             auto_variants = []
-             # Collect from all subcategories we are about to search
-             # (i.e. those that made it into subcategory_ids)
-             target_subcat_ids = set(subcategory_ids) if subcategory_ids else set()
-             
-             for match in matched_subcategories:
-                 if match['id'] in target_subcat_ids and match.get('matched_variants'):
-                     auto_variants.extend(match['matched_variants'])
-            
-             if auto_variants:
-                 product_item_filter = list(set(auto_variants)) # Unique IDs
+            top_match = matched_subcategories[0]
+            is_very_specific = (
+                top_match['score'] >= 0.98
+                and len(matched_subcategories) == 1
+            )
+            if is_very_specific:
+                auto_variants = []
+                target_subcat_ids = set(subcategory_ids) if subcategory_ids else set()
+                for match in matched_subcategories:
+                    if match['id'] in target_subcat_ids and match.get('matched_variants'):
+                        auto_variants.extend(match['matched_variants'])
+                if auto_variants:
+                    product_item_filter = list(set(auto_variants))
 
         # 3. Family-Based Routing — determine family before aggregation
         family = active_params.get('family', 1)
@@ -390,6 +404,24 @@ class SearchViewSet(viewsets.ViewSet):
             except Exception:
                 pass
 
+        # Log interaction (best-effort, never blocks response)
+        try:
+            from .models import SearchInteractionLog
+            SearchInteractionLog.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                session_key=request.session.session_key or '' if hasattr(request, 'session') else '',
+                query_text=query,
+                query_family=family,
+                parsed_intent=parsed_query.get('intent', ''),
+                parsed_product=parsed_query.get('product', '') or '',
+                parsed_country=str(parsed_query.get('country', '') or ''),
+                result_count=len(ranked_results),
+                cache_hit=False,
+                latency_ms=response_data.get('_latency_ms'),
+            )
+        except Exception:
+            pass  # logging must never affect response
+
         return Response(response_data)
 
     @action(detail=False, methods=['get'], url_path='supplier-detail')
@@ -504,49 +536,102 @@ class SearchViewSet(viewsets.ViewSet):
     
     def _parse_time_range(self, time_range_str):
         """
-        Parses strings like "Q1 2025", "2024", "Last 6 Months".
+        Parses strings like "Q1 2025", "2024", "Last 6 Months", "january 2024",
+        "since march", "last year", "last 1 year", etc.
         Returns dict {start_date, end_date} or None.
         """
         import datetime
-        
+        import re as _re
+
         if not time_range_str:
             return None
-            
+
         today = datetime.date.today()
         start_date = None
         end_date = None
-        
+
         tr = time_range_str.lower().strip()
-        
-        # Simple heuristics
-        if "q1" in tr and "2025" in tr:
-            start_date = datetime.date(2025, 1, 1)
-            end_date = datetime.date(2025, 3, 31)
-        elif "q2" in tr and "2025" in tr:
-            start_date = datetime.date(2025, 4, 1)
-            end_date = datetime.date(2025, 6, 30)
-        elif "q3" in tr and "2025" in tr:
-            start_date = datetime.date(2025, 7, 1)
-            end_date = datetime.date(2025, 9, 30)
-        elif "q4" in tr and "2025" in tr:
-            start_date = datetime.date(2025, 10, 1)
-            end_date = datetime.date(2025, 12, 31)
-        elif "2025" in tr:
-            start_date = datetime.date(2025, 1, 1)
-            end_date = datetime.date(2025, 12, 31)
-        elif "2024" in tr:
-            start_date = datetime.date(2024, 1, 1)
-            end_date = datetime.date(2024, 12, 31)
-        elif "last 6 months" in tr or "last 6 month" in tr:
+
+        _MONTH_MAP = {
+            'january': 1, 'jan': 1,
+            'february': 2, 'feb': 2,
+            'march': 3, 'mar': 3,
+            'april': 4, 'apr': 4,
+            'may': 5,
+            'june': 6, 'jun': 6,
+            'july': 7, 'jul': 7,
+            'august': 8, 'aug': 8,
+            'september': 9, 'sep': 9,
+            'october': 10, 'oct': 10,
+            'november': 11, 'nov': 11,
+            'december': 12, 'dec': 12,
+        }
+
+        def _month_end(year, month):
+            import calendar
+            return datetime.date(year, month, calendar.monthrange(year, month)[1])
+
+        # ── Quarter patterns (any year 20xx) ─────────────────────────────────
+        qm = _re.search(r'q([1-4])\s*(20\d\d)', tr)
+        if qm:
+            q, yr = int(qm.group(1)), int(qm.group(2))
+            starts = {1: (1, 1), 2: (4, 1), 3: (7, 1), 4: (10, 1)}
+            ends   = {1: (3, 31), 2: (6, 30), 3: (9, 30), 4: (12, 31)}
+            start_date = datetime.date(yr, *starts[q])
+            end_date   = datetime.date(yr, *ends[q])
+
+        # ── "last N months/years" ─────────────────────────────────────────────
+        elif _re.match(r'last\s+(\d+)\s+(month|year)s?', tr):
+            m2 = _re.match(r'last\s+(\d+)\s+(month|year)s?', tr)
+            n = int(m2.group(1))
+            unit = m2.group(2)
             end_date = today
-            start_date = today - datetime.timedelta(days=180)
-        elif "last 3 months" in tr or "last 3 month" in tr:
-            end_date = today
-            start_date = today - datetime.timedelta(days=90)
-        elif "this year" in tr:
+            if unit == 'month':
+                start_date = today - datetime.timedelta(days=30 * n)
+            else:
+                start_date = today - datetime.timedelta(days=365 * n)
+
+        # ── "this year" ───────────────────────────────────────────────────────
+        elif 'this year' in tr:
             start_date = datetime.date(today.year, 1, 1)
-            end_date = datetime.date(today.year, 12, 31)
-            
+            end_date   = datetime.date(today.year, 12, 31)
+
+        # ── "since <month> [year]" ────────────────────────────────────────────
+        elif tr.startswith('since '):
+            rest = tr[6:].strip()
+            # Extract optional year
+            yr_m = _re.search(r'(20\d\d)', rest)
+            yr = int(yr_m.group(1)) if yr_m else today.year
+            month_name = _re.sub(r'\d+', '', rest).strip()
+            month_num = _MONTH_MAP.get(month_name)
+            if month_num:
+                start_date = datetime.date(yr, month_num, 1)
+                end_date   = today
+
+        # ── "<month> <year>" ──────────────────────────────────────────────────
+        else:
+            # Try "january 2024" or "jan 2024"
+            month_yr = _re.match(r'(' + '|'.join(_MONTH_MAP.keys()) + r')\s+(20\d\d)', tr)
+            if month_yr:
+                month_num = _MONTH_MAP[month_yr.group(1)]
+                yr = int(month_yr.group(2))
+                start_date = datetime.date(yr, month_num, 1)
+                end_date   = _month_end(yr, month_num)
+            else:
+                # Bare year e.g. "2023"
+                yr_only = _re.match(r'^(20[0-2]\d)$', tr)
+                if yr_only:
+                    yr = int(yr_only.group(1))
+                    start_date = datetime.date(yr, 1, 1)
+                    end_date   = datetime.date(yr, 12, 31)
+                else:
+                    # Year appears anywhere in the string (e.g. "Q1 2024" already handled above)
+                    yr_m = _re.search(r'(20[0-2]\d)', tr)
+                    if yr_m:
+                        yr = int(yr_m.group(1))
+                        start_date = datetime.date(yr, 1, 1)
+                        end_date   = datetime.date(yr, 12, 31)
+
         if start_date or end_date:
             return {"start_date": start_date, "end_date": end_date}
 

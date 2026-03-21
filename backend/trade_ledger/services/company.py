@@ -81,7 +81,7 @@ def get_company_overview_metrics(company_name, direction='import', **filters):
         top_products_list.append(p)
 
     top_countries = (
-        qs.values('country')
+        qs.values('origin_country')
         .annotate(vol=Sum('qty_mt'))
         .order_by('-vol')[:3]
     )

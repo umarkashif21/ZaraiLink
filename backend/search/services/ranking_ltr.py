@@ -275,10 +275,15 @@ class RankingEnsemble:
     """
     Orchestrates ranking.
     """
+    _ltr_model = None  # class-level singleton — loaded once per process
+
     def __init__(self):
         self.extractor = FeatureExtractor()
-        self.ltr_model = LTRModel()
-        self.ltr_model.load()
+        if RankingEnsemble._ltr_model is None:
+            ltr = LTRModel()
+            ltr.load()
+            RankingEnsemble._ltr_model = ltr
+        self.ltr_model = RankingEnsemble._ltr_model
         
     def rank_candidates(self, candidates, parsed_query):
         if not candidates:

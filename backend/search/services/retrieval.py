@@ -372,14 +372,21 @@ class HybridRetriever:
         ).astype(np.float32)
 
         # Phase 4-B: HyDE expansion for short F1 queries
+        # Guard: skip HyDE if baseline dense recall is already strong (≥ 0.6 top cosine sim)
         try:
             from django.conf import settings as _s
             if getattr(_s, 'SEARCH_USE_HYDE', True):
-                from search.services.hyde import get_hyde_expander
-                expander = get_hyde_expander()
-                blended_vec, hyde_used = expander.expand(query, family=family, query_vec=query_vec[0])
-                if hyde_used and blended_vec is not None:
-                    query_vec = blended_vec.reshape(1, -1)
+                # Preliminary search to measure baseline dense recall
+                _pre_dists, _pre_idx = idx['faiss_idx'].search(query_vec, 1)
+                _top_sim = float(1.0 - _pre_dists[0][0]) if _pre_dists[0][0] <= 1.0 else float(_pre_dists[0][0])
+                _dense_recall_strong = (_pre_idx[0][0] >= 0) and (_top_sim >= 0.6)
+
+                if not _dense_recall_strong:
+                    from search.services.hyde import get_hyde_expander
+                    expander = get_hyde_expander()
+                    blended_vec, hyde_used = expander.expand(query, family=family, query_vec=query_vec[0])
+                    if hyde_used and blended_vec is not None:
+                        query_vec = blended_vec.reshape(1, -1)
         except Exception:
             pass  # HyDE failure must never break retrieval
 

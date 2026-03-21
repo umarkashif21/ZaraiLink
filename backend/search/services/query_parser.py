@@ -73,9 +73,44 @@ class QueryInterpreter:
         "verification", "evidence", "invoices", "invoice", "verify",
         "purchased before", "bought before", "past purchases", "paper trail",
         "deal evidence", "has purchased", "has bought",
+        "does buy", "does purchase",
     ]
     # Noise words to strip from the product field specifically for F8 queries
     FAM_8_PRODUCT_NOISE = ["purchased", "bought", "before", "provide", "deal"]
+
+    # Product synonym normalization: applied before all parsing so the correct
+    # product term flows through BM25/FAISS matching.
+    PRODUCT_SYNONYMS = [
+        (r'\bsoya\s+bean\s+oil\b', 'soybean oil'),
+        (r'\bsoya\s+bean\b',       'soybean'),
+        (r'\bsoya\b',              'soybean'),
+        (r'\bsoy\s+bean\b',        'soybean'),
+        (r'\bpottasium\b',         'potassium'),   # common typo
+        (r'\bsodium\s+bi\s*carbonate\b', 'sodium bicarbonate'),
+        (r'\btitanium\s+dioxyde\b', 'titanium dioxide'),  # French-influenced typo
+        (r'\bdioxyde\b',            'dioxide'),
+        (r'\bsodium\s+bicarb\b',   'sodium bicarbonate'),
+        (r'\bpotash\b',            'potassium'),
+        (r'\bcaustic\s+soda\b',    'sodium hydroxide'),
+        (r'\bglucose\s+syrup\b',   'dextrose'),
+        (r'\bglucose\b',           'dextrose'),
+        (r'\bsaccharose\b',        'sucrose'),
+        (r'\bsulphur\b',           'sulfur'),
+        (r'\bglycerine\b',         'glycerol'),
+        (r'\bglycerine\b',         'glycerol'),
+        (r'\bsoya\b',              'soybean'),
+        (r'\bmaize\b',             'corn'),
+        (r'\bgur\b',               'jaggery'),
+        (r'\bpalmolein\b',         'palm olein'),
+        (r'\bpalm\s+olein\b',      'palm olein'),
+    ]
+
+    def _normalize_query(self, query: str) -> str:
+        """Apply product synonym normalization before parsing."""
+        q = query
+        for pattern, replacement in self.PRODUCT_SYNONYMS:
+            q = re.sub(pattern, replacement, q, flags=re.IGNORECASE)
+        return q
 
     def parse(self, query, explicit_scope=None):
         """
@@ -84,6 +119,9 @@ class QueryInterpreter:
         """
         if not query:
             return {}
+
+        # Normalize product synonyms/typos before any parsing
+        query = self._normalize_query(query)
 
         # 1. Multi-Intent Detection
         # Strict Splitting: Split by ';' always.
@@ -231,6 +269,8 @@ class QueryInterpreter:
             any(x in raw_query for x in self.FAM_8_KEYWORDS)
             # "Has [NAME] purchased/bought [product]" — name can be 1-5 words
             or bool(re.search(r'\bhas\s+\S+(?:\s+\S+){0,4}\s+(?:purchased|bought)\b', raw_query))
+            # "Does [NAME] buy/purchase [product]"
+            or bool(re.search(r'\bdoes\s+\S+(?:\s+\S+){0,4}\s+(?:buy|purchase|import)\b', raw_query))
         )
 
         # --- 2. Country Extraction (Fuzzy & Alias) ---
@@ -283,15 +323,20 @@ class QueryInterpreter:
 
         # ... (Volume, Price, Time omitted for brevity, logic unchanged) ...
         # --- 3. Volume Extraction ---
-        vol_pattern = r'(\d+(?:,\d+)?(?:\.\d+)?)\s*(mt|tons|metric tons|kg|kilo|tonnes)'
+        # Order matters: longer patterns first so "metric ton" / "metric tons" is captured
+        # before the bare "ton" / "tons" alternative.
+        vol_pattern = (
+            r'(\d+(?:,\d+)?(?:\.\d+)?)\s*'
+            r'(metric\s+tons?|mt|tonnes?|tons?|ton|kgs?|kilograms?|kilo)'
+        )
         # Use case-insensitive search to catch "100MT"
         vol_match = re.search(vol_pattern, remainder, flags=re.IGNORECASE)
         if vol_match:
             qty_str = vol_match.group(1).replace(',', '')
-            unit = vol_match.group(2)
+            unit = vol_match.group(2).lower().strip()
             try:
                 qty = float(qty_str)
-                if unit in ['kg', 'kilo']:
+                if re.match(r'^kilo', unit) or unit in ('kg', 'kgs', 'kilogram', 'kilograms'):
                     qty = qty / 1000.0
                 attributes['volume_mt'] = qty
                 remainder = remainder.replace(vol_match.group(0), '')
@@ -301,7 +346,7 @@ class QueryInterpreter:
         # --- 4. Price Extraction (Enhanced) ---
         currency_regex = r'(?:\$|usd|eur|pkr|gbp|cny|rmb)'
         
-        ceil_pattern = r'(?:under|below|<|cheaper than|less than|paying less than)\s*' + currency_regex + r'?\s*(\d+(?:,\d+)?)' + r'\s*' + currency_regex + r'?'
+        ceil_pattern = r'(?:under|below|<|cheaper th[ae]n|less th[ae]n|paying less th[ae]n)\s*' + currency_regex + r'?\s*(\d+(?:,\d+)?)' + r'\s*' + currency_regex + r'?'
         ceil_match = re.search(ceil_pattern, remainder)
         if ceil_match:
             nums = re.findall(r'(\d+(?:,\d+)?)', ceil_match.group(0))
@@ -309,7 +354,7 @@ class QueryInterpreter:
                 attributes['price_ceiling'] = float(nums[0].replace(',', ''))
                 remainder = remainder.replace(ceil_match.group(0), '')
 
-        floor_pattern = r'(?:above|over|>|higher than|more than|paying more than|sell above)\s*' + currency_regex + r'?\s*(\d+(?:,\d+)?)' + r'\s*' + currency_regex + r'?'
+        floor_pattern = r'(?:above|over|>|higher th[ae]n|more th[ae]n|greater th[ae]n|paying more th[ae]n|sell above|exceeding|at least)\s*' + currency_regex + r'?\s*(\d+(?:,\d+)?)' + r'\s*' + currency_regex + r'?'
         floor_match = re.search(floor_pattern, remainder)
         if floor_match:
              nums = re.findall(r'(\d+(?:,\d+)?)', floor_match.group(0))
@@ -324,22 +369,66 @@ class QueryInterpreter:
              remainder = remainder.replace(exact_match.group(0), '')
 
         # --- 5. Time Extraction (Enhanced) ---
+        _MONTHS = (
+            'january|february|march|april|may|june|july|august|september|'
+            'october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec'
+        )
+
         q_match = re.search(r'\b(q[1-4])[\s-]*(\d{4})?\b', remainder)
         if q_match:
-            year = q_match.group(2) or "2025" 
+            year = q_match.group(2) or "2025"
             attributes['time_range'] = f"{q_match.group(1).upper()} {year}"
             remainder = remainder.replace(q_match.group(0), '')
 
-        range_match = re.search(r'from\s+(\w+)\s+to\s+(\w+)', remainder)
-        if range_match:
-             attributes['time_range'] = f"{range_match.group(1)} to {range_match.group(2)}"
-             remainder = remainder.replace(range_match.group(0), '')
+        if not attributes['time_range']:
+            range_match = re.search(r'from\s+(\w+)\s+to\s+(\w+)', remainder)
+            if range_match:
+                attributes['time_range'] = f"{range_match.group(1)} to {range_match.group(2)}"
+                remainder = remainder.replace(range_match.group(0), '')
 
-        time_pattern = r'last\s+(\d+)\s+((?:month|year)s?)'
-        time_match = re.search(time_pattern, remainder)
-        if time_match:
-            attributes['time_range'] = f"last {time_match.group(1)} {time_match.group(2)}"
-            remainder = remainder.replace(time_match.group(0), '')
+        # "last N months/years"
+        if not attributes['time_range']:
+            time_pattern = r'last\s+(\d+)\s+((?:month|year)s?)'
+            time_match = re.search(time_pattern, remainder)
+            if time_match:
+                attributes['time_range'] = f"last {time_match.group(1)} {time_match.group(2)}"
+                remainder = remainder.replace(time_match.group(0), '')
+
+        # "last year" / "last month"
+        if not attributes['time_range']:
+            m = re.search(r'\blast\s+(year|month)\b', remainder, re.IGNORECASE)
+            if m:
+                attributes['time_range'] = f"last 1 {m.group(1)}"
+                remainder = remainder.replace(m.group(0), '')
+
+        # "since <month>" or "since <month> <year>"
+        if not attributes['time_range']:
+            m = re.search(
+                r'\bsince\s+(' + _MONTHS + r')(?:\s+(\d{4}))?\b',
+                remainder, re.IGNORECASE
+            )
+            if m:
+                month_str = m.group(1)
+                year_str = m.group(len(m.groups())) or ''
+                attributes['time_range'] = f"since {month_str} {year_str}".strip()
+                remainder = remainder.replace(m.group(0), '')
+
+        # "in <month> <year>" or "<month> <year>"
+        if not attributes['time_range']:
+            m = re.search(
+                r'\b(?:in\s+)?(' + _MONTHS + r')\s+(\d{4})\b',
+                remainder, re.IGNORECASE
+            )
+            if m:
+                attributes['time_range'] = f"{m.group(1)} {m.group(2)}"
+                remainder = remainder.replace(m.group(0), '')
+
+        # Bare year e.g. "2023", "2024" — must be 4-digit year between 2000-2030
+        if not attributes['time_range']:
+            m = re.search(r'\b(20[0-2]\d)\b', remainder)
+            if m:
+                attributes['time_range'] = m.group(1)
+                remainder = remainder.replace(m.group(0), '')
         
         # --- 6. Intent Detection (Scoring) ---
         intent, score = self._detect_intent_score(query) 
@@ -399,6 +488,8 @@ class QueryInterpreter:
             "the", "a", "an", "country", "countries", "market", "markets",
             "has", "do", "does", "where", "buys", "by", "per",
             "demand", "globally",
+            # Possessives / first-person ("sell our wheat" → product should be "wheat")
+            "our", "my", "your", "their", "its", "we", "us", "they", "them",
         ]
         
         # Remove common conversational prefixes
@@ -483,6 +574,16 @@ class QueryInterpreter:
                 if m:
                     buyer_name_extracted = m.group(1).strip().rstrip('?').strip()
 
+            # Pattern 4: "does <BUYER> buy/purchase/import <product>"
+            # Buyer name is everything between "does" and the verb.
+            if not buyer_name_extracted:
+                m = re.search(
+                    r'\bdoes\s+(.+?)\s+(?:buy|purchase|import)\b',
+                    query, re.IGNORECASE
+                )
+                if m:
+                    buyer_name_extracted = m.group(1).strip()
+
             # Set (or clear if no F8 pattern matched) — override generic entity_match noise
             attributes['counterparty_name'] = buyer_name_extracted
 
@@ -563,7 +664,11 @@ class QueryInterpreter:
                     attributes['volume_mt'] = qty
 
                 if not attributes['country_filter'] and merged.get('origin_country'):
-                    attributes['country_filter'] = [merged['origin_country']]
+                    _gliner_country = merged['origin_country']
+                    # Validate: only accept if it's a known country name, not a generic word
+                    _known = set(c.lower() for c in self.COUNTRIES) | set(self.COUNTRY_ALIASES.values())
+                    if _gliner_country.lower() in _known or _gliner_country in self.COUNTRIES:
+                        attributes['country_filter'] = [_gliner_country]
 
                 if attributes.get('price_ceiling') is None and merged.get('price_ceiling'):
                     attributes['price_ceiling'] = merged['price_ceiling']

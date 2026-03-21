@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 from .ltr_evaluation import evaluate_model
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), '../models/lgbm_ltr.txt')
+MODEL_PATH = os.path.join(os.path.dirname(__file__), '../models/lgbm_ltr_v2.txt')
 os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
 
 class LTRTrainer:

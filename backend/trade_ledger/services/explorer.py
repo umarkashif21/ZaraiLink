@@ -29,7 +29,7 @@ def get_explorer_companies(
     if date_to:
         base_qs = base_qs.filter(reporting_date__lte=date_to)
     if country:
-        base_qs = base_qs.filter(country=country)
+        base_qs = base_qs.filter(origin_country=country)
     if product_item_id:
         base_qs = base_qs.filter(product_item_id=product_item_id)
     elif product_subcategory_id:
@@ -119,12 +119,12 @@ def get_explorer_companies(
             
             country_row = (
                 base_qs.filter(Q(buyer=comp_name) | Q(seller=comp_name))
-                .values('country')
+                .values('origin_country')
                 .annotate(vol=Sum('qty_mt'))
                 .order_by('-vol')
                 .first()
             )
-            company_countries[comp_name] = country_row['country'] if country_row else 'N/A'
+            company_countries[comp_name] = country_row['origin_country'] if country_row else 'N/A'
             
             
             prods = (
@@ -148,9 +148,9 @@ def get_explorer_companies(
         
         country_data = (
             base_qs.filter(**{f'{company_field}__in': company_names})
-            .values(company=F(company_field), country_name=F('country'))
+            .values(company=F(company_field), country_name=F('origin_country'))
             .annotate(country_volume=Sum('qty_mt'))
-            .order_by(f'-country_volume')
+            .order_by('-country_volume')
         )
         company_countries = {}
         for row in country_data:

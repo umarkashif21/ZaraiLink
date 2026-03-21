@@ -294,9 +294,13 @@ def search_suppliers(
     """
     # ── Determine group-by field and trade_type filter ────────────────────────
     if intent == 'SELL':
+        # SELL intent = find buyers. The DB is Pakistan-import-only (0 EXPORT records),
+        # so fall back to IMPORT records and group by buyer — same logic as the ORM path.
         agg_field = 'buyer.keyword'
-        country_agg_field = 'destination_country'
-        trade_type = 'EXPORT'
+        country_agg_field = 'origin_country'
+        trade_type = 'IMPORT'
+        # country_filter for SELL+WORLDWIDE refers to destination country (not available);
+        # caller already cleared it before calling us.
     else:
         agg_field = 'seller.keyword'
         country_agg_field = 'origin_country'

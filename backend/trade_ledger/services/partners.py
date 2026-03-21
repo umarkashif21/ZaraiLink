@@ -10,7 +10,7 @@ def get_top_partners(company_name, direction='import', limit=10, **filters):
     counterparty = 'seller' if direction == 'import' else 'buyer'
 
     return (
-        qs.values('country', partner=F(counterparty))
+        qs.values('origin_country', partner=F(counterparty))
         .annotate(
             total_volume=Sum('qty_mt'),
             avg_price=Avg('usd_per_mt'),
@@ -23,7 +23,7 @@ def get_trade_volume_by_country(company_name, direction='import', **filters):
     qs = apply_transaction_filters(qs, direction=direction, company_name=company_name, **filters)
 
     return (
-        qs.values('country')
+        qs.values('origin_country')
         .annotate(total_volume=Sum('qty_mt'))
         .order_by('-total_volume')
     )
