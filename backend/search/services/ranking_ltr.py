@@ -4,6 +4,7 @@ import logging
 import os
 import json
 import pickle
+import threading
 
 try:
     import lightgbm as lgb
@@ -269,20 +270,38 @@ class LTRModel:
             # However, for the purpose of the 'task', I will ensure we don't 'train_dummy'.
             return np.zeros(len(features))
             
-        return self.model.predict(features)
+        try:
+            X = np.array(features)
+            expected = self.model.num_feature()
+            if X.ndim == 2 and X.shape[1] != expected:
+                logging.warning(
+                    f"LTR feature count mismatch: model expects {expected} features, "
+                    f"got {X.shape[1]}. Retrain by running training_scripts/train_ltr.py "
+                    "to generate lgbm_ltr_v2.txt. Falling back to zero LTR scores."
+                )
+                return np.zeros(len(features))
+            return self.model.predict(X)
+        except Exception as e:
+            logging.warning(f"LTR model predict failed ({e}), falling back to zero scores")
+            return np.zeros(len(features))
 
 class RankingEnsemble:
     """
     Orchestrates ranking.
     """
-    _ltr_model = None  # class-level singleton — loaded once per process
+    _ltr_model = None        # class-level singleton — loaded once per process
+    _ltr_model_lock = threading.Lock()  # guards concurrent first-time load (M8 fix)
 
     def __init__(self):
         self.extractor = FeatureExtractor()
         if RankingEnsemble._ltr_model is None:
-            ltr = LTRModel()
-            ltr.load()
-            RankingEnsemble._ltr_model = ltr
+            # Double-checked locking: fast path (no lock) for steady state;
+            # lock only on the rare concurrent first initialisation.
+            with RankingEnsemble._ltr_model_lock:
+                if RankingEnsemble._ltr_model is None:
+                    ltr = LTRModel()
+                    ltr.load()
+                    RankingEnsemble._ltr_model = ltr
         self.ltr_model = RankingEnsemble._ltr_model
         
     def rank_candidates(self, candidates, parsed_query):

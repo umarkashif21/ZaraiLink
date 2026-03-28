@@ -80,6 +80,9 @@ class SupplierReranker:
                 CE_MODEL_NAME,
                 device='cpu',
                 max_length=256,
+                # low_cpu_mem_usage=False prevents the "meta tensor" PyTorch error
+                # that occurs when moving a meta-device model to CPU on some torch versions.
+                model_kwargs={'low_cpu_mem_usage': False},
             )
             self._loaded = True
             logger.info(f"SupplierReranker: CrossEncoder loaded ({CE_MODEL_NAME})")

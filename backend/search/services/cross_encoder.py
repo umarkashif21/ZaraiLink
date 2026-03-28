@@ -26,6 +26,7 @@ Design notes:
 """
 
 import logging
+import threading
 import numpy as np
 from typing import Optional
 
@@ -35,9 +36,9 @@ logger = logging.getLogger(__name__)
 # Constants
 # -----------------------------------------------------------------------
 CE_MODEL_NAME = 'cross-encoder/ms-marco-MiniLM-L6-v2'
-BLEND_ALPHA = 0.6        # weight of CE score in final blend
-TOP_K_RETRIEVE = 15      # how many hybrid candidates to feed to CE
-TOP_K_RETURN = 5         # how many to return after re-ranking
+BLEND_ALPHA = 0.3        # weight of CE score in final blend (reduced from 0.6 — MS-MARCO is not domain-adapted to agricultural products; RRF signal is more reliable)
+TOP_K_RETRIEVE = 20      # how many hybrid candidates to feed to CE
+TOP_K_RETURN = 10        # how many to return after re-ranking (raised from 5 — broad queries need more subcategories)
 MIN_CE_SCORE = -10.0     # clamp floor (logit scale)
 MAX_CE_SCORE = 10.0      # clamp ceiling
 
@@ -46,12 +47,15 @@ MAX_CE_SCORE = 10.0      # clamp ceiling
 # Singleton
 # -----------------------------------------------------------------------
 _reranker_instance: Optional['CrossEncoderReranker'] = None
+_reranker_lock = threading.Lock()
 
 
 def get_reranker() -> 'CrossEncoderReranker':
     global _reranker_instance
     if _reranker_instance is None:
-        _reranker_instance = CrossEncoderReranker()
+        with _reranker_lock:
+            if _reranker_instance is None:
+                _reranker_instance = CrossEncoderReranker()
     return _reranker_instance
 
 
@@ -85,6 +89,9 @@ class CrossEncoderReranker:
                 CE_MODEL_NAME,
                 device='cpu',
                 max_length=128,
+                # low_cpu_mem_usage=False prevents the "meta tensor" PyTorch error
+                # that occurs when moving a meta-device model to CPU on some torch versions.
+                model_kwargs={'low_cpu_mem_usage': False},
             )
             self._loaded = True
             logger.info(f"CrossEncoder loaded: {CE_MODEL_NAME}")
@@ -148,7 +155,7 @@ class CrossEncoderReranker:
         # Use subcategory name as the passage; optionally include HS code
         pairs = []
         for c in candidates:
-            passage = c['name']
+            passage = c.get('name') or ''
             if c.get('hs_code'):
                 passage = f"{passage} (HS {c['hs_code']})"
             pairs.append((query, passage))

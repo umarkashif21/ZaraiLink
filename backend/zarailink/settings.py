@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import warnings
 from dotenv import load_dotenv
 
 
@@ -19,6 +20,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 load_dotenv(BASE_DIR / '.env')
+
+# ─── Suppress noisy third-party library warnings ───────────────────────────
+# huggingface_hub: resume_download deprecated (safe to ignore, downloads still resume)
+warnings.filterwarnings('ignore', category=FutureWarning, module='huggingface_hub')
+# transformers: sentencepiece byte-fallback tokenizer note (cosmetic, no functional impact)
+warnings.filterwarnings('ignore', category=UserWarning, module='transformers.convert_slow_tokenizer')
+# transformers: truncation warning when tokenizer has no predefined max_length (nomic model)
+warnings.filterwarnings('ignore', message='Asking to truncate to max_length')
+# pandas: bottleneck version mismatch (install bottleneck>=1.3.6 to silence permanently)
+warnings.filterwarnings('ignore', category=UserWarning, module='pandas')
+# matplotlib: Axes3D import failure from multiple matplotlib installs (cosmetic)
+warnings.filterwarnings('ignore', message='Unable to import Axes3D')
+
+# ─── TensorFlow: suppress C++ INFO/WARNING messages printed to stderr ───────
+# TF prints CPU instruction notices even when we only use torch; suppress them.
+os.environ.setdefault('TF_CPP_MIN_LOG_LEVEL', '3')
+
+# ─── HuggingFace Hub: use local cache, skip network version checks ───────────
+# Prevents 5-retry network spam and 20+ second delays when huggingface.co is
+# unreachable. All models (nomic, SetFit, cross-encoder) are already cached.
+# Remove this line (or set HF_HUB_OFFLINE=0 in .env) when you need to pull
+# updated model weights.
+os.environ.setdefault('HF_HUB_OFFLINE', '1')
 
 
 
@@ -35,9 +59,13 @@ SEARCH_USE_HYBRID_RETRIEVAL = True
 # Phase 5: Cross-encoder re-ranking of subcategory candidates
 SEARCH_USE_CROSS_ENCODER = True
 # Phase 5: Cross-encoder re-ranking of final supplier results
-SEARCH_USE_SUPPLIER_RERANKER = True
+# Disabled: MS-MARCO cross-encoder on company profiles adds noise over heuristic ranking;
+# also fails to load on this system (meta tensor PyTorch error).
+SEARCH_USE_SUPPLIER_RERANKER = False
 # Phase 3-A/B: GLiNER zero-shot NER to fill gaps from regex extraction
-SEARCH_USE_GLINER_NER = True
+# Disabled: GLiNER is incompatible with the installed torch/TF stack
+# (variable.set_data tensor type mismatch). Regex extraction covers all cases.
+SEARCH_USE_GLINER_NER = False
 # Phase 4-B: HyDE (Hypothetical Document Embeddings) for short F1 queries
 SEARCH_USE_HYDE = True
 # Phase 3-C/D: SetFit intent classifier (overrides regex when confidence >= 0.70)
@@ -191,10 +219,31 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'zarailink': {  
+        'zarailink': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        # Suppress verbose connection tracebacks from the opensearch-py library.
+        # Our own code already logs a clean WARNING when OpenSearch is unavailable.
+        'opensearch': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        # Suppress "Asking to truncate to max_length" from SetFit/nomic tokenizer.
+        # This is a logger.warning() (not warnings.warn()), so needs LOGGING config.
+        'transformers.tokenization_utils_base': {
+            'handlers': [],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        # Suppress huggingface_hub HTTP retry warnings (connection refused / DNS failure).
+        # These appear when the hub is unreachable; models load from local cache fine.
+        'huggingface_hub.utils._http': {
+            'handlers': [],
+            'level': 'ERROR',
+            'propagate': False,
         },
     },
 }
@@ -397,5 +446,6 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # ─── OpenSearch ────────────────────────────────────────────────────────────────
 OPENSEARCH_HOST = os.environ.get('OPENSEARCH_HOST', 'localhost')
 OPENSEARCH_PORT = int(os.environ.get('OPENSEARCH_PORT', 9200))
-SEARCH_USE_OPENSEARCH = os.environ.get('SEARCH_USE_OPENSEARCH', 'true').lower() == 'true'
+# Default False: OpenSearch is optional. Set SEARCH_USE_OPENSEARCH=true in .env to enable.
+SEARCH_USE_OPENSEARCH = os.environ.get('SEARCH_USE_OPENSEARCH', 'false').lower() == 'true'
 
