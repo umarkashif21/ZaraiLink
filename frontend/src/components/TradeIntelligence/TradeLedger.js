@@ -63,7 +63,7 @@ const TradeLedger = () => {
     setLoad(true);
     try {
       const res = await fetch(
-        'http://localhost:8000/api/explorer/?direction=both&limit=2000',
+        `${process.env.REACT_APP_API_BASE_URL}/api/explorer/?direction=both&limit=2000`,
         { credentials: 'include' }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

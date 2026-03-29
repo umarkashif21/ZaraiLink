@@ -29,7 +29,7 @@ const TradeLensSummary = () => {
       if (filters.end_date) params.append('end_date', filters.end_date);
 
       const response = await fetch(
-        `http://localhost:8000/api/trade-lens/products/${productId}/summary/?${params}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/trade-lens/products/${productId}/summary/?${params}`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to load summary data');

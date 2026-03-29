@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, ChevronRight } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 const SearchHome = () => {
     const [query, setQuery] = useState('');

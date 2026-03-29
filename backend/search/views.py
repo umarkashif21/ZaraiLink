@@ -45,11 +45,12 @@ class SearchViewSet(viewsets.ViewSet):
             return Response({"error": "Query parameter 'q' is required"}, status=400)
 
         ui_context = "pakistan" if scope_param == "pakistan" else "worldwide"
+        top_k = self._extract_top_n(query) or 100
 
         search_result = self.search_service.execute_search(
             raw_query=query,
             ui_context=ui_context,
-            top_k=100,
+            top_k=top_k,
             hs_code=hs_code,
             subcat_id=int(subcat_id) if subcat_id else None,
             variant_name=variant_name,
@@ -97,9 +98,13 @@ class SearchViewSet(viewsets.ViewSet):
             })
 
         prices = [r["avg_price"] for r in mapped_results if r["avg_price"] > 0]
+        # Volume-weighted average price: high-volume suppliers dominate, tiny outliers get near-zero weight.
+        _vw_num = sum(r["avg_price"] * r["total_volume"] for r in mapped_results if r["avg_price"] > 0 and r["total_volume"] > 0)
+        _vw_den = sum(r["total_volume"] for r in mapped_results if r["avg_price"] > 0 and r["total_volume"] > 0)
+        vw_avg_price = round(_vw_num / _vw_den, 2) if _vw_den > 0 else 0
         market_snapshot = {
             "total_count":      len(mapped_results),
-            "avg_price_global": round(sum(prices) / len(prices), 2) if prices else 0,
+            "avg_price_global": vw_avg_price,
             "top_country":      mapped_results[0]["country"] if mapped_results else "N/A",
         }
 
@@ -153,18 +158,42 @@ class SearchViewSet(viewsets.ViewSet):
     def supplier_detail(self, request):
         seller_name = request.query_params.get('name')
         query       = request.query_params.get('query')
+        subcat_id   = request.query_params.get('subcat_id')
+        variant_name = request.query_params.get('variant_name')
 
         if not seller_name or not query:
             return Response({"error": "Params 'name' and 'query' are required"}, status=400)
 
-        parsed_query = self.search_service._nlu_engine.parse(query)
-        intent       = parsed_query.get('intent', 'BUY')
-        scope        = request.query_params.get('scope', 'worldwide').lower()
+        scope = request.query_params.get('scope', 'worldwide').lower()
+        orm_scope = 'PAKISTAN' if scope == 'pakistan' else 'WORLDWIDE'
 
+        # Use the NLU cache — same key as execute_search uses — to avoid
+        # a fresh LLM call that might return a different intent.
+        import hashlib
+        from django.core.cache import cache
+        _cache_raw = f"nlu:{query.lower().strip()}:{scope}"
+        _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
+        parsed_query = cache.get(_cache_key)
+        if parsed_query is None:
+            parsed_query = self.search_service._nlu_engine.parse(query)
+
+        intent = parsed_query.get('intent', 'BUY')
+
+        # Resolve exact subcategory if selected from UI
+        subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
+            product_keyword=parsed_query.get("product", ""),
+            hs_code=parsed_query.get("hs_code", ""),
+            intent=intent,
+            subcat_id=int(subcat_id) if subcat_id else None,
+            variant_name=variant_name,
+            scope=orm_scope
+        )
+
+        # Route to the correct aggregator based on BOTH intent AND scope.
         if intent == 'SELL':
-            details = self.aggregator.get_buyer_details(seller_name, [], scope=scope)
+            details = self.aggregator.get_buyer_details(seller_name, subcat_ids, product_item_filter=product_item_ids, scope=orm_scope)
         else:
-            details = self.aggregator.get_supplier_details(seller_name, [], scope=scope)
+            details = self.aggregator.get_supplier_details(seller_name, subcat_ids, product_item_filter=product_item_ids, scope=orm_scope)
 
         if not details:
             entity_type = "Buyer" if intent == 'SELL' else "Supplier"
@@ -176,6 +205,7 @@ class SearchViewSet(viewsets.ViewSet):
             "trade_lens_product_id": None,
             "type":                  "BUYER" if intent == 'SELL' else "SUPPLIER",
         })
+
 
     def _extract_top_n(self, query):
         import re

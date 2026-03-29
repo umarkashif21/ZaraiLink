@@ -33,7 +33,7 @@ const CompanyProducts = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        let url = `http://localhost:8000/api/company/${encodeURIComponent(companyName)}/products/?direction=${direction}`;
+        let url = `${process.env.REACT_APP_API_BASE_URL}/api/company/${encodeURIComponent(companyName)}/products/?direction=${direction}`;
         if (productName) url += `&product_name=${encodeURIComponent(productName)}`;
 
         const res = await fetch(url, { credentials: 'include' });

@@ -16,7 +16,7 @@ const LinkPrediction = () => {
 
   
   useEffect(() => {
-    fetch('http://localhost:8000/api/predict/methods/', { credentials: 'include' })
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/predict/methods/`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => setMethods(data.methods || []))
       .catch(err => console.error('Failed to load methods:', err));
@@ -24,7 +24,7 @@ const LinkPrediction = () => {
 
   
   useEffect(() => {
-    fetch('http://localhost:8000/api/explorer/?direction=import&limit=1000', { credentials: 'include' })
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/explorer/?direction=import&limit=1000`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         const companies = data.results?.map(c => c.company) || [];
@@ -44,8 +44,8 @@ const LinkPrediction = () => {
     setResults([]);
 
     const endpoint = predictionType === 'sellers' 
-      ? `http://localhost:8000/api/predict/sellers/${encodeURIComponent(companyName)}/?method=${method}&top_k=10`
-      : `http://localhost:8000/api/predict/buyers/${encodeURIComponent(companyName)}/?method=${method}&top_k=10`;
+      ? `${process.env.REACT_APP_API_BASE_URL}/api/predict/sellers/${encodeURIComponent(companyName)}/?method=${method}&top_k=10`
+      : `${process.env.REACT_APP_API_BASE_URL}/api/predict/buyers/${encodeURIComponent(companyName)}/?method=${method}&top_k=10`;
 
     try {
       const res = await fetch(endpoint, { credentials: 'include' });

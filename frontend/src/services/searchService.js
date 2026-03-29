@@ -17,14 +17,20 @@ const searchService = {
      * getSupplierDetails
      * @param {string} sellerName - Name of the seller
      * @param {string} query - The original query (context)
+     * @param {string} scope - The original scope
+     * @param {string} subcatId - Explicit DB subcategory id constraint
+     * @param {string} variantName - Explicit product variant name constraint
      * @returns {Promise<Object>} - The supplier details
      */
-    getSupplierDetails: async (sellerName, query, scope) => {
+    getSupplierDetails: async (sellerName, query, scope, subcatId, variantName) => {
         // New Endpoint: /api/search/supplier-detail/
         const params = { name: sellerName, query: query };
         if (scope) {
             params.scope = scope;
         }
+        if (subcatId) params.subcat_id = subcatId;
+        if (variantName) params.variant_name = variantName;
+
         const response = await api.get(`/search/supplier-detail/`, {
             params: params
         });

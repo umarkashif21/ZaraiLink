@@ -17,7 +17,9 @@ When it's NOT running (ConnectionError), falls back to ORM silently.
 """
 
 import logging
+import hashlib
 from typing import Optional
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -113,17 +115,32 @@ class SearchService:
             "search_engine":       "opensearch" | "orm",
         }
         """
-        # ------------------------------------------------------------------
-        # Step 1: NLU
-        # ------------------------------------------------------------------
-        nlu_result = self._nlu_engine.parse(raw_query, ui_context=ui_context)
-        intent     = nlu_result.get("intent", "BUY")
-        country    = nlu_result.get("country")  # May be None
+        import time
+        t_total = time.perf_counter()
 
-        # Best product search term — prefer GLiNER entity, fall back to keyword
+        # ------------------------------------------------------------------
+        # Step 1: NLU  (SetFit + KeyBERT + OpenRouter)
+        # ------------------------------------------------------------------
+        t0 = time.perf_counter()
+        # ------- NLU CACHE -------
+        # Build a stable cache key from (query, context) — 24h TTL
+        _cache_raw = f"nlu:{raw_query.lower().strip()}:{ui_context.lower()}"
+        _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
+        nlu_result = cache.get(_cache_key)
+        if nlu_result is not None:
+            logger.warning(f"[CACHE] NLU cache HIT for query='{raw_query[:40]}' — skipping LLM call")
+        else:
+            logger.warning(f"[CACHE] NLU cache MISS for query='{raw_query[:40]}' — running full NLU")
+            nlu_result = self._nlu_engine.parse(raw_query, ui_context=ui_context)
+            cache.set(_cache_key, nlu_result, timeout=86400)  # 24 hours
+        logger.warning(f"[TIMING] NLU parse: {time.perf_counter() - t0:.3f}s")
+
+        intent  = nlu_result.get("intent", "BUY")
+        country = nlu_result.get("country")
+
         product_keyword = (
-            nlu_result.get("product")      # GLiNER entity (precise)
-            or nlu_result.get("product_keyword")  # stop-word stripped fallback
+            nlu_result.get("product")
+            or nlu_result.get("product_keyword")
             or raw_query
         )
 
@@ -131,16 +148,17 @@ class SearchService:
         # Step 2: Determine scope for ORM aggregator
         # ------------------------------------------------------------------
         orm_scope  = self._map_scope(ui_context)
-        orm_intent = intent  # 'BUY' or 'SELL'
+        orm_intent = intent
 
         # ------------------------------------------------------------------
         # Step 3: Resolve product subcategories from DB
-        # Pass country + intent so country-aware filtering can happen.
         # ------------------------------------------------------------------
+        t0 = time.perf_counter()
         subcat_ids, variant_list, product_item_ids = self._resolve_subcategories(
             product_keyword, hs_code, country=country, intent=intent,
-            subcat_id=subcat_id, variant_name=variant_name
+            subcat_id=subcat_id, variant_name=variant_name, scope=orm_scope
         )
+        logger.warning(f"[TIMING] Subcategory resolve: {time.perf_counter() - t0:.3f}s")
 
         # If no hs_code was given AND multiple subcategories matched → disambiguate
         needs_disambig = False
@@ -152,13 +170,14 @@ class SearchService:
                     needs_disambig = True
 
         if needs_disambig:
+            logger.warning(f"[TIMING] Total (disambig early-exit): {time.perf_counter() - t_total:.3f}s")
             return {
                 "nlu":                  nlu_result,
                 "profiles":             [],
                 "total_raw_hits":       0,
                 "needs_disambiguation": True,
                 "is_broad_search":      False,
-                "variants":             variant_list,  # Already country-filtered
+                "variants":             variant_list,
                 "search_engine":        "none",
             }
 
@@ -178,24 +197,32 @@ class SearchService:
                 return result
             except Exception as e:
                 logger.warning(f"OpenSearch query failed, falling back to ORM: {e}")
-                self.__class__._os_ok = False  # mark as down for this session
+                self.__class__._os_ok = False
 
         # ------------------------------------------------------------------
-        # Step 4b: ORM Fallback (always works)
+        # Step 4b: ORM Fallback — DB aggregation + ranking
         # ------------------------------------------------------------------
+        t0 = time.perf_counter()
         profiles, total_hits = self._orm_search(
             subcat_ids=subcat_ids,
             intent=orm_intent,
             scope=orm_scope,
             nlu_result=nlu_result,
             top_k=top_k,
-            product_item_ids=product_item_ids,  # Pin to exact product item when user picked one
+            product_item_ids=product_item_ids,
+            raw_query=raw_query,
         )
+        db_elapsed = time.perf_counter() - t0
+        logger.warning(f"[TIMING] DB aggregation: {db_elapsed:.3f}s")
+        # Ranking is embedded inside _orm_search; estimate remainder as < 30 ms
+        logger.warning(f"[TIMING] Ranking: (included in DB aggregation above)")
+
+        logger.warning(f"[TIMING] Total: {time.perf_counter() - t_total:.3f}s")
 
         is_broad = False
         if not hs_code and not subcat_ids and len(product_keyword) > 1:
             is_broad = True
-            
+
         return {
             "nlu":                  nlu_result,
             "profiles":             profiles,
@@ -218,6 +245,7 @@ class SearchService:
         intent: str = "BUY",
         subcat_id: int = None,      # Direct DB subcategory id — bypasses all name matching
         variant_name: str = None,  # Exact product name (e.g., "Dextrose Ball") — disambiguates shared hs_codes
+        scope: str = "WORLDWIDE",  # "PAKISTAN" | "WORLDWIDE"
     ):
         """
         Find matching ProductSubCategory IDs for the keyword.
@@ -356,29 +384,53 @@ class SearchService:
         subcat_ids   = list(sc_map.keys())
 
         # ------------------------------------------------------------------
-        # COUNTRY FILTER — only keep variants that have real trade data
-        # for the user's selected country.
+        # SCOPE-AWARE AVAILABILITY FILTER
+        # Map (Intent, Scope) → the trade_type that has real data for the
+        # current user context. This prevents showing product variants that
+        # will return 0 results when clicked.
+        #
+        # Intent | Scope     | Trade Type | Reasoning
+        # -------|-----------|------------|------------------------------
+        # BUY    | PAKISTAN  | EXPORT     | User wants a Pak seller
+        # SELL   | PAKISTAN  | IMPORT     | User wants a Pak buyer
+        # BUY    | WORLDWIDE | IMPORT     | User wants a foreign seller
+        # SELL   | WORLDWIDE | EXPORT     | User wants a foreign buyer
         # ------------------------------------------------------------------
-        if country and subcat_ids:
-            # Determine which field to filter on based on intent
-            if intent == "SELL":
-                country_field = "destination_country"
-                trade_type    = "EXPORT"
-            else:
-                country_field = "origin_country"
-                trade_type    = "IMPORT"
+        if subcat_ids:
+            if intent == "BUY" and scope == "PAKISTAN":
+                target_trade_type = "EXPORT"
+            elif intent == "SELL" and scope == "PAKISTAN":
+                target_trade_type = "IMPORT"
+            elif intent == "BUY" and scope == "WORLDWIDE":
+                target_trade_type = "IMPORT"
+            else:  # SELL + WORLDWIDE
+                target_trade_type = "EXPORT"
 
-            active_subcat_ids = set(
-                Transaction.objects.filter(
-                    **{country_field: country},
-                    trade_type=trade_type,
-                    product_item__sub_category_id__in=subcat_ids,
-                ).values_list("product_item__sub_category_id", flat=True).distinct()
+            availability_qs = Transaction.objects.filter(
+                trade_type=target_trade_type,
+                product_item__sub_category_id__in=subcat_ids,
             )
 
-            if active_subcat_ids:  # Only filter if we found ANY data (prevents empty list if typo in country)
-                variant_list = [v for v in variant_list if v["id"] in active_subcat_ids]
-                subcat_ids   = [sid for sid in subcat_ids if sid in active_subcat_ids]
+            # Also apply country filter if NLU extracted a specific country
+            if country:
+                country_field = "origin_country" if target_trade_type == "IMPORT" else "destination_country"
+                availability_qs = availability_qs.filter(
+                    **{country_field + "__icontains": country}
+                )
+
+            active_ids = set(
+                availability_qs.values_list(
+                    "product_item__sub_category_id", flat=True
+                ).distinct()
+            )
+
+            if active_ids:
+                # Only keep variants that have real transactions
+                variant_list = [v for v in variant_list if v["id"] in active_ids]
+                subcat_ids   = [sid for sid in subcat_ids if sid in active_ids]
+            # If active_ids is empty (genuinely no data), leave list intact so
+            # the aggregator can return a proper "0 results" response instead
+            # of silently dropping all variants.
 
         return subcat_ids, variant_list, []
 
@@ -470,7 +522,7 @@ class SearchService:
     # INTERNAL — ORM Fallback Path
     # =========================================================================
 
-    def _orm_search(self, subcat_ids, intent, scope, nlu_result, top_k=100, product_item_ids=None):
+    def _orm_search(self, subcat_ids, intent, scope, nlu_result, top_k=100, product_item_ids=None, raw_query=""):
         """
         Use SupplierAggregator (pure Django ORM) to get company profiles.
         This is the guaranteed-to-work fallback path.
@@ -530,16 +582,16 @@ class SearchService:
         #   default              → balanced (w1=0.4, w2=0.3, w3=0.2, w4=0.1)
         if raw_results:
             ranking_hint  = (nlu_result.get("price_filter") or {}).get("ranking_hint") or ""
-            signal_text   = nlu_result.get("product_keyword", "").lower()
+            signal_text   = nlu_result.get("product_keyword", "").lower() + " " + raw_query.lower()
 
             # Determine weight preset
             if ranking_hint == "price_asc" or any(
-                w in signal_text for w in ["cheap", "affordable", "low price", "best price", "cheapest"]
+                w in signal_text for w in ["cheap", "affordable", "low price", "best price", "cheapest", "under", "inexpensive", "bargain"]
             ):
                 w1, w2, w3, w4 = 0.2, 0.2, 0.5, 0.1
                 preset_name = "price_asc"
             elif ranking_hint == "price_desc" or any(
-                w in signal_text for w in ["bulk", "large quantity", "reliable", "established", "premium"]
+                w in signal_text for w in ["bulk", "large quantity", "reliable", "established", "premium", "top supplier", "biggest"]
             ):
                 w1, w2, w3, w4 = 0.5, 0.3, 0.1, 0.1
                 preset_name = "bulk/premium"

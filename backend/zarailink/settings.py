@@ -33,7 +33,7 @@ OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.dev', '.ngrok-free.app']
 
 
 
@@ -81,7 +81,7 @@ ROOT_URLCONF = 'zarailink.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'accounts' / 'templates'],  
+        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'accounts' / 'templates', BASE_DIR.parent / 'frontend' / 'build'],  
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -237,6 +237,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
+    BASE_DIR.parent / 'frontend' / 'build' / 'static',
 ]
 
 

@@ -5,36 +5,47 @@ import Navbar from '../Layout/Navbar';
 import '../Dashboard/Dashboard.css';
 import searchService from '../../services/searchService';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 const SearchResults = () => {
-    const location  = useLocation();
-    const navigate  = useNavigate();
-    const queryParams    = new URLSearchParams(location.search);
-    const initialQuery      = queryParams.get('q') || '';
-    const initialScope      = queryParams.get('scope') || 'WORLDWIDE';
-    const initialHsCode     = queryParams.get('hs_code') || null;
-    const initialSubcatId   = queryParams.get('subcat_id') || null;  // Exact DB subcategory id
+    const location = useLocation();
+    const navigate = useNavigate();
+    const queryParams = new URLSearchParams(location.search);
+    const initialQuery = queryParams.get('q') || '';
+    const initialScope = queryParams.get('scope') || 'WORLDWIDE';
+    const initialHsCode = queryParams.get('hs_code') || null;
+    const initialSubcatId = queryParams.get('subcat_id') || null;  // Exact DB subcategory id
     const initialVariantName = queryParams.get('variant_name') || null; // Exact product name
 
-    const [query,        setQuery]        = useState(initialQuery);
-    const [scope,        setScope]        = useState(initialScope);
-    const [hsCode,       setHsCode]       = useState(initialHsCode);
-    const [subcatId,     setSubcatId]     = useState(initialSubcatId);
-    const [variantName,  setVariantName]  = useState(initialVariantName);
+    const [query, setQuery] = useState(initialQuery);
+    const [scope, setScope] = useState(initialScope);
+    const [hsCode, setHsCode] = useState(initialHsCode);
+    const [subcatId, setSubcatId] = useState(initialSubcatId);
+    const [variantName, setVariantName] = useState(initialVariantName);
 
-    const [results,              setResults]              = useState([]);
-    const [marketSnapshot,       setMarketSnapshot]       = useState(null);
-    const [loading,              setLoading]              = useState(true);
-    const [error,                setError]                = useState(null);
-    const [parsedIntent,         setParsedIntent]         = useState('BUY');
-    const [needsDisambig,        setNeedsDisambig]        = useState(false);
-    const [isBroadSearch,        setIsBroadSearch]        = useState(false);
-    const [parsedQueryInfo,      setParsedQueryInfo]      = useState(null);
-    const [variants,             setVariants]             = useState([]);
-    const [availableCountries,   setAvailableCountries]   = useState([]);
-    const [selectedCountry,      setSelectedCountry]      = useState(null);
-    const [searchEngine,         setSearchEngine]         = useState('');
+    const [sortBy, setSortBy] = useState('relevance');
+
+    const [priceMin, setPriceMin] = useState(queryParams.get('price_min') || '');
+    const [priceMax, setPriceMax] = useState(queryParams.get('price_max') || '');
+    const [volumeMin, setVolumeMin] = useState(queryParams.get('volume_min') || '');
+
+    const [tempCountry, setTempCountry] = useState(queryParams.get('country') || '');
+    const [tempPriceMin, setTempPriceMin] = useState(queryParams.get('price_min') || '');
+    const [tempPriceMax, setTempPriceMax] = useState(queryParams.get('price_max') || '');
+    const [tempVolumeMin, setTempVolumeMin] = useState(queryParams.get('volume_min') || '');
+
+    const [results, setResults] = useState([]);
+    const [marketSnapshot, setMarketSnapshot] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [parsedIntent, setParsedIntent] = useState('BUY');
+    const [needsDisambig, setNeedsDisambig] = useState(false);
+    const [isBroadSearch, setIsBroadSearch] = useState(false);
+    const [parsedQueryInfo, setParsedQueryInfo] = useState(null);
+    const [variants, setVariants] = useState([]);
+    const [availableCountries, setAvailableCountries] = useState([]);
+    const [selectedCountry, setSelectedCountry] = useState(null);
+    const [searchEngine, setSearchEngine] = useState('');
 
     // ── Fetch results ──────────────────────────────────────────────────────
     const fetchResults = useCallback(async () => {
@@ -43,10 +54,10 @@ const SearchResults = () => {
         setError(null);
         try {
             const filters = { scope };
-            if (hsCode)        filters.hs_code      = hsCode;
-            if (subcatId)      filters.subcat_id    = subcatId;      // Exact subcategory DB id
-            if (variantName)   filters.variant_name = variantName;   // Exact product name
-            if (selectedCountry) filters.country    = selectedCountry;
+            if (hsCode) filters.hs_code = hsCode;
+            if (subcatId) filters.subcat_id = subcatId;      // Exact subcategory DB id
+            if (variantName) filters.variant_name = variantName;   // Exact product name
+            if (selectedCountry) filters.country = selectedCountry;
 
             const data = await searchService.search(initialQuery, filters);
 
@@ -95,7 +106,7 @@ const SearchResults = () => {
     const handleVariantPick = (variant) => {
         // Send subcat_id, hs_code AND variant_name — backend uses these to find the exact subcategory
         const queryParamsObj = { q: query, scope, hs_code: variant.hs_code, subcat_id: variant.id, variant_name: variant.name };
-        
+
         // Preserve external country constraint from user selection OR from NLU extraction
         if (selectedCountry) {
             queryParamsObj.country = selectedCountry;
@@ -118,18 +129,62 @@ const SearchResults = () => {
     const handleSearch = (e) => {
         e.preventDefault();
         setSelectedCountry(null);
+        setPriceMin('');
+        setPriceMax('');
+        setVolumeMin('');
+        setTempCountry('');
+        setTempPriceMin('');
+        setTempPriceMax('');
+        setTempVolumeMin('');
         setHsCode(null);
         setSubcatId(null);      // Clear variant pin from previous disambiguation click
         setVariantName(null);   // Clear variant name pin from previous disambiguation click
         navigate(`/search/results?q=${encodeURIComponent(query)}&scope=${scope}`);
     };
 
+    const applyFilters = () => {
+        setSelectedCountry(tempCountry || null);
+        setPriceMin(tempPriceMin);
+        setPriceMax(tempPriceMax);
+        setVolumeMin(tempVolumeMin);
+    };
+
     const clearFilters = () => {
         setSelectedCountry(null);
+        setPriceMin('');
+        setPriceMax('');
+        setVolumeMin('');
+        setTempCountry('');
+        setTempPriceMin('');
+        setTempPriceMax('');
+        setTempVolumeMin('');
     };
 
     // ── Entity type label ──────────────────────────────────────────────────
     const entityLabel = parsedIntent === 'SELL' ? 'Buyers' : 'Suppliers';
+
+    // ── Local Frontend Filtering & Sorting ─────────────────────────────────
+    let sortedResults = results.filter((r) => {
+        if (selectedCountry && r.country !== selectedCountry) return false;
+        if (priceMin && r.avg_price < parseFloat(priceMin)) return false;
+        if (priceMax && r.avg_price > parseFloat(priceMax)) return false;
+        if (volumeMin && r.total_volume < parseFloat(volumeMin)) return false;
+        return true;
+    });
+
+    if (sortBy === 'price_asc') {
+        sortedResults.sort((a, b) => (a.avg_price || Infinity) - (b.avg_price || Infinity));
+    } else if (sortBy === 'price_desc') {
+        sortedResults.sort((a, b) => (b.avg_price || 0) - (a.avg_price || 0));
+    } else if (sortBy === 'volume_desc') {
+        sortedResults.sort((a, b) => (b.total_volume || 0) - (a.total_volume || 0));
+    }
+
+    useEffect(() => {
+        if (priceMin || priceMax) {
+            console.log(`[FILTER] Price range applied: $${priceMin || '0'}-$${priceMax || 'any'}, suppliers before: ${results.length}, after: ${sortedResults.length}`);
+        }
+    }, [priceMin, priceMax, results.length, sortedResults.length]);
 
     return (
         <div className="dashboard-wrapper">
@@ -171,8 +226,8 @@ const SearchResults = () => {
                             <div className="border-b-2 border-gray-100 pb-4">
                                 <h4 className="text-sm font-bold text-gray-700 py-2">Country</h4>
                                 <select
-                                    value={selectedCountry || ''}
-                                    onChange={(e) => setSelectedCountry(e.target.value || null)}
+                                    value={tempCountry}
+                                    onChange={(e) => setTempCountry(e.target.value)}
                                     className="w-full mt-2 block rounded-lg border-2 border-gray-200 py-2 pl-2 pr-8 text-sm focus:border-emerald-500 focus:outline-none"
                                 >
                                     <option value="">All Countries</option>
@@ -182,6 +237,47 @@ const SearchResults = () => {
                                 </select>
                             </div>
                         )}
+
+                        <div className="border-b-2 border-gray-100 pb-4">
+                            <h4 className="text-sm font-bold text-gray-700 py-2">Price Range ($/MT)</h4>
+                            <div className="flex items-center gap-2 mt-2">
+                                <input
+                                    type="number"
+                                    placeholder="Min"
+                                    value={tempPriceMin}
+                                    onChange={(e) => setTempPriceMin(e.target.value)}
+                                    className="w-full rounded-lg border-2 border-gray-200 py-2 px-2 text-sm focus:border-emerald-500 focus:outline-none"
+                                />
+                                <span className="text-gray-400 font-bold">-</span>
+                                <input
+                                    type="number"
+                                    placeholder="Max"
+                                    value={tempPriceMax}
+                                    onChange={(e) => setTempPriceMax(e.target.value)}
+                                    className="w-full rounded-lg border-2 border-gray-200 py-2 px-2 text-sm focus:border-emerald-500 focus:outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="border-b-2 border-gray-100 pb-4">
+                            <h4 className="text-sm font-bold text-gray-700 py-2">Min. Trade Volume (MT)</h4>
+                            <div className="mt-2">
+                                <input
+                                    type="number"
+                                    placeholder="e.g. 500"
+                                    value={tempVolumeMin}
+                                    onChange={(e) => setTempVolumeMin(e.target.value)}
+                                    className="w-full rounded-lg border-2 border-gray-200 py-2 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={applyFilters}
+                            className="w-full py-2.5 bg-emerald-600 outline outline-emerald-700 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-sm"
+                        >
+                            Apply Filters
+                        </button>
                     </aside>
                 )}
 
@@ -194,7 +290,7 @@ const SearchResults = () => {
                             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌐</div>
                             <h2 className="text-xl font-bold text-gray-900 mb-2">Search is too broad</h2>
                             <p className="font-medium text-gray-500 max-w-md mx-auto">
-                                No specific high-confidence product match was found for "{query}". 
+                                No specific high-confidence product match was found for "{query}".
                                 Try being more specific with the product name.
                             </p>
                         </div>
@@ -245,13 +341,32 @@ const SearchResults = () => {
 
                     {/* ── Normal Results ─────────────────────────────────── */}
                     {!needsDisambig && !isBroadSearch && (
-                        <>
-                            <h2 className="text-2xl font-bold text-gray-800 mb-6 font-primary">
-                                {loading
-                                    ? 'Searching...'
-                                    : `${results.length} ${entityLabel} found for "${query}"`
-                                }
-                            </h2>
+                        <div className="flex flex-col">
+                            
+                            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                                <h2 className="text-2xl font-bold text-gray-800 font-primary">
+                                    {loading
+                                        ? 'Searching...'
+                                        : `${sortedResults.length} ${entityLabel} found for "${query}"`
+                                    }
+                                </h2>
+
+                                {!loading && !error && sortedResults.length > 0 && (
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium text-gray-500">Sort by:</span>
+                                        <select
+                                            value={sortBy}
+                                            onChange={(e) => setSortBy(e.target.value)}
+                                            className="rounded-lg border-2 border-gray-200 py-1.5 pl-3 pr-8 text-sm focus:border-emerald-500 focus:outline-none font-medium text-gray-700 bg-white"
+                                        >
+                                            <option value="relevance">Relevance</option>
+                                            <option value="price_asc">Price: Low to High</option>
+                                            <option value="price_desc">Price: High to Low</option>
+                                            <option value="volume_desc">Volume: Highest First</option>
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
 
                             {loading && (
                                 <div className="text-center py-16 text-gray-400">
@@ -266,15 +381,15 @@ const SearchResults = () => {
                                 </div>
                             )}
 
-                            {!loading && !error && results.length === 0 && (
+                            {!loading && !error && sortedResults.length === 0 && (
                                 <div className="text-center py-16 text-gray-400">
                                     <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📭</div>
-                                    <p className="font-medium text-gray-600">No {entityLabel.toLowerCase()} found</p>
-                                    <p className="text-sm mt-1">Try a different product name or switch scope</p>
+                                    <p className="font-medium text-gray-600">No {entityLabel.toLowerCase()} found matching your filters</p>
+                                    <p className="text-sm mt-1">Try adjusting the price, volume, or country.</p>
                                 </div>
                             )}
 
-                            {!loading && !error && results.map((supplier, idx) => (
+                            {!loading && !error && sortedResults.map((supplier, idx) => (
                                 <div
                                     key={idx}
                                     className="action-card bg-white mb-4 hover:border-emerald-500 transition-all cursor-default relative overflow-visible group"
@@ -305,11 +420,10 @@ const SearchResults = () => {
                                                 {supplier.volume_fit !== 'N/A' && supplier.volume_fit && (
                                                     <div>
                                                         <span className="block text-gray-400 text-xs uppercase font-bold tracking-wider">Volume Fit</span>
-                                                        <span className={`font-bold text-sm ${
-                                                            supplier.volume_fit === 'Strong' ? 'text-emerald-600' :
-                                                            supplier.volume_fit === 'Good' ? 'text-blue-600' :
-                                                            supplier.volume_fit === 'Partial' ? 'text-amber-600' : 'text-gray-500'
-                                                        }`}>{supplier.volume_fit}</span>
+                                                        <span className={`font-bold text-sm ${supplier.volume_fit === 'Strong' ? 'text-emerald-600' :
+                                                                supplier.volume_fit === 'Good' ? 'text-blue-600' :
+                                                                    supplier.volume_fit === 'Partial' ? 'text-amber-600' : 'text-gray-500'
+                                                            }`}>{supplier.volume_fit}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -317,7 +431,7 @@ const SearchResults = () => {
 
                                         <div className="flex flex-col gap-3">
                                             <Link
-                                                to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scope)}`}
+                                                to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scope)}${subcatId ? `&subcat_id=${encodeURIComponent(subcatId)}` : ''}${variantName ? `&variant_name=${encodeURIComponent(variantName)}` : ''}`}
                                                 className="stat-action text-center"
                                                 style={{ textDecoration: 'none' }}
                                             >
@@ -337,7 +451,7 @@ const SearchResults = () => {
                                     </div>
                                 </div>
                             ))}
-                        </>
+                        </div>
                     )}
                 </main>
 

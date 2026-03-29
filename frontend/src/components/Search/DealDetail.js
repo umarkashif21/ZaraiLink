@@ -10,6 +10,8 @@ const DealDetail = () => {
     const [searchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
     const scopeParam = searchParams.get('scope') || '';
+    const subcatIdParam = searchParams.get('subcat_id') || null;
+    const variantNameParam = searchParams.get('variant_name') || null;
     const navigate = useNavigate();
 
     // ── Styling helpers for intelligence labels ──────────────────────────────
@@ -104,7 +106,7 @@ const DealDetail = () => {
             setLoading(true);
             try {
                 const decodedName = decodeURIComponent(name);
-                const result = await searchService.getSupplierDetails(decodedName, query, scopeParam);
+                const result = await searchService.getSupplierDetails(decodedName, query, scopeParam, subcatIdParam, variantNameParam);
                 setData(result);
             } catch (err) {
                 console.error("Failed to fetch details", err);
@@ -114,7 +116,7 @@ const DealDetail = () => {
             }
         };
         if (name) fetchDetails();
-    }, [name, query, scopeParam]);
+    }, [name, query, scopeParam, subcatIdParam, variantNameParam]);
 
     // ── Derived filter bounds (computed once data loads) ──────────────────────
     const allHistory = data?.supplier?.history || [];
@@ -219,7 +221,7 @@ const DealDetail = () => {
             {/* Header */}
             <header className="bg-white border-b-2 border-gray-100 sticky top-0 z-10 shadow-sm">
                 <div className="dashboard-container" style={{ padding: '1rem 2rem', maxWidth: '1400px', margin: '0 auto' }}>
-                    <Link to={`/search/results?q=${encodeURIComponent(query)}`} className="flex items-center text-gray-500 hover:text-emerald-600 mb-2 font-medium transition-colors w-fit">
+                    <Link to={`/search/results?q=${encodeURIComponent(query)}${subcatIdParam ? `&subcat_id=${encodeURIComponent(subcatIdParam)}` : ''}${variantNameParam ? `&variant_name=${encodeURIComponent(variantNameParam)}` : ''}`} className="flex items-center text-gray-500 hover:text-emerald-600 mb-2 font-medium transition-colors w-fit">
                         <ArrowLeft size={16} className="mr-1" /> Back to Results
                     </Link>
                     <div className="flex justify-between items-start">
@@ -377,7 +379,7 @@ const DealDetail = () => {
                                         )) : <span className="text-xs text-gray-400 p-1">No recent data</span>}
                                     </div>
                                     <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1 font-bold justify-center">
-                                        <TrendingUp size={12} /> {market_context.price_trend || "Stable"}
+                                        <TrendingUp size={12} /> {market_context?.price_trend || "Stable"}
                                     </p>
                                 </div>
                                 <div className="border-t border-gray-100 pt-3">
@@ -479,8 +481,8 @@ const DealDetail = () => {
                             <p className="text-sm text-gray-500 mb-6 -mt-3 font-medium">{labels.compSub}</p>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {comparables && comparables.length > 0 ? comparables.slice(0, 3).map((comp, idx) => (
-                                    <div key={idx} className="action-card bg-white p-5 hover:border-emerald-500 transition-all cursor-pointer group"
-                                        onClick={() => navigate(`/search/supplier/${encodeURIComponent(comp.name)}?q=${encodeURIComponent(query)}`)}
+                                    <div key={comp.name} className="action-card bg-white p-5 hover:border-emerald-500 transition-all cursor-pointer group"
+                                        onClick={() => navigate(`/search/supplier/${encodeURIComponent(comp.name)}?q=${encodeURIComponent(query)}${subcatIdParam ? `&subcat_id=${encodeURIComponent(subcatIdParam)}` : ''}${variantNameParam ? `&variant_name=${encodeURIComponent(variantNameParam)}` : ''}`)}
                                         style={{ padding: '1.5rem' }}
                                     >
                                         <h5 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-emerald-700 transition-colors">{comp.name}</h5>

@@ -2,6 +2,11 @@
 
 .dashboard-wrapper {
   min-height: 100vh;
+  background: #ecfdf5; /* Light greenish background */
+}
+
+/* Preserve dark mode */
+:root.dark .dashboard-wrapper {
   background: var(--bg-secondary);
 }
 
@@ -16,9 +21,9 @@
   text-align: center;
   padding: 3rem 2rem;
   margin-bottom: 3rem;
-  background: var(--hero-bg, linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%));
+  background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%); /* Slightly darker gradient */
   border-radius: 16px;
-  border: 2px solid var(--color-primary-light, #d1fae5);
+  border: 2px solid #6ee7b7; /* Subtle darker border to complement */
 }
 
 :root.dark .hero-section {

@@ -41,7 +41,7 @@ const TradeLensDetails = () => {
       if (appliedFilters.country) params.append('country', appliedFilters.country);
 
       const response = await fetch(
-        `http://localhost:8000/api/trade-lens/products/${productId}/details/?${params.toString()}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/trade-lens/products/${productId}/details/?${params.toString()}`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to load transaction details.');

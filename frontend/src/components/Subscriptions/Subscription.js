@@ -26,7 +26,7 @@ const Subscription = () => {
 
   const loadPlans = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/subscriptions/plans/');
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/subscriptions/plans/`);
       if (response.ok) {
         const data = await response.json();
         setPlans(data);
@@ -72,7 +72,7 @@ const Subscription = () => {
 
     try {
       const csrftoken = getCookie('csrftoken');
-      const response = await fetch('http://localhost:8000/api/subscriptions/redeem/', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/subscriptions/redeem/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -43,12 +43,13 @@ def get_company_product_performance(company_name, direction='import', **filters)
         output_field=CharField()
     )
 
+    from django.db.models.functions import Coalesce
     results = (
-        qs.filter(product_item__isnull=False)
+        qs.filter(product_item__sub_category__isnull=False)
         .values(
-            product_id=F('product_item__id'),
-            product_name=F('product_item__name'),
-            subcat=F('product_item__sub_category__name'),
+            product_id=F('product_item__sub_category_id'),
+            product_name=Coalesce(F('product_item__sub_category__name'), models.Value('Unknown Product')),
+            subcat=Coalesce(F('product_item__sub_category__category__name'), models.Value('Subcategory')),
         )
         .annotate(
             total_volume=Sum('qty_mt'),
@@ -69,11 +70,11 @@ def get_company_product_performance(company_name, direction='import', **filters)
         
     return enriched_results
 
-def get_avg_price_trend_monthly(company_name, product_item_id=None, direction='import', **filters):
+def get_avg_price_trend_monthly(company_name, sub_category_id=None, direction='import', **filters):
     from django.db.models import Sum, F, FloatField
-    qs = Transaction.objects.all()
-    if product_item_id:
-        qs = qs.filter(product_item_id=product_item_id)
+    qs = Transaction.objects.filter(product_item__sub_category__isnull=False)
+    if sub_category_id:
+        qs = qs.filter(product_item__sub_category_id=sub_category_id)
     qs = apply_transaction_filters(qs, direction=direction, company_name=company_name, **filters)
 
     return (
@@ -99,19 +100,22 @@ def get_product_partner_matrix(company_name, top_n_products=5, direction='import
     )
     
     top_products = list(
-        qs.values('product_item__id')
+        qs.values('product_item__sub_category_id')
         .annotate(vol=Sum('qty_mt'))
         .order_by('-vol')[:top_n_products]
     )
-    top_pids = [p['product_item__id'] for p in top_products]
+    top_pids = [p['product_item__sub_category_id'] for p in top_products]
     
     if not top_pids: return []
     
+    from django.db.models.functions import Coalesce
     matrix = (
-        qs.filter(product_item__id__in=top_pids)
-        .annotate(partner=counterparty_expr)
-        .values('product_item__name', 'partner')
+        qs.filter(product_item__sub_category_id__in=top_pids)
+        .annotate(partner_name=counterparty_expr)
+        .values('product_item__sub_category_id', 'partner_name')
         .annotate(
+            product_item__name=Coalesce(F('product_item__sub_category__name'), models.Value('Unknown Product')),
+            partner=F('partner_name'),
             volume=Sum('qty_mt'),
             revenue=Sum(F('qty_mt') * F('usd_per_mt'), output_field=FloatField())
         )

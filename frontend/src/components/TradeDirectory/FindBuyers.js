@@ -66,7 +66,7 @@ const FindBuyers = () => {
       if (useAI) params.append('use_ai', 'true');
       params.append('role', roleId);
 
-      const apiUrl = `http://localhost:8000/api/companies/?${params.toString()}`;
+      const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/companies/?${params.toString()}`;
       console.log('📡 Fetching from:', apiUrl);
 
       const response = await fetch(
@@ -151,9 +151,9 @@ const FindBuyers = () => {
   const loadFilterOptions = useCallback(async () => {
     try {
       const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
-        fetch('http://localhost:8000/api/companies/regions/'),
-        fetch('http://localhost:8000/api/sectors/'),
-        fetch('http://localhost:8000/api/company-roles/')
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/api/companies/regions/`),
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/api/sectors/`),
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/api/company-roles/`)
       ]);
 
       if (regionsRes.ok) {

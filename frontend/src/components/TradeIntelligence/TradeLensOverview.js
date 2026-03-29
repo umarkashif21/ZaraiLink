@@ -29,7 +29,7 @@ const TradeLensOverview = () => {
       if (tradeType !== 'BOTH') params.append('trade_type', tradeType);
 
       const response = await fetch(
-        `http://localhost:8000/api/trade-lens/products/${productId}/overview/?${params.toString()}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/trade-lens/products/${productId}/overview/?${params.toString()}`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to load overview data');

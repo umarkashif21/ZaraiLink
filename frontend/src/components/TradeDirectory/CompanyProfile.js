@@ -51,7 +51,7 @@ const CompanyProfile = () => {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/companies/${id}/`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/companies/${id}/`, {
         credentials: 'include',
       });
 
@@ -75,7 +75,7 @@ const CompanyProfile = () => {
     if (!company || similarCompanies.length > 0) return;
     setLoadingSimilar(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/company/${encodeURIComponent(company.name)}/similar/`);
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/company/${encodeURIComponent(company.name)}/similar/`);
       if (response.ok) {
         const data = await response.json();
         setSimilarCompanies(data.similar_companies || []);
@@ -120,7 +120,7 @@ const CompanyProfile = () => {
     try {
       const csrftoken = getCookie('csrftoken');
       const response = await fetch(
-        `http://localhost:8000/api/key-contacts/${selectedContact.id}/unlock/`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/key-contacts/${selectedContact.id}/unlock/`,
         {
           method: 'POST',
           headers: {

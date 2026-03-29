@@ -50,7 +50,7 @@ const TradeLensComparison = () => {
 
   // Fetch all products for the picker
   useEffect(() => {
-    fetch('http://localhost:8000/api/trade-lens/products/', { credentials: 'include' })
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/trade-lens/products/`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => setAllProducts(d.products || []))
       .catch(console.error);
@@ -70,7 +70,7 @@ const TradeLensComparison = () => {
       }
 
       const response = await fetch(
-        `http://localhost:8000/api/trade-lens/products/${productId}/comparison/?${params.toString()}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/trade-lens/products/${productId}/comparison/?${params.toString()}`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to load comparison data');

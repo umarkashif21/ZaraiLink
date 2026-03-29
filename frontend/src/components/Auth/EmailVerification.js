@@ -31,7 +31,7 @@ export default function EmailVerification() {
     setMessage(""); 
 
     try {
-      const response = await fetch('http://localhost:8000/accounts/api/resend-verification/', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/accounts/api/resend-verification/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

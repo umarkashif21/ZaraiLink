@@ -188,14 +188,14 @@ def company_products_api(request, company_name):
         "total_value": sum((p.get('total_value') or 0) for p in performance),
     }
 
-    # Fetch top 5 products trend
+    # Fetch top 5 products trend (now at subcategory level)
     top_5_pids = [p['product_id'] for p in performance[:5]]
     trend_data = {}
     for pid in top_5_pids:
         pname = next(p['product_name'] for p in performance if p['product_id'] == pid)
         trend = list(get_avg_price_trend_monthly(
             company_name=company_name,
-            product_item_id=pid,
+            sub_category_id=pid,
             direction=direction,
             date_from=date_from,
             date_to=date_to,

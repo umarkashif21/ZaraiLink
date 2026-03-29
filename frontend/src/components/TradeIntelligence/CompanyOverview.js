@@ -224,7 +224,7 @@ const CompanyOverview = () => {
       if (applied.tradeType) p.append('direction', applied.tradeType);
       if (applied.productName) p.append('product_name', applied.productName);
 
-      const res = await fetch(`http://localhost:8000/api/company/${id}/overview/?${p}`, { credentials: 'include' });
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/company/${id}/overview/?${p}`, { credentials: 'include' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
     } catch (e) { setError('Failed to load company data'); }

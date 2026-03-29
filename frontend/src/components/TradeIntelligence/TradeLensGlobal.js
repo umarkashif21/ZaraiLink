@@ -18,7 +18,7 @@ const TradeLensGlobal = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/api/trade-lens/products/${productId}/global_view/`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/trade-lens/products/${productId}/global_view/`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to load global data');

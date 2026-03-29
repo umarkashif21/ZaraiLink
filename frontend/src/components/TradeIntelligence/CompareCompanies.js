@@ -21,7 +21,7 @@ const CompareCompanies = () => {
   const loadCompanies = async () => {
     setLoadingCompanies(true);
     try {
-      const res = await fetch('http://localhost:8000/api/explorer/?direction=both&limit=1000', {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/explorer/?direction=both&limit=1000`, {
         credentials: 'include'
       });
       if (res.ok) {
@@ -55,7 +55,7 @@ const CompareCompanies = () => {
     setError(null);
 
     try {
-      const res = await fetch('http://localhost:8000/api/compare/', {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/compare/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

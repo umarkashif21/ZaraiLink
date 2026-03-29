@@ -19,13 +19,13 @@ def apply_transaction_filters(
     
     if direction == 'import':
         if company_name:
-            qs = qs.filter(buyer=company_name)
+            qs = qs.filter(buyer__iexact=company_name)
     elif direction == 'export':
         if company_name:
-            qs = qs.filter(seller=company_name)
+            qs = qs.filter(seller__iexact=company_name)
     else:
         if company_name:
-            qs = qs.filter(models.Q(buyer=company_name) | models.Q(seller=company_name))
+            qs = qs.filter(models.Q(buyer__iexact=company_name) | models.Q(seller__iexact=company_name))
 
     if date_from:
         qs = qs.filter(reporting_date__gte=date_from)

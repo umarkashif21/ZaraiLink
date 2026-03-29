@@ -170,11 +170,11 @@ class SupplierAggregator:
         """
         Get detailed stats, sparklines, and history for a specific supplier within a category.
         """
-        # Filter transactions for specific seller and subcategories
-        queryset = Transaction.objects.filter(
-            seller__iexact=seller_name.strip(),
-            product_item__sub_category_id__in=subcategory_ids
-        ).order_by('-reporting_date')
+        # Filter transactions for specific seller and optional subcategories
+        queryset = Transaction.objects.filter(seller__iexact=seller_name.strip())
+        if subcategory_ids:
+            queryset = queryset.filter(product_item__sub_category_id__in=subcategory_ids)
+        queryset = queryset.order_by('-reporting_date')
         
         scope = scope or 'WORLDWIDE'
         if scope == 'PAKISTAN':
@@ -303,10 +303,10 @@ class SupplierAggregator:
         Get detailed stats, sparklines, and history for a specific BUYER within a category.
         """
         # Filter transactions where 'buyer' is the target
-        queryset = Transaction.objects.filter(
-            buyer__iexact=buyer_name.strip(),
-            product_item__sub_category_id__in=subcategory_ids
-        ).order_by('-reporting_date')
+        queryset = Transaction.objects.filter(buyer__iexact=buyer_name.strip())
+        if subcategory_ids:
+            queryset = queryset.filter(product_item__sub_category_id__in=subcategory_ids)
+        queryset = queryset.order_by('-reporting_date')
         
         scope = scope or 'WORLDWIDE'
         if scope == 'PAKISTAN':
@@ -320,18 +320,7 @@ class SupplierAggregator:
 
 
         if not queryset.exists():
-            # Fallback: Try finding buyer without product constraint (General Profile)
-            queryset = Transaction.objects.filter(
-                buyer__iexact=buyer_name.strip()
-            ).order_by('-reporting_date')
-            
-            if scope == 'PAKISTAN':
-                queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
-            else:
-                queryset = queryset.filter(trade_type='EXPORT')
-            
-            if not queryset.exists():
-                return None
+            return None
 
         # 1. High-level Stats (Purchasing)
         stats = queryset.aggregate(

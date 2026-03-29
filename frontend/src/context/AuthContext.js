@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8000/accounts/api/check-auth/', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/accounts/api/check-auth/`, {
         method: 'GET',
         credentials: 'include', 
       });
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:8000/accounts/api/login/', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/accounts/api/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('http://localhost:8000/accounts/api/logout/', {
+      await fetch(`${process.env.REACT_APP_API_BASE_URL}/accounts/api/logout/`, {
         method: 'POST',
         credentials: 'include',
       });

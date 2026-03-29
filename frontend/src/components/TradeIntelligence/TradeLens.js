@@ -58,7 +58,7 @@ const TradeLens = () => {
       if (appliedFilters.date_to) p.append('end_date', appliedFilters.date_to);
       if (appliedFilters.trade_type) p.append('trade_type', appliedFilters.trade_type);
 
-      const response = await fetch(`http://localhost:8000/api/trade-lens/products/?${p.toString()}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/trade-lens/products/?${p.toString()}`, {
         credentials: 'include'
       });
       if (!response.ok) {

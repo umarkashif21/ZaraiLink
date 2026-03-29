@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import Navbar from '../Layout/Navbar';
 import './Dashboard.css';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 const Dashboard = () => {
   const { user } = useAuth();
