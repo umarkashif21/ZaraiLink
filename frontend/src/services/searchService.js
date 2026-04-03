@@ -35,6 +35,26 @@ const searchService = {
             params: params
         });
         return response.data;
+    },
+
+    /**
+     * compareSuppliers
+     * @param {Array<string>} supplierNames - List of supplier names
+     * @param {string} query - Original query context
+     * @param {string} scope - Search scope
+     * @param {string} subcatId - Subcategory ID constraint
+     * @param {string} variantName - Variant name constraint
+     * @param {string} intent - Search intent (BUY/SELL)
+     */
+    compareSuppliers: async (supplierNames, query, scope, subcatId, variantName, intent) => {
+        const params = { suppliers: supplierNames.join(','), query };
+        if (scope) params.scope = scope;
+        if (subcatId) params.subcat_id = subcatId;
+        if (variantName) params.variant_name = variantName;
+        if (intent) params.intent = intent;
+
+        const response = await api.get(`/search/compare/`, { params });
+        return response.data;
     }
 };
 

@@ -523,3 +523,106 @@ class SupplierAggregator:
             "momentum_label": momentum_label,
             "generated_summary": summary
         }
+
+    def get_supplier_comparison(self, company_names, subcategory_ids, product_item_filter=None, scope='WORLDWIDE', intent='BUY'):
+        """
+        Get aggregated stats for a list of companies for side-by-side comparison.
+        """
+        from django.db.models import Min, Max, Sum, Avg, Count
+        from django.db.models.functions import TruncMonth
+
+        results = []
+        for company in company_names:
+            if intent == 'SELL':
+                queryset = Transaction.objects.filter(buyer__iexact=company.strip())
+            else:
+                queryset = Transaction.objects.filter(seller__iexact=company.strip())
+                
+            if subcategory_ids:
+                queryset = queryset.filter(product_item__sub_category_id__in=subcategory_ids)
+                
+            scope = scope or 'WORLDWIDE'
+            if intent == 'SELL':
+                # Buyers appear on EXPORT transactions (Pakistani seller exporting to foreign buyer)
+                if scope == 'PAKISTAN':
+                    queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
+                else:
+                    queryset = queryset.filter(trade_type='EXPORT').exclude(destination_country='Pakistan')
+            else:
+                # Sellers appear on IMPORT transactions (Pakistani buyer importing from foreign seller)
+                if scope == 'PAKISTAN':
+                    queryset = queryset.filter(trade_type='EXPORT', origin_country='Pakistan')
+                else:
+                    queryset = queryset.filter(trade_type='IMPORT')
+
+            if product_item_filter:
+                queryset = queryset.filter(product_item__id__in=product_item_filter)
+
+            if not queryset.exists():
+                continue
+
+            # Stats
+            stats = queryset.aggregate(
+                total_volume=Sum('qty_mt'),
+                avg_price=Avg('usd_per_mt'),
+                min_price=Min('usd_per_mt'),
+                max_price=Max('usd_per_mt'),
+                shipment_count=Count('id'),
+                last_shipment_date=Max('reporting_date')
+            )
+
+            # Sparklines (Monthly Aggregation)
+            monthly_data = queryset.annotate(
+                month=TruncMonth('reporting_date')
+            ).values('month').annotate(
+                price=Avg('usd_per_mt')
+            ).order_by('month')
+
+            sparkline = []
+            for entry in monthly_data:
+                valid_price = float(entry['price'] or 0)
+                if valid_price > 0:
+                    sparkline.append({
+                        "date": entry['month'].strftime("%Y-%m-%d"),
+                        "price": valid_price
+                    })
+
+            # Countries
+            if intent == 'SELL':
+                # For buyers, we care about where they are buying from (origin) or who they are (destination)
+                # Actually, buyer's primary location is destination_country.
+                primary_qs = queryset.values('destination_country').annotate(c=Count('id')).order_by('-c').first()
+                primary_country = primary_qs['destination_country'] if primary_qs else 'Unknown'
+                
+                # Associated countries: where do they import from?
+                if scope == 'PAKISTAN':
+                    ships_to = ['Pakistan']
+                else:
+                    origins = list(queryset.values_list('origin_country', flat=True).distinct())
+                    ships_to = [c for c in origins if c and c.strip()]
+            else:
+                # For sellers
+                if scope == 'PAKISTAN':
+                    dests = list(queryset.values_list('destination_country', flat=True).distinct())
+                    countries = [c for c in dests if c and c.strip()]
+                    primary_country = 'Pakistan'
+                    ships_to = countries
+                else:
+                    primary_qs = queryset.values('origin_country').annotate(c=Count('id')).order_by('-c').first()
+                    primary_country = primary_qs['origin_country'] if primary_qs else 'Unknown'
+                    ships_to = ['Pakistan']
+
+            results.append({
+                "name": company,
+                "country": primary_country,
+                "avg_price": float(stats['avg_price'] or 0),
+                "price_min": float(stats['min_price'] or 0),
+                "price_max": float(stats['max_price'] or 0),
+                "total_volume": float(stats['total_volume'] or 0),
+                "shipment_count": stats['shipment_count'] or 0,
+                "last_active": stats['last_shipment_date'].strftime("%b %Y") if stats['last_shipment_date'] else None,
+                "ships_to": ships_to,
+                "sparkline": sparkline
+            })
+
+        return results

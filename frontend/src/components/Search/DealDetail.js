@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, BarChart2, TrendingUp, TrendingDown, FileText, Package, Globe, Calendar } from 'lucide-react';
+import { ArrowLeft, CheckCircle, BarChart2, TrendingUp, TrendingDown, FileText, Package, Globe, Calendar, Download } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import Navbar from '../Layout/Navbar';
 import '../Dashboard/Dashboard.css'; // Shared styles for layout
 import searchService from '../../services/searchService';
@@ -214,6 +216,259 @@ const DealDetail = () => {
         return ((p - minPrice) / range) * 0.8 + 0.2;
     });
 
+    // ── PDF Intelligence Report Generation ─────────────────────────────────────
+    const generateIntelligenceReport = () => {
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageW = doc.internal.pageSize.width;
+        const pageH = doc.internal.pageSize.height;
+        const brandGreen = [5, 150, 105];
+        const brandDark  = [17, 24, 39];
+        const brandGray  = [107, 114, 128];
+        const brandLight = [243, 244, 246];
+        const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const entityLabel = isBuyer ? 'Buyer' : 'Supplier';
+        const clean = (v) => (v == null || v !== v) ? 'N/A' : String(v).replace(/[^\x00-\x7F]/g, '');
+        const fmtNum = (n, d = 0) => { const f = parseFloat(n); return isNaN(f) ? 'N/A' : f.toFixed(d); };
+        const fmtMoney = (n) => { const f = parseFloat(n); return isNaN(f) ? 'N/A' : `$${f.toFixed(2)}`; };
+
+        const drawPageHeader = (title) => {
+            doc.setFillColor(...brandGreen);
+            doc.rect(0, 0, pageW, 18, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(255, 255, 255);
+            doc.text('ZaraiLink Trade Intelligence', 14, 11);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.text('zarailink.com', pageW - 14, 11, { align: 'right' });
+            doc.setFontSize(15);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...brandDark);
+            doc.text(title, 14, 28);
+            doc.setDrawColor(...brandGreen);
+            doc.setLineWidth(0.6);
+            doc.line(14, 31, pageW - 14, 31);
+        };
+
+        const drawPageFooter = (pageNum) => {
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...brandGray);
+            doc.text(`ZaraiLink Intelligence Report  \u2022  ${today}  \u2022  Page ${pageNum}`, pageW / 2, pageH - 6, { align: 'center' });
+        };
+
+        // PAGE 1 — Overview
+        drawPageHeader(`${entityLabel} Intelligence Report`);
+        drawPageFooter(1);
+
+        doc.setFillColor(240, 253, 244);
+        doc.roundedRect(14, 35, pageW - 28, 68, 4, 4, 'F');
+        doc.setDrawColor(...brandGreen);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(14, 35, pageW - 28, 68, 4, 4, 'S');
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...brandDark);
+        doc.text(clean(supplier.name), 20, 48);
+        doc.setFillColor(...brandGreen);
+        doc.roundedRect(20, 51, 22, 5, 2, 2, 'F');
+        doc.setFontSize(7);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`Verified ${entityLabel}`, 31, 55, { align: 'center' });
+
+        const stats = supplier.stats || {};
+        const profStats = [
+            ['Product / Query', clean(query)],
+            ['Country', clean(supplier.country)],
+            ['Total Volume', `${fmtNum(stats.total_volume)} MT`],
+            ['Total Shipments', clean(stats.shipment_count)],
+            ['Average Price', `${fmtMoney(stats.avg_price)} / MT`],
+            ['Last Active', clean(stats.last_shipment_date)],
+        ];
+        const colW = (pageW - 28) / 3;
+        profStats.forEach(([k, v], i) => {
+            const col = i % 3;
+            const row = Math.floor(i / 3);
+            const x = 20 + col * colW;
+            const y = 63 + row * 16;
+            doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...brandGray);
+            doc.text(k.toUpperCase(), x, y);
+            doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(...brandDark);
+            doc.text(v, x, y + 5);
+        });
+
+        let y1 = 112;
+        const intel = supplier.intelligence;
+        if (intel) {
+            doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(...brandGreen);
+            doc.text('Intelligence Snapshot', 14, y1); y1 += 6;
+            doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...brandDark);
+            const summary = clean(supplier.name) + ' ' + clean(intel.generated_summary);
+            const lines = doc.splitTextToSize(summary, pageW - 28);
+            doc.text(lines, 14, y1);
+            y1 += lines.length * 5 + 4;
+            autoTable(doc, {
+                startY: y1,
+                head: [['Metric', 'Value', 'Rating']],
+                body: [
+                    [isBuyer ? 'Repeat Suppliers' : 'Repeat Buyers', `${clean(intel.repeat_ratio)}%`, clean(intel.repeat_label)],
+                    [isBuyer ? 'Supplier Concentration' : 'Buyer Concentration', `${clean(intel.concentration_ratio)}%`, clean(intel.concentration_label)],
+                    [isBuyer ? 'Price Sensitivity' : 'Pricing Power', clean(intel.pricing_label), ''],
+                    [isBuyer ? 'Procurement Momentum' : 'Market Momentum', clean(intel.momentum_label), ''],
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: brandGreen, textColor: [255,255,255], fontStyle: 'bold', fontSize: 8 },
+                bodyStyles: { fontSize: 8, textColor: brandDark },
+                alternateRowStyles: { fillColor: [240,253,244] },
+                margin: { left: 14, right: 14 },
+            });
+        }
+
+        // PAGE 2 — Price Intelligence
+        doc.addPage();
+        drawPageHeader('Price Intelligence');
+        drawPageFooter(2);
+        let y2 = 36;
+        const sparkline = supplier.sparkline || [];
+        const validSpark = sparkline.filter(s => { const p = parseFloat(s.price); return !isNaN(p) && p > 0 && p < 10000; });
+        if (validSpark.length > 0) {
+            const prices = validSpark.map(s => parseFloat(s.price));
+            const pMin = Math.min(...prices), pMax = Math.max(...prices);
+            const pAvg = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const cheapest = validSpark.find(s => parseFloat(s.price) === pMin);
+            const priciest = validSpark.find(s => parseFloat(s.price) === pMax);
+            autoTable(doc, {
+                startY: y2,
+                head: [['Metric', 'Value', 'Notes']],
+                body: [
+                    ['Cheapest Month', `${fmtMoney(pMin)} (${clean(cheapest?.date?.substring(0,7))})`, 'Lowest avg price on record'],
+                    ['Most Expensive Month', `${fmtMoney(pMax)} (${clean(priciest?.date?.substring(0,7))})`, 'Highest avg price on record'],
+                    ['Overall Average', fmtMoney(pAvg), 'Mean across all months'],
+                    ['Price Volatility', `${fmtMoney(pMax - pMin)}`, 'Max minus min'],
+                ],
+                theme: 'striped',
+                headStyles: { fillColor: brandGreen, textColor: [255,255,255], fontStyle: 'bold', fontSize: 8 },
+                bodyStyles: { fontSize: 8 },
+                margin: { left: 14, right: 14 },
+            });
+            y2 = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(...brandGreen);
+            doc.text('Monthly Price Trend', 14, y2); y2 += 5;
+            autoTable(doc, {
+                startY: y2,
+                head: [['Month', 'Avg Price ($/MT)']],
+                body: validSpark.map(s => [clean(s.date?.substring(0, 7)), fmtMoney(s.price)]),
+                theme: 'grid',
+                headStyles: { fillColor: brandLight, textColor: brandDark, fontStyle: 'bold', fontSize: 8 },
+                bodyStyles: { fontSize: 8 },
+                alternateRowStyles: { fillColor: [240,253,244] },
+                margin: { left: 14, right: 14 },
+                columnStyles: { 1: { halign: 'right' } },
+            });
+        } else {
+            doc.setFontSize(9); doc.setFont('helvetica', 'italic'); doc.setTextColor(...brandGray);
+            doc.text('Insufficient price history data.', 14, y2 + 8);
+        }
+
+        // PAGE 3 — Trade Activity
+        doc.addPage();
+        drawPageHeader('Trade Activity');
+        drawPageFooter(3);
+        let y3 = 36;
+        const history = supplier.history || [];
+        if (history.length > 0) {
+            const countryMap = {};
+            history.forEach(tx => {
+                const c = clean(tx.origin_country || tx.destination_country || tx.country || 'Unknown');
+                if (!countryMap[c]) countryMap[c] = { volume: 0, count: 0 };
+                countryMap[c].volume += parseFloat(tx.quantity) || 0;
+                countryMap[c].count += 1;
+            });
+            const countryRows = Object.entries(countryMap).sort((a, b) => b[1].volume - a[1].volume).slice(0, 15)
+                .map(([c, d]) => [c, `${fmtNum(d.volume)} MT`, String(d.count)]);
+            doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(...brandGreen);
+            doc.text(isBuyer ? 'Top Origin Countries (Buying From)' : 'Top Destination Countries (Shipping To)', 14, y3); y3 += 5;
+            autoTable(doc, {
+                startY: y3,
+                head: [['Country', 'Volume (MT)', 'Shipments']],
+                body: countryRows,
+                theme: 'grid',
+                headStyles: { fillColor: brandGreen, textColor: [255,255,255], fontStyle: 'bold', fontSize: 8 },
+                bodyStyles: { fontSize: 8 },
+                alternateRowStyles: { fillColor: [240,253,244] },
+                margin: { left: 14, right: 14 },
+            });
+            y3 = doc.lastAutoTable.finalY + 10;
+            const sizes = supplier.shipment_sizes || [];
+            if (sizes.length > 0) {
+                doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(...brandGreen);
+                doc.text('Shipment Size Distribution', 14, y3); y3 += 5;
+                autoTable(doc, {
+                    startY: y3,
+                    head: [['Size Range', 'Count', 'Avg Price ($/MT)']],
+                    body: sizes.map(s => [clean(s.range), String(s.count), fmtMoney(s.avg_price)]),
+                    theme: 'striped',
+                    headStyles: { fillColor: brandLight, textColor: brandDark, fontStyle: 'bold', fontSize: 8 },
+                    bodyStyles: { fontSize: 8 },
+                    margin: { left: 14, right: 14 },
+                });
+            }
+        } else {
+            doc.setFontSize(9); doc.setFont('helvetica', 'italic'); doc.setTextColor(...brandGray);
+            doc.text('No trade activity data available.', 14, y3 + 8);
+        }
+
+        // PAGE 4 — Recent Transactions
+        doc.addPage();
+        drawPageHeader('Recent Transactions');
+        drawPageFooter(4);
+        const txRows = history.slice(0, 20).map(tx => {
+            const totalVal = (parseFloat(tx.quantity) || 0) * (parseFloat(tx.price) || 0);
+            return [
+                clean(tx.date),
+                clean(tx.origin_country || tx.destination_country || tx.country || 'N/A'),
+                `${fmtNum(tx.quantity)} MT`,
+                fmtMoney(tx.price),
+                totalVal > 0 ? `$${Math.round(totalVal).toLocaleString()}` : 'N/A',
+            ];
+        });
+        if (txRows.length > 0) {
+            autoTable(doc, {
+                startY: 36,
+                head: [['Date', isBuyer ? 'Origin Country' : 'Destination Country', 'Quantity (MT)', 'Price ($/MT)', 'Total Value (USD)']],
+                body: txRows,
+                theme: 'grid',
+                headStyles: { fillColor: brandGreen, textColor: [255,255,255], fontStyle: 'bold', fontSize: 7.5 },
+                bodyStyles: { fontSize: 7.5, textColor: brandDark },
+                alternateRowStyles: { fillColor: brandLight },
+                margin: { left: 14, right: 14 },
+                columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+            });
+        } else {
+            doc.setFontSize(9); doc.setFont('helvetica', 'italic'); doc.setTextColor(...brandGray);
+            doc.text('No recent transaction data available.', 14, 44);
+        }
+
+        // PAGE 5 — Footer
+        doc.addPage();
+        doc.setFillColor(...brandGreen);
+        doc.rect(0, 0, pageW, pageH, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(24); doc.setTextColor(255, 255, 255);
+        doc.text('ZaraiLink', pageW / 2, 80, { align: 'center' });
+        doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+        doc.text('Trade Intelligence Platform', pageW / 2, 90, { align: 'center' });
+        doc.setFontSize(9); doc.setTextColor(167, 243, 208);
+        ['This report was generated by ZaraiLink Trade Intelligence Platform.',
+         'Data sourced from Pakistan Customs import/export records.',
+         `Report generated on: ${today}`,
+         'zarailink.com'].forEach((line, i) => doc.text(line, pageW / 2, 110 + i * 8, { align: 'center' }));
+
+        const safeName = clean(supplier.name).replace(/[^a-z0-9]/gi, '_').substring(0, 30);
+        const safeProduct = clean(variantNameParam || query).replace(/[^a-z0-9]/gi, '_').substring(0, 20);
+        const dateStr = new Date().toISOString().split('T')[0];
+        doc.save(`ZaraiLink_${safeName}_${safeProduct}_${dateStr}.pdf`);
+    };
+
     return (
         <div className="dashboard-wrapper pb-20">
             <Navbar />
@@ -236,6 +491,13 @@ const DealDetail = () => {
                                 <Calendar size={16} /> Last Active: {supplier.stats.last_shipment_date || 'N/A'}
                             </p>
                         </div>
+                        <button
+                            onClick={generateIntelligenceReport}
+                            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md transition-all duration-150"
+                        >
+                            <Download size={16} />
+                            Download Intelligence Report
+                        </button>
                     </div>
                 </div>
             </header>

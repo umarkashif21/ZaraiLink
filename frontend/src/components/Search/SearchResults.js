@@ -47,6 +47,22 @@ const SearchResults = () => {
     const [selectedCountry, setSelectedCountry] = useState(null);
     const [searchEngine, setSearchEngine] = useState('');
 
+    // ── Comparison State ───────────────────────────────────────────────────
+    const [selectedSuppliers, setSelectedSuppliers] = useState([]);
+
+    const toggleCompare = (supplierName) => {
+        setSelectedSuppliers(prev => {
+            if (prev.includes(supplierName)) {
+                return prev.filter(name => name !== supplierName);
+            }
+            if (prev.length >= 4) {
+                alert("You can only compare up to 4 suppliers at once.");
+                return prev;
+            }
+            return [...prev, supplierName];
+        });
+    };
+
     // ── Fetch results ──────────────────────────────────────────────────────
     const fetchResults = useCallback(async () => {
         if (!query) return;
@@ -342,7 +358,7 @@ const SearchResults = () => {
                     {/* ── Normal Results ─────────────────────────────────── */}
                     {!needsDisambig && !isBroadSearch && (
                         <div className="flex flex-col">
-                            
+
                             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                                 <h2 className="text-2xl font-bold text-gray-800 font-primary">
                                     {loading
@@ -421,8 +437,8 @@ const SearchResults = () => {
                                                     <div>
                                                         <span className="block text-gray-400 text-xs uppercase font-bold tracking-wider">Volume Fit</span>
                                                         <span className={`font-bold text-sm ${supplier.volume_fit === 'Strong' ? 'text-emerald-600' :
-                                                                supplier.volume_fit === 'Good' ? 'text-blue-600' :
-                                                                    supplier.volume_fit === 'Partial' ? 'text-amber-600' : 'text-gray-500'
+                                                            supplier.volume_fit === 'Good' ? 'text-blue-600' :
+                                                                supplier.volume_fit === 'Partial' ? 'text-amber-600' : 'text-gray-500'
                                                             }`}>{supplier.volume_fit}</span>
                                                     </div>
                                                 )}
@@ -437,8 +453,13 @@ const SearchResults = () => {
                                             >
                                                 View Deal
                                             </Link>
-                                            <button className="px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 text-sm font-bold rounded-md hover:border-emerald-500 hover:text-emerald-600 transition-colors">
-                                                Compare
+                                            <button
+                                                onClick={() => toggleCompare(supplier.name)}
+                                                className={`px-4 py-2 border-2 text-sm font-bold rounded-md transition-colors ${selectedSuppliers.includes(supplier.name)
+                                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
+                                                        : 'bg-white border-gray-200 text-gray-700 hover:border-emerald-500 hover:text-emerald-600'
+                                                    }`}>
+                                                {selectedSuppliers.includes(supplier.name) ? 'Added ✓' : 'Compare'}
                                             </button>
                                         </div>
                                     </div>
@@ -485,6 +506,42 @@ const SearchResults = () => {
                     </aside>
                 )}
             </div>
+
+            {/* ── Sticky Compare Bar ────────────────────────────────────────────── */}
+            {selectedSuppliers.length > 0 && (
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 z-50 transform transition-transform duration-300">
+                    <div className="max-w-7xl mx-auto flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                                <BarChart2 size={20} />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-500 font-bold uppercase tracking-wider">Comparing</p>
+                                <p className="text-gray-900 font-bold">
+                                    {selectedSuppliers[0]}
+                                    {selectedSuppliers.length > 1 && <span className="text-emerald-600 ml-1">(+{selectedSuppliers.length - 1} more)</span>}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setSelectedSuppliers([])}
+                                className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 transition-colors"
+                            >
+                                Clear
+                            </button>
+                            <Link
+                                to={`/search/compare?suppliers=${encodeURIComponent(selectedSuppliers.join(','))}&q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scope)}&intent=${encodeURIComponent(parsedIntent)}${subcatId ? `&subcat_id=${encodeURIComponent(subcatId)}` : ''}${variantName ? `&variant_name=${encodeURIComponent(variantName)}` : ''}`}
+                                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg shadow-md transition-all flex items-center gap-2"
+                                style={{ textDecoration: 'none' }}
+                            >
+                                Compare Now <ChevronRight size={16} />
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

@@ -35,10 +35,10 @@ const CompanyPartners = React.lazy(() => import("./components/TradeIntelligence/
 
 const CompareCompanies = React.lazy(() => import("./components/TradeIntelligence/CompareCompanies"));
 
-// Search Module
 const SearchHome = React.lazy(() => import("./components/Search/SearchHome"));
 const SearchResults = React.lazy(() => import("./components/Search/SearchResults"));
 const DealDetail = React.lazy(() => import("./components/Search/DealDetail"));
+const ComparePage = React.lazy(() => import("./components/Search/ComparePage"));
 
 
 const PageLoader = () => (
@@ -285,7 +285,10 @@ function App() {
                   path="/search/supplier/:name"
                   element={<DealDetail />}
                 />
-                { }
+                <Route
+                  path="/search/compare"
+                  element={<ComparePage />}
+                />
                 <Route
                   path="/subscription"
                   element={

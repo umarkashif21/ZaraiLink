@@ -206,6 +206,52 @@ class SearchViewSet(viewsets.ViewSet):
             "type":                  "BUYER" if intent == 'SELL' else "SUPPLIER",
         })
 
+    # ----------------------------------------------------------------
+    # SUPPLIER COMPARE — GET /api/search/compare/?suppliers=A,B,C&query=...
+    # ----------------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='compare')
+    def supplier_compare(self, request):
+        suppliers_param = request.query_params.get('suppliers')
+        query = request.query_params.get('query')
+        subcat_id = request.query_params.get('subcat_id')
+        variant_name = request.query_params.get('variant_name')
+        scope = request.query_params.get('scope', 'WORLDWIDE').lower()
+
+        if not suppliers_param or not query:
+            return Response({"error": "Params 'suppliers' and 'query' are required"}, status=400)
+
+        seller_names = [s.strip() for s in suppliers_param.split(',')]
+        orm_scope = 'PAKISTAN' if scope == 'pakistan' else 'WORLDWIDE'
+
+        import hashlib
+        from django.core.cache import cache
+        _cache_raw = f"nlu:{query.lower().strip()}:{scope}"
+        _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
+        parsed_query = cache.get(_cache_key)
+        if parsed_query is None:
+            parsed_query = self.search_service._nlu_engine.parse(query)
+        intent = request.query_params.get('intent')
+        if not intent:
+            intent = parsed_query.get('intent', 'BUY')
+        intent = intent.upper()
+
+        subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
+            product_keyword=parsed_query.get("product", ""),
+            hs_code=parsed_query.get("hs_code", ""),
+            intent=intent,
+            subcat_id=int(subcat_id) if subcat_id else None,
+            variant_name=variant_name,
+            scope=orm_scope
+        )
+
+        comparison_data = self.aggregator.get_supplier_comparison(
+            seller_names,
+            subcat_ids,
+            product_item_filter=product_item_ids,
+            scope=orm_scope,
+            intent=intent
+        )
+        return Response(comparison_data)
 
     def _extract_top_n(self, query):
         import re
