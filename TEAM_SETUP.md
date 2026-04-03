@@ -158,10 +158,12 @@ EMAIL_HOST_PASSWORD=your-16-char-app-password
 OPENAI_KEY=sk-your-openai-api-key
 ```
 
-> 📌 **Note on ML Models:** The large model files (`*.safetensors`, `*.pt`) are **NOT in the repo** (they exceed GitHub's size limits). The app will use lightweight fallback logic for search if the models aren't present locally. Ask Umar for the model files if you need full ML functionality, or re-train them using:
+> 📌 **Note on ML Models:** The large model files (`*.safetensors`, `*.pt`) are **NOT in the repo** (they exceed GitHub's size limits). The app will work without them (using fallback logic), but **to get full ML search features working locally**, you must generate the missing model by running:
 > ```bash
+> # Run this from the backend/ directory to re-train and generate the model locally
 > python scripts/train_intent_model.py
 > ```
+> This will take about 1-2 minutes and generate the model in `backend/models/zarai_intent_model/`.
 
 ---
 
