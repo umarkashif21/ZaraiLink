@@ -1,6 +1,7 @@
 import re
 import math
 import difflib
+import datetime
 
 try:
     from django.conf import settings as _dj_settings
@@ -17,14 +18,101 @@ class QueryInterpreter:
     Does NOT perform retrieval or database lookups.
     """
 
-    # Common trading countries (expand as needed or load from DB)
-    COUNTRIES = [
+    # Minimal hardcoded fallback — used only when the DB is unreachable at startup.
+    # At runtime the full country list is loaded from Transaction.origin_country /
+    # destination_country (all distinct values that have ever appeared in the data).
+    _FALLBACK_COUNTRIES = [
         "Pakistan", "China", "India", "Brazil", "USA", "United States", "UAE", "Dubai",
         "Vietnam", "Thailand", "Indonesia", "Germany", "France", "UK", "United Kingdom",
         "Russia", "Turkey", "Egypt", "Saudi Arabia", "Canada", "Australia", "Malaysia",
-        "Kenya", "Bangladesh", "Sri Lanka", "Japan", "Korea", "South Korea", "Afghanistan"
+        "Kenya", "Bangladesh", "Sri Lanka", "Japan", "Korea", "South Korea", "Afghanistan",
+        # Extended fallback for the most common trade partners not in the original list
+        "Italy", "Spain", "Netherlands", "Belgium", "Switzerland", "Sweden", "Norway",
+        "Poland", "Ukraine", "Iran", "Iraq", "Syria", "Jordan", "Kuwait", "Oman",
+        "Qatar", "Bahrain", "Yemen", "Morocco", "Algeria", "Tunisia", "Libya",
+        "Sudan", "Ethiopia", "Tanzania", "Uganda", "Ghana", "Nigeria", "Ivory Coast",
+        "South Africa", "Mozambique", "Zambia", "Zimbabwe",
+        "Mexico", "Colombia", "Peru", "Chile", "Argentina", "Venezuela",
+        "Singapore", "Malaysia", "Philippines", "Myanmar", "Cambodia", "Nepal",
+        "Sri Lanka", "Maldives", "Uzbekistan", "Kazakhstan", "Azerbaijan", "Georgia",
+        "New Zealand", "Papua New Guinea",
     ]
-    
+
+    # Populated once per process on first parse call; never expires during runtime.
+    # Call invalidate_countries_cache() after bulk Transaction imports if needed.
+    _countries_cache = None
+
+    @classmethod
+    def _get_countries(cls) -> list:
+        """
+        Return the full country list, loaded from Transaction data on first call.
+
+        - Queries origin_country + destination_country DISTINCT from Transaction table.
+        - Normalises: strips whitespace, Title Cases regular names, preserves short
+          all-uppercase abbreviations (UAE, USA, UK).
+        - Filters out None, empty strings, numeric/garbage entries (len < 2 or
+          contains digits/non-country punctuation).
+        - Result is cached for the lifetime of the process (one DB round-trip per
+          worker boot). Falls back to _FALLBACK_COUNTRIES if the DB is unreachable.
+        """
+        if cls._countries_cache is not None:
+            return cls._countries_cache
+
+        try:
+            from trade_data.models import Transaction
+
+            origins = set(
+                Transaction.objects
+                .exclude(origin_country__isnull=True)
+                .exclude(origin_country='')
+                .values_list('origin_country', flat=True)
+                .distinct()
+            )
+            destinations = set(
+                Transaction.objects
+                .exclude(destination_country__isnull=True)
+                .exclude(destination_country='')
+                .values_list('destination_country', flat=True)
+                .distinct()
+            )
+            raw = origins | destinations
+
+            seen = set()
+            cleaned = []
+            for name in raw:
+                if not isinstance(name, str):
+                    continue
+                name = name.strip()
+                if len(name) < 2:
+                    continue
+                # Reject entries that contain digits or non-country punctuation
+                # (catches garbage like "N/A", "Pakistan (Karachi)", "123")
+                if not re.match(r"^[A-Za-z][A-Za-z\s\-\.']*$", name):
+                    continue
+                # Normalise: keep short all-uppercase abbreviations as-is (UAE, USA, UK);
+                # Title-case everything else ("CHINA" → "China", "saudi arabia" → "Saudi Arabia")
+                if len(name) <= 4 and name.isupper():
+                    normalized = name          # preserve UAE, USA, UK, etc.
+                else:
+                    normalized = name.title()  # Saudi Arabia, Sri Lanka, etc.
+                key = normalized.lower()
+                if key not in seen:
+                    seen.add(key)
+                    cleaned.append(normalized)
+
+            cls._countries_cache = sorted(cleaned) if cleaned else cls._FALLBACK_COUNTRIES
+
+        except Exception:
+            # DB unavailable (migrations not run, test environment, etc.) — use fallback
+            cls._countries_cache = cls._FALLBACK_COUNTRIES
+
+        return cls._countries_cache
+
+    @classmethod
+    def invalidate_countries_cache(cls):
+        """Force re-load of the country list on next parse call (e.g. after bulk imports)."""
+        cls._countries_cache = None
+
     COUNTRY_ALIASES = {
         "us": "USA", "u.s.": "USA", "united states of america": "USA", "america": "USA",
         "uae": "UAE", "u.a.e": "UAE", "emirates": "UAE",
@@ -80,6 +168,16 @@ class QueryInterpreter:
 
     # Product synonym normalization: applied before all parsing so the correct
     # product term flows through BM25/FAISS matching.
+    # Approximate USD conversion rates for non-USD price queries.
+    # Applied when the user specifies a price in a non-USD currency.
+    CURRENCY_TO_USD = {
+        'pkr': 1 / 278.0,   # Pakistani Rupee
+        'eur': 1.08,         # Euro
+        'gbp': 1.27,         # British Pound
+        'cny': 0.138,        # Chinese Yuan
+        'rmb': 0.138,        # Renminbi (same as CNY)
+    }
+
     PRODUCT_SYNONYMS = [
         (r'\bsoya\s+bean\s+oil\b', 'soybean oil'),
         (r'\bsoya\s+bean\b',       'soybean'),
@@ -97,13 +195,19 @@ class QueryInterpreter:
         (r'\bsaccharose\b',        'sucrose'),
         (r'\bsulphur\b',           'sulfur'),
         (r'\bglycerine\b',         'glycerol'),
-        (r'\bglycerine\b',         'glycerol'),
-        (r'\bsoya\b',              'soybean'),
         (r'\bmaize\b',             'corn'),
         (r'\bgur\b',               'jaggery'),
         (r'\bpalmolein\b',         'palm olein'),
         (r'\bpalm\s+olein\b',      'palm olein'),
     ]
+
+    def _convert_to_usd(self, price: float, matched_text: str) -> float:
+        """Convert a price to USD if the matched text contains a non-USD currency symbol."""
+        text_lower = matched_text.lower()
+        for currency, rate in self.CURRENCY_TO_USD.items():
+            if currency in text_lower:
+                return round(price * rate, 2)
+        return price  # already USD ($ or 'usd') or no currency symbol
 
     def _normalize_query(self, query: str) -> str:
         """Apply product synonym normalization before parsing."""
@@ -146,11 +250,21 @@ class QueryInterpreter:
                      any(kw in part_lower for kw in self.FAM_6_KEYWORDS)
                  )
 
-                 if has_intent or has_structural_intent:
+                 # Only split if the LEFT segment also has intent/structure, not just a bare
+                 # product noun phrase. This prevents "Sodium Hydroxide and Soda Ash" from
+                 # being split when "Soda Ash" is followed by a BUY keyword like "exporters".
+                 left_lower = current_segment.strip().lower()
+                 left_has_complexity = (
+                     self._detect_intent_score(left_lower)[0] != 'AMBIGUOUS'
+                     or any(kw in left_lower for kw in self.FAM_6_KEYWORDS + self.FAM_7_KEYWORDS + self.FAM_8_KEYWORDS)
+                 )
+
+                 if has_structural_intent or (has_intent and left_has_complexity):
                      final_segments.append(current_segment)
                      current_segment = part
                  else:
-                     # Merge
+                     # Merge — right side has intent keywords but left is just a product name;
+                     # treat the whole phrase as one query (e.g. "Caustic Soda exporters from India")
                      current_segment += " and " + part
              
              final_segments.append(current_segment)
@@ -172,14 +286,27 @@ class QueryInterpreter:
             # If all are same intent and product, maybe just merged filters?
             # But requirement says "Multi-intent".
             if len(sub_intents) > 1:
-                 return {
-                     "intent": sub_intents[0]['intent'], 
-                     "family": 9,
-                     "product": sub_intents[0]['product'],
-                     "multi_intent": True,
-                     "sub_intents": sub_intents,
-                     **{k:v for k,v in sub_intents[0].items() if k not in ['intent', 'family', 'product']}
-                 }
+                # Only expose fields that belong to the top-level envelope.
+                # Do NOT spread sub_intents[0] onto the top level — that leaks
+                # the first sub-intent's country_filter / volume_mt / price_ceiling
+                # into parsed_query, polluting any code that reads active_params
+                # on the multi-intent branch.
+                return {
+                    "intent": sub_intents[0]['intent'],
+                    "family": 9,
+                    "product": sub_intents[0]['product'],
+                    "scope": sub_intents[0].get('scope', 'WORLDWIDE'),
+                    "multi_intent": True,
+                    "sub_intents": sub_intents,
+                    # Neutral top-level filter values — per-sub-intent filters live
+                    # inside sub_intents[*] and are consumed by _run_sub_intent.
+                    "country_filter": [],
+                    "volume_mt": None,
+                    "price_ceiling": None,
+                    "price_floor": None,
+                    "time_range": None,
+                    "counterparty_name": None,
+                }
         
         # Single intent path
         result = self._parse_single(query, explicit_scope)
@@ -281,15 +408,8 @@ class QueryInterpreter:
         sorted_aliases = sorted(self.COUNTRY_ALIASES.keys(), key=len, reverse=True)
         for alias in sorted_aliases:
              real_name = self.COUNTRY_ALIASES[alias]
-             # Update regex to handle dots properly (escape dots in alias)
-             # And ensure boundary or end of string
-             esc_alias = re.escape(alias)
-             pattern = r'\b' + esc_alias + r'\b'
-             
-             # Problem: \b doesn't match after '.' if alias ends with '.' like 'u.s.'
-             # Fix: Use negative lookahead (?!\w) which ensures next char is NOT a word char.
-             # This works for "u.s." at end of string or before space.
-             
+             # Use negative lookahead (?!\w) instead of \b — \b doesn't match after '.'
+             # for aliases like 'u.s.' at end of string or before space.
              esc_alias = re.escape(alias)
              pattern = r'\b' + esc_alias + r'(?!\w)'
              
@@ -298,21 +418,25 @@ class QueryInterpreter:
                      found_countries.append(real_name)
                  remainder = re.sub(pattern, '', remainder)
 
-        # Check Standard List
-        for country in self.COUNTRIES:
+        # Check Standard List (loaded from DB, falls back to hardcoded list)
+        _countries = self._get_countries()
+        for country in _countries:
             pattern = r'\b' + re.escape(country.lower()) + r'\b'
             if re.search(pattern, remainder):
                 if country not in found_countries:
-                    found_countries.append(country) 
+                    found_countries.append(country)
                 remainder = re.sub(pattern, '', remainder)
 
-        # Fuzzy Match
+        # Fuzzy Match — catches typos like "Chna", "Germny", "Indonsia"
         tokens = remainder.split()
         for token in tokens:
             if len(token) < 4: continue
             # Remove dots/punctuation from token for fuzzy match
             clean_token = re.sub(r'[^\w]', '', token)
-            matches = difflib.get_close_matches(clean_token.title(), self.COUNTRIES, n=1, cutoff=0.85)
+            # Short tokens (≤4 chars) are likely abbreviations like UAE, USA, KSA —
+            # try uppercase first (most country lists store abbreviations in uppercase).
+            lookup = clean_token.upper() if len(clean_token) <= 4 else clean_token.title()
+            matches = difflib.get_close_matches(lookup, _countries, n=1, cutoff=0.85)
             if matches:
                 c = matches[0]
                 if c not in found_countries:
@@ -351,7 +475,8 @@ class QueryInterpreter:
         if ceil_match:
             nums = re.findall(r'(\d+(?:,\d+)?)', ceil_match.group(0))
             if nums:
-                attributes['price_ceiling'] = float(nums[0].replace(',', ''))
+                raw = float(nums[0].replace(',', ''))
+                attributes['price_ceiling'] = self._convert_to_usd(raw, ceil_match.group(0))
                 remainder = remainder.replace(ceil_match.group(0), '')
 
         floor_pattern = r'(?:above|over|>|higher th[ae]n|more th[ae]n|greater th[ae]n|paying more th[ae]n|sell above|exceeding|at least)\s*' + currency_regex + r'?\s*(\d+(?:,\d+)?)' + r'\s*' + currency_regex + r'?'
@@ -359,13 +484,15 @@ class QueryInterpreter:
         if floor_match:
              nums = re.findall(r'(\d+(?:,\d+)?)', floor_match.group(0))
              if nums:
-                attributes['price_floor'] = float(nums[0].replace(',', ''))
+                raw = float(nums[0].replace(',', ''))
+                attributes['price_floor'] = self._convert_to_usd(raw, floor_match.group(0))
                 remainder = remainder.replace(floor_match.group(0), '')
 
         exact_pattern = r'\b(\d+(?:,\d+)?)\s*' + currency_regex + r'\b'
         exact_match = re.search(exact_pattern, remainder)
         if exact_match and not attributes['price_ceiling'] and not attributes['price_floor']:
-             attributes['price_ceiling'] = float(exact_match.group(1).replace(',', ''))
+             raw = float(exact_match.group(1).replace(',', ''))
+             attributes['price_ceiling'] = self._convert_to_usd(raw, exact_match.group(0))
              remainder = remainder.replace(exact_match.group(0), '')
 
         # --- 5. Time Extraction (Enhanced) ---
@@ -376,7 +503,7 @@ class QueryInterpreter:
 
         q_match = re.search(r'\b(q[1-4])[\s-]*(\d{4})?\b', remainder)
         if q_match:
-            year = q_match.group(2) or "2025"
+            year = q_match.group(2) or str(datetime.date.today().year)
             attributes['time_range'] = f"{q_match.group(1).upper()} {year}"
             remainder = remainder.replace(q_match.group(0), '')
 
@@ -425,13 +552,15 @@ class QueryInterpreter:
 
         # Bare year e.g. "2023", "2024" — must be 4-digit year between 2000-2030
         if not attributes['time_range']:
-            m = re.search(r'\b(20[0-2]\d)\b', remainder)
+            m = re.search(r'\b(20[0-3]\d)\b', remainder)
             if m:
                 attributes['time_range'] = m.group(1)
                 remainder = remainder.replace(m.group(0), '')
         
         # --- 6. Intent Detection (Scoring) ---
-        intent, score = self._detect_intent_score(query) 
+        # Run on `remainder` (countries/volumes/prices/times already stripped) so
+        # that extracted filter values don't accidentally contribute intent signals.
+        intent, score = self._detect_intent_score(remainder)
         attributes['intent'] = intent if intent != 'AMBIGUOUS' else 'BUY'
 
         # --- 7. Product & Counterparty Extraction ---
@@ -479,7 +608,8 @@ class QueryInterpreter:
             "please", "search", "find", "show", "me", "list",
             "details", "price", "prices", "active", "recent", "data", "who", "is", "are",
             "import", "export", "importing", "exporting",
-            "and", "&",
+            "&",  # "and" intentionally excluded: merged product phrases like
+            # "Sodium Hydroxide and Soda Ash" must survive product extraction.
             "importers", "buyers", "buyer", "importer", "buying", "selling",
             "can", "i", "sell", "buy", "have", "looking", "please", "want", "need", "give", "get", "away",
             "pay", "pays", "paying", "payment",
@@ -490,6 +620,8 @@ class QueryInterpreter:
             "demand", "globally",
             # Possessives / first-person ("sell our wheat" → product should be "wheat")
             "our", "my", "your", "their", "its", "we", "us", "they", "them",
+            # Logistics/packaging terms — not product names
+            "bulk", "cargo", "lot", "consignment", "batch",
         ]
         
         # Remove common conversational prefixes
@@ -531,7 +663,17 @@ class QueryInterpreter:
             attributes['counterparty_name'] = entity.title()
             # Remove entity from product
             attributes['product'] = clean_text.replace(entity, '').strip()
-            
+
+        # Guard: remove countries that are embedded within a detected counterparty name.
+        # e.g. "Nestle Pakistan Ltd" → counterparty_name set above, "Pakistan" must not
+        # also appear in country_filter as a geo-filter. Mirrors the same guard in F8.
+        if attributes.get('counterparty_name') and attributes['country_filter']:
+            cp_lower = attributes['counterparty_name'].lower()
+            attributes['country_filter'] = [
+                c for c in attributes['country_filter']
+                if c.lower() not in cp_lower
+            ]
+
         # --- 9. Family Classification ---
         # ... (Same as before) ...
         f = 1
@@ -539,6 +681,7 @@ class QueryInterpreter:
         elif is_mkt: f = 7
         elif is_rec: f = 6
         elif attributes['price_ceiling'] or attributes['price_floor']: f = 4
+        elif attributes['volume_mt'] and attributes['time_range']: f = 3  # volume takes priority when both present; time_filter still applied in aggregation
         elif attributes['time_range']: f = 5
         elif attributes['volume_mt']: f = 3
         elif attributes['country_filter']: f = 2
@@ -666,8 +809,9 @@ class QueryInterpreter:
                 if not attributes['country_filter'] and merged.get('origin_country'):
                     _gliner_country = merged['origin_country']
                     # Validate: only accept if it's a known country name, not a generic word
-                    _known = set(c.lower() for c in self.COUNTRIES) | set(self.COUNTRY_ALIASES.values())
-                    if _gliner_country.lower() in _known or _gliner_country in self.COUNTRIES:
+                    _countries = self._get_countries()
+                    _known = set(c.lower() for c in _countries) | set(self.COUNTRY_ALIASES.values())
+                    if _gliner_country.lower() in _known or _gliner_country in _countries:
                         attributes['country_filter'] = [_gliner_country]
 
                 if attributes.get('price_ceiling') is None and merged.get('price_ceiling'):

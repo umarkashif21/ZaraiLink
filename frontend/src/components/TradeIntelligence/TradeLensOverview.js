@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -46,8 +47,8 @@ const TradeLensOverview = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/api/trade-lens/products/${productId}/overview/`,
-        { credentials: 'include' }
+        `${API_BASE}/api/trade-lens/products/${productId}/overview/`,
+        { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } }
       );
       if (!response.ok) throw new Error('Failed to load overview data');
       const result = await response.json();

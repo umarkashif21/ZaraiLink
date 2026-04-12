@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import Navbar from '../Layout/Navbar';
 import Breadcrumb from '../Common/Breadcrumb';
 import './TradeIntelligence.css';
@@ -18,8 +19,8 @@ const TradeLensGlobal = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/api/trade-lens/products/${productId}/global_view/`,
-        { credentials: 'include' }
+        `${API_BASE}/api/trade-lens/products/${productId}/global_view/`,
+        { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } }
       );
       if (!response.ok) throw new Error('Failed to load global data');
       const result = await response.json();

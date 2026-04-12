@@ -17,7 +17,7 @@ from trade_data.models import ProductSubCategory
 
 from .services.query_parser import QueryInterpreter
 
-USE_SUPPLIER_RERANKER = getattr(settings, 'SEARCH_USE_SUPPLIER_RERANKER', True)
+USE_SUPPLIER_RERANKER = getattr(settings, 'SEARCH_USE_SUPPLIER_RERANKER', False)  # disabled by default — MS-MARCO cross-encoder on company profiles adds noise, not signal
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,9 @@ class SearchViewSet(viewsets.ViewSet):
         query = request.query_params.get('q', '').strip()
         scope_param = request.query_params.get('scope', None)
         no_cache = request.query_params.get('no_cache', '').lower() in ('1', 'true')
+        # Read filter params early — needed to build cache context key
+        req_subcategory_id = request.query_params.get('subcategory_id')
+        req_country = request.query_params.get('country')
 
         # Support POST body for complex queries if needed
         if not query and request.method == 'POST':
@@ -46,10 +49,21 @@ class SearchViewSet(viewsets.ViewSet):
         if not query:
             return Response({"error": "Query parameter 'q' is required"}, status=400)
 
+        # Build cache context: incorporates all filter params that alter results.
+        # Filtered and unfiltered results must not share a cache entry.
+        _ctx_parts = []
+        if req_subcategory_id:
+            _ctx_parts.append(f'subcat={req_subcategory_id}')
+        if req_country:
+            _ctx_parts.append(f'country={req_country.lower()}')
+        if scope_param:
+            _ctx_parts.append(f'scope={scope_param.upper()}')
+        cache_context = '|'.join(_ctx_parts) or None
+
         # ── Stage 0: Semantic cache lookup ───────────────────────────────────
         if not no_cache:
             cache = get_cache()
-            cached = cache.get(query)
+            cached = cache.get(query, context=cache_context)
             if cached is not None:
                 cached['_cache'] = 'hit'
                 cached['_latency_ms'] = round((time.perf_counter() - t_start) * 1000, 1)
@@ -138,9 +152,9 @@ class SearchViewSet(viewsets.ViewSet):
         time_filter = self._parse_time_range(time_range_str) if time_range_str else None
             
         # Extract Manual Filters (Override parser if provided explicitly)
-        if request.query_params.get('country'):
-             country_filter = [request.query_params.get('country')]
-        subcategory_id_filter = request.query_params.get('subcategory_id')
+        if req_country:
+            country_filter = [req_country]
+        subcategory_id_filter = req_subcategory_id
 
         # Scope + Country conflict detection
         # If scope=PAKISTAN but user specified a non-Pakistan country filter,
@@ -158,6 +172,25 @@ class SearchViewSet(viewsets.ViewSet):
                     "results": [],
                     "count": 0
                 })
+
+        # HIGH #3: BUY + PAKISTAN scope — DB contains only import records (what Pakistan buys
+        # FROM the world), not export records (Pakistani domestic suppliers).
+        # This query would always return 0 results; return a clear explanation instead.
+        if intent == 'BUY' and active_scope == 'PAKISTAN':
+            return Response({
+                "query": query,
+                "parsed_query": parsed_query,
+                "error": "buy_pakistan_not_supported",
+                "message": (
+                    "Searching for suppliers within Pakistan is not currently supported. "
+                    "Zarailink's database records Pakistan's imports — what Pakistan buys from "
+                    "other countries — not Pakistan's domestic suppliers or exports. "
+                    "Switch scope to 'Worldwide' to find international suppliers of this product."
+                ),
+                "suggestion": "Try searching without the Pakistan scope to find worldwide suppliers.",
+                "results": [],
+                "count": 0,
+            })
 
         # 1. NLP: Match query to subcategories
         # For filter-only queries (empty product but has filters), skip NLP
@@ -178,13 +211,23 @@ class SearchViewSet(viewsets.ViewSet):
             and bool(active_params.get('counterparty_name'))
         )
         if not matched_subcategories and not has_filters and not is_f8_with_buyer:
-            # No product match AND no filters — truly empty query
+            # No product match AND no filters — return fuzzy suggestions so the user
+            # knows what related products exist in the database.
+            suggestions = []
+            try:
+                from .services.retrieval import HybridRetriever
+                _retriever = HybridRetriever()
+                _hits = _retriever.retrieve(nlp_search_term or query, top_k=3)
+                suggestions = [{'name': h['name'], 'hs_code': h.get('hs_code')} for h in _hits]
+            except Exception:
+                pass
             return Response({
                 "query": query,
                 "parsed_query": parsed_query,
                 "matched_subcategories": [],
                 "results": [],
-                "message": "No matching products found."
+                "message": "No matching products found.",
+                "suggestions": suggestions,
             })
 
         # 2. Aggregation: Get suppliers/buyers
@@ -236,6 +279,13 @@ class SearchViewSet(viewsets.ViewSet):
         # 3. Family-Based Routing — determine family before aggregation
         family = active_params.get('family', 1)
 
+        # H1 guard: F2 (country-filtered) with no actual country extracted → downgrade to F1.
+        # Without a country, RankingEnsemble assigns country_match=0.5 to all candidates but
+        # F2 weights country_match at 3.0×, causing all rankings to be dominated by a
+        # meaningless neutral signal rather than volume/recency features.
+        if family == 2 and not country_filter:
+            family = 1
+
         # C. Fetch Available Variants for Sidebar (not needed for Family 7)
         available_variants = []
         if family != 7 and subcategory_ids:
@@ -262,8 +312,8 @@ class SearchViewSet(viewsets.ViewSet):
             if country_data:
                 f7_market_snapshot = {
                     "total_count": len(country_data),
-                    "avg_price_global": sum(c['avg_price'] for c in country_data) / len(country_data),
-                    "top_country": country_data[0]['country'],
+                    "avg_price_global": sum((c.get('avg_price') or 0) for c in country_data) / len(country_data),
+                    "top_country": country_data[0].get('country', 'N/A'),
                 }
 
             return Response({
@@ -308,12 +358,32 @@ class SearchViewSet(viewsets.ViewSet):
                 "count": 0,
             })
 
+        # HIGH #4 + #5: SELL + WORLDWIDE — detect before aggregation so warnings can be surfaced.
+        aggregation_warnings = []
+        data_note = None
+        if intent == 'SELL' and active_scope == 'WORLDWIDE':
+            # HIGH #4: country filter is silently cleared in aggregation (DB has no destination-country
+            # for SELL queries). Warn the user instead of dropping the filter invisibly.
+            if country_filter:
+                aggregation_warnings.append(
+                    f"Country filter ({', '.join(country_filter)}) cannot be applied when searching "
+                    "worldwide buyers. Pakistan's import database does not record buyer destination "
+                    "countries for outbound trade. Showing all worldwide buyers instead."
+                )
+            # HIGH #5: Data direction note — make the proxy nature of the data explicit.
+            data_note = (
+                "Results show companies that import this product into Pakistan. "
+                "Zarailink's database contains Pakistan's import records only, so these "
+                "Pakistani importers represent real, verified buyers and serve as the best "
+                "available proxy for worldwide buyer discovery."
+            )
+
         t_aggregation_start = time.perf_counter()
         aggregator = SupplierAggregator()
         results = aggregator.get_suppliers_for_subcategories(
             subcategory_ids,
             intent=intent,
-            scope=active_params.get('scope', 'WORLDWIDE'),
+            scope=active_scope,  # use the pre-computed variable, not a second dict lookup
             country_filter=country_filter,
             price_filter=price_filter,
             volume_filter=volume_req,
@@ -339,11 +409,11 @@ class SearchViewSet(viewsets.ViewSet):
                 logger.warning(f"Supplier reranker failed: {e}")
 
         if family == 6:  # Recommendation/Shortlist
-            top_n = self._extract_top_n(query)
-            if top_n:
-                ranked_results = ranked_results[:top_n]
-            else:
-                ranked_results = ranked_results[:5]
+            top_n = self._extract_top_n(query) or 5
+            # Quality gate: exclude dormant suppliers (fewer than 2 shipments).
+            # Fall back to unfiltered list if the gate removes everything.
+            quality_filtered = [r for r in ranked_results if (r.get('shipment_count') or 0) >= 2]
+            ranked_results = (quality_filtered if quality_filtered else ranked_results)[:top_n]
 
         # Phase 4-A: Anomaly warnings — flag companies with suspicious price/volume patterns
         if ranked_results and subcategory_ids:
@@ -366,8 +436,8 @@ class SearchViewSet(viewsets.ViewSet):
         # ... existing logic ...
         market_snapshot = {
             "total_count": len(ranked_results),
-            "avg_price_global": sum(s['avg_price'] for s in ranked_results) / len(ranked_results) if ranked_results else 0,
-            "top_country": ranked_results[0]['country'] if ranked_results else "N/A"
+            "avg_price_global": sum((s.get('avg_price') or 0) for s in ranked_results) / len(ranked_results) if ranked_results else 0,
+            "top_country": ranked_results[0].get('country', 'N/A') if ranked_results else "N/A"
         }
 
         response_data = {
@@ -375,7 +445,7 @@ class SearchViewSet(viewsets.ViewSet):
             "parsed_query": parsed_query,
             "matched_subcategories": matched_subcategories,
             "available_variants": available_variants,
-            "active_variant": product_item_filter[0] if product_item_filter else None,
+            "active_variants": product_item_filter if product_item_filter else [],
             "results": ranked_results,
             "market_snapshot": market_snapshot,
             "count": len(ranked_results),
@@ -388,19 +458,25 @@ class SearchViewSet(viewsets.ViewSet):
                 "t_ranking_ms": t_ranking_ms,
             },
         }
+        if aggregation_warnings:
+            response_data['warnings'] = aggregation_warnings
+        if data_note:
+            response_data['data_note'] = data_note
         if parsed_query.get('ambiguous_query'):
             response_data['clarification_hint'] = (
                 "Your query was ambiguous. Try specifying: product name, country, volume, "
                 "or intent (e.g., 'find suppliers of X from Y')."
             )
 
-        # Store in semantic cache (non-blocking, best-effort)
-        if not no_cache and ranked_results:
+        # Store in semantic cache (non-blocking, best-effort).
+        # Cache zero-result responses too — a legitimately empty result should not
+        # re-run the full pipeline on every identical request. (H10/M fix)
+        if not no_cache:
             try:
                 cache = get_cache()
                 cacheable = {k: v for k, v in response_data.items()
                              if not k.startswith('_')}
-                cache.set(query, cacheable, subcategory_ids)
+                cache.set(query, cacheable, subcategory_ids, context=cache_context)
             except Exception:
                 pass
 
@@ -409,7 +485,7 @@ class SearchViewSet(viewsets.ViewSet):
             from .models import SearchInteractionLog
             SearchInteractionLog.objects.create(
                 user=request.user if request.user.is_authenticated else None,
-                session_key=request.session.session_key or '' if hasattr(request, 'session') else '',
+                session_key=getattr(getattr(request, 'session', None), 'session_key', '') or '',
                 query_text=query,
                 query_family=family,
                 parsed_intent=parsed_query.get('intent', ''),
@@ -608,6 +684,18 @@ class SearchViewSet(viewsets.ViewSet):
                 start_date = datetime.date(yr, month_num, 1)
                 end_date   = today
 
+        # ── "<month> to <month> [year]" ───────────────────────────────────────
+        elif _re.search(r'\bto\b', tr):
+            # e.g. "january to march" or "jan to mar 2024"
+            _months_pat = '|'.join(_MONTH_MAP.keys())
+            mr = _re.match(r'(' + _months_pat + r')\s+to\s+(' + _months_pat + r')(?:\s+(20\d\d))?', tr)
+            if mr:
+                m1_num = _MONTH_MAP[mr.group(1)]
+                m2_num = _MONTH_MAP[mr.group(2)]
+                yr = int(mr.group(3)) if mr.group(3) else today.year
+                start_date = datetime.date(yr, m1_num, 1)
+                end_date   = _month_end(yr, m2_num)
+
         # ── "<month> <year>" ──────────────────────────────────────────────────
         else:
             # Try "january 2024" or "jan 2024"
@@ -619,14 +707,14 @@ class SearchViewSet(viewsets.ViewSet):
                 end_date   = _month_end(yr, month_num)
             else:
                 # Bare year e.g. "2023"
-                yr_only = _re.match(r'^(20[0-2]\d)$', tr)
+                yr_only = _re.match(r'^(20[0-3]\d)$', tr)
                 if yr_only:
                     yr = int(yr_only.group(1))
                     start_date = datetime.date(yr, 1, 1)
                     end_date   = datetime.date(yr, 12, 31)
                 else:
                     # Year appears anywhere in the string (e.g. "Q1 2024" already handled above)
-                    yr_m = _re.search(r'(20[0-2]\d)', tr)
+                    yr_m = _re.search(r'(20[0-3]\d)', tr)
                     if yr_m:
                         yr = int(yr_m.group(1))
                         start_date = datetime.date(yr, 1, 1)
@@ -669,12 +757,11 @@ class SearchViewSet(viewsets.ViewSet):
             matcher = QueryMatcher()
             matched_subcategories = matcher.match(product)
             if matched_subcategories:
-                top_match = matched_subcategories[0]
-                if top_match['score'] > 0.95:
-                    threshold = top_match['score'] - 0.05
-                    subcategory_ids = [m['id'] for m in matched_subcategories if m['score'] >= threshold]
-                else:
-                    subcategory_ids = [m['id'] for m in matched_subcategories]
+                # Include all matcher results — same behaviour as the main single-intent
+                # flow (line 244).  The old threshold (top - 0.05 when score > 0.95)
+                # caused the same product term to return different subcategory sets
+                # depending on whether the query was F9 or F1–F8. (H9/M fix)
+                subcategory_ids = [m['id'] for m in matched_subcategories]
 
         SECTION_META = {
             1: ("Buyer Discovery",        "Who buys this product?"),
@@ -710,8 +797,27 @@ class SearchViewSet(viewsets.ViewSet):
         # For buyer-discovery sub-intents (F1-F6) with SELL intent, fall back to
         # PAKISTAN scope so we query IMPORT records for Pakistani buyers.
         effective_scope = sub_params.get('scope', 'WORLDWIDE')
+        sub_warnings = []
+        sub_data_note = None
         if intent == 'SELL' and effective_scope == 'WORLDWIDE':
+            # SELL+WORLDWIDE sub-intent: DB has no export records. Use IMPORT records
+            # (Pakistani importers) as buyer proxies — same logic as the main flow.
             effective_scope = 'PAKISTAN'
+            sub_data_note = (
+                "Results show Pakistani importers as a proxy for worldwide buyers. "
+                "Zarailink's database contains Pakistan's import records only."
+            )
+            if country_filter:
+                sub_warnings.append(
+                    f"Country filter ({', '.join(country_filter)}) cannot be applied "
+                    "for worldwide buyer discovery in this database."
+                )
+                # CRITICAL: clear country_filter for the aggregator call.
+                # The aggregator's SELL+WORLDWIDE normalization (which clears it) won't
+                # fire because scope is now PAKISTAN — without this, the query gets
+                # destination_country='Pakistan' AND destination_country IN [<user_filter>]
+                # which is always contradictory and returns 0 results.
+                country_filter = None
 
         aggregator = SupplierAggregator()
         results = aggregator.get_suppliers_for_subcategories(
@@ -730,10 +836,15 @@ class SearchViewSet(viewsets.ViewSet):
             top_n = self._extract_top_n(raw_query) or 5
             ranked_results = ranked_results[:top_n]
 
-        return {
+        section = {
             "label": label,
             "family": family,
             "intent_answered": intent_answered,
             "results": ranked_results,
             "matched_subcategories": matched_subcategories,
         }
+        if sub_warnings:
+            section["warnings"] = sub_warnings
+        if sub_data_note:
+            section["data_note"] = sub_data_note
+        return section

@@ -56,8 +56,25 @@ class QueryMatcher:
         """
         results = self._match_core(query)
         if not results and len(query.split()) > 1:
-            # Multi-word phrase failed — try longest individual token
-            tokens = sorted(query.split(), key=len, reverse=True)
+            # Multi-word phrase failed — try individual tokens sorted by length (longest first).
+            # Skip generic intent/commerce words that are unlikely to be product names so
+            # that meaningful product tokens (e.g. "hydroxide") are tried before noise
+            # words (e.g. "suppliers", "find") that happen to be long. (M10 fix)
+            _GENERIC_TOKENS = {
+                'find', 'show', 'get', 'search', 'list', 'give', 'tell', 'me',
+                'buy', 'sell', 'purchase', 'import', 'export', 'source',
+                'supplier', 'suppliers', 'buyer', 'buyers',
+                'importer', 'importers', 'exporter', 'exporters',
+                'vendor', 'vendors', 'seller', 'sellers',
+                'from', 'into', 'within', 'between', 'for', 'of', 'the', 'and',
+                'best', 'top', 'good', 'cheap', 'quality', 'active', 'recent',
+                'product', 'products', 'goods', 'cargo', 'shipment', 'shipments',
+                'globally', 'worldwide', 'country', 'countries',
+            }
+            tokens = sorted(
+                [t for t in query.split() if t.lower() not in _GENERIC_TOKENS],
+                key=len, reverse=True,
+            )
             for token in tokens:
                 if len(token) >= 3:
                     results = self._match_core(token)

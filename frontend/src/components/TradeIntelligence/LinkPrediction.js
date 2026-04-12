@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import Navbar from '../Layout/Navbar';
 import './TradeIntelligence.css';
 
@@ -16,7 +17,7 @@ const LinkPrediction = () => {
 
   
   useEffect(() => {
-    fetch('http://localhost:8000/api/predict/methods/', { credentials: 'include' })
+    fetch(`${API_BASE}/api/predict/methods/`, { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } })
       .then(res => res.json())
       .then(data => setMethods(data.methods || []))
       .catch(err => console.error('Failed to load methods:', err));
@@ -24,7 +25,7 @@ const LinkPrediction = () => {
 
   
   useEffect(() => {
-    fetch('http://localhost:8000/api/explorer/?direction=import&limit=1000', { credentials: 'include' })
+    fetch(`${API_BASE}/api/explorer/?direction=import&limit=1000`, { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } })
       .then(res => res.json())
       .then(data => {
         const companies = data.results?.map(c => c.company) || [];
@@ -43,12 +44,12 @@ const LinkPrediction = () => {
     setError(null);
     setResults([]);
 
-    const endpoint = predictionType === 'sellers' 
-      ? `http://localhost:8000/api/predict/sellers/${encodeURIComponent(companyName)}/?method=${method}&top_k=10`
-      : `http://localhost:8000/api/predict/buyers/${encodeURIComponent(companyName)}/?method=${method}&top_k=10`;
+    const endpoint = predictionType === 'sellers'
+      ? `${API_BASE}/api/predict/sellers/${encodeURIComponent(companyName)}/?method=${method}&top_k=10`
+      : `${API_BASE}/api/predict/buyers/${encodeURIComponent(companyName)}/?method=${method}&top_k=10`;
 
     try {
-      const res = await fetch(endpoint, { credentials: 'include' });
+      const res = await fetch(endpoint, { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } });
       const data = await res.json();
       
       if (data.error) {

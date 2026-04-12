@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import Navbar from '../Layout/Navbar';
 import { SkeletonCard } from '../Common/Skeleton';
 import EmptyState from '../Common/EmptyState';
@@ -56,7 +57,7 @@ const TradeLedger = () => {
   const loadCats = async () => {
     try {
       
-      const res = await fetch('http://localhost:8000/api/product-clusters/', { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/api/product-clusters/`, { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } });
       if (res.ok) {
         const data = await res.json();
         
@@ -79,7 +80,7 @@ const TradeLedger = () => {
       p.append('limit', '1000'); 
 
       
-      const res = await fetch(`http://localhost:8000/api/explorer/?${p}`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/api/explorer/?${p}`, { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } });
       if (res.ok) {
         const data = await res.json();
         

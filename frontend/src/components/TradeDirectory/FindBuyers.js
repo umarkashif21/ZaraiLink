@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import Navbar from '../Layout/Navbar';
 import { SkeletonCard } from '../Common/Skeleton';
 import EmptyState from '../Common/EmptyState';
@@ -66,12 +67,12 @@ const FindBuyers = () => {
       if (useAI) params.append('use_ai', 'true');
       params.append('role', roleId);
       
-      const apiUrl = `http://localhost:8000/api/companies/?${params.toString()}`;
+      const apiUrl = `${API_BASE}/api/companies/?${params.toString()}`;
       console.log('📡 Fetching from:', apiUrl);
 
       const response = await fetch(
         apiUrl,
-        { credentials: 'include' }
+        { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } }
       );
       
       console.log('📥 Response status:', response.status, response.ok);
@@ -150,10 +151,11 @@ const FindBuyers = () => {
   
   const loadFilterOptions = useCallback(async () => {
     try {
+      const ngrokHeaders = { headers: { 'ngrok-skip-browser-warning': 'true' } };
       const [regionsRes, sectorsRes, rolesRes] = await Promise.all([
-        fetch('http://localhost:8000/api/companies/regions/'),
-        fetch('http://localhost:8000/api/sectors/'),
-        fetch('http://localhost:8000/api/company-roles/')
+        fetch(`${API_BASE}/api/companies/regions/`, ngrokHeaders),
+        fetch(`${API_BASE}/api/sectors/`, ngrokHeaders),
+        fetch(`${API_BASE}/api/company-roles/`, ngrokHeaders)
       ]);
 
       if (regionsRes.ok) {

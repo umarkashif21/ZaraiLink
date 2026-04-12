@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from '../../config';
 
 const countries = [
   "Afghanistan","Albania","Algeria","Andorra","Angola","Argentina","Armenia","Australia","Austria","Azerbaijan",
@@ -68,10 +69,11 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/accounts/api/signup/', {
+      const response = await fetch(`${API_BASE}/accounts/api/signup/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: JSON.stringify({
           name,

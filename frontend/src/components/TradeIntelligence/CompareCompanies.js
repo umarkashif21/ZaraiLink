@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import Navbar from '../Layout/Navbar';
 import './TradeIntelligence.css';
@@ -21,8 +22,9 @@ const CompareCompanies = () => {
   const loadCompanies = async () => {
     setLoadingCompanies(true);
     try {
-      const res = await fetch('http://localhost:8000/api/explorer/?direction=both&limit=1000', {
-        credentials: 'include'
+      const res = await fetch(`${API_BASE}/api/explorer/?direction=both&limit=1000`, {
+        credentials: 'include',
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
       if (res.ok) {
         const data = await res.json();
@@ -55,10 +57,11 @@ const CompareCompanies = () => {
     setError(null);
 
     try {
-      const res = await fetch('http://localhost:8000/api/compare/', {
+      const res = await fetch(`${API_BASE}/api/compare/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         credentials: 'include',
         body: JSON.stringify({ companies: validCompanies })

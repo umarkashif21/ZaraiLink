@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import { LineChart, Line, ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Navbar from '../Layout/Navbar';
 import ExportButton from '../Common/ExportButton';
@@ -26,8 +27,9 @@ const CompanyTrends = () => {
     setError(null);
     try {
       
-      const res = await fetch(`http://localhost:8000/api/company/${id}/trends/?_t=${new Date().getTime()}`, {
-        credentials: 'include'
+      const res = await fetch(`${API_BASE}/api/company/${id}/trends/?_t=${new Date().getTime()}`, {
+        credentials: 'include',
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
       if (res.ok) {
         const data = await res.json();

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../../config';
 
 
 import { useAuth } from '../../context/AuthContext';
@@ -26,7 +27,9 @@ const Subscription = () => {
 
   const loadPlans = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/subscriptions/plans/');
+      const response = await fetch(`${API_BASE}/api/subscriptions/plans/`, {
+        headers: { 'ngrok-skip-browser-warning': 'true' },
+      });
       if (response.ok) {
         const data = await response.json();
         setPlans(data);
@@ -72,11 +75,12 @@ const Subscription = () => {
 
     try {
       const csrftoken = getCookie('csrftoken');
-      const response = await fetch('http://localhost:8000/api/subscriptions/redeem/', {
+      const response = await fetch(`${API_BASE}/api/subscriptions/redeem/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrftoken,
+          'ngrok-skip-browser-warning': 'true',
         },
         credentials: 'include',
         body: JSON.stringify({ 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import { Line, Bar } from 'react-chartjs-2';
 import Navbar from '../Layout/Navbar';
 import Breadcrumb from '../Common/Breadcrumb';
@@ -19,8 +20,8 @@ const TradeLensComparison = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/api/trade-lens/products/${productId}/comparison/`,
-        { credentials: 'include' }
+        `${API_BASE}/api/trade-lens/products/${productId}/comparison/`,
+        { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } }
       );
       if (!response.ok) throw new Error('Failed to load comparison data');
       const result = await response.json();

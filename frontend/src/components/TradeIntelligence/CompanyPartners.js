@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Navbar from '../Layout/Navbar';
 import ExportButton from '../Common/ExportButton';
@@ -29,8 +30,9 @@ const CompanyPartners = () => {
     setError(null);
     try {
       
-      const res = await fetch(`http://localhost:8000/api/company/${id}/partners/`, {
-        credentials: 'include'
+      const res = await fetch(`${API_BASE}/api/company/${id}/partners/`, {
+        credentials: 'include',
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
       if (res.ok) {
         const data = await res.json();
@@ -49,8 +51,9 @@ const CompanyPartners = () => {
   
   const loadSimilarCompanies = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/company/${id}/similar/?method=combined`, {
-        credentials: 'include'
+      const res = await fetch(`${API_BASE}/api/company/${id}/similar/?method=combined`, {
+        credentials: 'include',
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
       if (res.ok) {
         const data = await res.json();
@@ -72,8 +75,9 @@ const CompanyPartners = () => {
   const loadPotentialPartners = async () => {
     try {
       
-      const sellersRes = await fetch(`http://localhost:8000/api/predict/sellers/${id}/?method=combined&top_k=5`, {
-        credentials: 'include'
+      const sellersRes = await fetch(`${API_BASE}/api/predict/sellers/${id}/?method=combined&top_k=5`, {
+        credentials: 'include',
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
       if (sellersRes.ok) {
         const sellersData = await sellersRes.json();
@@ -82,8 +86,9 @@ const CompanyPartners = () => {
       }
 
       
-      const buyersRes = await fetch(`http://localhost:8000/api/predict/buyers/${id}/?method=combined&top_k=5`, {
-        credentials: 'include'
+      const buyersRes = await fetch(`${API_BASE}/api/predict/buyers/${id}/?method=combined&top_k=5`, {
+        credentials: 'include',
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
       if (buyersRes.ok) {
         const buyersData = await buyersRes.json();

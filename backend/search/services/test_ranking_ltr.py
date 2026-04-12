@@ -8,11 +8,11 @@ class RankingLTRTest(TestCase):
         self.ensemble = RankingEnsemble()
         
         self.sample_candidate = {
-            "counterparty_name": "Supplier A",
-            "total_volume_mt": 1000.0,
-            "avg_price_usd_per_mt": 500.0,
-            "num_shipments": 10,
-            "last_trade_date": "2025-01-01",
+            "name": "Supplier A",
+            "total_volume": 1000.0,
+            "avg_price": 500.0,
+            "shipment_count": 10,
+            "last_shipment_date": "2025-01-01",
             "volume_fit": "Good",
             "country": "Pakistan"
         }
@@ -55,21 +55,21 @@ class RankingLTRTest(TestCase):
         # Candidate A: Strong Volume, Recent
         cand_a = {
             "name": "A",
-            "total_volume_mt": 5000,
-            "num_shipments": 20,
-            "last_trade_date": "2025-02-01",
+            "total_volume": 5000,
+            "shipment_count": 20,
+            "last_shipment_date": "2025-02-01",
             "volume_fit": "Strong",
-             "country": "Pakistan"
+            "country": "Pakistan"
         }
-        
+
         # Candidate B: Low Volume, Old
         cand_b = {
             "name": "B",
-            "total_volume_mt": 50,
-            "num_shipments": 2,
-            "last_trade_date": "2023-01-01",
+            "total_volume": 50,
+            "shipment_count": 2,
+            "last_shipment_date": "2023-01-01",
             "volume_fit": "Low",
-             "country": "China"
+            "country": "China"
         }
         
         candidates = [cand_b, cand_a] # Wrong order initially
@@ -85,19 +85,21 @@ class RankingLTRTest(TestCase):
         """
         Test that family 4 (Price) prioritizes Price Fit.
         """
+        RankingEnsemble._ltr_model = None  # reset singleton to avoid stale v1 model
+
         # A: High Price (Bad fit)
         cand_a = {
             "name": "Expensive",
-            "total_volume_mt": 1000,
-            "avg_price_usd_per_mt": 800, 
+            "total_volume": 1000,
+            "avg_price": 800,
             "volume_fit": "Good"
         }
-        
+
         # B: Low Price (Good fit)
         cand_b = {
             "name": "Cheap",
-            "total_volume_mt": 1000,
-            "avg_price_usd_per_mt": 400,
+            "total_volume": 1000,
+            "avg_price": 400,
             "volume_fit": "Good"
         }
         

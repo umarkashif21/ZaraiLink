@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import Navbar from '../Layout/Navbar';
 import Breadcrumb from '../Common/Breadcrumb';
 import Pagination from '../Common/Pagination';
@@ -34,8 +35,8 @@ const TradeLensDetails = () => {
       if (filters.country) params.append('country', filters.country);
 
       const response = await fetch(
-        `http://localhost:8000/api/trade-lens/products/${productId}/details/?${params}`,
-        { credentials: 'include' }
+        `${API_BASE}/api/trade-lens/products/${productId}/details/?${params}`,
+        { credentials: 'include', headers: { 'ngrok-skip-browser-warning': 'true' } }
       );
       if (!response.ok) throw new Error('Failed to load details');
       const result = await response.json();

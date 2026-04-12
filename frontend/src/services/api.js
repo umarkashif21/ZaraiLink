@@ -1,10 +1,12 @@
 import axios from 'axios';
+import { API_BASE } from '../config';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8000/api', // Adjust if needed
-    withCredentials: true, // Important for session cookies
+    baseURL: `${API_BASE}/api`,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
     },
 });
 

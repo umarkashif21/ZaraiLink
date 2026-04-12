@@ -99,23 +99,25 @@ class CandidateRetrievalTest(TestCase):
     def test_scope_worldwide_intent_sell(self, MockMatcher):
         """
         User wants to SELL to WORLDWIDE.
-        Should find 'Global-Buyer-X' from EXPORT transactions.
+        DB is Pakistan-import-only so EXPORT records don't exist in volume.
+        SELL+WORLDWIDE falls back to IMPORT records — the Pakistani importer is
+        the best proxy for a real buyer.  Expects 'Pak-Importer-B'.
         """
         matcher_instance = MockMatcher.return_value
         matcher_instance.match.return_value = [{'id': self.subcat.id, 'name': 'Dextrose', 'score': 1.0}]
-        
+
         parsed_query = {
             "intent": "SELL",
-            "product": "dextrose", 
+            "product": "dextrose",
             "country_filter": [],
             "multi_intent": False
         }
-        
+
         retriever = CandidateRetriever()
         results = retriever.retrieve_candidates(parsed_query, scope='WORLDWIDE')
-        
+
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['counterparty_name'], 'Global-Buyer-X')
+        self.assertEqual(results[0]['counterparty_name'], 'Pak-Importer-B')
         
     @patch('search.services.candidate_retrieval.QueryMatcher')
     def test_scope_pakistan_intent_sell(self, MockMatcher):

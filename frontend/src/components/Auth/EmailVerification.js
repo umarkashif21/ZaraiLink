@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom"; 
+import { useLocation, useNavigate } from "react-router-dom";
+import { API_BASE } from '../../config';
 
 export default function EmailVerification() {
   const location = useLocation(); 
@@ -31,10 +32,11 @@ export default function EmailVerification() {
     setMessage(""); 
 
     try {
-      const response = await fetch('http://localhost:8000/accounts/api/resend-verification/', {
+      const response = await fetch(`${API_BASE}/accounts/api/resend-verification/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: JSON.stringify({ email }),
       });

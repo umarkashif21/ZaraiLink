@@ -20,6 +20,7 @@ import os
 import re
 import pickle
 import logging
+import threading
 import numpy as np
 from functools import lru_cache
 from pathlib import Path
@@ -47,35 +48,41 @@ DOC_PREFIX = 'search_document: '
 
 class _NomicModel:
     _instance = None
+    _lock = threading.Lock()
 
     @classmethod
     def get(cls):
         if cls._instance is None:
-            logger.info("Loading nomic-embed-text-v1...")
-            from sentence_transformers import SentenceTransformer
-            cls._instance = SentenceTransformer(
-                'nomic-ai/nomic-embed-text-v1',
-                trust_remote_code=True,
-                device='cpu',
-                model_kwargs={'low_cpu_mem_usage': False},
-            )
-            logger.info(f"nomic-embed-text-v1 loaded (dim={cls._instance.get_sentence_embedding_dimension()})")
+            with cls._lock:
+                if cls._instance is None:
+                    logger.info("Loading nomic-embed-text-v1...")
+                    from sentence_transformers import SentenceTransformer
+                    cls._instance = SentenceTransformer(
+                        'nomic-ai/nomic-embed-text-v1',
+                        trust_remote_code=True,
+                        device='cpu',
+                        model_kwargs={'low_cpu_mem_usage': False},
+                    )
+                    logger.info(f"nomic-embed-text-v1 loaded (dim={cls._instance.get_sentence_embedding_dimension()})")
         return cls._instance
 
 
 class _MiniLMModel:
     """Fallback model — used if nomic is unavailable."""
     _instance = None
+    _lock = threading.Lock()
 
     @classmethod
     def get(cls):
         if cls._instance is None:
-            from sentence_transformers import SentenceTransformer
-            cls._instance = SentenceTransformer(
-                'all-MiniLM-L6-v2',
-                device='cpu',
-                model_kwargs={'low_cpu_mem_usage': False},
-            )
+            with cls._lock:
+                if cls._instance is None:
+                    from sentence_transformers import SentenceTransformer
+                    cls._instance = SentenceTransformer(
+                        'all-MiniLM-L6-v2',
+                        device='cpu',
+                        model_kwargs={'low_cpu_mem_usage': False},
+                    )
         return cls._instance
 
 
@@ -130,6 +137,27 @@ def build_index(force_rebuild: bool = False) -> dict:
         try:
             with open(FAISS_INDEX_PATH, 'rb') as f:
                 idx = pickle.load(f)
+
+            # Stale-index guard: verify the persisted index was built with the
+            # same embedding model and dimension as the one currently available.
+            # A mismatch means nomic↔MiniLM switchover happened after the index
+            # was written — silently loading it would produce wrong similarities.
+            try:
+                _cur_model, _cur_model_name = get_embedding_model()
+                _cur_dim = _cur_model.get_sentence_embedding_dimension()
+                _idx_model = idx.get('model_name', 'unknown')
+                _idx_dim   = idx.get('embedding_dim')
+                if _idx_model != _cur_model_name or (_idx_dim and _idx_dim != _cur_dim):
+                    logger.warning(
+                        f"Index model/dim mismatch: index=({_idx_model}, {_idx_dim}d) "
+                        f"vs current=({_cur_model_name}, {_cur_dim}d). Rebuilding."
+                    )
+                    raise ValueError("index model mismatch — rebuild required")
+            except ValueError:
+                raise  # propagate to outer except → triggers rebuild
+            except Exception:
+                pass  # model load failed — proceed with existing index as best-effort
+
             logger.info(
                 f"Loaded index v2: {len(idx['ids'])} subcategories, "
                 f"model={idx.get('model_name', 'unknown')}"
@@ -157,6 +185,7 @@ def _rebuild_index() -> dict:
     names = []
     hs_codes = []
     documents = []  # full text for BM25 + embedding
+    item_names_per_subcat = []  # list[list[str]] — used by _keyword_retrieve to avoid live DB
 
     for sc in subcats:
         # Get all item names for this subcategory (expand vocabulary)
@@ -169,6 +198,7 @@ def _rebuild_index() -> dict:
         names.append(sc.name)
         hs_codes.append(sc.hs_code or '')
         documents.append(doc_text)
+        item_names_per_subcat.append(item_names)
 
     n = len(ids)
     logger.info(f"  Building BM25 over {n} documents...")
@@ -206,6 +236,7 @@ def _rebuild_index() -> dict:
         'names': names,
         'hs_codes': hs_codes,
         'documents': documents,
+        'item_names': item_names_per_subcat,  # parallel list — avoids live DB in _keyword_retrieve
         'bm25': bm25,
         'faiss_idx': faiss_idx,
         'embeddings': embeddings,  # kept for RRF + fallback
@@ -234,11 +265,14 @@ class HybridRetriever:
     """
 
     _index: Optional[dict] = None
+    _index_lock = threading.Lock()
 
     @classmethod
     def get_index(cls) -> dict:
         if cls._index is None:
-            cls._index = build_index()
+            with cls._index_lock:
+                if cls._index is None:
+                    cls._index = build_index()
         return cls._index
 
     @classmethod
@@ -278,11 +312,15 @@ class HybridRetriever:
         # 3. Keyword exact match (preserves high-precision keyword hits)
         keyword_results = self._keyword_retrieve(clean_q, idx)
 
-        # 3b. Fuzzy fallback for partial/misspelled words (fires when
-        #     BM25 and keyword both return nothing — e.g. "sug", "suag", "dextroze")
+        # 3b. Fuzzy fallback for partial/misspelled words.
+        # Fires when: (a) BM25 and keyword both return nothing, OR
+        #             (b) the query is short (≤12 chars) — likely a partial word or typo
+        #                 even if BM25 found something (its result may be coincidental).
         fuzzy_results = {}
-        if not bm25_results and not keyword_results and len(clean_q) >= 2:
-            fuzzy_results = self._fuzzy_retrieve(clean_q, idx, top_k=TOP_BM25)
+        _is_short_query = len(clean_q) <= 12
+        if (not bm25_results and not keyword_results) or _is_short_query:
+            if len(clean_q) >= 2:
+                fuzzy_results = self._fuzzy_retrieve(clean_q, idx, top_k=TOP_BM25)
 
         # 4. RRF fusion
         rrf_scores = self._rrf_fuse(
@@ -371,6 +409,17 @@ class HybridRetriever:
             normalize_embeddings=True,
         ).astype(np.float32)
 
+        # Guard against dimension mismatch (e.g. nomic failed → MiniLM fallback used
+        # but index was built with nomic). If dimensions differ, skip FAISS entirely
+        # rather than crash — BM25 + keyword results still flow through RRF.
+        index_dim = idx.get('embedding_dim') or (idx['embeddings'].shape[1] if idx.get('embeddings') is not None else None)
+        if index_dim and query_vec.shape[1] != index_dim:
+            logger.warning(
+                f"FAISS dimension mismatch: query vector is {query_vec.shape[1]}-dim "
+                f"but index expects {index_dim}-dim. Skipping FAISS retrieval."
+            )
+            return {}
+
         # Phase 4-B: HyDE expansion for short F1 queries
         # Guard: skip HyDE if baseline dense recall is already strong (≥ 0.6 top cosine sim)
         try:
@@ -378,7 +427,9 @@ class HybridRetriever:
             if getattr(_s, 'SEARCH_USE_HYDE', True):
                 # Preliminary search to measure baseline dense recall
                 _pre_dists, _pre_idx = idx['faiss_idx'].search(query_vec, 1)
-                _top_sim = float(1.0 - _pre_dists[0][0]) if _pre_dists[0][0] <= 1.0 else float(_pre_dists[0][0])
+                # IndexHNSWFlat returns squared L2 distances; for normalized vectors:
+                #   cos_sim = 1 - dist_sq / 2   (ranges from -1 to 1)
+                _top_sim = float(max(-1.0, 1.0 - _pre_dists[0][0] / 2.0))
                 _dense_recall_strong = (_pre_idx[0][0] >= 0) and (_top_sim >= 0.6)
 
                 if not _dense_recall_strong:
@@ -387,8 +438,9 @@ class HybridRetriever:
                     blended_vec, hyde_used = expander.expand(query, family=family, query_vec=query_vec[0])
                     if hyde_used and blended_vec is not None:
                         query_vec = blended_vec.reshape(1, -1)
-        except Exception:
-            pass  # HyDE failure must never break retrieval
+        except Exception as e:
+            logger.warning(f"HyDE expansion failed for query={query!r}: {e}")
+            # Retrieval continues with the original query vector
 
         # Search FAISS index
         distances, faiss_indices = idx['faiss_idx'].search(query_vec, top_k)
@@ -397,9 +449,9 @@ class HybridRetriever:
         for rank, (dist, fi) in enumerate(zip(distances[0], faiss_indices[0])):
             if fi < 0:  # FAISS returns -1 for not-found
                 continue
-            # For IndexHNSWFlat with normalized vectors, dist = cosine distance (1 - similarity)
-            # Actual cosine similarity = 1 - dist when vectors are L2-normalized
-            cosine_sim = float(1.0 - dist) if dist <= 1.0 else float(dist)
+            # IndexHNSWFlat returns squared L2 distances; for normalized vectors:
+            #   cos_sim = 1 - dist_sq / 2   (ranges from -1 to 1)
+            cosine_sim = float(max(-1.0, 1.0 - dist / 2.0))
 
             if cosine_sim < MIN_FAISS_SCORE:
                 break
@@ -413,39 +465,61 @@ class HybridRetriever:
         Exact substring match for high-precision boosting.
         Results sorted by match quality: shorter names = more specific = higher rank.
         Returns {cat_id: {rank, score}}.
-        """
-        from trade_data.models import ProductSubCategory, ProductItem
 
+        Uses the pre-built in-memory index (idx['names'] + idx['item_names']) so
+        no live DB query is issued on every search call.  Falls back to a single
+        DB query only when the index predates the 'item_names' key (old pickle).
+        """
         query_lower = query.lower()
         candidates = []
 
-        # SubCategory name contains query
-        subcat_hits = list(ProductSubCategory.objects.filter(name__icontains=query))
-        for hit in subcat_hits:
-            name_lower = hit.name.lower()
-            # Score: exact match > near-exact > substring
+        names = idx['names']
+        cat_ids = idx['ids']
+        item_names_per = idx.get('item_names')  # may be absent in older pickles
+
+        # ── SubCategory name substring match ─────────────────────────────────
+        for i, name in enumerate(names):
+            name_lower = name.lower()
+            if query_lower not in name_lower:
+                continue
             if name_lower == query_lower:
                 match_score = 1.0
             elif name_lower.startswith(query_lower) or query_lower.startswith(name_lower):
                 match_score = 0.98
             else:
-                # Reward shorter names (more specific) — normalized by length ratio
                 match_score = 0.95 * min(len(query_lower), len(name_lower)) / max(len(query_lower), len(name_lower))
-            candidates.append((match_score, hit.id))
+            candidates.append((match_score, cat_ids[i]))
 
-        # ProductItem name contains query → boost parent SubCategory
-        item_hits = list(ProductItem.objects.filter(
-            name__icontains=query
-        ).select_related('sub_category'))
         seen_parents = {c[1] for c in candidates}
-        for item in item_hits:
-            parent_id = item.sub_category_id
-            if parent_id in seen_parents:
-                continue
-            name_lower = item.name.lower()
-            match_score = 0.90 * min(len(query_lower), len(name_lower)) / max(len(query_lower), len(name_lower))
-            candidates.append((match_score, parent_id))
-            seen_parents.add(parent_id)
+
+        # ── ProductItem name substring match → boost parent SubCategory ──────
+        if item_names_per is not None:
+            # Fast in-memory path (index built with item_names stored)
+            for i, item_names in enumerate(item_names_per):
+                parent_id = cat_ids[i]
+                if parent_id in seen_parents:
+                    continue
+                for item_name in item_names:
+                    item_lower = item_name.lower()
+                    if query_lower in item_lower:
+                        match_score = 0.90 * min(len(query_lower), len(item_lower)) / max(len(query_lower), len(item_lower))
+                        candidates.append((match_score, parent_id))
+                        seen_parents.add(parent_id)
+                        break  # one hit per subcat is enough
+        else:
+            # Fallback: live DB query (old index pickle without item_names key)
+            from trade_data.models import ProductItem
+            item_hits = list(ProductItem.objects.filter(
+                name__icontains=query
+            ).select_related('sub_category'))
+            for item in item_hits:
+                parent_id = item.sub_category_id
+                if parent_id in seen_parents:
+                    continue
+                item_lower = item.name.lower()
+                match_score = 0.90 * min(len(query_lower), len(item_lower)) / max(len(query_lower), len(item_lower))
+                candidates.append((match_score, parent_id))
+                seen_parents.add(parent_id)
 
         # Sort by match score descending
         candidates.sort(key=lambda x: x[0], reverse=True)

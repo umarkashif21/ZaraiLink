@@ -66,6 +66,7 @@ class SupplierAggregator:
         # (country_filter and volume_filter are applied in memory after fetch)
         _can_use_stats = (
             subcategory_ids
+            and len(subcategory_ids) == 1   # multi-subcategory queries blend volumes/prices across different products — use live DB instead
             and not time_filter
             and not price_filter
             and not product_item_filter
@@ -76,7 +77,7 @@ class SupplierAggregator:
                     subcategory_ids, intent, scope, country_filter, volume_filter
                 )
                 if result is not None:
-                    return result
+                    return self._deduplicate_companies(result)
             except Exception as e:
                 logger.warning(f"Stats table fast path failed ({e}), falling back to live DB")
         # ── End fast path ─────────────────────────────────────────────────────
@@ -202,7 +203,80 @@ class SupplierAggregator:
         if volume_filter and volume_filter > 0:
             counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
 
-        return counterparties
+        return self._deduplicate_companies(counterparties)
+
+    def _deduplicate_companies(self, counterparties: list) -> list:
+        """
+        Fuzzy-merge near-duplicate company names that represent the same entity.
+
+        E.g. 'XYZ TRADERS PVT LTD' and 'XYZ TRADERS PVT. LTD' or
+        'ABC CORPORATION' and 'ABC CORP.' are merged into a single entry.
+
+        Strategy:
+          - SequenceMatcher ratio >= 0.85 → treat as same company
+          - Primary entry = entry with most shipments (most authoritative name)
+          - Volumes and shipment counts are summed across duplicates
+          - Most recent last_shipment_date and largest max_shipment_vol are kept
+          - avg_price kept from primary (weighted average too noisy without raw counts)
+        """
+        if len(counterparties) <= 1:
+            return counterparties
+
+        used = set()
+        merged = []
+
+        for i in range(len(counterparties)):
+            if i in used:
+                continue
+            base = counterparties[i]
+            base_name = (base.get('name') or '').upper().strip()
+            if not base_name:
+                used.add(i)
+                continue
+            group = [base]
+
+            for j in range(i + 1, len(counterparties)):
+                if j in used:
+                    continue
+                cand = counterparties[j]
+                cand_name = (cand.get('name') or '').upper().strip()
+                if not base_name or not cand_name:
+                    continue
+                ratio = difflib.SequenceMatcher(None, base_name, cand_name).ratio()
+                if ratio >= 0.85:
+                    group.append(cand)
+                    used.add(j)
+
+            used.add(i)
+
+            if len(group) == 1:
+                merged.append(base)
+                continue
+
+            # Merge: primary = entry with most shipments (most data → most authoritative name)
+            primary = max(group, key=lambda x: x.get('shipment_count') or 0)
+            merged_entry = dict(primary)
+
+            for dup in group:
+                if dup is primary:
+                    continue
+                merged_entry['total_volume'] = (merged_entry.get('total_volume') or 0) + (dup.get('total_volume') or 0)
+                merged_entry['shipment_count'] = (merged_entry.get('shipment_count') or 0) + (dup.get('shipment_count') or 0)
+                dup_date = dup.get('last_shipment_date')
+                if dup_date and (not merged_entry.get('last_shipment_date') or dup_date > merged_entry['last_shipment_date']):
+                    merged_entry['last_shipment_date'] = dup_date
+                if (dup.get('max_shipment_vol') or 0) > (merged_entry.get('max_shipment_vol') or 0):
+                    merged_entry['max_shipment_vol'] = dup['max_shipment_vol']
+
+            sc = merged_entry.get('shipment_count') or 0
+            if sc > 0:
+                merged_entry['avg_shipment_vol'] = round(
+                    (merged_entry.get('total_volume') or 0) / sc, 3
+                )
+
+            merged.append(merged_entry)
+
+        return merged
 
     def _get_from_stats_table(self, subcategory_ids, intent, scope, country_filter, volume_filter):
         """
@@ -297,7 +371,8 @@ class SupplierAggregator:
         if volume_filter and volume_filter > 0:
             counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
 
-        return counterparties
+        # Return None (not empty list) so caller falls through to live DB
+        return counterparties or None
 
     def get_supplier_details(self, seller_name, subcategory_ids):
         """

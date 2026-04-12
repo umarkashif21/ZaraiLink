@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import Navbar from '../Layout/Navbar';
 import Breadcrumb from '../Common/Breadcrumb';
 import { SkeletonCard } from '../Common/Skeleton';
@@ -22,8 +23,9 @@ const TradeLens = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8000/api/trade-lens/products/', {
-        credentials: 'include'
+      const response = await fetch(`${API_BASE}/api/trade-lens/products/`, {
+        credentials: 'include',
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
       if (!response.ok) {
         throw new Error('Failed to load products');

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { API_BASE } from '../../config';
 import Navbar from '../Layout/Navbar';
 import ExportButton from '../Common/ExportButton';
 import './TradeIntelligence.css';
@@ -25,8 +26,9 @@ const CompanyOverview = () => {
     setError(null);
     try {
       
-      const res = await fetch(`http://localhost:8000/api/company/${id}/overview/`, {
-        credentials: 'include'
+      const res = await fetch(`${API_BASE}/api/company/${id}/overview/`, {
+        credentials: 'include',
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
       if (res.ok) {
         const data = await res.json();

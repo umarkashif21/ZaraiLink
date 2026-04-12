@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { API_BASE } from '../config';
 
 const AuthContext = createContext(null);
 
@@ -21,9 +22,12 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8000/accounts/api/check-auth/', {
+      const response = await fetch(`${API_BASE}/accounts/api/check-auth/`, {
         method: 'GET',
-        credentials: 'include', 
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -41,12 +45,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:8000/accounts/api/login/', {
+      const response = await fetch(`${API_BASE}/accounts/api/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
-        credentials: 'include', 
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
@@ -66,8 +71,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('http://localhost:8000/accounts/api/logout/', {
+      await fetch(`${API_BASE}/accounts/api/logout/`, {
         method: 'POST',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
         credentials: 'include',
       });
     } catch (error) {

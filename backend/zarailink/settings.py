@@ -72,7 +72,7 @@ SEARCH_USE_HYDE = True
 SEARCH_USE_SETFIT = True
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.app']
 
 
 
@@ -395,10 +395,13 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",      
-    "http://127.0.0.1:3000",      
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "http://localhost:4000",
     "http://127.0.0.1:4000",
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.ngrok-free\.app$",
 ]
 CORS_ALLOW_CREDENTIALS = True  
 CORS_ALLOW_HEADERS = [
@@ -411,6 +414,7 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'ngrok-skip-browser-warning',
 ]
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -428,6 +432,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:4000",
     "http://127.0.0.1:4000",
+    "https://*.ngrok-free.app",
 ]
 CSRF_COOKIE_HTTPONLY = False  
 CSRF_COOKIE_SAMESITE = 'Lax'

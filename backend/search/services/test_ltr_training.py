@@ -20,11 +20,11 @@ class LTRTrainingPipelineTest(TestCase):
         # Create Transactions to convert to synthetic queries
         # Supplier (Import)
         Transaction.objects.create(
-            trade_type='IMPORT', product_item=self.item, seller="SupplierA", origin_country="China", 
+            trade_type='IMPORT', product_item=self.item, seller="Beijing Raw Materials Corp", origin_country="China",
             qty_mt=100, usd_per_mt=500, reporting_date="2025-01-01"
         )
         Transaction.objects.create(
-            trade_type='IMPORT', product_item=self.item, seller="SupplierB", origin_country="China", 
+            trade_type='IMPORT', product_item=self.item, seller="Global Chemicals Trading Ltd", origin_country="Germany",
             qty_mt=200, usd_per_mt=400, reporting_date="2025-01-02"
         )
         
@@ -36,6 +36,8 @@ class LTRTrainingPipelineTest(TestCase):
         # Clean up model after test
         if os.path.exists(MODEL_PATH):
             os.remove(MODEL_PATH)
+        # Reset singleton so next test gets a fresh model
+        RankingEnsemble._ltr_model = None
 
     def test_dataset_builder(self):
         """
@@ -70,8 +72,8 @@ class LTRTrainingPipelineTest(TestCase):
         
         # Verify Inference
         candidates = [
-            {"counterparty_name": "SupA", "total_volume_mt": 100, "avg_price_usd_per_mt": 500, "num_shipments": 1},
-            {"counterparty_name": "SupB", "total_volume_mt": 200, "avg_price_usd_per_mt": 400, "num_shipments": 1}
+            {"name": "Beijing Raw Materials Corp", "total_volume": 100, "avg_price": 500, "shipment_count": 1},
+            {"name": "Global Chemicals Trading Ltd", "total_volume": 200, "avg_price": 400, "shipment_count": 1}
         ]
         query = {"intent": "BUY", "family": 1}
         
@@ -85,10 +87,12 @@ class LTRTrainingPipelineTest(TestCase):
         """
         if os.path.exists(MODEL_PATH):
             os.remove(MODEL_PATH)
-            
+        # Reset class-level singleton so a fresh model-load attempt happens
+        RankingEnsemble._ltr_model = None
+
         ensemble = RankingEnsemble()
         # Should log warning but not crash
-        candidates = [{"counterparty_name": "SupA", "total_volume_mt": 100}]
+        candidates = [{"name": "SupA", "total_volume": 100}]
         ranked = ensemble.rank_candidates(candidates, {"intent": "BUY"})
-        
+
         self.assertEqual(len(ranked), 1)

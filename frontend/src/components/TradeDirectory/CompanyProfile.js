@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { API_BASE } from '../../config';
 import Navbar from '../Layout/Navbar';
 import {
   UnlockConfirmModal,
@@ -51,8 +52,9 @@ const CompanyProfile = () => {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/companies/${id}/`, {
+      const response = await fetch(`${API_BASE}/api/companies/${id}/`, {
         credentials: 'include',
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
 
       if (response.ok) {
@@ -75,7 +77,9 @@ const CompanyProfile = () => {
     if (!company || similarCompanies.length > 0) return;
     setLoadingSimilar(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/company/${encodeURIComponent(company.name)}/similar/`);
+      const response = await fetch(`${API_BASE}/api/company/${encodeURIComponent(company.name)}/similar/`, {
+        headers: { 'ngrok-skip-browser-warning': 'true' },
+      });
       if (response.ok) {
         const data = await response.json();
         setSimilarCompanies(data.similar_companies || []);
@@ -120,12 +124,13 @@ const CompanyProfile = () => {
     try {
       const csrftoken = getCookie('csrftoken');
       const response = await fetch(
-        `http://localhost:8000/api/key-contacts/${selectedContact.id}/unlock/`,
+        `${API_BASE}/api/key-contacts/${selectedContact.id}/unlock/`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken,
+            'ngrok-skip-browser-warning': 'true',
           },
           credentials: 'include',
         }

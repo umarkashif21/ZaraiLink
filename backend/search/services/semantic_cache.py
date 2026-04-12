@@ -116,22 +116,31 @@ class SemanticCache:
             self._connected = self._r is not None
         return self._r
 
-    def get(self, query: str) -> Optional[dict]:
+    def get(self, query: str, context: str = None) -> Optional[dict]:
         """
         Look up a cached response for the query.
 
+        Args:
+            query:   original query string
+            context: optional filter context string (e.g. 'subcat=5|country=china|scope=WORLDWIDE').
+                     When provided, the SHA incorporates context so filtered and unfiltered
+                     results are stored/retrieved independently.  Semantic similarity lookup
+                     is skipped when context is present (different filters → incomparable results).
+
         Returns cached response dict or None on miss.
         Algorithm:
-          1. SHA lookup for exact normalized query (O(1))
+          1. SHA lookup for exact normalized query (+ context if provided) — O(1)
           2. Embedding-based similarity scan over all cached entries (O(n))
              — capped at MAX_CACHE_ENTRIES to bound scan cost
+             — skipped when context is non-empty
         """
         r = self._redis()
         if r is None:
             return None
 
         norm_q = _normalize_query(query)
-        sha = _query_sha(norm_q)
+        cache_key = (norm_q + '\x00' + context) if context else norm_q
+        sha = _query_sha(cache_key)
 
         # Fast path: exact normalized match
         exact_key = f'{CACHE_KEY_PREFIX}:entry:{sha}'
@@ -139,12 +148,20 @@ class SemanticCache:
             raw = r.hget(exact_key, 'data')
             if raw:
                 data = json.loads(raw)
-                # Refresh TTL on hit
-                r.expire(exact_key, TTL_SECONDS)
+                # Refresh TTL on hit — both entry AND the ZSET index so the index
+                # doesn't expire while live entries still exist (M3 fix).
+                pipe = r.pipeline()
+                pipe.expire(exact_key, TTL_SECONDS)
+                pipe.expire(f'{CACHE_KEY_PREFIX}:index', TTL_SECONDS * 2)
+                pipe.execute()
                 logger.debug(f"Cache HIT (exact): {query!r}")
                 return data.get('response')
         except Exception as e:
             logger.warning(f"Cache exact lookup error: {e}")
+
+        # Semantic path: only when no context (filters change results — must be exact match)
+        if context:
+            return None
 
         # Semantic path: find nearest cached query embedding
         query_vec = _embed_query(norm_q)
@@ -181,7 +198,11 @@ class SemanticCache:
                 raw = r.hget(entry_key, 'data')
                 if raw:
                     data = json.loads(raw)
-                    r.expire(entry_key, TTL_SECONDS)
+                    # Refresh TTL on hit — both entry AND the ZSET index (M3 fix).
+                    pipe = r.pipeline()
+                    pipe.expire(entry_key, TTL_SECONDS)
+                    pipe.expire(f'{CACHE_KEY_PREFIX}:index', TTL_SECONDS * 2)
+                    pipe.execute()
                     logger.debug(
                         f"Cache HIT (semantic, sim={best_score:.3f}): {query!r}"
                     )
@@ -197,25 +218,33 @@ class SemanticCache:
         query: str,
         response: dict,
         matched_subcat_ids: list[int] = None,
+        context: str = None,
     ) -> bool:
         """
         Store a search response in the cache.
 
         Args:
-            query: original query string
-            response: serializable response dict
+            query:             original query string
+            response:          serializable response dict
             matched_subcat_ids: for category-based invalidation
+            context:           optional filter context (same as get()); when provided,
+                               the entry is stored under a context-specific SHA and no
+                               embedding is stored (semantic lookup is skipped for these entries).
         """
         r = self._redis()
         if r is None:
             return False
 
         norm_q = _normalize_query(query)
-        sha = _query_sha(norm_q)
+        cache_key = (norm_q + '\x00' + context) if context else norm_q
+        sha = _query_sha(cache_key)
 
-        query_vec = _embed_query(norm_q)
-        if query_vec is None:
-            return False
+        # Only embed when there is no context; context-keyed entries are exact-match only.
+        query_vec = None
+        if not context:
+            query_vec = _embed_query(norm_q)
+            if query_vec is None:
+                return False
 
         try:
             entry_key = f'{CACHE_KEY_PREFIX}:entry:{sha}'
@@ -228,10 +257,10 @@ class SemanticCache:
             }
 
             pipe = r.pipeline()
-            pipe.hset(entry_key, mapping={
-                'data': json.dumps(data, default=str),
-                'embedding': _vec_to_b64(query_vec),
-            })
+            entry_mapping = {'data': json.dumps(data, default=str)}
+            if query_vec is not None:
+                entry_mapping['embedding'] = _vec_to_b64(query_vec)
+            pipe.hset(entry_key, mapping=entry_mapping)
             pipe.expire(entry_key, TTL_SECONDS)
             pipe.zadd(index_key, {sha: time.time()})
             pipe.expire(index_key, TTL_SECONDS * 2)
