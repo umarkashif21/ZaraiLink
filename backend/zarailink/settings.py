@@ -57,11 +57,11 @@ INSTALLED_APPS = [
     'subscriptions',
     'companies',
     'trade_data',
-    'market_intel',
     'trade_ledger',
     'trade_lens',
     'search', # Search & Trade Facilitator
     'django.contrib.postgres',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

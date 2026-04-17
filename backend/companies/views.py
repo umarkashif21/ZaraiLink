@@ -31,13 +31,8 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         
-        
         if request.user.is_authenticated:
-            try:
-                from market_intel.models import UserInteraction
-                UserInteraction.objects.create(user=request.user, company=instance, action='view')
-            except Exception as e:
-                pass 
+            pass # Interaction tracking was removed
             
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
@@ -155,7 +150,7 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'list':
             queryset = queryset.defer(
                 'legal_name', 'description', 'address', 'website', 
-                'contact_email', 'phone', 'logo_image', 'year_established', 
+                'contact_email', 'phone', 'year_established', 
                 'number_of_employees', 'horeca_retail_info', 'ntn_number', 
                 'trade_license_number', 'has_trade_data', 'is_directory_profile', 
                 'created_at', 'updated_at'

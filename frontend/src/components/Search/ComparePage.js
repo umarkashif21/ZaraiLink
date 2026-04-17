@@ -13,7 +13,7 @@ const ComparePage = () => {
     const queryParams = new URLSearchParams(location.search);
     const suppliersParam = queryParams.get('suppliers');
     const query = queryParams.get('q') || '';
-    const scopeParam = queryParams.get('scope') || 'WORLDWIDE';
+    const scopeParam = queryParams.get('scope') || 'IMPORT';
     const intentParam = queryParams.get('intent') || 'BUY';
     const subcatIdParam = queryParams.get('subcat_id') || null;
     const variantNameParam = queryParams.get('variant_name') || null;

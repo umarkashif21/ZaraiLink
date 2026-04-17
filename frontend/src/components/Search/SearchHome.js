@@ -69,6 +69,19 @@ const SearchHome = () => {
 
     // ── Handlers ─────────────────────────────────────────────────────────
     const handleSelectSuggestion = (suggestion) => {
+        // If it's an HS Code drill-down item
+        if (suggestion.is_final !== undefined) {
+            // Because we have the Dual-Track Router, we just navigate to /search/results
+            // with the selected HS Code. The router will serve SummaryView for <8, DataDashboard for >=8
+            setQuery(suggestion.hs_code);
+            setSelectedHsCode(suggestion.hs_code);
+            setSelectedProductName(suggestion.name);
+            setShowSuggestions(false);
+            navigate(`/search/results?q=${encodeURIComponent(suggestion.hs_code)}&hs_code=${encodeURIComponent(suggestion.hs_code)}`);
+            return;
+        }
+
+        // Standard text autocomplete
         setQuery(suggestion.name);
         setSelectedHsCode(suggestion.hs_code);
         setSelectedProductName(suggestion.name);
@@ -80,12 +93,15 @@ const SearchHome = () => {
         e.preventDefault();
         if (!query.trim()) return;
 
-        const params = new URLSearchParams({
-            q: query,
-            scope,
-        });
-        if (selectedHsCode) {
-            params.set('hs_code', selectedHsCode);
+        const isHsCode = /^[\d.]+$/.test(query.trim());
+        const params = new URLSearchParams({ q: query });
+
+        if (isHsCode) {
+            // HS Code search: skip scope — 4-tab pill UI handles direction
+            params.set('hs_code', selectedHsCode || query.trim());
+        } else {
+            params.set('scope', scope);
+            if (selectedHsCode) params.set('hs_code', selectedHsCode);
         }
         navigate(`/search/results?${params.toString()}`);
     };
@@ -181,18 +197,23 @@ const SearchHome = () => {
                                     onClick={() => handleSelectSuggestion(s)}
                                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-indigo-50 transition-colors group"
                                 >
-                                    <div className="flex flex-col items-start">
+                                    <div className="flex flex-col items-start text-left">
                                         <span className="font-medium text-gray-900 group-hover:text-indigo-700">
                                             {s.name}
                                         </span>
                                         <span className="text-xs text-gray-400">
-                                            {s.category} · HS {s.hs_code}
+                                            {s.category ? `${s.category} · ` : ''}HS {s.hs_code}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         {s.total_volume > 0 && (
                                             <span className="text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
                                                 {s.total_volume.toLocaleString()} MT
+                                            </span>
+                                        )}
+                                        {s.is_final !== undefined && s.hs_code.replace('.', '').length < 8 && (
+                                            <span className="text-xs font-bold text-indigo-500 bg-indigo-50 rounded-full px-2 py-0.5">
+                                                Drill Down
                                             </span>
                                         )}
                                         <ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-400" />
@@ -212,23 +233,23 @@ const SearchHome = () => {
                 <div className="flex justify-center gap-2">
                     <button
                         type="button"
-                        onClick={() => setScope('WORLDWIDE')}
-                        className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'WORLDWIDE'
+                        onClick={() => setScope('IMPORT')}
+                        className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'IMPORT'
                             ? 'bg-indigo-600 text-white shadow-md'
                             : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500'
                         }`}
                     >
-                        Worldwide
+                        Import
                     </button>
                     <button
                         type="button"
-                        onClick={() => setScope('PAKISTAN')}
-                        className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'PAKISTAN'
+                        onClick={() => setScope('EXPORT')}
+                        className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'EXPORT'
                             ? 'bg-indigo-600 text-white shadow-md'
                             : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500'
                         }`}
                     >
-                        Pakistan
+                        Export
                     </button>
                 </div>
 

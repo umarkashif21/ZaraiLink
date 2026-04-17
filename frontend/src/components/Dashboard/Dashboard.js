@@ -12,7 +12,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const [query, setQuery] = useState('');
-  const [scope, setScope] = useState('WORLDWIDE');
+  const [scope, setScope] = useState(null);  // null = no scope filter selected
 
   // Autocomplete State
   const [suggestions, setSuggestions] = useState([]);
@@ -34,7 +34,12 @@ const Dashboard = () => {
     }
     setLoadingSuggestions(true);
     try {
-      const res = await fetch(`${API_BASE}/api/search/autocomplete/?q=${encodeURIComponent(q)}`);
+      const isNumeric = /^[\d.]+$/.test(q);
+      const endpoint = isNumeric
+        ? `${API_BASE}/api/search/hs-code-tree/?q=${encodeURIComponent(q)}`
+        : `${API_BASE}/api/search/autocomplete/?q=${encodeURIComponent(q)}`;
+
+      const res = await fetch(endpoint);
       if (res.ok) {
         const data = await res.json();
         setSuggestions(data);
@@ -77,11 +82,26 @@ const Dashboard = () => {
 
   // ── Handlers ─────────────────────────────────────────────────────────
   const handleSelectSuggestion = (suggestion) => {
+    if (suggestion.is_final !== undefined) {
+      if (!suggestion.is_final) {
+        setQuery(suggestion.hs_code);
+        inputRef.current?.focus();
+        return;
+      } else {
+        setQuery(suggestion.hs_code);
+        setSelectedHsCode(suggestion.hs_code);
+        setSelectedProductName(suggestion.name);
+        setShowSuggestions(false);
+        navigate(`/search/results?q=${encodeURIComponent(suggestion.hs_code)}&hs_code=${encodeURIComponent(suggestion.hs_code)}`);
+        return;
+      }
+    }
+
     setQuery(suggestion.name);
     setSelectedHsCode(suggestion.hs_code);
     setSelectedProductName(suggestion.name);
     setShowSuggestions(false);
-    inputRef.current?.focus();
+    navigate(`/search/results?q=${encodeURIComponent(suggestion.name)}&hs_code=${encodeURIComponent(suggestion.hs_code)}`);
   };
 
   const clearQuery = () => {
@@ -97,12 +117,16 @@ const Dashboard = () => {
     e.preventDefault();
     if (!query.trim()) return;
 
-    const params = new URLSearchParams({
-      q: query,
-      scope: scope
-    });
-    if (selectedHsCode) {
-      params.set('hs_code', selectedHsCode);
+    const isHsCode = /^[\d.]+$/.test(query.trim());
+    const params = new URLSearchParams({ q: query });
+
+    if (isHsCode) {
+      // HS Code search: skip scope entirely — the 4-tab pill UI handles direction
+      params.set('hs_code', selectedHsCode || query.trim());
+    } else {
+      // Only add scope if user explicitly selected one
+      if (scope) params.set('scope', scope);
+      if (selectedHsCode) params.set('hs_code', selectedHsCode);
     }
     navigate(`/search/results?${params.toString()}`);
   };
@@ -213,6 +237,11 @@ const Dashboard = () => {
                           {s.total_volume.toLocaleString()} MT
                         </span>
                       )}
+                      {s.is_final === false && (
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5">
+                          Drill Down
+                        </span>
+                      )}
                       <ChevronRight size={16} color="#d1d5db" />
                     </div>
                   </button>
@@ -226,47 +255,47 @@ const Dashboard = () => {
             )}
           </form>
 
-          {/* Scope Toggle */}
+          {/* Scope Toggle — optional, click again to deselect */}
           <div className="flex justify-center gap-2 mb-8 mt-12" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem', marginTop: '3rem' }}>
             <button
               type="button"
-              onClick={() => setScope('WORLDWIDE')}
-              className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'WORLDWIDE'
+              onClick={() => setScope(scope === 'IMPORT' ? null : 'IMPORT')}
+              className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'IMPORT'
                 ? 'bg-emerald-600 text-white shadow-md'
                 : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-500'
                 }`}
               style={{
                 padding: '0.5rem 1.5rem',
                 borderRadius: '9999px',
-                border: scope === 'WORLDWIDE' ? 'none' : '1px solid #e5e7eb',
-                backgroundColor: scope === 'WORLDWIDE' ? '#10b981' : 'white',
-                color: scope === 'WORLDWIDE' ? 'white' : '#4b5563',
+                border: scope === 'IMPORT' ? 'none' : '1px solid #e5e7eb',
+                backgroundColor: scope === 'IMPORT' ? '#10b981' : 'white',
+                color: scope === 'IMPORT' ? 'white' : '#4b5563',
                 cursor: 'pointer',
                 fontWeight: 500,
-                boxShadow: scope === 'WORLDWIDE' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                boxShadow: scope === 'IMPORT' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
               }}
             >
-              Worldwide
+              Import
             </button>
             <button
               type="button"
-              onClick={() => setScope('PAKISTAN')}
-              className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'PAKISTAN'
+              onClick={() => setScope(scope === 'EXPORT' ? null : 'EXPORT')}
+              className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'EXPORT'
                 ? 'bg-emerald-600 text-white shadow-md'
                 : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-500'
                 }`}
               style={{
                 padding: '0.5rem 1.5rem',
                 borderRadius: '9999px',
-                border: scope === 'PAKISTAN' ? 'none' : '1px solid #e5e7eb',
-                backgroundColor: scope === 'PAKISTAN' ? '#10b981' : 'white',
-                color: scope === 'PAKISTAN' ? 'white' : '#4b5563',
+                border: scope === 'EXPORT' ? 'none' : '1px solid #e5e7eb',
+                backgroundColor: scope === 'EXPORT' ? '#10b981' : 'white',
+                color: scope === 'EXPORT' ? 'white' : '#4b5563',
                 cursor: 'pointer',
                 fontWeight: 500,
-                boxShadow: scope === 'PAKISTAN' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                boxShadow: scope === 'EXPORT' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
               }}
             >
-              Pakistan
+              Export
             </button>
           </div>
 

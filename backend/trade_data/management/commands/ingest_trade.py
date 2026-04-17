@@ -35,6 +35,18 @@ class Command(BaseCommand):
 
         df.columns = df.columns.str.strip().str.replace(" ", "_").str.lower()
 
+        # Fix: pandas reads HS codes as floats (1702.1110 → 1702.111), losing trailing zeros.
+        # Reformat to 4 decimal places so DB stores "1702.1110" not "1702.111".
+        if 'hs_code' in df.columns:
+            def _fmt_hs(x):
+                if pd.isna(x):
+                    return ''
+                try:
+                    return f"{float(x):.4f}"
+                except (ValueError, TypeError):
+                    return str(x).strip()
+            df['hs_code'] = df['hs_code'].apply(_fmt_hs)
+
         required = [
             "date",
             "hs_code",

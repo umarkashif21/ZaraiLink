@@ -390,41 +390,31 @@ def _build_perspective_filter(
     ------------------------------------------------------------------
     ui_context  | intent | Meaning
     ------------------------------------------------------------------
-    worldwide   | BUY    | PK user imports → find foreign suppliers
-    worldwide   | SELL   | PK user exports → find foreign buyers
-    pakistan    | BUY    | Foreigner buys FROM Pakistan (PK exports)
-    pakistan    | SELL   | Foreigner sells TO Pakistan  (PK imports)
+    import      | BUY    | Foreign Suppliers
+    import      | SELL   | Pakistani Buyers
+    export      | BUY    | Pakistani Suppliers
+    export      | SELL   | Foreign Buyers
     ------------------------------------------------------------------
     """
     ctx = ui_context.lower()
     must: list[dict] = []
 
-    if ctx == "worldwide":
-        if intent == "BUY":
-            must.append({"term": {"trade_type": {"value": "IMPORT", "case_insensitive": True}}})
-        else:
-            must.append({"term": {"trade_type": {"value": "EXPORT", "case_insensitive": True}}})
-    elif ctx == "pakistan":
-        if intent == "BUY":
-            must.append({"term": {"trade_type": {"value": "EXPORT", "case_insensitive": True}}})
-        else:
-            must.append({"term": {"trade_type": {"value": "IMPORT", "case_insensitive": True}}})
+    if ctx == "import":
+        must.append({"term": {"trade_type": {"value": "IMPORT", "case_insensitive": True}}})
+    elif ctx == "export":
+        must.append({"term": {"trade_type": {"value": "EXPORT", "case_insensitive": True}}})
 
     country_filters = []
-    if ctx == "worldwide":
+    if ctx == "import":
         if intent == "BUY" and country:
             country_filters.append({"term": {"origin_country": {"value": country, "case_insensitive": True}}})
         elif intent == "SELL" and country:
             country_filters.append({"term": {"destination_country": {"value": country, "case_insensitive": True}}})
-    elif ctx == "pakistan":
-        if intent == "BUY":
-            country_filters.append({"term": {"origin_country": {"value": "Pakistan", "case_insensitive": True}}})
-            if country:
-                country_filters.append({"term": {"destination_country": {"value": country, "case_insensitive": True}}})
-        else:
-            country_filters.append({"term": {"destination_country": {"value": "Pakistan", "case_insensitive": True}}})
-            if country:
-                country_filters.append({"term": {"origin_country": {"value": country, "case_insensitive": True}}})
+    elif ctx == "export":
+        if intent == "BUY" and country:
+            country_filters.append({"term": {"origin_country": {"value": country, "case_insensitive": True}}})
+        elif intent == "SELL" and country:
+            country_filters.append({"term": {"destination_country": {"value": country, "case_insensitive": True}}})
 
     result = {}
     if must:
@@ -562,7 +552,7 @@ class ModernNLUEngine:
             return "BUY"
 
         # 3. Default
-        return "BUY"
+        return "UNKNOWN"
 
     # ------------------------------------------------------------------
     # Entity Extraction
@@ -587,7 +577,7 @@ class ModernNLUEngine:
     # Main public API
     # ------------------------------------------------------------------
 
-    def parse(self, query: str, ui_context: str = "worldwide") -> dict:
+    def parse(self, query: str, ui_context: str = "import") -> dict:
         """
         Full NLU parse — 5-step pipeline.
 
@@ -685,29 +675,50 @@ class ModernNLUEngine:
         # ==================================================================
         # STEP 5 — Unified LLM Call (price + quantity + product fallback)
         # One API call extracts everything at once.
+        #
+        # SKIP LOGIC: We first try to extract prices using our robust regex.
+        # If the regex successfully finds a numeric range (or if there's no
+        # price complexity at all), we completely skip the 4s OpenRouter call.
         # ==================================================================
         t0 = time.perf_counter()
-        
-        # Confidence Gate: if KeyBERT is > 0.85 and no complex modifiers, skip LLM
-        has_numbers = bool(re.search(r'\d', query))
+
+        has_numbers        = bool(re.search(r'\d', query))
         has_price_operator = _detect_price_operator(query)
-        ranking_word_hit = any(w in query.lower() for w in {"cheap", "cheapest", "bulk", "premium", "affordable", "best price", "low price", "reliable"})
+        ranking_word_hit   = any(
+            w in query.lower()
+            for w in {"cheap", "cheapest", "bulk", "premium", "affordable",
+                      "best price", "low price", "reliable"}
+        )
         
-        if keybert_confidence > 0.85 and not has_numbers and not has_price_operator and not ranking_word_hit:
-            logger.warning(f"[NLU] Skipping LLM call (KeyBERT confidence {keybert_confidence:.2f} > 0.85, no complex entities)")
+        needs_llm = (has_numbers and has_price_operator) or (has_numbers and ranking_word_hit)
+        
+        # 1. Try our fast regex first
+        regex_price = _build_price_filter_regex(query)
+        if regex_price and "range" in regex_price:
+            # The regex perfectly extracted the numeric price! No LLM needed.
+            needs_llm = False
+
+        price_filter = None
+        
+        if not needs_llm:
+            logger.warning(
+                f"[NLU] Skipping LLM — price handled by regex or not present "
+                f"(kb_conf={keybert_confidence:.2f})"
+            )
             import copy
-            llm_result = copy.deepcopy(_LLM_UNIFIED_EMPTY)
+            llm_result  = copy.deepcopy(_LLM_UNIFIED_EMPTY)
+            price_filter = regex_price # Use the fully built regex price filter
         else:
-            llm_result   = _call_llm_unified(query)
+            llm_result = _call_llm_unified(query)
             logger.warning(f"[TIMING NLU] OpenRouter API call: {time.perf_counter() - t0:.3f}s")
-            
-        price_filter = _price_filter_from_llm(llm_result)
+            price_filter = _price_filter_from_llm(llm_result)
+
         quantity     = llm_result.get("quantity")
         llm_product  = llm_result.get("product")
 
         logger.debug(
             f"[NLU] Step5(llm) product={llm_product!r} "
-            f"price={llm_result.get('price')} quantity={quantity!r}"
+            f"price_filter={price_filter} quantity={quantity!r}"
         )
 
         # If KeyBERT returned nothing, use the LLM product
@@ -750,7 +761,7 @@ class ModernNLUEngine:
         return result
 
     # Alias used by some views
-    def get_search_filters(self, query: str, ui_context: str = "worldwide") -> dict:
+    def get_search_filters(self, query: str, ui_context: str = "import") -> dict:
         return self.parse(query, ui_context=ui_context)
 
     # ------------------------------------------------------------------
@@ -865,12 +876,12 @@ def verify_nlu_performance():
     Run directly: python -m search.services.nlu_engine
     """
     test_queries = [
-        ("i want to buy dextrose anhydrous", "worldwide"),
-        ("find buyers for basmati rice",     "worldwide"),
-        ("I WANT TO SELL fruc",              "worldwide"),
-        ("sugar under $500",                 "pakistan"),
-        ("dex",                              "worldwide"),
-        ("looking for buyers of urea 46%",   "worldwide"),
+        ("i want to buy dextrose anhydrous", "import"),
+        ("find buyers for basmati rice",     "import"),
+        ("I WANT TO SELL fruc",              "import"),
+        ("sugar under $500",                 "export"),
+        ("dex",                              "import"),
+        ("looking for buyers of urea 46%",   "import"),
     ]
 
     print("\n" + "=" * 65)

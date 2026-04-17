@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, UserAlertPreference
+from .models import User
 
 
 @admin.register(User)
@@ -54,9 +54,3 @@ class UserAdmin(BaseUserAdmin):
         self.message_user(request, f'Verified {queryset.count()} users.')
 
 
-@admin.register(UserAlertPreference)
-class UserAlertPreferenceAdmin(admin.ModelAdmin):
-    list_display = ('user', 'notify_email', 'notify_in_app', 'frequency', 'updated_at')
-    list_filter = ('notify_email', 'notify_in_app', 'frequency')
-    search_fields = ('user__email',)
-    readonly_fields = ('updated_at',)

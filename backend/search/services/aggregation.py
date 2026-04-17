@@ -32,31 +32,73 @@ class SupplierAggregator:
         scope = scope or 'WORLDWIDE'
         
         # Intent & Scope Logic
-        if intent == 'SELL':
-            # User wants to SELL
-            if scope == 'PAKISTAN':
-                target_field = 'buyer'
-                country_field = 'destination_country'
-                queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
-            else:
-                # WORLDWIDE: Pakistani seller exporting to world
-                target_field = 'buyer'
-                country_field = 'destination_country'
-                # Exclude domestic transactions that misreport as export
-                queryset = queryset.filter(trade_type='EXPORT').exclude(destination_country='Pakistan')
-                
-        else:
-            # User wants to BUY
-            if scope == 'PAKISTAN':
+        if intent == 'UNKNOWN':
+            # No trade direction signal — return ALL companies across both import/export
+            # Sellers from import records + Buyers from export records
+            import_qs = queryset.filter(trade_type='IMPORT')
+            export_qs = queryset.filter(trade_type='EXPORT')
+
+            def _agg(qs, field, country_field, label):
+                rows = qs.values(field, country_field).annotate(
+                    total_volume=Sum('qty_mt'),
+                    weighted_price_sum=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField())),
+                    shipment_count=Count('tx_reference', distinct=True),
+                    last_shipment_date=Max('reporting_date'),
+                    max_shipment_vol=Max('qty_mt'),
+                    avg_shipment_vol=Avg('qty_mt')
+                ).order_by('-total_volume')
+                results = []
+                for r in rows:
+                    tv = float(r['total_volume'] or 0)
+                    wps = float(r.get('weighted_price_sum') or 0)
+                    avg_price = round(wps / tv, 2) if tv > 0 else 0.0
+                    name = r.get(field) or ''
+                    if not name:
+                        continue
+                    results.append({
+                        'name': name,
+                        'country': r[country_field],
+                        'total_volume': tv,
+                        'avg_price': avg_price,
+                        'shipment_count': r['shipment_count'],
+                        'last_shipment_date': r['last_shipment_date'],
+                        'max_shipment_vol': float(r['max_shipment_vol'] or 0),
+                        'avg_shipment_vol': float(r['avg_shipment_vol'] or 0),
+                        'type': label,
+                        'volume_score': None,
+                        'volume_fit': 'N/A',
+                    })
+                return results
+
+            sellers  = _agg(import_qs, 'seller', 'origin_country', 'Supplier')
+            buyers   = _agg(export_qs, 'buyer',  'destination_country', 'Buyer')
+            combined = sellers + buyers
+            combined.sort(key=lambda x: x['total_volume'], reverse=True)
+            return combined
+
+        elif scope == 'IMPORT':
+            # Looking at IMPORT Data (Origin is foreign, destination is Pakistan)
+            queryset = queryset.filter(trade_type='IMPORT')
+            if intent == 'BUY':
+                # Import + Buy -> Foreign Suppliers
                 target_field = 'seller'
                 country_field = 'origin_country'
-                queryset = queryset.filter(trade_type='EXPORT', origin_country='Pakistan')
             else:
-                # WORLDWIDE: Pakistani buyer importing from world
+                # Import + Sell -> Pakistani Buyers
+                target_field = 'buyer'
+                country_field = 'destination_country'
+
+        else: # scope == 'EXPORT'
+            # Looking at EXPORT Data (Origin is Pakistan, destination is foreign)
+            queryset = queryset.filter(trade_type='EXPORT')
+            if intent == 'SELL':
+                # Export + Sell -> Foreign Buyers
+                target_field = 'buyer'
+                country_field = 'destination_country'
+            else:
+                # Export + Buy -> Pakistani Suppliers
                 target_field = 'seller'
                 country_field = 'origin_country'
-                # Exclude domestic transactions that misreport as import
-                queryset = queryset.filter(trade_type='IMPORT').exclude(origin_country='Pakistan')
 
         # Apply Filters
         if country_filter and len(country_filter) > 0:

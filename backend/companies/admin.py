@@ -2,7 +2,7 @@ from django.contrib import admin
 from django_ckeditor_5.widgets import CKEditor5Widget
 from django import forms
 from .models import (
-    Sector, CompanyRole, CompanyType, Image, Company, 
+    Sector, CompanyRole, CompanyType, Company, 
     CompanyProduct, KeyContact, KeyContactUnlock
 )
 
@@ -133,4 +133,3 @@ class KeyContactUnlockAdmin(admin.ModelAdmin):
 
 
 
-admin.site.register(Image)

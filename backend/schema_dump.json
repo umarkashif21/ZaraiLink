@@ -1,0 +1,1726 @@
+{
+  "User": {
+    "app": "accounts",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "password",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "last_login",
+        "type": "DateTimeField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "is_superuser",
+        "type": "BooleanField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "first_name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "last_name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "is_staff",
+        "type": "BooleanField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "is_active",
+        "type": "BooleanField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "date_joined",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "email",
+        "type": "EmailField",
+        "null": false,
+        "primary_key": false,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "username",
+        "type": "CharField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "bio",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "country",
+        "type": "CharField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "email_verified",
+        "type": "BooleanField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "verification_token",
+        "type": "UUIDField",
+        "null": false,
+        "primary_key": false,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "token_created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "phone_number",
+        "type": "CharField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "job_title",
+        "type": "CharField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "token_balance",
+        "type": "IntegerField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "groups",
+        "type": "ManyToManyField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "Group"
+      },
+      {
+        "name": "user_permissions",
+        "type": "ManyToManyField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "Permission"
+      }
+    ],
+    "rels": [
+      "One-to-Many with LogEntry",
+      "One-to-Many with UserSubscription",
+      "One-to-Many with TokenPurchase",
+      "One-to-Many with RedeemCode",
+      "One-to-Many with KeyContactUnlock",
+      "Many-to-Many with Group",
+      "Many-to-Many with Permission"
+    ],
+    "desc": "User(id, password, last_login, is_superuser, first_name, last_name, is_staff, is_active, date_joined, email, username, bio, country, email_verified, verification_token, token_created_at, phone_number, job_title, token_balance)"
+  },
+  "SubscriptionPlan": {
+    "app": "subscriptions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "plan_name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "price",
+        "type": "DecimalField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "currency",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "tokens_included",
+        "type": "IntegerField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "description",
+        "type": "TextField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "features",
+        "type": "JSONField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with UserSubscription",
+      "One-to-Many with TokenPurchase",
+      "One-to-Many with RedeemCode"
+    ],
+    "desc": "Subscription plan tiers with pricing and token allocations"
+  },
+  "UserSubscription": {
+    "app": "subscriptions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "user",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "User"
+      },
+      {
+        "name": "plan",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "SubscriptionPlan"
+      },
+      {
+        "name": "status",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "start_date",
+        "type": "DateField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "end_date",
+        "type": "DateField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "billing_cycle",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "Many-to-One with User",
+      "Many-to-One with SubscriptionPlan"
+    ],
+    "desc": "User's active subscription"
+  },
+  "TokenPurchase": {
+    "app": "subscriptions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "user",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "User"
+      },
+      {
+        "name": "plan",
+        "type": "ForeignKey",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "SubscriptionPlan"
+      },
+      {
+        "name": "tokens_purchased",
+        "type": "IntegerField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "price",
+        "type": "DecimalField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "currency",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "payment_provider",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "payment_reference",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "purchased_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "Many-to-One with User",
+      "Many-to-One with SubscriptionPlan"
+    ],
+    "desc": "Standalone token purchases (beyond subscription)"
+  },
+  "RedeemCode": {
+    "app": "subscriptions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "code",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "plan",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "SubscriptionPlan"
+      },
+      {
+        "name": "status",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "redeemed_by",
+        "type": "ForeignKey",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "User"
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "redeemed_at",
+        "type": "DateTimeField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "expires_at",
+        "type": "DateTimeField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "Many-to-One with SubscriptionPlan",
+      "Many-to-One with User"
+    ],
+    "desc": "Redeemable codes for subscription plans\nReplaces payment processing for MVP/testing"
+  },
+  "Sector": {
+    "app": "companies",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "description",
+        "type": "TextField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with Company"
+    ],
+    "desc": "Product categories/sectors (e.g., Rice, Wheat, Cotton)"
+  },
+  "CompanyRole": {
+    "app": "companies",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "description",
+        "type": "TextField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with Company"
+    ],
+    "desc": "Company's role in trade (Supplier, Buyer, etc.)"
+  },
+  "CompanyType": {
+    "app": "companies",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "description",
+        "type": "TextField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with Company"
+    ],
+    "desc": "Legal/structural company classification"
+  },
+  "Company": {
+    "app": "companies",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "legal_name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "description",
+        "type": "TextField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "country",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "province",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "district",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "address",
+        "type": "TextField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "market_sentiment",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "website",
+        "type": "URLField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "contact_email",
+        "type": "EmailField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "phone",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "year_established",
+        "type": "IntegerField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "number_of_employees",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "horeca_retail_info",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "verification_status",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "ntn_number",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "trade_license_number",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "sector",
+        "type": "ForeignKey",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "Sector"
+      },
+      {
+        "name": "company_role",
+        "type": "ForeignKey",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "CompanyRole"
+      },
+      {
+        "name": "company_type",
+        "type": "ForeignKey",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "CompanyType"
+      },
+      {
+        "name": "has_trade_data",
+        "type": "BooleanField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "is_directory_profile",
+        "type": "BooleanField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with CompanyProduct",
+      "One-to-Many with KeyContact",
+      "Many-to-One with Sector",
+      "Many-to-One with CompanyRole",
+      "Many-to-One with CompanyType"
+    ],
+    "desc": "Core company profile in trade directory"
+  },
+  "CompanyProduct": {
+    "app": "companies",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "company",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "Company"
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "description",
+        "type": "TextField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "variety",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "value_added",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "hsn_code",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "Many-to-One with Company"
+    ],
+    "desc": "Products/commodities offered by companies"
+  },
+  "KeyContact": {
+    "app": "companies",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "company",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "Company"
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "designation",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "phone",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "whatsapp",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "email",
+        "type": "EmailField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "is_public",
+        "type": "BooleanField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with KeyContactUnlock",
+      "Many-to-One with Company"
+    ],
+    "desc": "Private contact information for companies"
+  },
+  "KeyContactUnlock": {
+    "app": "companies",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "user",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "User"
+      },
+      {
+        "name": "key_contact",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "KeyContact"
+      },
+      {
+        "name": "unlocked_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "Many-to-One with User",
+      "Many-to-One with KeyContact"
+    ],
+    "desc": "Track which users unlocked which contacts"
+  },
+  "HsToProductMap": {
+    "app": "trade_data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "hs_code",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "product_name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "notes",
+        "type": "TextField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [],
+    "desc": "HsToProductMap(id, hs_code, product_name, notes, updated_at)"
+  },
+  "Product": {
+    "app": "trade_data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "hs_code",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": true,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with ProductCategory"
+    ],
+    "desc": "Product(id, name, hs_code)"
+  },
+  "ProductCategory": {
+    "app": "trade_data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "product",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "Product"
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "hs_code",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": true,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with ProductSubCategory",
+      "Many-to-One with Product"
+    ],
+    "desc": "ProductCategory(id, product, name, hs_code)"
+  },
+  "ProductSubCategory": {
+    "app": "trade_data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "category",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "ProductCategory"
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "hs_code",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with ProductItem",
+      "Many-to-One with ProductCategory"
+    ],
+    "desc": "ProductSubCategory(id, category, name, hs_code)"
+  },
+  "ProductItem": {
+    "app": "trade_data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "sub_category",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "ProductSubCategory"
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with Transaction",
+      "One-to-Many with ProductEmbedding",
+      "Many-to-One with ProductSubCategory"
+    ],
+    "desc": "ProductItem(id, sub_category, name)"
+  },
+  "Transaction": {
+    "app": "trade_data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "source_file",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "tx_reference",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "reporting_date",
+        "type": "DateField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "trade_type",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "hs_code",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "product_item",
+        "type": "ForeignKey",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "ProductItem"
+      },
+      {
+        "name": "buyer",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "seller",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "shipping_agent",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "origin_country",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "destination_country",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "qty_kg",
+        "type": "DecimalField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "qty_mt",
+        "type": "DecimalField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "usd_per_kg",
+        "type": "DecimalField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "usd_per_mt",
+        "type": "DecimalField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "pkr",
+        "type": "DecimalField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "usd",
+        "type": "DecimalField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "std_unit",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "ingested_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "Many-to-One with ProductItem"
+    ],
+    "desc": "Unified Import/Export Transaction Records"
+  },
+  "CompanyEmbedding": {
+    "app": "trade_data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "company_name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "embedding",
+        "type": "JSONField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "cluster_tag",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "pagerank",
+        "type": "FloatField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "degree",
+        "type": "IntegerField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [],
+    "desc": "CompanyEmbedding(id, company_name, embedding, cluster_tag, pagerank, degree, created_at)"
+  },
+  "ProductEmbedding": {
+    "app": "trade_data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "product_item",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "ProductItem"
+      },
+      {
+        "name": "embedding",
+        "type": "JSONField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "cluster_tag",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "Many-to-One with ProductItem"
+    ],
+    "desc": "ProductEmbedding(id, product_item, embedding, cluster_tag, created_at)"
+  },
+  "TradeLensProduct": {
+    "app": "trade_lens",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "hs_code",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "category",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "image_url",
+        "type": "URLField",
+        "null": true,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "description",
+        "type": "TextField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "One-to-Many with TradeLensTransaction"
+    ],
+    "desc": "Products available in Trade Lens dashboard - Isolated for easy deletion"
+  },
+  "TradeLensTransaction": {
+    "app": "trade_lens",
+    "fields": [
+      {
+        "name": "id",
+        "type": "BigAutoField",
+        "null": false,
+        "primary_key": true,
+        "unique": true,
+        "is_fk": false
+      },
+      {
+        "name": "product",
+        "type": "ForeignKey",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": true,
+        "related": "TradeLensProduct"
+      },
+      {
+        "name": "trade_date",
+        "type": "DateField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "price_usd",
+        "type": "DecimalField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "quantity_mt",
+        "type": "DecimalField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "total_value_usd",
+        "type": "DecimalField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "buyer_name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "seller_name",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "buyer_country",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "seller_country",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "port",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "province",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "trade_type",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "hs_code",
+        "type": "CharField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DateTimeField",
+        "null": false,
+        "primary_key": false,
+        "unique": false,
+        "is_fk": false
+      }
+    ],
+    "rels": [
+      "Many-to-One with TradeLensProduct"
+    ],
+    "desc": "Isolated dummy transaction data for Trade Lens visualizations"
+  }
+}

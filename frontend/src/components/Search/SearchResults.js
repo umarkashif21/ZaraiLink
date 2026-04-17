@@ -4,35 +4,62 @@ import { Filter, BarChart2, Package, ChevronRight, AlertCircle } from 'lucide-re
 import Navbar from '../Layout/Navbar';
 import '../Dashboard/Dashboard.css';
 import searchService from '../../services/searchService';
+import SummaryView from './SummaryView';
+import DataDashboard from './DataDashboard';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 const SearchResults = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const queryParams = new URLSearchParams(location.search);
-    const initialQuery = queryParams.get('q') || '';
-    const initialScope = queryParams.get('scope') || 'WORLDWIDE';
-    const initialHsCode = queryParams.get('hs_code') || null;
-    const initialSubcatId = queryParams.get('subcat_id') || null;  // Exact DB subcategory id
-    const initialVariantName = queryParams.get('variant_name') || null; // Exact product name
 
-    const [query, setQuery] = useState(initialQuery);
-    const [scope, setScope] = useState(initialScope);
-    const [hsCode, setHsCode] = useState(initialHsCode);
-    const [subcatId, setSubcatId] = useState(initialSubcatId);
-    const [variantName, setVariantName] = useState(initialVariantName);
+    // Derive everything from location.search so drill-down navigation works correctly.
+    // We re-read these on every render (location changes on every navigation).
+    const getParams = () => new URLSearchParams(location.search);
+    const _p = getParams();
+    const initialQuery      = _p.get('q') || '';
+    const initialScope      = _p.get('scope') || null;            // null = no scope (HS code mode)
+    const initialHsCode     = _p.get('hs_code') || null;
+    const initialSubcatId   = _p.get('subcat_id') || null;
+    const initialVariantName = _p.get('variant_name') || null;
+    const initialIntent     = _p.get('intent') || null;
+    const isDashboardMode   = _p.get('mode') === 'dashboard'; // Forced by SummaryView "View Trade Data" click
+
+    const [query, setQuery]               = useState(initialQuery);
+    const [inputValue, setInputValue]     = useState(initialQuery); // Local draft — does NOT trigger search
+    const [scope, setScope]               = useState(initialScope);
+    const [hsCode, setHsCode]             = useState(initialHsCode);
+    const [subcatId, setSubcatId]         = useState(initialSubcatId);
+    const [variantName, setVariantName]   = useState(initialVariantName);
+    const [overrideIntent, setOverrideIntent] = useState(initialIntent);
+
+    // KEY FIX: sync state from URL whenever the user navigates (e.g. drill-down click)
+    useEffect(() => {
+        const p = new URLSearchParams(location.search);
+        const newQuery = p.get('q') || '';
+        setQuery(newQuery);
+        setInputValue(newQuery); // Keep the search bar in sync with URL navigations
+        setScope(p.get('scope') || null);
+        setHsCode(p.get('hs_code') || null);
+        setSubcatId(p.get('subcat_id') || null);
+        setVariantName(p.get('variant_name') || null);
+        setOverrideIntent(p.get('intent') || null);
+    }, [location.search]);
+
+    // Strict check: true if no scope is selected (dedicated HS/Category mode), 
+    // OR if it's purely digits/dots, OR if it's an exact category bridge match.
+    const isRawHsCodeMode = (!scope || scope === 'null') || (query && hsCode && query === hsCode) || (query ? /^[\d.]+$/.test(query) : false);
 
     const [sortBy, setSortBy] = useState('relevance');
 
-    const [priceMin, setPriceMin] = useState(queryParams.get('price_min') || '');
-    const [priceMax, setPriceMax] = useState(queryParams.get('price_max') || '');
-    const [volumeMin, setVolumeMin] = useState(queryParams.get('volume_min') || '');
+    const [priceMin, setPriceMin] = useState(_p.get('price_min') || '');
+    const [priceMax, setPriceMax] = useState(_p.get('price_max') || '');
+    const [volumeMin, setVolumeMin] = useState(_p.get('volume_min') || '');
 
-    const [tempCountry, setTempCountry] = useState(queryParams.get('country') || '');
-    const [tempPriceMin, setTempPriceMin] = useState(queryParams.get('price_min') || '');
-    const [tempPriceMax, setTempPriceMax] = useState(queryParams.get('price_max') || '');
-    const [tempVolumeMin, setTempVolumeMin] = useState(queryParams.get('volume_min') || '');
+    const [tempCountry, setTempCountry] = useState(_p.get('country') || '');
+    const [tempPriceMin, setTempPriceMin] = useState(_p.get('price_min') || '');
+    const [tempPriceMax, setTempPriceMax] = useState(_p.get('price_max') || '');
+    const [tempVolumeMin, setTempVolumeMin] = useState(_p.get('volume_min') || '');
 
     const [results, setResults] = useState([]);
     const [marketSnapshot, setMarketSnapshot] = useState(null);
@@ -43,6 +70,8 @@ const SearchResults = () => {
     const [isBroadSearch, setIsBroadSearch] = useState(false);
     const [parsedQueryInfo, setParsedQueryInfo] = useState(null);
     const [variants, setVariants] = useState([]);
+    const [disambigPage, setDisambigPage] = useState(1);
+    const DISAMBIG_PAGE_SIZE = 12;
     const [availableCountries, setAvailableCountries] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState(null);
     const [searchEngine, setSearchEngine] = useState('');
@@ -63,24 +92,45 @@ const SearchResults = () => {
         });
     };
 
-    // ── Fetch results ──────────────────────────────────────────────────────
+    const handleRawTabClick = (newScope, newIntent) => {
+        setScope(newScope);
+        setOverrideIntent(newIntent);
+        
+        // Update URL
+        const params = new URLSearchParams(location.search);
+        params.set('scope', newScope);
+        params.set('intent', newIntent);
+        navigate(`/search/results?${params.toString()}`, { replace: true });
+    };
+
     const fetchResults = useCallback(async () => {
-        if (!query) return;
+        if (!query || isRawHsCodeMode) return;
         setLoading(true);
         setError(null);
         try {
-            const filters = { scope };
+            const filters = {};
+            // Only send scope for non-HS-code searches or when a pill tab was clicked
+            if (scope) filters.scope = scope;
             if (hsCode) filters.hs_code = hsCode;
-            if (subcatId) filters.subcat_id = subcatId;      // Exact subcategory DB id
-            if (variantName) filters.variant_name = variantName;   // Exact product name
+            if (subcatId) filters.subcat_id = subcatId;
+            if (variantName) filters.variant_name = variantName;
             if (selectedCountry) filters.country = selectedCountry;
+            if (overrideIntent) filters.intent = overrideIntent;
 
-            const data = await searchService.search(initialQuery, filters);
+            const data = await searchService.search(query, filters);
+
+            if (data.is_category_bridge) {
+                // Backend matched an exact category! Fast-track to HS Code navigation.
+                const params = new URLSearchParams({ q: data.hs_code, hs_code: data.hs_code });
+                navigate(`/search/results?${params.toString()}`, { replace: true });
+                return;
+            }
 
             if (data.needs_disambiguation) {
                 setNeedsDisambig(true);
                 setIsBroadSearch(false);
                 setVariants(data.variants || []);
+                setDisambigPage(1);  // reset to first page on new disambiguation
                 setResults([]);
                 setMarketSnapshot(null);
                 setParsedQueryInfo(data.parsed_query || null);
@@ -98,7 +148,17 @@ const SearchResults = () => {
                 setMarketSnapshot(data.market_snapshot);
                 setSearchEngine(data.search_engine || '');
                 if (data.parsed_query?.intent) {
-                    setParsedIntent(data.parsed_query.intent);
+                    // Only update parsedIntent if backend returns a definite intent
+                    // AND we don't already have overrideIntent or explicit intent
+                    const backendIntent = data.parsed_query.intent;
+                    if (backendIntent && backendIntent !== 'UNKNOWN') {
+                        setParsedIntent(backendIntent);
+                    } else {
+                        setParsedIntent('UNKNOWN');
+                    }
+                } else if (!overrideIntent) {
+                    // No backend intent and no override — stay UNKNOWN to show pills
+                    setParsedIntent('UNKNOWN');
                 }
                 const countries = [
                     ...new Set((data.results || []).map(s => s.country).filter(Boolean))
@@ -111,30 +171,45 @@ const SearchResults = () => {
         } finally {
             setLoading(false);
         }
-    }, [initialQuery, scope, hsCode, selectedCountry]);
+    }, [query, scope, hsCode, subcatId, variantName, selectedCountry, overrideIntent]);
 
     useEffect(() => {
-        const timer = setTimeout(fetchResults, initialQuery ? 100 : 0);
-        return () => clearTimeout(timer);
-    }, [fetchResults, initialQuery]);
+        fetchResults();
+    }, [fetchResults]);
 
     // ── When user picks a variant from the disambiguation panel ───────────
     const handleVariantPick = (variant) => {
-        // Send subcat_id, hs_code AND variant_name — backend uses these to find the exact subcategory
-        const queryParamsObj = { q: query, scope, hs_code: variant.hs_code, subcat_id: variant.id, variant_name: variant.name };
+        // Drill-down node (e.g. '1702') — navigate tree, don't go to results yet
+        if (variant.is_drill_down) {
+            const params = new URLSearchParams({ q: variant.hs_code, hs_code: variant.hs_code });
+            navigate(`/search/results?${params.toString()}`);
+            return;
+        }
 
-        // Preserve external country constraint from user selection OR from NLU extraction
+        // For HS code flows, do NOT send scope — the 4-tab pill UI handles direction.
+        const queryParamsObj = {
+            q: query,
+            hs_code: variant.hs_code,
+            subcat_id: variant.id,
+            variant_name: variant.name,
+        };
+
+        // Only carry scope for normal text searches
+        if (!isRawHsCodeMode && scope) {
+            queryParamsObj.scope = scope;
+        }
+
+        // Preserve external country constraint
         if (selectedCountry) {
             queryParamsObj.country = selectedCountry;
         } else if (parsedQueryInfo && parsedQueryInfo.country) {
             queryParamsObj.country = parsedQueryInfo.country;
-        } else if (queryParams.get('country')) {
-            queryParamsObj.country = queryParams.get('country');
+        } else if (_p.get('country')) {
+            queryParamsObj.country = _p.get('country');
         }
 
         const params = new URLSearchParams(queryParamsObj);
         navigate(`/search/results?${params.toString()}`);
-        // Update all three pieces of state so fetchResults re-runs with the right filters
         setHsCode(variant.hs_code);
         setSubcatId(String(variant.id));
         setVariantName(variant.name);
@@ -144,6 +219,8 @@ const SearchResults = () => {
     // ── New search from top bar ────────────────────────────────────────────
     const handleSearch = (e) => {
         e.preventDefault();
+        const trimmedInput = inputValue.trim();
+        if (!trimmedInput) return; // Don't search on empty input
         setSelectedCountry(null);
         setPriceMin('');
         setPriceMax('');
@@ -155,7 +232,15 @@ const SearchResults = () => {
         setHsCode(null);
         setSubcatId(null);      // Clear variant pin from previous disambiguation click
         setVariantName(null);   // Clear variant name pin from previous disambiguation click
-        navigate(`/search/results?q=${encodeURIComponent(query)}&scope=${scope}`);
+        setOverrideIntent(null);
+        
+        const params = new URLSearchParams();
+        params.set('q', trimmedInput);
+        if (scope && scope !== 'null') {
+            params.set('scope', scope);
+        }
+        navigate(`/search/results?${params.toString()}`);
+        // Note: setQuery will be synced via the location.search useEffect above
     };
 
     const applyFilters = () => {
@@ -177,7 +262,15 @@ const SearchResults = () => {
     };
 
     // ── Entity type label ──────────────────────────────────────────────────
-    const entityLabel = parsedIntent === 'SELL' ? 'Buyers' : 'Suppliers';
+    const activeIntent = overrideIntent || parsedIntent;
+    
+    // Only show pills if scope is missing, OR if the intent couldn't be detected (UNKNOWN).
+    // If we have both a valid scope and a known intent, hide the pills.
+    const showPills = !scope || scope === 'null' || activeIntent === 'UNKNOWN';
+    
+    const entityLabel = activeIntent === 'SELL' ? 'Buyers'
+        : activeIntent === 'UNKNOWN' ? 'Suppliers & Buyers'
+        : 'Suppliers';
 
     // ── Local Frontend Filtering & Sorting ─────────────────────────────────
     let sortedResults = results.filter((r) => {
@@ -202,6 +295,23 @@ const SearchResults = () => {
         }
     }, [priceMin, priceMax, results.length, sortedResults.length]);
 
+    // ── HS Code Dual-Track Routing ─────────────────────────────────────────
+    // Leaf HS codes in our DB are always 7 raw digits (e.g. 1701.991 = 1701991).
+    // Anything with fewer than 7 digits — even if it has a dot (e.g. 1704.9 = 5 digits)
+    // — is still a navigational parent and should show SummaryView.
+    if (isRawHsCodeMode) {
+        const queryDigits = (hsCode || query).replace(/\./g, '');
+        const isNumeric = /^\d+$/.test(queryDigits);
+        
+        if (isDashboardMode || (isNumeric && queryDigits.length >= 7)) {
+            // Leaf numeric code OR forced dashboard mode → go straight to DataDashboard
+            return <DataDashboard />;
+        } else if (queryDigits.length > 0) {
+            // Still navigating (short numeric code or an alphabet category name like "Other")
+            return <SummaryView />;
+        }
+    }
+
     return (
         <div className="dashboard-wrapper">
             <Navbar />
@@ -212,8 +322,8 @@ const SearchResults = () => {
                     <form onSubmit={handleSearch} className="w-full relative">
                         <input
                             type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
                             className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-gray-200 focus:border-emerald-500 focus:ring-0 transition-all font-medium text-gray-700 placeholder-gray-400"
                             placeholder="Search again..."
                             style={{ fontSize: '1rem' }}
@@ -328,9 +438,11 @@ const SearchResults = () => {
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {variants.map((v) => (
+                                {variants
+                                    .slice((disambigPage - 1) * DISAMBIG_PAGE_SIZE, disambigPage * DISAMBIG_PAGE_SIZE)
+                                    .map((v) => (
                                     <button
-                                        key={v.id}
+                                        key={v.hs_code + (v.id || 'drill')}
                                         onClick={() => handleVariantPick(v)}
                                         className="text-left p-5 bg-white rounded-xl border-2 border-gray-100 hover:border-emerald-500 hover:shadow-md transition-all group"
                                         style={{ cursor: 'pointer' }}
@@ -344,14 +456,60 @@ const SearchResults = () => {
                                                     </span>
                                                 </div>
                                                 <div className="text-xs text-gray-400">
-                                                    {v.category} · HS {v.hs_code}
+                                                    {v.category ? `${v.category} · ` : ''}HS {v.hs_code}
                                                 </div>
                                             </div>
-                                            <ChevronRight size={16} className="text-gray-300 group-hover:text-emerald-500 flex-shrink-0 mt-1" />
+                                            <div className="flex flex-col items-end gap-1">
+                                                {v.is_drill_down && (
+                                                    <span className="text-xs font-bold text-indigo-500 bg-indigo-50 rounded-full px-2 py-0.5">Drill Down ›</span>
+                                                )}
+                                                <ChevronRight size={16} className="text-gray-300 group-hover:text-emerald-500 flex-shrink-0 mt-1" />
+                                            </div>
                                         </div>
                                     </button>
                                 ))}
                             </div>
+
+                            {/* Pagination Controls */}
+                            {variants.length > DISAMBIG_PAGE_SIZE && (
+                                <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+                                    <p className="text-sm text-gray-500">
+                                        Showing {((disambigPage - 1) * DISAMBIG_PAGE_SIZE) + 1}–{Math.min(disambigPage * DISAMBIG_PAGE_SIZE, variants.length)} of {variants.length} matches
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setDisambigPage(p => Math.max(1, p - 1))}
+                                            disabled={disambigPage === 1}
+                                            className="px-4 py-2 rounded-lg border-2 border-gray-200 text-sm font-bold text-gray-600 hover:border-emerald-500 hover:text-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                        >
+                                            ← Prev
+                                        </button>
+                                        {Array.from({ length: Math.ceil(variants.length / DISAMBIG_PAGE_SIZE) }, (_, i) => i + 1)
+                                            .filter(p => Math.abs(p - disambigPage) <= 2)
+                                            .map(p => (
+                                                <button
+                                                    key={p}
+                                                    onClick={() => setDisambigPage(p)}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                                        p === disambigPage
+                                                            ? 'bg-emerald-600 text-white border-2 border-emerald-600'
+                                                            : 'border-2 border-gray-200 text-gray-600 hover:border-emerald-500 hover:text-emerald-700'
+                                                    }`}
+                                                >
+                                                    {p}
+                                                </button>
+                                            ))
+                                        }
+                                        <button
+                                            onClick={() => setDisambigPage(p => Math.min(Math.ceil(variants.length / DISAMBIG_PAGE_SIZE), p + 1))}
+                                            disabled={disambigPage >= Math.ceil(variants.length / DISAMBIG_PAGE_SIZE)}
+                                            className="px-4 py-2 rounded-lg border-2 border-gray-200 text-sm font-bold text-gray-600 hover:border-emerald-500 hover:text-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                        >
+                                            Next →
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -359,12 +517,49 @@ const SearchResults = () => {
                     {!needsDisambig && !isBroadSearch && (
                         <div className="flex flex-col">
 
+                            {/* ── Tab Pill Buttons for Intent Mapping ──────────────── */}
+                            {showPills && (
+                                <div className="mb-6">
+                                    <h3 className="text-gray-500 font-bold uppercase tracking-wide text-xs mb-3">Select Trade Direction</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        <button
+                                            onClick={() => handleRawTabClick('IMPORT', 'BUY')}
+                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'IMPORT' && overrideIntent === 'BUY' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500 hover:text-indigo-600'}`}
+                                        >
+                                            Foreign Suppliers
+                                        </button>
+                                        <button
+                                            onClick={() => handleRawTabClick('EXPORT', 'SELL')}
+                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'EXPORT' && overrideIntent === 'SELL' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500 hover:text-indigo-600'}`}
+                                        >
+                                            Foreign Buyers
+                                        </button>
+                                        <button
+                                            onClick={() => handleRawTabClick('IMPORT', 'SELL')}
+                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'IMPORT' && overrideIntent === 'SELL' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500 hover:text-indigo-600'}`}
+                                        >
+                                            Pakistani Buyers
+                                        </button>
+                                        <button
+                                            onClick={() => handleRawTabClick('EXPORT', 'BUY')}
+                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'EXPORT' && overrideIntent === 'BUY' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500 hover:text-indigo-600'}`}
+                                        >
+                                            Pakistani Suppliers
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                                 <h2 className="text-2xl font-bold text-gray-800 font-primary">
-                                    {loading
-                                        ? 'Searching...'
-                                        : `${sortedResults.length} ${entityLabel} found for "${query}"`
-                                    }
+                                    {loading ? 'Searching...' : (() => {
+                                        if (activeIntent === 'UNKNOWN') {
+                                            const supplierCount = sortedResults.filter(r => r.type === 'Supplier').length;
+                                            const buyerCount = sortedResults.filter(r => r.type === 'Buyer').length;
+                                            return `${supplierCount} Suppliers & ${buyerCount} Buyers found for "${query}"`;
+                                        }
+                                        return `${sortedResults.length} ${entityLabel} found for "${query}"`;
+                                    })()}
                                 </h2>
 
                                 {!loading && !error && sortedResults.length > 0 && (
@@ -447,7 +642,7 @@ const SearchResults = () => {
 
                                         <div className="flex flex-col gap-3">
                                             <Link
-                                                to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scope)}${subcatId ? `&subcat_id=${encodeURIComponent(subcatId)}` : ''}${variantName ? `&variant_name=${encodeURIComponent(variantName)}` : ''}`}
+                                                to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scope)}${subcatId ? `&subcat_id=${encodeURIComponent(subcatId)}` : ''}${variantName ? `&variant_name=${encodeURIComponent(variantName)}` : ''}${overrideIntent ? `&intent=${encodeURIComponent(overrideIntent)}` : ''}`}
                                                 className="stat-action text-center"
                                                 style={{ textDecoration: 'none' }}
                                             >
@@ -491,7 +686,7 @@ const SearchResults = () => {
                                     </div>
                                     <div>
                                         <div className="text-xs text-gray-500 uppercase font-bold">
-                                            {parsedIntent === 'SELL' ? 'Top Destination' : 'Top Origin'}
+                                            {activeIntent === 'SELL' ? 'Top Destination' : 'Top Origin'}
                                         </div>
                                         <div className="text-lg font-bold text-gray-900">{marketSnapshot.top_country}</div>
                                     </div>

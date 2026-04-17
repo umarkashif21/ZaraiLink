@@ -28,7 +28,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('api/subscriptions/', include('subscriptions.urls')),
-    path('api/market-intel/', include('market_intel.urls')), 
     path('api/', include('companies.urls')),  
     path('api/', include('trade_ledger.urls')),  
     path('api/trade-lens/', include('trade_lens.urls')),
