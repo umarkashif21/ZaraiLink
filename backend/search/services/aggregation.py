@@ -75,8 +75,6 @@ class SupplierAggregator:
         # if even ONE of their shipments was above the ceiling, even if their average
         # price is well within the limit.  The correct semantic is supplier-level.
 
-        import logging; logging.getLogger(__name__).warning(f"[Aggregator] after country filter count={queryset.count()} | SQL={str(queryset.query)}")
-
         # Aggregate — NO hard volume filter at DB level
         results = queryset.values(target_field, country_field).annotate(
             total_volume=Sum('qty_mt'),
@@ -161,8 +159,6 @@ class SupplierAggregator:
         if volume_filter and volume_filter > 0:
             counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
             
-        import logging; logging.getLogger(__name__).warning(f"[Aggregator] after price filter supplier_count={len(results)}")
-        import logging; logging.getLogger(__name__).warning(f"[Aggregator] returning {len(counterparties)} suppliers")
         return counterparties
 
 
@@ -185,9 +181,6 @@ class SupplierAggregator:
         if product_item_filter:
             queryset = queryset.filter(product_item__id__in=product_item_filter)
 
-        if not queryset.exists():
-            return None
-
         # 1. High-level Stats
         stats = queryset.aggregate(
             total_volume=Sum('qty_mt'),
@@ -195,7 +188,11 @@ class SupplierAggregator:
             shipment_count=Count('id'),
             last_shipment_date=Max('reporting_date')
         )
-        
+
+        # No transactions found — return early without the extra .exists() query
+        if not stats['shipment_count']:
+            return None
+
         # 2. Sparklines (Monthly Aggregation)
         # Group by Month and calculate Avg Price & Total Volume
         monthly_data = queryset.annotate(
@@ -317,11 +314,6 @@ class SupplierAggregator:
         if product_item_filter:
             queryset = queryset.filter(product_item__id__in=product_item_filter)
 
-
-
-        if not queryset.exists():
-            return None
-
         # 1. High-level Stats (Purchasing)
         stats = queryset.aggregate(
             total_volume=Sum('qty_mt'),
@@ -329,7 +321,11 @@ class SupplierAggregator:
             shipment_count=Count('id'),
             last_shipment_date=Max('reporting_date')
         )
-        
+
+        # No transactions found — return early without the extra .exists() query
+        if not stats['shipment_count']:
+            return None
+
         # 2. Sparklines (Monthly Purchasing)
         monthly_data = queryset.annotate(
             month=TruncMonth('reporting_date')

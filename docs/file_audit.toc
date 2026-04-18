@@ -1,0 +1,62 @@
+\contentsline {section}{\numberline {1}Methodology}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Excluded directories}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}File counts}{4}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Backend — Search Engine (\texttt {backend/search/})}{5}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Package roots}{5}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Services layer}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Management commands}{6}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Tests}{6}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Migrations}{6}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Trained ML models}{6}{subsection.2.6}%
+\contentsline {section}{\numberline {3}Project Root}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Configuration and Docker}{7}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Documentation}{7}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Setup scripts}{7}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Data inputs at root}{7}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Python utility scripts at root}{8}{subsection.3.5}%
+\contentsline {section}{\numberline {4}Backend — Top-Level Files (\texttt {backend/*})}{9}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Live Django machinery}{9}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Data loaders and seed fixtures}{9}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}GraphML files}{10}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Binaries and cross-platform leftovers}{10}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}backend/ dev scripts — all DELETED}{10}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Stale debug output (.txt / .json / .log) — all DELETED}{10}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Backend sub-directories listed as folders}{10}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}utils/ — Utility package}{11}{subsection.4.8}%
+\contentsline {section}{\numberline {5}Other Top-Level Directories}{12}{section.5}%
+\contentsline {subsection}{\numberline {5.1}scripts/ — Tooling}{12}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Resources/ — SRS and documentation assets}{12}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}docs/ — Audit source}{12}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}.github/ — CI configuration}{13}{subsection.5.4}%
+\contentsline {section}{\numberline {6}Backend — Django Apps}{14}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Django project package (\texttt {backend/zarailink/})}{14}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}accounts/ — Authentication \& user management}{14}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}companies/ — Trade directory}{15}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}market\_intel/ — News \& recommendations}{17}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}subscriptions/ — Plans, tokens, redeem codes}{17}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.6}trade\_data/ — Transactions \& embeddings}{19}{subsection.6.6}%
+\contentsline {subsection}{\numberline {6.7}trade\_ledger/ — Trade intelligence APIs}{20}{subsection.6.7}%
+\contentsline {subsection}{\numberline {6.8}trade\_lens/ — Product analytics}{22}{subsection.6.8}%
+\contentsline {section}{\numberline {7}Frontend (\texttt {frontend/})}{24}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Frontend root (\texttt {frontend/})}{24}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}frontend/public/}{24}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}frontend/src/ — root files}{25}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}src/context/ — Global React contexts}{25}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}src/hooks/ — Utility hooks}{25}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}src/services/ — API layer}{26}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}src/utils/}{26}{subsection.7.7}%
+\contentsline {subsection}{\numberline {7.8}src/styles/}{27}{subsection.7.8}%
+\contentsline {subsection}{\numberline {7.9}src/components/Auth/ — Authentication screens}{27}{subsection.7.9}%
+\contentsline {subsection}{\numberline {7.10}src/components/Common/ — Design system}{27}{subsection.7.10}%
+\contentsline {subsection}{\numberline {7.11}src/components/Dashboard/ — Landing page}{29}{subsection.7.11}%
+\contentsline {subsection}{\numberline {7.12}src/components/Layout/ — App chrome}{29}{subsection.7.12}%
+\contentsline {subsection}{\numberline {7.13}src/components/Search/ — Search UI}{29}{subsection.7.13}%
+\contentsline {subsection}{\numberline {7.14}src/components/Subscriptions/}{30}{subsection.7.14}%
+\contentsline {subsection}{\numberline {7.15}src/components/TradeDirectory/}{30}{subsection.7.15}%
+\contentsline {subsection}{\numberline {7.16}src/components/TradeIntelligence/}{31}{subsection.7.16}%
+\contentsline {subsection}{\numberline {7.17}src/components/Watchlist/}{32}{subsection.7.17}%
+\contentsline {section}{\numberline {8}Key Findings \& Cleanup Recommendations}{33}{section.8}%
+\contentsline {subsection}{\numberline {8.1}What's broken but still sitting on disk}{33}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Quantified cleanup estimates}{33}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}What you must not delete}{33}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Note on counts}{33}{subsection.8.4}%

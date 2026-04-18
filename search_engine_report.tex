@@ -1,0 +1,1568 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Packages -----------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{tocloft}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{mdframed}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{soul}
+
+% --- Colours ------------------------------------------------------------
+\definecolor{zaraiGreen}{HTML}{059669}
+\definecolor{zaraiBlue}{HTML}{4F46E5}
+\definecolor{zaraiRed}{HTML}{DC2626}
+\definecolor{zaraiAmber}{HTML}{D97706}
+\definecolor{zaraiGray}{HTML}{374151}
+\definecolor{codeBg}{HTML}{F3F4F6}
+\definecolor{warningBg}{HTML}{FFFBEB}
+\definecolor{warningBorder}{HTML}{F59E0B}
+\definecolor{errorBg}{HTML}{FEF2F2}
+\definecolor{errorBorder}{HTML}{EF4444}
+\definecolor{okBg}{HTML}{ECFDF5}
+\definecolor{okBorder}{HTML}{10B981}
+
+% --- Hyperref setup ------------------------------------------------------
+\hypersetup{
+  colorlinks=true,
+  linkcolor=zaraiBlue,
+  urlcolor=zaraiGreen,
+  citecolor=zaraiGray,
+  pdfauthor={Zarailink FYP Team},
+  pdftitle={Zarailink Search Engine: Exhaustive Technical Assessment},
+}
+
+% --- Section formatting --------------------------------------------------
+\titleformat{\section}{\large\bfseries\color{zaraiGray}}{}{0em}{\thesection\quad}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{zaraiBlue}}{}{0em}{\thesubsection\quad}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{zaraiGreen}}{}{0em}{\thesubsubsection\quad}
+\titlespacing*{\section}{0pt}{1.5em}{0.6em}
+\titlespacing*{\subsection}{0pt}{1em}{0.4em}
+\titlespacing*{\subsubsection}{0pt}{0.8em}{0.3em}
+
+% --- Header / Footer -----------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{zaraiGray}\textit{Zarailink Search Engine --- Exhaustive Assessment}}
+\fancyhead[R]{\small\color{zaraiGray}\thepage}
+\fancyfoot[C]{\small\color{zaraiGray}Confidential --- FYP Internal Report}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% --- Code listings -------------------------------------------------------
+\lstset{
+  backgroundcolor=\color{codeBg},
+  basicstyle=\small\ttfamily\color{zaraiGray},
+  keywordstyle=\bfseries\color{zaraiBlue},
+  commentstyle=\itshape\color{gray},
+  stringstyle=\color{zaraiGreen},
+  numbers=none,
+  frame=none,
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=4,
+  showstringspaces=false,
+  xleftmargin=1em,
+  xrightmargin=1em,
+}
+
+% --- Custom environments -------------------------------------------------
+\newmdenv[
+  backgroundcolor=errorBg,
+  linecolor=errorBorder,
+  linewidth=1.5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innerleftmargin=12pt,
+  innerrightmargin=12pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  skipabove=6pt,
+  skipbelow=6pt,
+]{issueBox}
+
+\newmdenv[
+  backgroundcolor=warningBg,
+  linecolor=warningBorder,
+  linewidth=1.5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innerleftmargin=12pt,
+  innerrightmargin=12pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  skipabove=6pt,
+  skipbelow=6pt,
+]{warnBox}
+
+\newmdenv[
+  backgroundcolor=okBg,
+  linecolor=okBorder,
+  linewidth=1.5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innerleftmargin=12pt,
+  innerrightmargin=12pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  skipabove=6pt,
+  skipbelow=6pt,
+]{okBox}
+
+% --- Table cell colours ---------------------------------------------------
+\newcommand{\cellOK}[1]{\cellcolor{okBg}\textcolor{zaraiGreen}{\textbf{#1}}}
+\newcommand{\cellWarn}[1]{\cellcolor{warningBg}\textcolor{zaraiAmber}{\textbf{#1}}}
+\newcommand{\cellBad}[1]{\cellcolor{errorBg}\textcolor{zaraiRed}{\textbf{#1}}}
+
+% ------------------------------------------------------------------------
+\begin{document}
+
+% --- Title page ----------------------------------------------------------
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\Huge\bfseries\color{zaraiGray} Zarailink Search Engine}\\[0.5em]
+  {\Large\bfseries\color{zaraiBlue} Exhaustive Technical Assessment Report}\\[2em]
+  \rule{10cm}{0.8pt}\\[1.5em]
+  {\large\color{zaraiGray}
+    Covers every layer of the search pipeline: \\
+    NLU \textbullet{}  Product Resolution \textbullet{}  Aggregation \textbullet{}  Ranking \textbullet{}  Frontend \textbullet{}  \\
+    Worldwide/Pakistan Scope \textbullet{}  Edge Cases \textbullet{}  Bugs \textbullet{}  Gaps}\\[2em]
+  \rule{10cm}{0.4pt}\\[2em]
+  {\normalsize\color{gray}
+    Final Year Project --- 8th Semester\\
+    Zarailink: Pakistani Agricultural Trade Intelligence Platform\\[0.5em]
+    \textbf{Date:} April 17, 2026\\
+    \textbf{Classification:} Internal / Confidential
+  }
+  \vfill
+  \includegraphics[width=2.5cm]{example-image}\\[0.5em]
+  {\small\color{gray}\textit{(replace placeholder with Zarailink logo)}}
+\end{titlepage}
+
+% --- Table of Contents ---------------------------------------------------
+\tableofcontents
+\newpage
+
+% ========================================================================
+\section{Executive Summary}
+% ========================================================================
+
+The Zarailink search engine is a four-stage NLP pipeline built for B2B agricultural trade
+intelligence on Pakistani import/export data. After exhaustive review of every file in the
+search module --- \texttt{nlu\_engine.py} (941 lines), \texttt{search\_service.py} (790 lines),
+\texttt{aggregation.py} (625 lines), \texttt{views.py} (260 lines), and both frontend
+components --- the following verdict emerges:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Layer} & \textbf{Summary} & \textbf{Grade} \\
+\midrule
+Intent Detection & Works for explicit verbs; breaks on implicit phrasing and Urdu &\cellWarn{B-} \\
+Country Extraction & Handles ~20 countries; many countries silently undetected &\cellWarn{C+} \\
+Product Keyword Extraction & Stop-word strip works for simple queries; multi-word qualifiers break it &\cellWarn{C+} \\
+Product Resolution (Fuzzy Matching) & 4-pass system is solid; BUT full-keyword search before word decomposition hurts &\cellWarn{B} \\
+Scope / Worldwide/Pakistan & Correct architecture; UI metaphor is confusing without explanation &\cellWarn{B} \\
+Aggregation Query & Excellent --- correct semantics, proper weighted avg price &\cellOK{A-} \\
+Ranking Model & Heuristic only (LTR model deleted); weights are simplistic &\cellBad{C} \\
+Caching & Three-level cache is well-designed &\cellOK{A-} \\
+Frontend UI & Clean, functional; several state and filter logic bugs &\cellWarn{B-} \\
+Overall Search Quality & Handles 60-70\% of realistic queries correctly end-to-end &\cellWarn{C+} \\
+\bottomrule
+\end{tabularx}
+\caption{Layer-by-layer assessment grades}
+\end{table}
+
+\textbf{The single largest problem:} The LightGBM LTR ranking model referenced in the
+project documentation was \textit{deleted} (\texttt{ranking.py}, \texttt{ranking\_ltr.py}
+removed in a prior refactor). The active ranking is a purely heuristic min-max weighted
+composite with no learned signal whatsoever.
+
+\textbf{Second largest problem:} The NLU pipeline has critical blind spots on any query
+that doesn't use explicit English trade verbs --- non-English queries, casual phrasing,
+product qualifiers, company name searches, and HS code searches all fail silently.
+
+% ========================================================================
+\section{System Architecture Overview}
+% ========================================================================
+
+The search engine follows a strictly sequential pipeline. Every request through the
+\texttt{GET /api/search/?q=\ldots} endpoint passes through these stages:
+
+\begin{center}
+\begin{tabular}{ccccc}
+\textbf{Stage 1} & $\rightarrow$ & \textbf{Stage 2} & $\rightarrow$ & \textbf{Stage 3} \\
+NLU Parse & & Product Resolution & & ORM Aggregation \\
+\small(intent+keyword+country+price) & & \small(4-pass fuzzy match) & & \small(Django QuerySet) \\
+\end{tabular}
+
+\vspace{0.5em}
+$\downarrow$
+
+\begin{tabular}{c}
+\textbf{Stage 4} \\
+Ranking + Response \\
+\small(heuristic composite score)
+\end{tabular}
+\end{center}
+
+\vspace{1em}
+\textbf{Key design decisions:}
+\begin{itemize}
+  \item OpenSearch/BM25 path exists in code but is permanently \texttt{if False} disabled.
+  \item Three-level caching: NLU (24h), availability (1h), aggregation (1h).
+  \item Scope (Worldwide/Pakistan) is passed as a UI parameter that determines which
+        trade type (IMPORT/EXPORT) to query --- it is not inferred from the query itself.
+  \item The LTR model files exist at \texttt{search/models/lgbm\_ltr.txt} but the code
+        that loads and uses them (\texttt{ranking.py}, \texttt{ranking\_ltr.py}) was deleted.
+\end{itemize}
+
+% ========================================================================
+\section{Stage 1: NLU Engine --- Deep Analysis}
+% ========================================================================
+
+\subsection{Intent Detection}
+
+\subsubsection{What Works Correctly}
+
+Intent detection follows a four-level priority cascade defined in \texttt{nlu\_engine.py:549}:
+
+\begin{enumerate}
+  \item \textbf{Pattern rules} --- semantic reversal detection (e.g.\ \textit{"find sellers of X"} $\rightarrow$ BUY)
+  \item \textbf{SetFit ML model} --- if trained model exists at \texttt{search/models/intent\_model/}
+  \item \textbf{Regex keyword fallback} --- scans for explicit trade verbs
+  \item \textbf{Default: BUY}
+\end{enumerate}
+
+The pattern rules correctly handle the most confusing class of queries:
+
+\begin{lstlisting}[language=Python]
+# "looking for sellers of rice" $\rightarrow$ BUY (user wants to buy from those sellers)
+if re.search(r'\b(?:find|need|want|looking for)\s+(?:sellers?|suppliers?)\b', q):
+    return "BUY"
+
+# "find buyers of wheat" $\rightarrow$ SELL (user wants to sell to those buyers)
+if re.search(r'\b(?:find|need|want|looking for)\s+(?:buyers?|importers?)\b', q):
+    return "SELL"
+\end{lstlisting}
+
+The regex fallback correctly classifies explicit-verb queries: \textit{"i want to buy sugar"} $\rightarrow$ BUY, \textit{"sell wheat"} $\rightarrow$ SELL.
+
+\subsubsection{Intent Detection: Critical Failures}
+
+\begin{issueBox}
+\textbf{CRITICAL: Urdu and non-English queries are completely unhandled.}
+The intent patterns, stop-word lists, and regex are 100\% English. A user typing
+\textit{``cheeni kharidna''} (Urdu transliteration: buy sugar) gets intent=BUY by default
+--- but only by luck. No character or token is understood; the Urdu script query is
+noise to the entire pipeline. Arabic-script Urdu queries return 0 results every time.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: ``for sale'' phrasing returns wrong intent.}
+Query: \textit{"dextrose for sale"} \\
+Expected intent: SELL (user has product for sale). \\
+Actual: BUY (no sell verb matched; default is BUY). \\
+\texttt{"sale"} does not match the regex \texttt{sell\textbackslash w*} because ``sale'' $\neq$ ``sell+suffix''.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: Noun-phrase selling signals ignored.}
+Queries like \textit{"dextrose available"}, \textit{"sugar stock to offload"},
+\textit{"wheat inventory"}, \textit{"we have PVC resin"} all return BUY by default.
+None of these trigger the SELL regex.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: ``I am a supplier of X'' returns BUY.}
+The regex \texttt{supplier\textbackslash w*} maps to BUY (you are looking for a supplier).
+But \textit{"I am a supplier of rice"} means the user wants to SELL. The regex has no
+way to distinguish ``I am a supplier'' from ``I need a supplier.''
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: SetFit model presence is unverified at runtime.}
+The code silently falls back to regex if the model is missing. There is no health-check
+endpoint or admin indicator telling operators whether the ML model is active or not.
+\end{warnBox}
+
+\subsubsection{Intent Detection --- Query Coverage Matrix}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{Xcc}
+\toprule
+\textbf{Query Example} & \textbf{Expected} & \textbf{Actual} \\
+\midrule
+\textit{buy dextrose} & BUY & \cellOK{BUY} \\
+\textit{sell sugar} & SELL & \cellOK{SELL} \\
+\textit{find sellers of wheat} & BUY & \cellOK{BUY} \\
+\textit{find buyers for rice} & SELL & \cellOK{SELL} \\
+\textit{import urea from china} & BUY & \cellOK{BUY} \\
+\textit{export wheat to UAE} & SELL & \cellOK{SELL} \\
+\textit{dextrose anhydrous} (no verb) & BUY (default ok) & \cellOK{BUY} \\
+\textit{who sells PVC resin} & BUY & \cellOK{BUY} \\
+\textit{dextrose for sale} & SELL & \cellBad{BUY} \\
+\textit{I am a supplier of rice} & SELL & \cellBad{BUY} \\
+\textit{sugar available to export} & SELL & \cellOK{SELL} \\
+\textit{we have wheat in stock} & SELL & \cellBad{BUY} \\
+\textit{dextrose supplier needed} & BUY & \cellOK{BUY} \\
+\textit{Urdu-script query: ``buy sugar''} & BUY & \cellWarn{BUY (luck)} \\
+\textit{1702.3090} (HS code only) & BUY & \cellWarn{BUY (luck)} \\
+\textit{SEAWALL} (company name) & N/A & \cellBad{no results} \\
+\bottomrule
+\end{tabularx}
+\caption{Intent detection accuracy across query types}
+\end{table}
+
+\subsection{Product Keyword Extraction}
+
+\subsubsection{The Stop-Word Stripping Mechanism}
+
+The primary extraction method in \texttt{extract\_product\_keyword()} (line 84) performs:
+\begin{enumerate}
+  \item Regex strip of garbled intent verbs: \texttt{buy\textbackslash w*, sell\textbackslash w*, get\textbackslash w*, import\textbackslash w*\ldots}
+  \item Sequential removal of 40+ stop phrases from a hardcoded list
+  \item Price clause removal: \texttt{under \$700}, \texttt{above 500 usd}
+  \item Tokenization fallback for long leftover strings (trigram DB scoring)
+\end{enumerate}
+
+\subsubsection{What Works}
+
+\begin{okBox}
+Good: \textit{"i want to buy dextrose anhydrous"} $\rightarrow$ \textit{"dextrose anhydrous"} \\
+Good: \textit{"find sellers of basmati rice"} $\rightarrow$ \textit{"basmati rice"} \\
+Good: \textit{"sugar under \$500"} $\rightarrow$ \textit{"sugar"} \\
+Good: \textit{"buyyy deeeex cheap"} $\rightarrow$ regex strips garbled verbs $\rightarrow$ \textit{"deeeex cheap"} $\rightarrow$ trigram finds \textit{"Dextrose"}
+\end{okBox}
+
+\subsubsection{Product Keyword Extraction: Critical Failures}
+
+\begin{issueBox}
+\textbf{CRITICAL: Business qualifiers before product name break extraction.}
+\textit{"wholesale sugar"} $\rightarrow$ \textit{"wholesale sugar"} (not stripped; ``wholesale'' not in stop words). \\
+\textit{"organic wheat"} $\rightarrow$ \textit{"organic wheat"} (not stripped). \\
+These then fail prefix/contains DB match and must rely on trigram with keyword=\textit{"organic wheat"}.
+Trigram for \textit{"organic wheat"} vs DB entry \textit{"Wheat"}: partial match at $\approx$0.4 similarity. Might work,
+but is fragile --- one new product named \textit{"Organic Compound"} could outscore it.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{CRITICAL: No support for HS code as the search query.}
+If a user types \textit{"1702.3090"} or \textit{"17021990"}, the product keyword after
+stripping is the HS code itself. No DB lookup tries to match HS codes from the query
+string in the main NLU path. The HS code is only used when passed as a separate URL
+parameter (e.g.\ selected from autocomplete). Users who know HS codes get 0 results.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: Multi-product queries treated as a single keyword.}
+\textit{"sugar and wheat"} $\rightarrow$ \textit{"sugar and wheat"} (``and'' not stripped). \\
+The system cannot return results for two products simultaneously.
+Trigram for \textit{"sugar and wheat"} might find \textit{"Sugar"} at ~0.38 similarity, or nothing.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: Tokenization fallback picks wrong word for uncommon qualifiers.}
+Query: \textit{"best grade refined sugar"} \\
+After stripping ``best'': \textit{"grade refined sugar"} (3 words, not $>4$, so no tokenization fallback). \\
+DB lookup for \textit{"grade refined sugar"} fails prefix/contains; trigram similarity to \textit{"Sugar"}
+may pass but is unreliable.
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: KeyBERT confidence gate is too aggressive.}
+When KeyBERT confidence $>$ 0.85 with no numbers or price operators, the LLM call is
+entirely skipped. This means for a query like \textit{"premium dextrose anhydrous bulk"},
+KeyBERT extracts \textit{"dextrose anhydrous"} with high confidence. But \textit{"bulk"} is a
+ranking signal (\texttt{ranking\_hint=price\_desc}) that the regex price extractor does NOT
+catch by itself (the regex only detects number-based prices). The bulk ranking hint is
+in the LLM prompt but the regex has no ``bulk'' handler. So the supplier list is ranked
+by default weights, not bulk-preference weights, silently.
+\end{warnBox}
+
+\begin{issueBox}
+\textbf{BUG in confidence gate for ``bulk'' and similar signals:}
+In \texttt{nlu\_engine.py:728}:
+\begin{lstlisting}[language=Python]
+ranking_word_hit = any(w in query.lower() for w in {
+    "cheap", "cheapest", "bulk", "premium", "affordable", ...
+})
+\end{lstlisting}
+This variable is checked in the confidence gate condition. If \textit{"bulk"} is present,
+the LLM IS called --- good. But the \textit{regex fallback} (\texttt{\_build\_price\_filter\_regex})
+only handles price-number patterns and \textit{"cheap/affordable"} as ranking hints.
+\textit{"bulk"} is not in the regex's no-number ranking word list:
+\begin{lstlisting}[language=Python]
+price_ranking_words = {"cheap", "affordable", "budget", "cheapest",
+                       "low price", "best price", "inexpensive"}
+# NOTE: "bulk", "premium", "reliable" are MISSING
+\end{lstlisting}
+So if the LLM fails (timeout/API key missing), \textit{"bulk dextrose"} gets no
+\texttt{ranking\_hint} and uses default weights, silently degrading quality.
+\end{issueBox}
+
+\subsection{Country Extraction}
+
+\subsubsection{The Three-Layer Approach}
+
+Country extraction uses: (1) FALLBACK\_COUNTRIES dict (regex), (2) GLiNER NER,
+(3) RapidFuzz fuzzy matching. The regex dict is checked first.
+
+\subsubsection{Country Coverage Analysis}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{Xcc}
+\toprule
+\textbf{Query / Country} & \textbf{Expected} & \textbf{Extracted} \\
+\midrule
+\textit{sugar from china} & China & \cellOK{China} \\
+\textit{pak sugar supplier} & Pakistan & \cellOK{Pakistan} \\
+\textit{ksa import} & Saudi Arabia & \cellOK{Saudi Arabia} \\
+\textit{turk wheat} & Turkey & \cellOK{Turkey} \\
+\textit{uae dextrose} & UAE & \cellOK{UAE} \\
+\textit{bangladesh wheat} & Bangladesh & \cellBad{None (not in list)} \\
+\textit{myanmar rice} & Myanmar & \cellBad{None (not in list)} \\
+\textit{philippines coconut} & Philippines & \cellBad{None (not in list)} \\
+\textit{morocco phosphate} & Morocco & \cellBad{None (not in list)} \\
+\textit{hong kong} & Hong Kong & \cellBad{None (not in list)} \\
+\textit{taiwan sugar} & Taiwan & \cellBad{None (not in list)} \\
+\textit{russia wheat} & Russia & \cellBad{None (not in list)} \\
+\textit{netherlands chemicals} & Netherlands & \cellBad{None (not in list)} \\
+\textit{iranian sugar} & Iran & \cellWarn{Fuzzy may fail (``iranian'')} \\
+\textit{australia canola} & Australia & \cellOK{Australia (via RapidFuzz)} \\
+\bottomrule
+\end{tabularx}
+\caption{Country extraction accuracy across query types (None = country filter silently dropped)}
+\end{table}
+
+\begin{issueBox}
+\textbf{CRITICAL: STANDARD\_COUNTRIES list is only 27 countries.}
+Bangladesh, Philippines, Myanmar, Morocco, Hong Kong, Taiwan, Russia, Netherlands,
+Poland, Ukraine, Israel, Ethiopia, Ghana, and many more are completely undetected.
+If a user searches \textit{"bangladesh wheat supplier"}, the query is treated as if
+no country was specified --- country filter is silently dropped and ALL wheat suppliers
+appear, defeating the user's intent.
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: RapidFuzz score\_cutoff asymmetry.}
+The word-level RapidFuzz scan in \texttt{\_detect\_country\_fallback} uses score\_cutoff=85.0
+while the GLiNER-extracted string resolver uses 60.0. This means a direct word like
+\textit{"germany"} must score $\geq$85 to be accepted (it will), but
+\textit{"germani"} (typo) scores $\approx$78 and is rejected at the word level.
+The GLiNER path would catch it at 60.0, but GLiNER may not extract it as a ``country''
+entity at all for a misspelling.
+\end{warnBox}
+
+\subsubsection{Country Extraction Edge Cases}
+
+\begin{warnBox}
+\textbf{False-positive risk:} \textit{"jordan almonds"} --- \textit{"jordan"} has no entry in
+FALLBACK\_COUNTRIES but passes as word to RapidFuzz. WRatio("jordan", "South Korea")$\approx$40,
+("jordan", "Jordan")? Jordan is NOT in STANDARD\_COUNTRIES. So it would correctly fail.
+But \textit{"iran"} IS in FALLBACK\_COUNTRIES as ``Iran'' while \textit{"Iranian"} is not.
+The word-level check would test \textit{"iranian"} against RapidFuzz and score against
+\textit{"India"} at WRatio$\approx$55 (below 85 cutoff) --- so it correctly fails. Good.
+But if GLiNER extracts \textit{"Iranian"} as a country and it goes to \_resolve\_country,
+fuzzy against \textit{"India"} at 60 cutoff... WRatio("iranian","india")$\approx$47, OK.
+Against \textit{"Iran"}: Iran is NOT in STANDARD\_COUNTRIES list either. Iran is missing entirely.
+\end{warnBox}
+
+\begin{issueBox}
+\textbf{BUG: Iran is in FALLBACK\_COUNTRIES as a key but MISSING from STANDARD\_COUNTRIES.}
+This means: exact word \textit{"iran"} $\rightarrow$ detected via fallback dict $\rightarrow$ ``Iran''. \\
+But \textit{"iranian"} or GLiNER-extracted \textit{"Iran"} $\rightarrow$ goes to \_resolve\_country $\rightarrow$
+no fuzzy match (Iran not in STANDARD\_COUNTRIES) $\rightarrow$ returns \textit{"Iran".capitalize()}
+= \textit{"Iran"} via last-resort fallback. Accidentally correct but for wrong reasons.
+\end{issueBox}
+
+\subsection{Price Extraction}
+
+\subsubsection{What Works}
+
+The regex price extractor correctly handles:
+\begin{itemize}
+  \item \textit{"under \$700"}, \textit{"below 500 usd"}, \textit{"cheaper than 800"} $\rightarrow$ ceiling filter
+  \item \textit{"above 1000"}, \textit{"at least 500"} $\rightarrow$ floor filter
+  \item \textit{"around \$500"} $\rightarrow$ $\pm$15\% range (425--575)
+  \item \textit{"cheap"}, \textit{"affordable"} (no number) $\rightarrow$ ranking\_hint only
+\end{itemize}
+
+\subsubsection{Price Extraction Failures}
+
+\begin{issueBox}
+\textbf{ISSUE: Written-out numbers not handled by regex fallback.}
+The LLM prompt explicitly says ``eight hundred $\rightarrow$ 800''. But the regex
+fallback only matches digit sequences (\texttt{[\textbackslash d,]+}). If LLM is offline,
+\textit{"sugar under eight hundred"} gets no price filter. The system silently degrades
+without warning.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: PKR currency not recognized.}
+\textit{"sugar under 50000 PKR"} --- the regex strips the number but does not convert
+PKR to USD. The price filter would apply 50000 as a USD ceiling, which is wildly wrong
+for a USD/MT comparison (50000 PKR $\approx$ \$180 USD/MT --- reasonable --- but the
+comparison is still semantically wrong since \texttt{usd\_per\_mt} is USD).
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: ``bulk'' and ``premium'' not in regex ranking words list.}
+As noted above, the regex fallback's \texttt{price\_ranking\_words} set is missing
+\textit{``bulk''}, \textit{``premium''}, \textit{``reliable''}, \textit{``top supplier''}, \textit{``established''}.
+These are only handled by the LLM. If LLM is offline (missing API key), these signals
+produce no \texttt{ranking\_hint} and the ranking uses default weights.
+\end{warnBox}
+
+% ========================================================================
+\section{Stage 2: Product Resolution --- Deep Analysis}
+% ========================================================================
+
+\subsection{The Four-Pass Fuzzy Matching System}
+
+The product resolution is implemented in \texttt{search\_service.py:249} as a sequential
+waterfall. Each pass only executes if all prior passes returned 0 matches:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{clXc}
+\toprule
+\textbf{Pass} & \textbf{Method} & \textbf{Examples that Match} & \textbf{Threshold} \\
+\midrule
+1 & \texttt{istartswith(keyword)} & \textit{"dex"} $\to$ Dextrose; \textit{"sug"} $\to$ Sugar & Exact prefix \\
+2 & \texttt{istartswith(keyword)} on items & Same but on ProductItem names & Exact prefix \\
+2.5 & \texttt{icontains(keyword)} & \textit{"palm oil"} $\to$ Crude Palm Oil & Substring \\
+3 & PostgreSQL Trigram & \textit{"dextos"} $\to$ Dextrose (similarity 0.43) & 0.3 \\
+4 & Word-by-word & \textit{"unga bunga dex"} tries each word & per-word trgm \\
+\bottomrule
+\end{tabularx}
+\caption{Product resolution passes and their matching strategies}
+\end{table}
+
+\subsection{What Works Well}
+
+\begin{okBox}
+Pass 1 handles the dominant pattern of partial abbreviation search efficiently. \\
+Pass 2.5 correctly handles infix patterns like \textit{"palm oil"} finding \textit{"Crude Palm Oil"}. \\
+Pass 3 (trigram) handles typos with high reliability (PostgreSQL pg\_trgm is accurate). \\
+Pass 4 (word-by-word) now uses DB-scored similarity to pick the most product-like word
+(replacing the broken length-based heuristic).
+\end{okBox}
+
+\subsection{Product Resolution Failures}
+
+\begin{issueBox}
+\textbf{CRITICAL: Full-keyword search before decomposition for multi-word qualifiers.}
+For keyword \textit{"refined sugar"}: \\
+Pass 1: \texttt{istartswith("refined sugar")} --- fails (no product starts with "refined sugar") \\
+Pass 2: same --- fails \\
+Pass 2.5: \texttt{icontains("refined sugar")} --- fails unless ``Refined Sugar'' exists verbatim in DB \\
+Pass 3: Trigram(\textit{"refined sugar"}) vs DB entries --- may find \textit{"Sugar"} at ~0.4 \\
+The system relies on trigram for any multi-word query where the qualifier is not in the DB name.
+Trigram similarity of 0.3 is very lenient; correctness depends on what DB entries exist.
+If the DB has both \textit{"Sugar"} and \textit{"Sugarcane Juice"}, trigram might rank them
+identically and return both --- merging unrelated results.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: Pass 4 only triggers on queries with a space.}
+Line 365: \texttt{if not sc\_qs and not item\_qs and " " in product\_keyword:}. \\
+If the garbled keyword has no space (e.g.\ \textit{"dextrozz"}), Pass 4 never runs.
+The query falls off the end and returns 0 results even though trigram already ran.
+However, Pass 3 already ran trigram on the full keyword --- so \textit{"dextrozz"} would
+likely match at similarity $\approx$0.38. This is acceptable.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: HS code query not handled in main flow.}
+If product\_keyword is \textit{"1702.3090"}, all passes try to match this string against
+product \textit{names} in the DB. No pass attempts to match HS codes. A user who types
+an HS code directly gets 0 results.
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: Disambiguation threshold of 20 is never explained to the user.}
+When $>$20 variants match (rare but possible), the UI shows a product picker. But the
+threshold of 20 is hard-coded and arbitrary. There is no rationale in comments. A
+search for \textit{"oil"} could match 30+ products (palm oil, canola oil, motor oil,
+etc.) and trigger the picker --- good. But \textit{"sugar"} might match only 5 variants
+(granulated, refined, raw, brown, powdered) and be merged --- potentially mixing distinct
+results.
+\end{warnBox}
+
+\subsection{HS Code Variant Disambiguation}
+
+When HS code is provided (from autocomplete click), shared HS codes (e.g.\ 1702.3 shared
+by Dextrose Ball, Dextrose Anhydrous, Dextrose Monohydrate) are resolved by:
+
+\begin{enumerate}
+  \item Exact \texttt{variant\_name} match (highest priority --- from user click)
+  \item Unique-word match (keyword contains a word that appears in only one variant name)
+  \item Safe fallback: return ALL variants (merge results)
+\end{enumerate}
+
+\begin{okBox}
+This is the correct design: merging is better than guessing wrong. Users who need
+exact variant isolation click the product picker.
+\end{okBox}
+
+\begin{warnBox}
+\textbf{Minor issue:} Unique-word match requires keyword length $\geq$ 5 characters.
+\textit{"dex"} (3 chars) would always fall through to merge all dextrose variants.
+This is intentional but means 3-character prefix queries always see merged results.
+\end{warnBox}
+
+% ========================================================================
+\section{Stage 3: Worldwide vs.\ Pakistan Scope --- Deep Analysis}
+% ========================================================================
+
+\subsection{What the Scope Toggle Actually Does}
+
+The scope parameter is the most architecturally significant parameter in the entire
+search system. It determines \textit{which subset of the Transaction table} is queried.
+The Transaction table contains two fundamentally separate datasets stored together:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{lXXl}
+\toprule
+\textbf{trade\_type} & \textbf{Direction} & \textbf{Seller is\ldots} & \textbf{Buyer is\ldots} \\
+\midrule
+IMPORT & Foreign $\to$ Pakistan & Foreign exporter & Pakistani importer \\
+EXPORT & Pakistan $\to$ Foreign & Pakistani exporter & Foreign importer \\
+\bottomrule
+\end{tabularx}
+\caption{Transaction table trade types and entity semantics}
+\end{table}
+
+The (Intent, Scope) $\to$ (trade\_type, company\_field) mapping is:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{llllX}
+\toprule
+\textbf{Intent} & \textbf{Scope} & \textbf{trade\_type} & \textbf{Shown As} & \textbf{Meaning} \\
+\midrule
+BUY & WORLDWIDE & IMPORT, excl.\ Pak origin & Seller & I am a Pakistani buyer wanting foreign suppliers \\
+BUY & PAKISTAN & EXPORT, Pak origin & Seller & I want a Pakistani supplier (local) \\
+SELL & WORLDWIDE & EXPORT, excl.\ Pak dest & Buyer & I am a Pakistani seller wanting foreign buyers \\
+SELL & PAKISTAN & IMPORT, dest=Pakistan & Buyer & I want to sell to Pakistani buyers \\
+\bottomrule
+\end{tabularx}
+\caption{Scope-intent-to-query mapping}
+\end{table}
+
+\subsection{Why the Scope Toggle Matters}
+
+The toggle is not cosmetic. \textbf{It switches between two completely non-overlapping
+datasets.} IMPORT and EXPORT records are separate transaction series with different
+origin/destination, different seller/buyer sets, and potentially different price ranges.
+
+Example for ``Sugar (BUY intent)'':
+\begin{itemize}
+  \item \textbf{Worldwide}: Shows Chinese, Indian, Brazilian sugar exporters (IMPORT records).
+        Origin countries: China, India, Brazil. Prices: \$300--\$450/MT.
+  \item \textbf{Pakistan}: Shows Pakistani sugar mills (EXPORT records, origin=Pakistan).
+        Companies: Shakarganj, JDW Group, etc. Prices: \$350--\$420/MT.
+\end{itemize}
+These are \textit{entirely different supplier lists}. Without the toggle, you cannot access
+the Pakistani domestic supplier dataset.
+
+\subsection{Problems with the Current Scope Implementation}
+
+\begin{issueBox}
+\textbf{ISSUE: Scope is not inferred from query context.}
+If a user on the Worldwide scope types \textit{"Pakistan sugar supplier"}, the query
+mentions Pakistan explicitly. But the country extractor would extract ``Pakistan'' as
+a country filter, not as a scope switch. The system would filter the IMPORT dataset
+for Pakistan as origin --- but IMPORT records have non-Pakistani origins by definition.
+The country filter would return 0 results. The correct behavior would be to switch
+to PAKISTAN scope automatically.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: Scope UX is opaque to new users.}
+The toggle labels are \textit{"Worldwide"} and \textit{"Pakistan"} with no explanation.
+A new user has no idea that ``Worldwide'' means foreign suppliers and ``Pakistan'' means
+local suppliers. There is no tooltip, help text, or description anywhere in the UI.
+Many users likely leave it at the default ``Worldwide'' and never discover local supplier data.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: Autocomplete is scope-agnostic.}
+The autocomplete endpoint (\texttt{autocomplete\_products}) ranks products by
+\texttt{total\_volume} across ALL transactions (both IMPORT and EXPORT, all scopes).
+A product like ``Basmati Rice'' might appear prominently in autocomplete with 50,000 MT
+total volume, but if the user has Worldwide scope + BUY intent selected, there may be
+very few foreign basmati rice suppliers in the IMPORT dataset. The user selects it from
+autocomplete and gets unexpectedly few results.
+\end{issueBox}
+
+\subsection{Impact of Removing the Worldwide/Pakistan Toggle}
+
+\begin{issueBox}
+\textbf{Removing the toggle without an alternative would cause data loss.}
+The EXPORT dataset (Pakistani sellers/suppliers) would become entirely inaccessible
+if the system defaults to WORLDWIDE (IMPORT data). This affects any Pakistani company
+looking for: domestic input suppliers, Pakistani partners for joint ventures, or
+tracking Pakistani export activity.
+\end{issueBox}
+
+\subsection{How to Achieve the Same Functionality Without the Toggle}
+
+There are three viable strategies:
+
+\textbf{Strategy 1 --- Smart Scope Inference (Recommended)}
+\begin{enumerate}
+  \item If the query contains ``local'', ``Pakistani'', ``Pakistan'', ``domestic'',
+        or a Pakistani city name $\rightarrow$ auto-switch to PAKISTAN scope.
+  \item If the query contains a foreign country name $\rightarrow$ auto-switch to WORLDWIDE.
+  \item Otherwise, default to WORLDWIDE (most common use case for trade intelligence).
+\end{enumerate}
+This can be implemented in the NLU engine's \texttt{parse()} method before the
+OS filter is built.
+
+\textbf{Strategy 2 --- Unified Results with Source Column}
+Query both IMPORT and EXPORT simultaneously and return a merged result set with a
+``Source'' column: ``Pakistan'' (local) vs.\ country name (foreign). A UI filter chip
+(``Show: All / Local / Foreign'') replaces the toggle. This requires changes in the
+aggregator to run two queries and merge.
+
+\textbf{Strategy 3 --- Separate Result Sections in UI}
+Keep both queries but display them in two collapsible sections: ``Pakistani Suppliers''
+and ``International Suppliers'', both on the same page. Users see both without having
+to know about the toggle. The toggle is removed from the search bar and becomes
+implicit in the results display.
+
+\begin{okBox}
+\textbf{Recommendation:} Strategy 1 (smart scope inference) is the lowest-effort,
+highest-impact change. It eliminates the confusing toggle while preserving full
+data access and making scope selection feel intelligent.
+\end{okBox}
+
+% ========================================================================
+\section{Stage 4: ORM Aggregation --- Deep Analysis}
+% ========================================================================
+
+\subsection{Query Structure and Correctness}
+
+The aggregation in \texttt{aggregation.py:79} is a single grouped Django QuerySet:
+
+\begin{lstlisting}[language=Python]
+results = queryset.values(target_field, country_field).annotate(
+    total_volume    = Sum('qty_mt'),
+    weighted_price_sum = Sum(F('qty_mt') * F('usd_per_mt')),  # for weighted avg
+    shipment_count  = Count('tx_reference', distinct=True),
+    last_shipment_date = Max('reporting_date'),
+    max_shipment_vol   = Max('qty_mt'),
+    avg_shipment_vol   = Avg('qty_mt')
+).order_by('-total_volume')
+\end{lstlisting}
+
+\begin{okBox}
+\textbf{Correct design decisions:}
+\begin{itemize}
+  \item Weighted average price (Volume $\times$ Price / Volume) instead of simple average.
+        This prevents one large cheap shipment from artificially lowering a supplier's
+        displayed price.
+  \item Post-aggregation price filter: filters on computed avg\_price, not individual rows.
+        This means a supplier who had one expensive shipment out of 100 cheap ones still
+        passes a ceiling filter if their average is below the ceiling.
+  \item \texttt{distinct=True} on shipment\_count prevents duplicate counting.
+\end{itemize}
+\end{okBox}
+
+\subsection{Aggregation Issues}
+
+\begin{issueBox}
+\textbf{ISSUE: country grouping causes supplier splitting.}
+The aggregation groups by \texttt{(target\_field, country\_field)}. If a supplier shipped
+from both China and India in different transactions (re-export scenarios), they appear as
+\textit{two separate entries}: one for China, one for India. The user sees the same company
+name twice with different countries. This is confusing in the results list and inflates
+the supplier count.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: ``Unknown'' origin\_country entries contaminate results.}
+The Transaction model has \texttt{default="Unknown"} for origin\_country. Suppliers with
+bad data appear as country=``Unknown'' in results, which is confusing. Furthermore, the
+aggregation groups (supplier, "Unknown") separately from (supplier, "China"), potentially
+splitting the same supplier into two entries.
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: avg\_price calculation bug in aggregation.py.}
+\begin{lstlisting}[language=Python]
+avg_price = round(wps / tv, 2) if tv > 0 else 0.0
+\end{lstlisting}
+\texttt{wps} = weighted price sum (sum of qty * price). \texttt{tv} = total volume. This
+correctly computes the weighted average. BUT: if \texttt{usd\_per\_mt} is NULL for some
+transactions, those rows contribute 0 to \texttt{wps} but their full qty to \texttt{tv},
+making the computed avg\_price artificially low. There is no NULL check in the
+annotation expression.
+\end{warnBox}
+
+\begin{warnBox}
+\textbf{WARNING: Volume filter has a broken soft-exclusion condition.}
+In aggregation.py:135:
+\begin{lstlisting}[language=Python]
+if mss < 0.3 * V and total < 0.5 * V:
+    continue  # exclude
+\end{lstlisting}
+A supplier with 1 large shipment of 1000 MT gets \texttt{mss=1000}. If requested
+volume V=500, \texttt{mss > 0.3*V}, so they are NOT excluded. But a company with
+100 shipments of 1 MT each also has \texttt{mss=1}, which IS excluded (\texttt{mss < 0.3*V}
+AND \texttt{total < 0.5*V} if total $<$ 250). The exclusion penalizes frequent small
+shippers even if their capacity could aggregate to handle V.
+\end{warnBox}
+
+% ========================================================================
+\section{Stage 4: Ranking Model --- Deep Analysis}
+% ========================================================================
+
+\subsection{What the Ranking Actually Does}
+
+The ranking in \texttt{search\_service.py:617} computes a composite score using
+min-max normalization across the current result set:
+
+\begin{equation}
+\text{score}_i = w_1 \textbullet{} \frac{v_i - v_{min}}{v_{max} - v_{min}}
+               + w_2 \textbullet{} \frac{c_i - c_{min}}{c_{max} - c_{min}}
+               + w_3 \textbullet{} \frac{p^{-1}_i - p^{-1}_{min}}{p^{-1}_{max} - p^{-1}_{min}}
+               + w_4 \textbullet{} \frac{r_i - r_{min}}{r_{max} - r_{min}}
+\end{equation}
+
+Where $v$ = total\_volume, $c$ = shipment\_count, $p$ = avg\_price (inverted, lower = better),
+$r$ = last\_shipment\_date (as ordinal integer), and weights depend on the ranking preset:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lccccl}
+\toprule
+\textbf{Preset} & $w_1$ (vol) & $w_2$ (cnt) & $w_3$ (price) & $w_4$ (rec) & \textbf{Triggered by} \\
+\midrule
+price\_asc & 0.2 & 0.2 & 0.5 & 0.1 & ``cheap'', ``under \$X'', ranking\_hint=price\_asc \\
+bulk/premium & 0.5 & 0.3 & 0.1 & 0.1 & ``bulk'', ``reliable'', ranking\_hint=price\_desc \\
+default & 0.4 & 0.3 & 0.2 & 0.1 & All other queries \\
+\bottomrule
+\end{tabular}
+\caption{Ranking weight presets}
+\end{table}
+
+\subsection{The Dead LTR Model}
+
+\begin{issueBox}
+\textbf{CRITICAL: The LightGBM LTR model is dead code.}
+The project memory and documentation state a ``70\% heuristic + 30\% LightGBM LambdaRank''
+ranking ensemble. This is \textbf{false}. The files implementing LTR were deleted:
+\begin{itemize}
+  \item \texttt{backend/search/services/ranking.py} --- DELETED (shown in git status as \texttt{D})
+  \item \texttt{backend/search/services/ranking\_ltr.py} --- DELETED
+\end{itemize}
+The model file \texttt{backend/search/models/lgbm\_ltr.txt} may still exist, but no
+code loads or applies it. The current ranking is 100\% heuristic with no learned signal.
+This is a significant gap given the effort of training the LTR model.
+\end{issueBox}
+
+\subsection{Ranking Logic Weaknesses}
+
+\begin{issueBox}
+\textbf{ISSUE: Recency signal is negligible.}
+$w_4 = 0.1$ in all presets. A supplier whose last shipment was in 2020 vs.\ 2023 differs
+by $\approx$1095 ordinal days. After min-max normalization, if the range is 2018--2024
+($\approx$2190 days), the 2020 supplier gets $\frac{1095}{2190} \approx 0.5$ recency
+score while 2023 gets $\frac{1825}{2190} \approx 0.83$. Difference: 0.33. Weighted:
+$0.1 \times 0.33 = 0.033$. For a supplier with high volume/count, this 0.033 difference
+in final score is dominated by their volume advantage. Stale suppliers appear at the
+top of results.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: Min-max normalization is relative to the current result set.}
+If only 2 suppliers match a query, the lower one gets score~0 and the higher gets
+score~1, regardless of their absolute quality. A single supplier who shipped 1 MT gets
+vol\_norm=1.0 (best possible) because there are no competitors. This makes scores
+incomparable across queries.
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: Price component excluded when avg\_price is 0.}
+Code (line 683): \texttt{if r.get("avg\_price"): score += w3 * p\_norm}. \\
+Suppliers with no price data skip the price component entirely. In price\_asc mode
+($w_3 = 0.5$), these suppliers lose up to 50\% of potential score. This may correctly
+deprioritize them, but it also means price-seeking queries unfairly rank data-poor
+suppliers last even if they are real and potentially cheap.
+\end{warnBox}
+
+\begin{issueBox}
+\textbf{ISSUE: No diversity or deduplication in ranking.}
+The ranking does not attempt to surface diverse countries or avoid showing the same
+company multiple times (see country-grouping split issue in aggregation). If a Chinese
+supplier has 10 entries across 10 different Chinese provinces/ports, all 10 could rank
+in the top 10, monopolizing the results.
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: ranking\_hint signal from ``bulk'' can conflict with query score preset.}
+If the LLM returns \texttt{ranking\_hint=price\_desc} for a \textit{"bulk dextrose"} query,
+the preset switches to \textit{bulk/premium} ($w_1=0.5$). But the signal detection
+in search\_service.py:622 also checks the raw query for keywords. Since \textit{"bulk"}
+is in the keyword list, this correctly triggers bulk/premium. However, if the LLM
+\textit{also} detects \texttt{operator=lte} (e.g.\ user says \textit{"bulk dextrose under \$700"}),
+the price\_asc preset takes priority (it checks ranking\_hint==price\_asc OR price keywords
+first). The conflict means \textit{"bulk under \$700"} always resolves to price\_asc,
+ignoring the \textit{"bulk"} volume preference.
+\end{warnBox}
+
+% ========================================================================
+\section{Caching Architecture}
+% ========================================================================
+
+\subsection{Three-Level Cache Design}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lXll}
+\toprule
+\textbf{Level} & \textbf{Key Composition} & \textbf{TTL} & \textbf{Savings} \\
+\midrule
+NLU & MD5(query + ui\_context) & 24h & Skips SetFit + LLM call (~2s) \\
+Availability & MD5(subcat\_ids + trade\_type + country) & 1h & Skips DB existence check \\
+Aggregation & MD5(subcat\_ids + intent + scope + filters) & 1h & Skips heavy GROUP BY query \\
+\bottomrule
+\end{tabularx}
+\caption{Cache levels and their impact}
+\end{table}
+
+\begin{okBox}
+The three-level design is well-thought-out. The 24h NLU cache is particularly important
+since NLU parsing is the bottleneck (SetFit + LLM = 0.5--3s).
+\end{okBox}
+
+\subsection{Caching Issues}
+
+\begin{issueBox}
+\textbf{ISSUE: No cache invalidation on data ingestion.}
+When new transactions are ingested into the DB, the aggregation and availability caches
+do not update for up to 1 hour. Fresh trade data appears stale to users.
+There is no \texttt{cache.delete()} call anywhere in the ingestion pipeline.
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: In-memory cache loses all data on server restart.}
+If Redis is not configured (\texttt{REDIS\_URL} not set), Django falls back to in-memory
+caching which is per-process and non-persistent. Every restart means cold-cache for
+all users.
+\end{warnBox}
+
+\begin{warnBox}
+\textbf{WARNING: NLU cache key ignores \texttt{hs\_code} and \texttt{subcat\_id} parameters.}
+The NLU cache key is \texttt{f"nlu:\{query\}:\{ui\_context\}"}. Two different requests
+with the same query but different \texttt{hs\_code} values share the same NLU cache.
+This is correct (NLU result doesn't depend on hs\_code), but it means the cached
+NLU result is reused in supplier\_detail and compare views where the context might differ.
+\end{warnBox}
+
+% ========================================================================
+\section{Frontend: Search UI --- Deep Analysis}
+% ========================================================================
+
+\subsection{SearchHome.js Analysis}
+
+\subsubsection{What Works Well}
+
+\begin{okBox}
+\begin{itemize}
+  \item 250ms debounce on autocomplete prevents excessive API calls.
+  \item Product disambiguation banner shows selected product name with a clear X button.
+  \item Scope toggle (Worldwide/Pakistan) is prominent and accessible.
+  \item Intent pills (\textit{``I want to buy''}, \textit{``Find suppliers''}) pre-fill the search bar.
+  \item Outside-click detection correctly closes the autocomplete dropdown.
+\end{itemize}
+\end{okBox}
+
+\subsubsection{SearchHome Issues}
+
+\begin{issueBox}
+\textbf{ISSUE: Typing a new query after selecting from autocomplete clears selectedHsCode.}
+In the \texttt{useEffect} on query change (line 43):
+\begin{lstlisting}[language=Java]
+setSelectedHsCode(null);
+setSelectedProductName(null);
+\end{lstlisting}
+This runs on \textit{every} keystroke. So if a user selects ``Dextrose Anhydrous'' from
+autocomplete (which sets selectedHsCode=``1702.3''), then accidentally presses backspace
+and re-types the last letter, the hs\_code is lost. The subsequent search runs without
+hs\_code, returning a broader result set.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: Scope toggle is not persisted across navigation.}
+The scope state lives in \texttt{SearchHome} component. When the user submits a search,
+the scope is passed as a URL parameter. However, the scope does NOT appear in the
+autocomplete API call:
+\begin{lstlisting}[language=Java]
+await fetch(`\${API_BASE}/api/search/autocomplete/?q=\${q}`)
+// Note: scope is NOT included in autocomplete request
+\end{lstlisting}
+The autocomplete backend ignores scope and ranks by total volume across all scopes.
+A Pakistan-scope user sees the same autocomplete suggestions as a Worldwide-scope user.
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: Example queries in the UI are misleading.}
+The bottom of SearchHome.js shows example queries:
+\begin{itemize}
+  \item \textit{``Dextrose suppliers in Pakistan''} --- the system would detect country=Pakistan but
+        the scope might be WORLDWIDE. The country filter would apply to IMPORT origin\_country=Pakistan
+        which returns 0 results (IMPORT records have non-Pakistani origins).
+  \item \textit{``Buy Urea 46\%''} --- the \textit{``46\%''} part is ignored (no handling of
+        product grades/specifications in the NLU). Returns Urea results without grade filtering.
+\end{itemize}
+\end{warnBox}
+
+\subsection{SearchResults.js Analysis}
+
+\subsubsection{What Works Well}
+
+\begin{okBox}
+\begin{itemize}
+  \item Disambiguation panel cleanly handles multi-variant products.
+  \item Comparison selection (up to 4 suppliers) with sticky compare bar is well implemented.
+  \item Broad search warning for empty/too-broad queries is helpful.
+  \item Sort controls (relevance / price / volume) give user control over ordering.
+  \item Left sidebar filters (country, price range, volume) are clean and functional.
+\end{itemize}
+\end{okBox}
+
+\subsubsection{SearchResults Critical Issues}
+
+\begin{issueBox}
+\textbf{BUG: fetchResults uses \texttt{initialQuery} not \texttt{query} state.}
+In SearchResults.js:78:
+\begin{lstlisting}[language=Java]
+const data = await searchService.search(initialQuery, filters);
+\end{lstlisting}
+\texttt{initialQuery} is derived from URL params at component mount and is a \texttt{const}.
+It never changes when the user types in the results-page search bar. The \texttt{query}
+state variable updates on typing, but the actual API call always uses the original
+URL query. The user appears to be searching but the results don't update until they
+press Enter (which navigates to a new URL and remounts the component). This causes
+confusion: the user types, the bar shows new text, but results stay the same.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{BUG: Client-side price filter conflicts with NLU price filter.}
+When a user searches \textit{``sugar under \$700''}, the backend filters to
+avg\_price $\leq$ 700. The results page sidebar also has a price filter. If the user
+sets sidebar priceMin=\$500, it further narrows the 0--700 range. Fine.
+But if the user then clears the query and searches \textit{``sugar''} (no price filter)
+and the sidebar priceMax=\$700 is still set from a previous search, the sidebar now
+acts as the ONLY price filter. The priceMax state \textit{persists across searches}
+because \texttt{clearFilters()} is only called in \texttt{handleSearch}, not on component
+re-render with new URL. The user gets different result counts for the same query
+depending on what they searched before.
+
+Actually, looking at the code: \texttt{priceMin}, \texttt{priceMax} and \texttt{volumeMin}
+are reset in \texttt{handleSearch()} via direct state setters. But on the initial render
+they are read from URL params (\texttt{queryParams.get('price\_min')}). Since a normal
+search does not include price\_min in the URL, these initialize to \texttt{''} and remain
+that way. The persistence bug would only occur if navigating directly to a URL with
+price\_min/max params and then changing the search. Low probability but real.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{BUG: \texttt{selectedCountry} not reset between searches.}
+\texttt{handleSearch()} sets \texttt{selectedCountry(null)} but \texttt{fetchResults}
+depends on \texttt{[initialQuery, scope, hsCode, selectedCountry]}. When
+\texttt{selectedCountry} changes, \texttt{fetchResults} re-runs with the previous
+\texttt{initialQuery}. If the user picks a country filter, then types a new query and
+presses Enter, the navigation to new URL remounts with no country. Correct.
+But if the user picks a country and then clicks a variant in the disambiguation panel,
+\texttt{handleVariantPick} preserves \texttt{selectedCountry} correctly via
+\texttt{queryParamsObj.country}. This part is OK.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: ``Last active'' date displayed as raw ISO string.}
+The \texttt{last\_shipment\_date} field is displayed directly:
+\begin{lstlisting}[language=Java]
+<span>Last active: {supplier.last_shipment_date}</span>
+\end{lstlisting}
+This renders as \texttt{2023-12-15} (ISO format). No human-readable formatting
+(\textit{``Dec 2023''} or \textit{``3 months ago''}). Minor UX issue.
+\end{issueBox}
+
+\begin{issueBox}
+\textbf{ISSUE: Alert for comparison limit is a blocking native dialog.}
+\begin{lstlisting}[language=Java]
+if (prev.length >= 4) {
+    alert("You can only compare up to 4 suppliers at once.");
+    return prev;
+}
+\end{lstlisting}
+Native \texttt{alert()} is disruptive and breaks the UX flow. Should be an inline toast.
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: Market Snapshot's ``top\_country'' is simply the first result's country.}
+In views.py:108:
+\begin{lstlisting}[language=Python]
+"top_country": mapped_results[0]["country"] if mapped_results else "N/A"
+\end{lstlisting}
+This is not the top country by volume or frequency --- it is literally the country of
+the \#1 ranked supplier. If the top supplier happens to be from a small country, the
+market snapshot shows that country as ``top origin'' even though most volume comes
+from elsewhere. This is misleading.
+\end{warnBox}
+
+% ========================================================================
+\section{Supplier Detail Page --- Deep Analysis}
+% ========================================================================
+
+\subsection{hs\_code Bug in Supplier Detail and Compare Views}
+
+\begin{issueBox}
+\textbf{BUG: \texttt{hs\_code} URL parameter ignored in supplier-detail and compare.}
+In \texttt{views.py:185--190} (supplier\_detail view):
+\begin{lstlisting}[language=Python]
+subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
+    product_keyword=parsed_query.get("product", ""),
+    hs_code=parsed_query.get("hs_code", ""),  # BUG
+    ...
+)
+\end{lstlisting}
+\texttt{parsed\_query} is the NLU result dict. Its keys are: \textit{intent, product,
+product\_keyword, country, quantity, price\_filter, os\_filter, entities, ui\_context}.
+There is \textbf{no ``hs\_code'' key} in the NLU result. This always passes \texttt{hs\_code=""}
+to resolve\_subcategories, bypassing HS-code-based variant resolution entirely.
+The correct code should use \texttt{request.query\_params.get('hs\_code', '')}.
+The same bug exists in the compare view (line 241).
+\end{issueBox}
+
+\subsection{Intelligence Metric Issues}
+
+\begin{warnBox}
+\textbf{WARNING: Momentum label uses fixed 90/180 day windows from \textit{today}.}
+The momentum calculation compares volume in the last 90 days vs.\ the 90 days before that.
+If the dataset ends in 2023 and today is 2026, \texttt{vol\_recent} = 0 and
+\texttt{vol\_prev} = 0 for all suppliers. Every supplier gets \texttt{momentum\_label = "Declining"}
+because \texttt{vol\_recent == 0 and total\_vol > 0} (line 502--503). This makes the
+intelligence metrics meaningless for any dataset that is more than 6 months old.
+\end{warnBox}
+
+\begin{warnBox}
+\textbf{WARNING: Pricing label uses only the first and last transaction.}
+\begin{lstlisting}[language=Python]
+price_change = (latest_tx.usd_per_mt - earliest_tx.usd_per_mt) / earliest_tx.usd_per_mt
+\end{lstlisting}
+If the earliest transaction happened to have an outlier price (e.g.\ a distress sale
+at \$200 when normal price is \$700), the computed \texttt{price\_change} would be
+enormous and misleading. Using two individual transactions instead of moving averages
+makes this metric highly noise-sensitive.
+\end{warnBox}
+
+% ========================================================================
+\section{Query Families --- Coverage Assessment}
+% ========================================================================
+
+The following table assesses all realistic query patterns against the actual system behavior:
+
+\begin{longtable}{lp{5cm}ccc}
+\toprule
+\textbf{\#} & \textbf{Query Pattern} & \textbf{Intent} & \textbf{Product} & \textbf{Country} \\
+\midrule
+\endhead
+1 & \textit{"dextrose anhydrous"} (bare noun) & \cellOK{BUY} & \cellOK{OK} & \cellOK{N/A} \\
+2 & \textit{"buy dextrose"} & \cellOK{BUY} & \cellOK{OK} & \cellOK{N/A} \\
+3 & \textit{"sell wheat to UAE"} & \cellOK{SELL} & \cellOK{OK} & \cellOK{UAE} \\
+4 & \textit{"find sellers of basmati rice"} & \cellOK{BUY} & \cellOK{OK} & \cellOK{N/A} \\
+5 & \textit{"find buyers for rice"} & \cellOK{SELL} & \cellOK{OK} & \cellOK{N/A} \\
+6 & \textit{"cheap sugar under \$400"} & \cellOK{BUY} & \cellOK{OK} & \cellOK{N/A} \\
+7 & \textit{"bulk wheat from India"} & \cellOK{BUY} & \cellOK{OK} & \cellOK{India} \\
+8 & \textit{"import dextrose from china"} & \cellOK{BUY} & \cellOK{OK} & \cellOK{China} \\
+9 & \textit{"dextos"} (typo) & \cellOK{BUY} & \cellOK{Trigram} & \cellOK{N/A} \\
+10 & \textit{"dex"} (abbreviation) & \cellOK{BUY} & \cellOK{Prefix} & \cellOK{N/A} \\
+11 & \textit{"organic wheat"} & \cellOK{BUY} & \cellWarn{Partial} & \cellOK{N/A} \\
+12 & \textit{"refined sugar"} & \cellOK{BUY} & \cellWarn{Partial} & \cellOK{N/A} \\
+13 & \textit{"sugar and wheat"} & \cellOK{BUY} & \cellBad{Single} & \cellOK{N/A} \\
+14 & \textit{"dextrose for sale"} & \cellBad{BUY} & \cellOK{OK} & \cellOK{N/A} \\
+15 & \textit{"I am a supplier of rice"} & \cellBad{BUY} & \cellOK{OK} & \cellOK{N/A} \\
+16 & \textit{"1702.3090"} (HS code) & \cellOK{BUY} & \cellBad{No match} & \cellOK{N/A} \\
+17 & \textit{"SEAWALL"} (company name) & \cellOK{BUY} & \cellBad{No match} & \cellOK{N/A} \\
+18 & \textit{"bangladesh wheat"} & \cellOK{BUY} & \cellOK{OK} & \cellBad{Dropped} \\
+19 & \textit{"myanmar rice"} & \cellOK{BUY} & \cellOK{OK} & \cellBad{Dropped} \\
+20 & \textit{"sugar under eight hundred"} & \cellOK{BUY} & \cellOK{OK} & \cellBad{No filter} \\
+21 & \textit{"sugar 50000 PKR"} & \cellOK{BUY} & \cellOK{OK} & \cellBad{USD mismatch} \\
+22 & \textit{"who needs sugar"} & \cellOK{BUY} & \cellOK{OK} & \cellOK{N/A} \\
+23 & \textit{"sugar available to export"} & \cellOK{SELL} & \cellOK{OK} & \cellOK{N/A} \\
+24 & \textit{"top 5 dextrose suppliers"} & \cellOK{BUY} & \cellOK{OK} & \cellOK{top\_k=5} \\
+25 & \textit{Urdu script query (e.g.\ buy sugar in Urdu)} & \cellWarn{BUY} & \cellBad{No match} & \cellBad{None} \\
+\bottomrule
+\caption{Query family coverage matrix (Partial = fragile/trigram-dependent; Dropped = silently ignored)}
+\end{longtable}
+
+\textbf{Summary:} 16/25 queries fully correct; 5/25 partially handled; 4/25 broken.
+Effective correct rate: approximately 64\%.
+
+% ========================================================================
+\section{Database and Indexing}
+% ========================================================================
+
+\subsection{Index Analysis}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{Xll}
+\toprule
+\textbf{Index} & \textbf{Query it serves} & \textbf{Adequacy} \\
+\midrule
+\texttt{tx\_type\_product\_idx} (trade\_type, product\_item) & Main aggregation WHERE clause & \cellOK{Excellent} \\
+\texttt{tx\_prod\_type\_seller\_idx} (product\_item, trade\_type, seller) & BUY aggregation GROUP BY & \cellOK{Excellent} \\
+\texttt{tx\_prod\_type\_buyer\_idx} (product\_item, trade\_type, buyer) & SELL aggregation GROUP BY & \cellOK{Excellent} \\
+\texttt{reporting\_date} & Time filter & \cellOK{Good} \\
+\texttt{origin\_country} & Country filter (import) & \cellOK{Good} \\
+\texttt{destination\_country} & Country filter (export) & \cellOK{Good} \\
+\texttt{seller} & supplier-detail filter & \cellWarn{No lower case} \\
+\texttt{buyer} & buyer-detail filter & \cellWarn{No lower case} \\
+\midrule
+\textit{Missing: ProductSubCategory.name} & Prefix/contains search & \cellBad{No index} \\
+\textit{Missing: ProductSubCategory.hs\_code} & HS code lookup & \cellBad{No index} \\
+\textit{Missing: pg\_trgm GIN on name} & Trigram search & \cellBad{Sequential scan} \\
+\bottomrule
+\end{tabularx}
+\caption{Database index adequacy assessment}
+\end{table}
+
+\begin{issueBox}
+\textbf{CRITICAL: No GIN trigram index on ProductSubCategory.name.}
+Pass 3 of product resolution uses \texttt{TrigramSimilarity('name', keyword)} which
+requires a GIN index on the column with the \texttt{pg\_trgm} extension for performance.
+Without it, every trigram search does a sequential scan of all product names. For a
+small product catalog this is acceptable, but as the catalog grows this will become
+a bottleneck. The fix is:
+\begin{lstlisting}[language=SQL]
+CREATE INDEX idx_subcat_name_trgm ON trade_data_productsubcategory
+USING GIN (name gin_trgm_ops);
+\end{lstlisting}
+\end{issueBox}
+
+\begin{warnBox}
+\textbf{WARNING: seller/buyer indexes cannot accelerate \texttt{\_\_iexact} lookups.}
+The supplier-detail query uses \texttt{seller\_\_iexact=seller\_name.strip()}.
+The standard B-tree index on \texttt{seller} is case-sensitive. An \texttt{iexact} lookup
+performs a sequential scan with a \texttt{LOWER()} function call, not an index seek.
+Fix: create a functional index on \texttt{LOWER(seller)}.
+\end{warnBox}
+
+% ========================================================================
+\section{The Worldwide/Pakistan Toggle: Removal Analysis}
+% ========================================================================
+
+\subsection{Full Technical Impact Assessment}
+
+To remove the Worldwide/Pakistan toggle and achieve equivalent functionality, the following
+changes would be needed across the stack:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Layer} & \textbf{Change Required} & \textbf{Complexity} \\
+\midrule
+NLU Engine & Add scope inference from query signals (\textit{``local''}, \textit{``Pakistani''}, foreign country) & Medium \\
+Search Service & Pass inferred scope to aggregation instead of UI parameter & Low \\
+Aggregation & Optionally run both queries and merge (Strategy 2) & High \\
+Views & Remove \texttt{scope} URL parameter; add inferred scope to response & Low \\
+Frontend & Remove scope toggle buttons & Trivial \\
+Frontend & Handle cases where both scopes return results & Medium \\
+Autocomplete & Scope-aware ranking (show by relevant scope volume) & Medium \\
+\bottomrule
+\end{tabularx}
+\caption{Changes required to remove the scope toggle}
+\end{table}
+
+\subsection{Recommended Implementation: Smart Scope Inference}
+
+Add a \texttt{\_infer\_scope()} method to the NLU pipeline:
+
+\begin{lstlisting}[language=Python]
+def _infer_scope(query: str, resolved_country: str) -> str:
+    """Infer WORLDWIDE or PAKISTAN from query signals."""
+    q = query.lower()
+
+    local_signals = {"local", "domestic", "pakistan", "pakistani", "karachi",
+                     "lahore", "islamabad", "faisalabad", "sialkot"}
+
+    # Explicit local signal in query
+    if any(s in q for s in local_signals):
+        return "PAKISTAN"
+
+    # A specific foreign country was mentioned $\rightarrow$ Worldwide
+    if resolved_country and resolved_country.lower() != "pakistan":
+        return "WORLDWIDE"
+
+    # Default: Worldwide (show foreign suppliers/buyers)
+    return "WORLDWIDE"
+\end{lstlisting}
+
+This single function, integrated into \texttt{nlu\_engine.parse()}, enables removing the
+toggle entirely while automatically switching context based on the query's natural language.
+The scope would then be part of the NLU result and flow naturally to the aggregator.
+
+\textbf{Trade-offs:}
+\begin{itemize}
+  \item Users lose explicit control over scope --- power users may prefer the toggle.
+  \item A query like \textit{``sugar suppliers''} always goes to Worldwide. Users wanting
+        Pakistani suppliers must remember to say ``local''.
+  \item Recommendation: keep the toggle as an advanced option (collapsed by default)
+        while defaulting to smart inference.
+\end{itemize}
+
+% ========================================================================
+\section{Consolidated Issue Register}
+% ========================================================================
+
+\begin{longtable}{clp{7cm}l}
+\toprule
+\textbf{\#} & \textbf{Layer} & \textbf{Issue} & \textbf{Severity} \\
+\midrule
+\endhead
+1 & Ranking & LTR model code deleted; ranking is heuristic-only & \cellBad{Critical} \\
+2 & Ranking & Recency weight 0.1 makes stale suppliers rank high & \cellBad{High} \\
+3 & Ranking & Rel. min-max scores not comparable across queries & \cellBad{High} \\
+4 & Intent & ``for sale'', ``in stock'' signals not detected & \cellBad{High} \\
+5 & Intent & Urdu/non-English queries not handled & \cellBad{High} \\
+6 & Country & 27-country list misses Bangladesh, Philippines, Myanmar, Russia, etc. & \cellBad{High} \\
+7 & Product & HS code as query not handled & \cellBad{High} \\
+8 & Product & Company name as query returns 0 results & \cellBad{High} \\
+9 & Bug & \texttt{hs\_code} ignored in supplier-detail \& compare views & \cellBad{High} \\
+10 & Bug & Momentum labels always ``Declining'' for old datasets & \cellBad{High} \\
+11 & DB & No GIN trigram index on product names (sequential scan) & \cellBad{High} \\
+12 & DB & \texttt{seller/buyer} iexact bypasses B-tree index & \cellWarn{Medium} \\
+13 & Aggregation & Country grouping splits single supplier into multiple rows & \cellWarn{Medium} \\
+14 & Aggregation & NULL usd\_per\_mt rows deflate weighted avg price & \cellWarn{Medium} \\
+15 & Product & Multi-word qualifiers (``organic'', ``refined'') break extraction & \cellWarn{Medium} \\
+16 & Product & Multi-product queries unsupported & \cellWarn{Medium} \\
+17 & NLU & ``bulk'' ranking hint lost when LLM is offline & \cellWarn{Medium} \\
+18 & Scope & ``Pakistan'' in query doesn't auto-switch to Pakistan scope & \cellWarn{Medium} \\
+19 & Autocomplete & Scope-agnostic; shows products with 0 results for current scope & \cellWarn{Medium} \\
+20 & Frontend & \texttt{initialQuery} vs \texttt{query} state mismatch in results page & \cellWarn{Medium} \\
+21 & Frontend & \texttt{alert()} for compare limit is blocking dialog & \cellWarn{Low} \\
+22 & Frontend & Last-active date not human-formatted & \cellWarn{Low} \\
+23 & Frontend & Scope not persisted to autocomplete API call & \cellWarn{Low} \\
+24 & Cache & No cache invalidation on data ingestion & \cellWarn{Medium} \\
+25 & Insight & \texttt{top\_country} in market snapshot is first result's country, not top by volume & \cellWarn{Low} \\
+26 & Insight & Pricing label based on two transactions only (noise-sensitive) & \cellWarn{Medium} \\
+27 & Scope & Pakistan/Worldwide toggle has no UX explanation & \cellWarn{Low} \\
+\bottomrule
+\caption{Consolidated issue register with severity ratings}
+\end{longtable}
+
+% ========================================================================
+\section{Recommendations --- Prioritized}
+% ========================================================================
+
+\subsection{Priority 1 --- Ranking Restoration (Critical)}
+
+\begin{enumerate}
+  \item \textbf{Re-integrate the LightGBM LTR model.} The model file exists at
+        \texttt{search/models/lgbm\_ltr.txt}. Re-create \texttt{ranking.py} that loads
+        the model and applies it as a re-ranker on the top-100 heuristic results.
+        If model quality is uncertain, blend: 60\% heuristic + 40\% LTR.
+  \item \textbf{Increase recency weight to $w_4 = 0.25$} in the default preset to
+        make stale suppliers rank lower.
+  \item \textbf{Cap result set at top 50 by total\_volume before ranking} to focus
+        the score computation on relevant results.
+\end{enumerate}
+
+\subsection{Priority 2 --- NLU Coverage Gaps}
+
+\begin{enumerate}
+  \item Expand STANDARD\_COUNTRIES to at least 80 countries (use ISO 3166-1 list).
+  \item Add selling-signal patterns to intent detection: \textit{``for sale''}, \textit{``in stock''},
+        \textit{``we have X''}, \textit{``X available''}.
+  \item Add HS code detection to \texttt{extract\_product\_keyword}: if query is all digits
+        or digit-dot pattern, treat as HS code and bypass NLU to do direct DB lookup.
+  \item Add \textit{``bulk''}, \textit{``premium''}, \textit{``reliable''} to the regex
+        \texttt{price\_ranking\_words} set as fallback for when LLM is offline.
+\end{enumerate}
+
+\subsection{Priority 3 --- Bug Fixes}
+
+\begin{enumerate}
+  \item Fix \texttt{hs\_code} in supplier-detail view: replace
+        \texttt{parsed\_query.get("hs\_code", "")} with
+        \texttt{request.query\_params.get('hs\_code', '')}.
+  \item Fix Momentum labels to use relative dates: instead of computing from today,
+        compute from the last transaction date in the dataset.
+  \item Create GIN trigram index on \texttt{ProductSubCategory.name}.
+  \item Create functional index \texttt{LOWER(seller)} and \texttt{LOWER(buyer)}.
+\end{enumerate}
+
+\subsection{Priority 4 --- Scope UX Improvements}
+
+\begin{enumerate}
+  \item Add smart scope inference to NLU engine (see Section~11.2).
+  \item Add tooltip/help text to Worldwide/Pakistan toggle explaining what each means.
+  \item Make autocomplete scope-aware (pass scope to autocomplete endpoint).
+  \item Replace \texttt{alert()} with inline toast notification in compare flow.
+\end{enumerate}
+
+\subsection{Priority 5 --- Long-term Quality}
+
+\begin{enumerate}
+  \item Fix country grouping in aggregation: group by company only, aggregate
+        country as a list or select the most frequent.
+  \item Add cache invalidation hook in the data ingestion pipeline.
+  \item Implement basic Urdu transliteration/detection as a preprocessing step.
+  \item Add a company name search path that queries the Transaction table directly
+        by seller/buyer name when the product keyword matches no products.
+  \item Fix Market Snapshot \texttt{top\_country}: compute by
+        volume-weighted frequency, not first result's country.
+\end{enumerate}
+
+% ========================================================================
+\section{Appendix: Data Flow Diagram}
+% ========================================================================
+
+\begin{center}
+\textbf{Complete Search Request Data Flow}
+
+\vspace{1em}
+\begin{tabular}{|l|}
+\hline
+\textbf{1. HTTP GET /api/search/?q=``cheap dextrose china''\ \&scope=worldwide} \\
+\hline
+\end{tabular}
+
+$\downarrow$
+
+\begin{tabular}{|l|}
+\hline
+\textbf{2. NLU Engine (nlu\_engine.py)} \\
+Intent: BUY (``buy\textbackslash w*'' regex matches nothing; default BUY) \\
+Country: China (FALLBACK\_COUNTRIES dict) \\
+Keyword: ``dextrose'' (stop-word strip removes ``cheap'') \\
+Price: \{ranking\_hint: price\_asc\} (``cheap'' detected in regex) \\
+\hline
+\end{tabular}
+
+$\downarrow$
+
+\begin{tabular}{|l|}
+\hline
+\textbf{3. Scope Mapping} \\
+ui\_context=``worldwide'', intent=BUY $\rightarrow$ trade\_type=IMPORT, excl.\ origin=Pakistan \\
+\hline
+\end{tabular}
+
+$\downarrow$
+
+\begin{tabular}{|l|}
+\hline
+\textbf{4. Product Resolution (search\_service.py:249)} \\
+Pass 1: istartswith(``dextrose'') $\rightarrow$ finds: Dextrose Anhydrous, Dextrose Ball, Dextrose Monohydrate \\
+Availability check: filter those with IMPORT records, origin\_country icontains ``China'' \\
+Returns: subcat\_ids=[12, 13, 14], variant\_list=[...] \\
+\hline
+\end{tabular}
+
+$\downarrow$
+
+\begin{tabular}{|l|}
+\hline
+\textbf{5. ORM Aggregation (aggregation.py:8)} \\
+SELECT seller, origin\_country, SUM(qty\_mt), ... \\
+FROM transaction WHERE product\_item\_sub\_category\_id IN (12,13,14) \\
+AND trade\_type='IMPORT' AND origin\_country != 'Pakistan' \\
+AND origin\_country IN ['China'] \\
+GROUP BY seller, origin\_country ORDER BY total\_volume DESC \\
+\hline
+\end{tabular}
+
+$\downarrow$
+
+\begin{tabular}{|l|}
+\hline
+\textbf{6. Ranking (search\_service.py:617)} \\
+Preset: price\_asc (w1=0.2, w2=0.2, w3=0.5, w4=0.1) \\
+Min-max normalize: volume, count, 1/price, recency \\
+Sort by composite score DESC \\
+\hline
+\end{tabular}
+
+$\downarrow$
+
+\begin{tabular}{|l|}
+\hline
+\textbf{7. API Response} \\
+\{results: [...], market\_snapshot: \{avg\_price: 680, top\_country: ``China''\}, count: 8\} \\
+\hline
+\end{tabular}
+\end{center}
+
+% ========================================================================
+\section{Conclusion}
+% ========================================================================
+
+The Zarailink search engine is a well-structured, resilient system that handles the
+majority of straightforward trade queries correctly. Its greatest strengths are the
+correct aggregation semantics (weighted average price, post-aggregation filtering),
+the three-level caching architecture, and the graceful degradation chain (LLM $\rightarrow$ regex,
+OpenSearch $\rightarrow$ ORM, SetFit $\rightarrow$ keyword regex).
+
+Its most serious weaknesses are: (1) the deleted LTR model leaving ranking purely
+heuristic; (2) significant NLU blind spots on any non-English query, implicit selling
+signals, and multi-word product qualifiers; (3) a country coverage list covering only
+27 of 195 countries; (4) an opaque scope toggle with no user explanation.
+
+For a production-ready, commercially viable trade intelligence platform, the critical
+issues --- particularly the ranking model, the hs\_code bug in supplier-detail, and the
+momentum labels using today's date --- should be addressed before the next major user demo.
+
+\vspace{2em}
+\begin{center}
+\rule{6cm}{0.4pt}\\
+\textit{End of Report}\\
+\rule{6cm}{0.4pt}
+\end{center}
+
+\end{document}

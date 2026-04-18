@@ -1,0 +1,936 @@
+\documentclass[10pt,a4paper]{article}
+
+% ── Packages ────────────────────────────────────────────────────────
+\usepackage[margin=1.6cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable,skins}
+
+% ── Colors ──────────────────────────────────────────────────────────
+\definecolor{zarGreen}{HTML}{0b3d2e}
+\definecolor{zarMidGreen}{HTML}{166534}
+\definecolor{zarLightGreen}{HTML}{bbf7d0}
+\definecolor{zarPaleGreen}{HTML}{f0fdf4}
+\definecolor{zarRed}{HTML}{991b1b}
+\definecolor{zarAmber}{HTML}{b45309}
+\definecolor{zarGray}{HTML}{6b7280}
+\definecolor{rowAlt}{HTML}{f9fafb}
+
+% ── Hyperref ────────────────────────────────────────────────────────
+\hypersetup{
+    colorlinks=true,
+    linkcolor=zarMidGreen,
+    urlcolor=zarMidGreen,
+    pdftitle={Zarailink — File-by-File Project Audit},
+    pdfauthor={Technical Inventory},
+    pdfsubject={Exhaustive file inventory with necessity classification},
+}
+
+% ── Section formatting ──────────────────────────────────────────────
+\titleformat{\section}
+  {\color{zarGreen}\Large\bfseries}
+  {\thesection}{0.6em}{}
+  [\vspace{-6pt}\color{zarMidGreen}\rule{\linewidth}{1.5pt}]
+\titleformat{\subsection}
+  {\color{zarMidGreen}\large\bfseries}
+  {\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}
+  {\color{zarMidGreen}\normalsize\bfseries}
+  {\thesubsubsection}{0.4em}{}
+
+% ── Header/footer ───────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{zarGray}Zarailink File Audit}
+\fancyhead[R]{\small\color{zarGray}\nouppercase{\leftmark}}
+\fancyfoot[C]{\small\color{zarGray}Page \thepage{} of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{zarLightGreen}\leaders\hrule height \headrulewidth\hfill}}
+% Prevent fancyhdr from uppercasing section titles (corrupts color commands)
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+
+\usepackage{lastpage}
+
+% ── Classification badges (colored keywords) ────────────────────────
+\newcommand{\reqBadge}{\textcolor{zarMidGreen}{\textbf{REQUIRED}}}
+\newcommand{\optBadge}{\textcolor{zarAmber}{\textbf{OPTIONAL}}}
+\newcommand{\deadBadge}{\textcolor{zarRed}{\textbf{DEAD}}}
+
+% ── File-entry tcolorbox macro ──────────────────────────────────────
+% \fileEntry{path}{level}{purpose}{deletion impact}
+% level ∈ {req, opt, dead}
+\newcommand{\fileEntry}[4]{%
+  \par\noindent
+  \begin{tcolorbox}[
+    enhanced,
+    breakable,
+    colback=zarPaleGreen,
+    colframe=zarMidGreen,
+    arc=1pt,
+    boxrule=0.4pt,
+    left=6pt, right=6pt, top=3pt, bottom=3pt,
+    fontupper=\small,
+    before skip=2pt, after skip=4pt,
+  ]
+  \texttt{\textbf{#1}} \hfill {\small #2}\\[1pt]
+  {\footnotesize\textbf{Purpose:} #3}\\[1pt]
+  {\footnotesize\textit{If deleted:} #4}
+  \end{tcolorbox}
+}
+
+% Compact row variant for very similar files grouped together
+\newcommand{\fileRow}[4]{%
+  \par\noindent\texttt{\small #1}\hfill #2\\
+  {\footnotesize\color{zarGray}#3\,---\,\textit{#4}}\\[2pt]
+}
+
+\begin{document}
+
+% ═══════════════════════════════════════════════════════════════════
+% COVER PAGE
+% ═══════════════════════════════════════════════════════════════════
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\color{zarLightGreen}\Large\bfseries ZARAILINK}\\[0.4cm]
+  \rule{0.6\linewidth}{0.6pt}\\[1.2cm]
+  {\color{zarGreen}\Huge\bfseries File-by-File}\\[0.3cm]
+  {\color{zarGreen}\Huge\bfseries Project Audit}\\[1.8cm]
+  {\color{zarMidGreen}\Large Exhaustive Inventory with Necessity Classification}\\[0.6cm]
+  {\color{zarGray}\large Every source file, configuration, asset, and data artifact}\\[2.8cm]
+  \begin{tcolorbox}[
+    colback=zarPaleGreen,
+    colframe=zarMidGreen,
+    width=0.75\linewidth,
+    halign=center,
+  ]
+    \large\textbf{Legend}\\[4pt]
+    \reqBadge{} — app will not run without it\\
+    \optBadge{} — useful but non-essential\\
+    \deadBadge{} — unused; safe to delete
+  \end{tcolorbox}
+  \vfill
+  {\color{zarGray}\small Generated \today}
+\end{titlepage}
+
+% ═══════════════════════════════════════════════════════════════════
+% TABLE OF CONTENTS
+% ═══════════════════════════════════════════════════════════════════
+\renewcommand{\contentsname}{\color{zarGreen}Table of Contents}
+\tableofcontents
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════
+% METHODOLOGY
+% ═══════════════════════════════════════════════════════════════════
+\section{Methodology}
+
+Every file in this report has been classified as one of three statuses:
+
+\begin{itemize}[leftmargin=1.2cm]
+  \item \reqBadge{} — the live application, test suite, or development environment
+    will fail or become non-functional if this file is removed. Examples: Django
+    settings, URL routing, model definitions, React entry points.
+  \item \optBadge{} — removing this file reduces capability (loses tests,
+    seed data, a debug command, a migration script) but the running application
+    continues to work. Example: data loaders, optional admin commands, test fixtures.
+  \item \deadBadge{} — not referenced by any live import or runtime path. Safe
+    to delete. Typically: development-time debug scripts, stale output logs,
+    abandoned prototypes.
+\end{itemize}
+
+\subsection{Excluded directories}
+
+Large auto-generated or irrelevant directories are not enumerated file-by-file.
+They are listed below as single entries.
+
+\fileEntry{.git/}{n/a}{Git version control metadata — object store, refs, hooks, and configuration for every commit in the repository history.}{Destroys the repository history; project becomes a plain directory with no version control.}
+
+\fileEntry{frontend/node\_modules/}{\reqBadge\ for dev}{NPM-installed frontend dependencies (\texttt{react}, \texttt{react-dom}, \texttt{react-router}, \texttt{recharts}, \texttt{react-simple-maps}, \texttt{jspdf}, \texttt{tailwindcss}, etc.). Reinstallable from \texttt{package-lock.json}.}{Frontend dev server cannot start; \texttt{npm install} recreates it.}
+
+\fileEntry{backend/node\_modules/}{\deadBadge}{Stray NPM dependencies installed at the backend root for a legacy Node utility (likely \texttt{generate\_comparison\_pdf.js}). The live backend is Python only; none of these packages are imported by Django.}{Nothing breaks. Safe to delete entirely, saves hundreds of MB.}
+
+\fileEntry{backend/.venv/}{\reqBadge\ for dev}{Project-local Python virtual environment with installed pip dependencies (Django, DRF, sentence-transformers, setfit, keybert, gliner, rapidfuzz, etc.).}{Backend cannot run until dependencies are reinstalled with \texttt{pip install -r requirements.txt}.}
+
+\fileEntry{backend/search/models/intent\_model/}{\reqBadge}{Trained SetFit intent classifier (\texttt{model.safetensors}, \texttt{model\_head.pkl}, \texttt{config\_setfit.json}, tokenizer files, \ldots\ 129 MB total). Loaded at startup by \texttt{nlu\_engine.ModernNLUEngine}.}{NLU falls back to the regex intent detector; functional but misses subtleties on ambiguous phrasing.}
+
+\fileEntry{frontend/build/}{\optBadge}{Output of \texttt{npm run build} — minified production bundle (\texttt{static/js/*.js}, \texttt{static/css/*.css}, HTML shell). Regenerable anytime.}{Production static bundle is gone until \texttt{npm run build} is re-run; dev server (\texttt{npm start}) still works.}
+
+\fileEntry{\_\_pycache\_\_/ (every Python package)}{n/a}{Python bytecode cache automatically regenerated on import. Every Django app, service, and script directory has one.}{Deleted and regenerated freely; no impact.}
+
+\fileEntry{migrations/\_\_pycache\_\_/}{n/a}{Same as above but for migration files.}{Same; regenerated.}
+
+\fileEntry{.pytest\_cache/}{n/a}{Pytest's last-run cache.}{Regenerated on the next test run.}
+
+\fileEntry{.claude/}{n/a}{Claude Code session state for this repository. Editor tool, not project code.}{Claude Code loses session history for this repo; project is unaffected.}
+
+\subsection{File counts}
+
+After exclusions above, the audit covers approximately:
+
+\begin{itemize}[leftmargin=1.2cm]
+  \item \textbf{Project root:} $\sim$10 files
+  \item \textbf{Backend Django apps} (9 apps): $\sim$120 files
+  \item \textbf{Backend search engine:} 8 Python source files + 1 trained model bundle
+  \item \textbf{Backend root:} $\sim$10 files (mostly config)
+  \item \textbf{Frontend source tree:} $\sim$75 React components, hooks, services, and styles
+  \item \textbf{Other directories} (scripts, Resources, docs, .github): $\sim$15 files
+\end{itemize}
+
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════
+% BACKEND — SEARCH APP (authored from direct knowledge)
+% ═══════════════════════════════════════════════════════════════════
+\section{Backend — Search Engine (\texttt{backend/search/})}
+
+The search app is the ML-powered core of the product: it exposes a single
+DRF viewset (\texttt{/api/search/}) that takes a natural-language query
+(e.g.\ \textit{``buy cheap sugar from china under \$500''}) and returns a
+ranked list of supplier/buyer profiles aggregated from the
+\texttt{trade\_data.Transaction} table. The pipeline is NLU $\rightarrow$
+subcategory resolution $\rightarrow$ ORM aggregation $\rightarrow$ composite
+ranking. The 8 source files below are the live files in this app after the
+recent dead-code cleanup removed \texttt{nlp.py}, \texttt{vector\_store.py},
+\texttt{candidate\_retrieval.py}, \texttt{ranking.py}, \texttt{ranking\_ltr.py},
+\texttt{train\_ltr.py}, \texttt{ltr\_dataset\_builder.py},
+\texttt{build\_search\_index.py}, \texttt{train\_intent.py}, and
+\texttt{query\_parser.py}.
+
+\subsection{Package roots}
+
+\fileEntry{backend/search/\_\_init\_\_.py}{\reqBadge}{Empty file marking \texttt{search} as a Python package so Django can discover the app.}{Django raises \texttt{ModuleNotFoundError} on startup; all search endpoints fail.}
+
+\fileEntry{backend/search/apps.py}{\reqBadge}{Django \texttt{AppConfig} registering the app under the name \texttt{search}. Referenced in \texttt{settings.INSTALLED\_APPS}.}{Django refuses to load the app; \texttt{/api/search/} routes disappear.}
+
+\fileEntry{backend/search/models.py}{\reqBadge}{Essentially empty — just \texttt{from django.db import models}. Django requires each app to have a \texttt{models.py} file even if no models are defined. The search app intentionally stores no state of its own; all state lives in \texttt{trade\_data.Transaction}.}{Django management commands (\texttt{makemigrations}, \texttt{check}) warn that the app is misconfigured.}
+
+\fileEntry{backend/search/urls.py}{\reqBadge}{Registers the DRF \texttt{DefaultRouter} for \texttt{SearchViewSet} at the empty prefix and explicitly wires \texttt{supplier-detail/} to avoid router ambiguity.}{All search API routes 404. The frontend's entire search page becomes non-functional.}
+
+\fileEntry{backend/search/views.py}{\reqBadge}{\texttt{SearchViewSet} --- the live DRF entry point. Provides \texttt{list} (main search), \texttt{autocomplete} (product suggestions), \texttt{supplier\_detail} (company deep-dive), and \texttt{supplier\_compare}. Also holds the module-level \texttt{global\_search\_service} singleton so ML models load once at Django boot.}{Every search-related HTTP endpoint returns 404 or 500.}
+
+\subsection{Services layer}
+
+\fileEntry{backend/search/services/\_\_init\_\_.py}{\reqBadge}{Package marker for the \texttt{services} sub-package.}{Imports from \texttt{search.services.*} fail.}
+
+\fileEntry{backend/search/services/search\_service.py}{\reqBadge}{The main orchestrator --- class \texttt{SearchService}. Contains \texttt{execute\_search()} (the 4-stage pipeline: NLU, subcategory resolution, ORM aggregation, composite ranking), \texttt{\_resolve\_subcategories()} (istartswith/icontains/pg\_trgm passes with the disambiguation short-circuit), \texttt{\_orm\_search()} (aggregation + ranking with Redis cache), and \texttt{autocomplete\_products()} (single-query annotated autocomplete).}{The view layer cannot execute any search. The entire search feature is down.}
+
+\fileEntry{backend/search/services/nlu\_engine.py}{\reqBadge}{\texttt{ModernNLUEngine} --- the natural language parser. SetFit intent classifier (with regex pattern rules for semantic-reversal phrases like ``looking for sellers of X''), KeyBERT product-keyword extraction with 40 stopwords, GLiNER entity extraction (loaded but mostly unused), RapidFuzz country resolution with typo tolerance, OpenRouter LLM unified parser (optional), and \texttt{\_build\_price\_filter\_regex} as the deterministic price fallback. Also exposes \texttt{extract\_product\_keyword} --- a pure-regex helper.}{\texttt{search\_service.execute\_search} crashes on the first line of its NLU stage; every query fails.}
+
+\fileEntry{backend/search/services/aggregation.py}{\reqBadge}{\texttt{SupplierAggregator} --- pure Django-ORM aggregation over the \texttt{Transaction} table. Provides \texttt{get\_suppliers\_for\_subcategories()} (main list), \texttt{get\_supplier\_details()} and \texttt{get\_buyer\_details()} (deep-dive stats + sparklines + intelligence metrics), and \texttt{get\_supplier\_comparison()} (side-by-side). Applies the intent/scope $\rightarrow$ trade\_type mapping and the post-aggregation price HAVING filter.}{\texttt{search\_service} cannot produce supplier lists or detail pages; the entire search + company pages become non-functional.}
+
+\subsection{Management commands}
+
+\fileEntry{backend/search/management/\_\_init\_\_.py}{\reqBadge}{Marks \texttt{management} as a package so Django discovers the nested \texttt{commands} directory.}{Django cannot load custom commands from this app.}
+
+\fileEntry{backend/search/management/commands/\_\_init\_\_.py}{\reqBadge}{Marks the \texttt{commands} directory.}{\texttt{python manage.py sync\_search} fails with \texttt{Unknown command}.}
+
+\fileEntry{backend/search/management/commands/sync\_search.py}{\optBadge}{Indexes every \texttt{Transaction} row into OpenSearch as a hybrid BM25 + kNN index (\texttt{all-MiniLM-L6-v2} embeddings, 384-d vectors). Only relevant when the OpenSearch path is enabled --- currently the live search path has \texttt{if False} hardcoded, so this command is a dormant utility.}{No effect on the running app. If you ever re-enable OpenSearch, the feature can't be initialized.}
+
+\subsection{Tests}
+
+\fileEntry{backend/search/tests/\_\_init\_\_.py}{\optBadge}{Marks the \texttt{tests} package for pytest/Django test discovery.}{Tests stop being auto-discovered.}
+
+\fileEntry{backend/search/tests/test\_scope\_consistency.py}{\optBadge}{Single unit test that mocks \texttt{Transaction.objects} and verifies the aggregator passes the \texttt{product\_item\_filter} correctly through the Django ORM chain. Prevents a regression where the detail page and the list page would disagree on shipment counts.}{No impact at runtime. You lose one regression test.}
+
+\subsection{Migrations}
+
+\fileEntry{backend/search/migrations/ (directory)}{\reqBadge}{Standard Django migrations directory. The search app defines no models of its own, so this contains only an \texttt{\_\_init\_\_.py} marker.}{\texttt{makemigrations} complains that the app has no migrations module.}
+
+\subsection{Trained ML models}
+
+\fileEntry{backend/search/models/intent\_model/ (directory)}{\reqBadge}{The trained SetFit BUY/SELL intent classifier (\texttt{BAAI/bge-small-en-v1.5} backbone + sklearn logistic head). Contains the SentenceTransformer body (\texttt{model.safetensors}, \texttt{config.json}, \texttt{tokenizer.json}, \texttt{vocab.txt}, \texttt{special\_tokens\_map.json}, \texttt{sentence\_bert\_config.json}, \texttt{modules.json}, \texttt{config\_sentence\_transformers.json}, \texttt{1\_Pooling/}, \texttt{2\_Normalize/}) and the head (\texttt{model\_head.pkl}, \texttt{config\_setfit.json}) --- 129 MB total.}{NLU falls back to the regex intent detector. Basic BUY/SELL queries still work, but the model's generalization to unusual phrasings is lost.}
+
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════
+% PROJECT ROOT
+% ═══════════════════════════════════════════════════════════════════
+\section{Project Root}
+
+This section covers every file at the top level of the repository (not
+inside any subdirectory).
+
+\subsection{Configuration and Docker}
+
+\fileEntry{.gitignore}{\reqBadge}{Repository-wide Git ignore rules — excludes \texttt{.venv/}, \texttt{node\_modules/}, \texttt{\_\_pycache\_\_/}, compiled assets, credentials, etc.}{Git starts tracking junk (venvs, node modules, build artifacts), polluting commits.}
+
+\fileEntry{.dockerignore}{\optBadge}{Excludes files from the Docker build context when building an image from the project root.}{Only matters if you ship a root-level Docker image. Larger build contexts otherwise.}
+
+\fileEntry{docker-compose.yml}{\optBadge}{Spins up OpenSearch + OpenSearch Dashboards for local dev. The live search pipeline has the OpenSearch path disabled (\texttt{if False}), so this is a dormant utility. Required only if you plan to re-enable OpenSearch as the BM25 fast path.}{Local OpenSearch stack can no longer be brought up via \texttt{docker compose}. The running app is unaffected.}
+
+\subsection{Documentation}
+
+\fileEntry{README.md}{\optBadge}{Main repository README --- project overview and quick-start instructions. 118 KB; partially outdated.}{New contributors lose their landing-page orientation.}
+
+\fileEntry{SUGGESTED\_IMRPOVEMENTS.md}{\optBadge}{Suggested-improvements document (filename has a typo: ``IMRP'' instead of ``IMPR'').}{No runtime impact.}
+
+\fileEntry{SRS Main.docx}{\optBadge}{Word version of the Software Requirements Specification. Academic deliverable for the FYP.}{Lose the editable version of the SRS.}
+
+\fileEntry{SRS Main.pdf}{\optBadge}{PDF export of the SRS.}{Lose the read-only version of the SRS.}
+
+\subsection{Setup scripts}
+
+\fileEntry{setup\_linux.sh}{\reqBadge}{Linux setup script: creates the venv, installs dependencies, initializes the Postgres database, runs migrations, seeds data.}{Fresh-environment setup on Linux no longer works end-to-end.}
+
+\fileEntry{setup\_mac.sh}{\optBadge}{macOS equivalent.}{macOS contributors must set up manually.}
+
+\fileEntry{setup\_windows.ps1}{\optBadge}{Windows PowerShell equivalent.}{Windows contributors must set up manually.}
+
+\subsection{Data inputs at root}
+
+\fileEntry{companies.xlsx}{\optBadge}{Seed company list (21 KB) --- imported by \texttt{load\_data.py}.}{Fresh DB seeding of the companies table fails.}
+
+\fileEntry{keycontacts.xlsx}{\optBadge}{Seed key-contacts list imported by \texttt{load\_data.py}.}{Fresh DB seeding of the key contacts fails.}
+
+\fileEntry{import\_data\_1year.xlsx}{\optBadge}{Raw 1-year import transactions (334 KB), used as source data for seeding the Transaction table.}{Cannot re-seed transactions from scratch.}
+
+\fileEntry{export\_data.xlsx}{\optBadge}{Raw export transactions (665 KB). The current DB is import-only, so this is prepared for a future ingestion path that is not yet wired up.}{Lose a staging source for future export ingestion.}
+
+
+\subsection{Python utility scripts at root}
+
+
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════
+% BACKEND — ROOT CRUFT (configuration + dev scripts + graphs)
+% ═══════════════════════════════════════════════════════════════════
+\section{Backend — Top-Level Files (\texttt{backend/*})}
+
+Everything under \texttt{backend/} that is not inside a Django app
+directory. After the April 2026 dev-cruft cleanup, this section now
+contains only live configuration files, the GNN graph data files used
+by \texttt{trade\_ledger}, the Puppeteer PDF-export script, and a few
+optional seed/recovery helpers. The $\sim$60 debug scripts and $\sim$60
+stale output logs that previously lived here have all been removed.
+
+\subsection{Live Django machinery}
+
+\fileEntry{backend/manage.py}{\reqBadge}{Django management entry point. Also contains the env-var preamble that suppresses TensorFlow / transformers / matplotlib warnings at startup.}{Project cannot run (\texttt{python manage.py runserver} fails).}
+
+\fileEntry{backend/.env}{\reqBadge}{Environment variables for Django (\texttt{SECRET\_KEY}, optionally \texttt{OPENROUTER\_API\_KEY}, DB overrides, etc.). Loaded by \texttt{python-dotenv} in \texttt{settings.py}.}{\texttt{settings.SECRET\_KEY} is empty; Django refuses to boot.}
+
+\fileEntry{backend/.gitignore}{\reqBadge}{Backend-specific Git ignore rules (\texttt{\_\_pycache\_\_/}, \texttt{.venv/}, \texttt{*.pyc}, etc.).}{Redundant with the root \texttt{.gitignore} but removes a safety net.}
+
+\fileEntry{backend/conftest.py}{\reqBadge}{Pytest fixtures/config loaded automatically by every test file.}{Backend test suite stops running.}
+
+\fileEntry{backend/pytest.ini}{\reqBadge}{Pytest configuration --- declares \texttt{DJANGO\_SETTINGS\_MODULE=zarailink.settings} so tests can access the ORM.}{Tests fail on import because Django is not configured.}
+
+\fileEntry{backend/requirements.txt}{\reqBadge}{Pinned Python dependencies: Django 4.2, DRF, psycopg2, sentence-transformers, setfit, keybert, gliner, rapidfuzz, lightgbm, and others.}{Fresh installs cannot reproduce the dependency graph.}
+
+\fileEntry{backend/Dockerfile}{\optBadge}{Container image definition for the backend service.}{Cannot build a backend Docker image.}
+
+\fileEntry{backend/docker-compose.yml}{\optBadge}{Local \texttt{docker compose} file for standing up the backend container alongside Postgres.}{Breaks the compose-based dev workflow only.}
+
+\fileEntry{backend/entrypoint.sh}{\optBadge}{Shell script used as the Docker container entrypoint (waits for Postgres, runs migrations, launches Gunicorn).}{Breaks containerized deployment only.}
+
+\fileEntry{backend/package.json}{\optBadge}{Node manifest used solely by \texttt{generate\_comparison\_pdf.js} (Puppeteer for a PDF export). Not used by the Python backend itself.}{The Puppeteer-based comparison-PDF export fails.}
+
+\fileEntry{backend/package-lock.json}{\optBadge}{NPM lockfile for the above.}{Same.}
+
+\subsection{Data loaders and seed fixtures}
+
+\fileEntry{backend/populate\_company\_products.py}{\optBadge}{One-shot ORM script that fills \texttt{CompanyProduct} rows from transaction data. Used only after fresh seeding.}{Cannot rebuild the CompanyProduct table from scratch.}
+
+\fileEntry{backend/subscriptions\_only.json}{\optBadge}{17 KB partial fixture containing only subscription rows. Used for selective re-seeding.}{Lose the ability to re-seed just the subscriptions table.}
+
+\subsection{GraphML files}
+
+All four \texttt{.graphml} files at the backend root are read by live
+code in \texttt{trade\_ledger} (link prediction, GNN embeddings). The
+three dead files (\texttt{company\_company\_graph}, \texttt{company\_country\_graph},
+\texttt{product\_country\_graph}) were removed in the April 2026 cleanup.
+
+\fileEntry{backend/buyer\_seller\_graph.graphml}{\reqBadge}{Buyer-seller edge graph. Loaded by \texttt{trade\_ledger.services.link\_prediction} for the link-prediction API.}{Link-prediction endpoint fails until regenerated by \texttt{python manage.py build\_gnn\_graphs}.}
+
+\fileEntry{backend/company\_product\_graph.graphml}{\reqBadge}{Company $\leftrightarrow$ product bipartite graph, consumed by the GNN embedding command.}{GNN embedding regeneration breaks.}
+
+\fileEntry{backend/product\_co\_trade\_graph.graphml}{\reqBadge}{Product co-occurrence graph used by GNN embeddings.}{Same.}
+
+\fileEntry{backend/seller\_product\_graph.graphml}{\reqBadge}{Seller $\leftrightarrow$ product graph written by \texttt{build\_gnn\_graphs}.}{Regenerated automatically by the same management command.}
+
+
+\subsection{Binaries and cross-platform leftovers}
+
+\fileEntry{backend/generate\_comparison\_pdf.js}{\optBadge}{Puppeteer-driven Node script that renders a comparison report to PDF. Used only if a Django view shells out to it. No Python import of this file exists.}{The Puppeteer-based PDF comparison export breaks. Shell-out path is the only dependency.}
+
+\subsection{backend/ dev scripts — all DELETED}
+
+\begin{tcolorbox}[
+  enhanced,
+  colback=zarPaleGreen,
+  colframe=zarMidGreen,
+  arc=1pt,
+  fontupper=\footnotesize\ttfamily,
+  title={\small\bfseries\color{white} backend/ dev scripts — all DELETED},
+  coltitle=white,
+  colbacktitle=zarMidGreen,
+]
+All files in this list have been removed from the repository as part of
+the dev-cruft cleanup. The scripts that previously lived here were
+standalone dev-time helpers not imported by any Django app, management
+command, or test file --- all classified \deadBadge. Impact: zero.
+\end{tcolorbox}
+
+\subsection{Stale debug output (.txt / .json / .log) — all DELETED}
+
+\begin{tcolorbox}[
+  enhanced,
+  colback=zarPaleGreen,
+  colframe=zarMidGreen,
+  arc=1pt,
+  fontupper=\footnotesize\ttfamily,
+  title={\small\bfseries\color{white} backend/ stale outputs — all DELETED},
+  coltitle=white,
+  colbacktitle=zarMidGreen,
+]
+All files in this list have been removed from the repository as part of
+the dev-cruft cleanup. These were stale output logs written by the debug
+scripts during iterative debugging. None were read by any live code ---
+all classified \deadBadge. Impact: zero.
+\end{tcolorbox}
+
+\subsection{Backend sub-directories listed as folders}
+
+\fileEntry{backend/staticfiles/}{\optBadge}{Django \texttt{collectstatic} output, regenerated by running the command.}{Production static serving breaks until you re-run \texttt{collectstatic}.}
+
+\fileEntry{backend/scripts/}{\optBadge}{Directory containing the SetFit training files: \texttt{train\_intent\_model.py} (the training script) and \texttt{training\_data.csv} (the 30-sample training dataset). All other debug scripts that previously lived here have been removed.}{Lose the SetFit retraining path.}
+
+\fileEntry{backend/templates/admin/base\_site.html}{\reqBadge}{Django admin base-template override --- customizes the admin site header/branding.}{Admin branding reverts to the default Django look. The admin still works.}
+
+\fileEntry{backend/static/admin/css/custom\_admin.css}{\optBadge}{Custom admin CSS override.}{Admin reverts to default styling.}
+
+\fileEntry{backend/static/css/custom\_admin.css}{\optBadge}{Duplicate admin CSS at another static path.}{Same. Likely one of these is unused.}
+
+\subsection{utils/ — Utility package}
+
+A small utility package providing AI and Redis helpers imported by live Django code.
+
+\fileEntry{backend/utils/\_\_init\_\_.py}{\reqBadge}{Package marker --- makes \texttt{utils} importable as \texttt{from utils.ai\_service import AIService}.}{Imports from \texttt{utils.*} raise \texttt{ModuleNotFoundError}.}
+
+\fileEntry{backend/utils/ai\_service.py}{\optBadge}{\texttt{AIService} class wrapping the OpenRouter / OpenAI API. Provides \texttt{smart\_search()} (used by \texttt{companies.views.CompanyViewSet} for AI-assisted directory search) and \texttt{get\_embedding()} (used by the now-deleted \texttt{generate\_embeddings} management command). Requires \texttt{OPENROUTER\_API\_KEY} in \texttt{.env}.}{AI smart-search in the company directory falls back to the standard ORM filter. No crash --- the view handles the absence gracefully.}
+
+
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════
+% TOP-LEVEL NON-APP DIRECTORIES
+% ═══════════════════════════════════════════════════════════════════
+\section{Other Top-Level Directories}
+
+\subsection{scripts/ — Tooling}
+
+\fileEntry{scripts/md\_to\_pdf.py}{\optBadge}{WeasyPrint-based script for rendering markdown documents into styled PDFs. Invoked manually.}{Lose the ability to regenerate PDF documents from markdown sources.}
+
+\subsection{Resources/ — SRS and documentation assets}
+
+Reference images and PDFs used in the Software Requirements
+Specification and other academic documentation. All marked
+\optBadge{} --- no runtime impact, but they are the figures embedded
+in the SRS.
+
+\fileRow{Resources/1,.pdf}{\optBadge}{Reference material for the SRS (532 KB).}{Figure missing from the SRS.}
+\fileRow{Resources/1.png}{\optBadge}{SRS figure (133 KB).}{Figure missing.}
+\fileRow{Resources/2.pdf}{\optBadge}{Reference (428 KB).}{Figure missing.}
+\fileRow{Resources/2.png}{\optBadge}{SRS figure (88 KB).}{Figure missing.}
+\fileRow{Resources/3.jpeg}{\optBadge}{SRS image (50 KB).}{Figure missing.}
+\fileRow{Resources/3.pdf}{\optBadge}{Reference (362 KB).}{Figure missing.}
+\fileRow{Resources/4.pdf}{\optBadge}{Reference (457 KB).}{Figure missing.}
+\fileRow{Resources/4.png}{\optBadge}{SRS figure (59 KB).}{Figure missing.}
+\fileRow{Resources/5.pdf}{\optBadge}{Reference (578 KB).}{Figure missing.}
+\fileRow{Resources/5.png}{\optBadge}{SRS figure (59 KB).}{Figure missing.}
+
+\subsection{docs/ — Audit source}
+
+The \texttt{docs/} directory contains the LaTeX source and compiled PDF
+for this audit document. Build artefacts (\texttt{.aux}, \texttt{.log},
+\texttt{.out}, \texttt{.toc}) are auto-generated and safe to delete.
+
+\fileEntry{docs/file\_audit.tex}{\optBadge}{LaTeX source for this file-audit document. Edit here and recompile to update the PDF.}{Cannot regenerate \texttt{docs/file\_audit.pdf} without rewriting from scratch.}
+
+\fileEntry{docs/file\_audit.pdf}{\optBadge}{Compiled PDF of this audit. Regenerated by running \texttt{pdflatex file\_audit.tex} twice in \texttt{docs/}.}{Lose the rendered audit; the source \texttt{.tex} is still intact.}
+
+\subsection{.github/ — CI configuration}
+
+\fileEntry{.github/workflows/ci.yml}{\optBadge}{GitHub Actions workflow that runs backend pytest and frontend \texttt{npm test} on push/PR to main.}{Continuous integration stops on the main branch. Local development is unaffected.}
+
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════
+% BACKEND — DJANGO APPS
+% ═══════════════════════════════════════════════════════════════════
+\section{Backend — Django Apps}
+
+Seven live Django apps under \texttt{backend/}, registered in
+\texttt{zarailink/settings.INSTALLED\_APPS}:
+(\texttt{accounts}, \texttt{companies}, \texttt{market\_intel},
+\texttt{subscriptions}, \texttt{trade\_data}, \texttt{trade\_ledger},
+\texttt{trade\_lens}, plus \texttt{search} which has its own section).
+The empty scaffold apps (\texttt{home}, \texttt{trade\_directory}) have
+been removed as part of the April 2026 cleanup.
+
+% ───── Django project package ─────
+\subsection{Django project package (\texttt{backend/zarailink/})}
+
+The four-file nerve center of the project. None of these are optional.
+
+\fileEntry{backend/zarailink/\_\_init\_\_.py}{\reqBadge}{Empty package marker for the Django project.}{Project stops being a Python package; Django refuses to boot.}
+
+\fileEntry{backend/zarailink/settings.py}{\reqBadge}{Full Django settings: \texttt{INSTALLED\_APPS}, DRF, PostgreSQL creds, Redis auto-detection, CORS/CSRF, email, CKEditor 5, logging config, and the startup env-var noise suppression for TensorFlow/transformers/matplotlib. Hardcodes \texttt{DEBUG=True} for dev.}{Django has no configuration and refuses to start.}
+
+\fileEntry{backend/zarailink/urls.py}{\reqBadge}{Root URLConf — mounts \texttt{accounts}, \texttt{subscriptions}, \texttt{market-intel}, \texttt{companies}, \texttt{trade\_ledger}, \texttt{trade-lens}, \texttt{search}, \texttt{ckeditor5}, the DRF login view, and a SPA catch-all that serves the React \texttt{index.html}.}{All HTTP routes 404.}
+
+\fileEntry{backend/zarailink/wsgi.py}{\reqBadge}{WSGI application factory for Gunicorn/mod\_wsgi.}{Production servers cannot boot the Django app.}
+
+\fileEntry{backend/zarailink/asgi.py}{\reqBadge}{ASGI application factory for Daphne/Uvicorn.}{Async/ASGI servers cannot boot the app.}
+
+% ───── accounts ─────
+\subsection{accounts/ — Authentication \& user management}
+
+Custom \texttt{User} model (email-based, with verification token and
+\texttt{token\_balance} economy), signup/login/logout/verify/resend/forgot-password
+REST endpoints using session auth, and an audit-log scaffold.
+
+\fileEntry{backend/accounts/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Django app loader cannot import the app.}
+
+\fileEntry{backend/accounts/apps.py}{\reqBadge}{\texttt{AppConfig} registering \texttt{accounts} with Django.}{\texttt{INSTALLED\_APPS} registration fails.}
+
+\fileEntry{backend/accounts/admin.py}{\reqBadge}{Registers \texttt{User} and \texttt{UserAlertPreference} in the Django admin with fieldsets, bulk token-grant actions, and a verify-users action.}{Admin panel loses user management; APIs still work.}
+
+\fileEntry{backend/accounts/models.py}{\reqBadge}{Custom \texttt{User} model with email PK, \texttt{verification\_token}, \texttt{token\_balance} methods, plus \texttt{UserAlertPreference}. Referenced by \texttt{AUTH\_USER\_MODEL}.}{Entire app cannot start --- Django crashes at import.}
+
+\fileEntry{backend/accounts/forms.py}{\reqBadge}{\texttt{UserRegisterForm} (extends Django's \texttt{UserCreationForm}), splits \texttt{name} into first/last and sets \texttt{is\_active=False} on creation.}{\texttt{api\_signup} view crashes on import.}
+
+\fileEntry{backend/accounts/views.py}{\reqBadge}{Session-auth API views: \texttt{api\_signup}, \texttt{api\_login}, \texttt{api\_logout}, \texttt{api\_check\_auth}, \texttt{api\_verify\_email}, \texttt{api\_forgot\_password}, \texttt{api\_resend\_verification}. Sends HTML verification emails.}{All \texttt{/accounts/*} endpoints 404; login, signup, email verification broken.}
+
+\fileEntry{backend/accounts/urls.py}{\reqBadge}{URL map for the accounts endpoints and the Django password\_reset\_confirm/complete views.}{Accounts URL include breaks; 404 on all auth routes.}
+
+
+\fileEntry{backend/accounts/templates/registration/password\_reset\_complete.html}{\reqBadge}{Success page for Django's built-in \texttt{password\_reset\_complete} view.}{Password reset completion page 500s.}
+
+\fileEntry{backend/accounts/templates/registration/password\_reset\_confirm.html}{\reqBadge}{Form template for Django's \texttt{password\_reset\_confirm} view.}{Password reset link flow 500s.}
+
+\fileEntry{backend/accounts/tests/\_\_init\_\_.py}{\optBadge}{Test package marker.}{Pytest collection of accounts tests breaks.}
+
+\fileEntry{backend/accounts/tests/test\_models.py}{\optBadge}{Unit tests for User creation, verification token, token balance, and \texttt{UserAlertPreference}.}{Lose unit-test coverage.}
+
+\fileEntry{backend/accounts/tests/test\_views.py}{\optBadge}{Integration tests for the signup/login/verify/forgot-password/resend flows.}{Lose integration-test coverage.}
+
+\fileEntry{backend/accounts/migrations/\_\_init\_\_.py}{\reqBadge}{Marks \texttt{migrations/} as a package.}{Django migration loader cannot find accounts migrations.}
+
+\fileEntry{backend/accounts/migrations/0001\_initial.py}{\reqBadge}{Schema: \texttt{CreateModel} \texttt{User} (email unique, verification\_token UUID, etc.).}{Fresh databases cannot create the User table.}
+
+\fileEntry{backend/accounts/migrations/0002\_user\_job\_title\_user\_phone\_number\_useralertpreference.py}{\reqBadge}{Adds \texttt{phone\_number} and \texttt{job\_title} to User; creates \texttt{UserAlertPreference}.}{Migration chain breaks.}
+
+\fileEntry{backend/accounts/migrations/0003\_user\_token\_balance.py}{\reqBadge}{Adds \texttt{token\_balance} (int, default 0) to User.}{Token economy column missing; migration chain breaks.}
+
+\fileEntry{backend/accounts/migrations/0004\_alter\_user\_managers.py}{\reqBadge}{Resets the User model's \texttt{managers} list.}{Migration chain breaks.}
+
+% ───── companies ─────
+\subsection{companies/ — Trade directory}
+
+Company/directory models, DRF viewsets for browsing and filtering,
+AI-assisted search, token-gated key-contact unlocks, and several
+management commands --- some live, some one-shot data patches.
+
+\fileEntry{backend/companies/\_\_init\_\_.py}{\reqBadge}{Package marker.}{App cannot be imported.}
+\fileEntry{backend/companies/apps.py}{\reqBadge}{\texttt{CompaniesConfig}.}{App registration fails.}
+\fileEntry{backend/companies/admin.py}{\reqBadge}{Registers Sector, CompanyRole, CompanyType, Company (with CKEditor 5), CompanyProduct, KeyContact (with unlock inline), KeyContactUnlock, Image.}{Admin loses directory management; APIs still work.}
+\fileEntry{backend/companies/models.py}{\reqBadge}{Core directory models: Sector, CompanyRole, CompanyType, Image (polymorphic), Company (verification\_status, sentiment, FKs), CompanyProduct (hsn\_code), KeyContact, KeyContactUnlock, CompanyMetricsCache, IngestionLog, AdminAnnouncement. Registers a few models with \texttt{django-auditlog}.}{Trade Directory app cannot load; other apps that FK to Company also break.}
+\fileEntry{backend/companies/serializers.py}{\reqBadge}{DRF serializers for Sector/Role/Type, Company list/detail, and a dynamic \texttt{KeyContactSerializer} that masks phone/email/whatsapp unless unlocked.}{Company and KeyContact API responses break.}
+\fileEntry{backend/companies/views.py}{\reqBadge}{\texttt{CompanyViewSet} (filtered by country/sector/role/type, with optional AI smart-search), \texttt{KeyContactViewSet} with the token-deducting unlock action, Sector/Type/Role list views.}{\texttt{/api/companies/*}, \texttt{/api/key-contacts/*}, and the sector/role/type endpoints all 404.}
+\fileEntry{backend/companies/urls.py}{\reqBadge}{\texttt{DefaultRouter} registration for the viewsets, plus lookup endpoints.}{URL include breaks; all directory endpoints 404.}
+\fileEntry{backend/companies/tests/\_\_init\_\_.py}{\optBadge}{Test package marker.}{Pytest collection breaks for companies tests.}
+\fileEntry{backend/companies/tests/test\_views.py}{\optBadge}{Integration tests for company filtering, pagination, and key-contact unlock (with/without tokens).}{Lose test coverage.}
+\fileEntry{backend/companies/management/\_\_init\_\_.py}{\reqBadge}{Package marker.}{\texttt{manage.py} cannot find companies commands.}
+\fileEntry{backend/companies/management/commands/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Commands undiscoverable.}
+\fileEntry{backend/companies/management/commands/seed\_roles.py}{\optBadge}{Seeds CompanyRole with the 5 canonical roles (Buyer, Supplier, Distributor, Manufacturer, Service Provider).}{Fresh-DB seed missing; can be reproduced by hand.}
+\fileEntry{backend/companies/management/commands/setup\_company\_roles.py}{\optBadge}{Alternative seeder creating Buyers/Suppliers/Both and backfilling NULL roles. Redundant with \texttt{seed\_roles.py}.}{None (duplicate).}
+\fileEntry{backend/companies/migrations/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Migration loader breaks.}
+\fileEntry{backend/companies/migrations/0001\_initial.py}{\reqBadge}{Schema: creates Sector, CompanyRole, CompanyType, Image, Company, CompanyProduct, KeyContact, KeyContactUnlock, CompanyMetricsCache, IngestionLog, AdminAnnouncement; initial indexes.}{Fresh DB cannot create companies schema.}
+\fileEntry{backend/companies/migrations/0002\_companyproduct\_hsn\_code.py}{\reqBadge}{Adds \texttt{CompanyProduct.hsn\_code} (max\_length 20).}{Migration chain breaks.}
+\fileEntry{backend/companies/migrations/0003\_company\_market\_sentiment.py}{\reqBadge}{Adds \texttt{Company.market\_sentiment} (default ``Neutral'').}{Migration chain breaks.}
+
+% ───── market_intel ─────
+\subsection{market\_intel/ — News \& recommendations}
+
+Alert/NewsArticle/SavedAnalysis models (no endpoints or admin) plus a
+\texttt{UserInteraction} model and a single recommendations endpoint
+backed by Redis vector similarity over the logged interactions.
+
+\fileEntry{backend/market\_intel/\_\_init\_\_.py}{\reqBadge}{Package marker.}{App cannot import.}
+\fileEntry{backend/market\_intel/apps.py}{\reqBadge}{\texttt{MarketIntelConfig}.}{App registration breaks.}
+\fileEntry{backend/market\_intel/models.py}{\reqBadge}{\texttt{Alert} (severity, FK to Sector), \texttt{NewsArticle} (FK Alert), \texttt{SavedAnalysis} (user bookmarks), \texttt{UserInteraction} (user-company-action tracking).}{The interaction write in \texttt{companies.views} and the recommendations API both fail.}
+\fileEntry{backend/market\_intel/views.py}{\reqBadge}{\texttt{recommendations\_api} --- averages Redis vectors from a user's recent interactions and returns the top-k similar companies.}{\texttt{/api/market-intel/recommendations/} 404s.}
+\fileEntry{backend/market\_intel/urls.py}{\reqBadge}{URLconf mapping \texttt{recommendations/} to the view.}{URL include breaks.}
+\fileEntry{backend/market\_intel/migrations/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Migration loader breaks.}
+\fileEntry{backend/market\_intel/migrations/0001\_initial.py}{\reqBadge}{Creates Alert, NewsArticle, SavedAnalysis.}{Fresh DB schema creation fails.}
+\fileEntry{backend/market\_intel/migrations/0002\_userinteraction.py}{\reqBadge}{Creates UserInteraction.}{Interaction table missing.}
+
+% ───── subscriptions ─────
+\subsection{subscriptions/ — Plans, tokens, redeem codes}
+
+Subscription plans, user subscriptions, token purchases, and redeem
+codes that replace real payments for the MVP. Two APIs: list plans,
+redeem code.
+
+\fileEntry{backend/subscriptions/\_\_init\_\_.py}{\reqBadge}{Package marker.}{App cannot import.}
+\fileEntry{backend/subscriptions/apps.py}{\reqBadge}{\texttt{SubscriptionsConfig}.}{App registration breaks.}
+\fileEntry{backend/subscriptions/admin.py}{\reqBadge}{Admin for \texttt{SubscriptionPlan}, \texttt{RedeemCode} (with batch code generation), \texttt{UserSubscription}, \texttt{TokenPurchase}.}{Admin loses subscription tooling; APIs still work.}
+\fileEntry{backend/subscriptions/models.py}{\reqBadge}{Plans, user subscriptions, token purchases, redeem codes (with \texttt{generate\_code} and atomic \texttt{redeem()} that deposits tokens).}{Redeem/plan APIs and admin break.}
+\fileEntry{backend/subscriptions/views.py}{\reqBadge}{\texttt{list\_plans} (public), \texttt{redeem\_code} (authenticated, atomic), \texttt{generate\_codes\_view} (staff-only).}{\texttt{/api/subscriptions/*} endpoints break.}
+\fileEntry{backend/subscriptions/urls.py}{\reqBadge}{URL map for plans/redeem/generate-codes.}{URL include breaks.}
+\fileEntry{backend/subscriptions/tests/\_\_init\_\_.py}{\optBadge}{Test marker.}{Pytest collection breaks for this app.}
+\fileEntry{backend/subscriptions/tests/test\_views.py}{\optBadge}{Integration tests for listing plans and redeeming codes (valid/expired/already redeemed).}{Lose test coverage.}
+\fileEntry{backend/subscriptions/templatetags/\_\_init\_\_.py}{\reqBadge}{Package marker for templatetags.}{\texttt{admin\_extras} tag unavailable.}
+\fileEntry{backend/subscriptions/templatetags/admin\_extras.py}{\optBadge}{Template tag \texttt{get\_subscription\_plans} intended for admin templates. Not actually loaded anywhere in the current admin base template.}{None.}
+\fileEntry{backend/subscriptions/management/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Commands undiscoverable.}
+\fileEntry{backend/subscriptions/management/commands/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Commands undiscoverable.}
+\fileEntry{backend/subscriptions/management/commands/create\_plans.py}{\optBadge}{Seeds the six canonical plans (500/5k/15k monthly, 6k/60k/900k annual) in PKR.}{Fresh DB requires manual plan seeding.}
+\fileEntry{backend/subscriptions/management/commands/generate\_codes.py}{\optBadge}{CLI for bulk-generating redeem codes for a plan.}{Admin bulk action is still available.}
+\fileEntry{backend/subscriptions/migrations/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Migration loader breaks.}
+\fileEntry{backend/subscriptions/migrations/0001\_initial.py}{\reqBadge}{Creates SubscriptionPlan, UserSubscription, TokenPurchase.}{Fresh DB schema creation fails.}
+\fileEntry{backend/subscriptions/migrations/0002\_redeemcode.py}{\reqBadge}{Creates RedeemCode with indexed code + status.}{Migration chain breaks.}
+
+\newpage
+
+% ───── trade_data ─────
+\subsection{trade\_data/ — Transactions \& embeddings}
+
+The canonical transaction dataset --- Product/Category/SubCategory/Item
+hierarchy, the \texttt{Transaction} table, and
+\texttt{CompanyEmbedding}/\texttt{ProductEmbedding} for ML. The app has
+no views or URLs --- it is a pure model layer consumed by
+\texttt{trade\_ledger}, \texttt{search}, and \texttt{market\_intel}.
+
+\fileEntry{backend/trade\_data/\_\_init\_\_.py}{\reqBadge}{Package marker.}{App cannot import.}
+\fileEntry{backend/trade\_data/apps.py}{\reqBadge}{\texttt{TradeDataConfig}.}{App registration breaks.}
+\fileEntry{backend/trade\_data/models.py}{\reqBadge}{Legacy \texttt{HsToProductMap}, the Product/Category/SubCategory/Item hierarchy, \texttt{Transaction} (trade\_type, buyer, seller, origin/destination\_country, qty\_kg/qty\_mt, usd/pkr, composite indexes), \texttt{CompanyEmbedding}, \texttt{ProductEmbedding}.}{\texttt{trade\_ledger}, \texttt{search}, and the recommendations endpoint all crash.}
+\fileEntry{backend/trade\_data/management/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Commands undiscoverable.}
+\fileEntry{backend/trade\_data/management/commands/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Commands undiscoverable.}
+\fileEntry{backend/trade\_data/migrations/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Migration loader breaks.}
+\fileEntry{backend/trade\_data/migrations/0001\_initial.py}{\reqBadge}{Schema: initial HsToProductMap, Transaction, legacy AggProductMonthCountry, AggCompanyMonthProduct.}{Fresh DB creation fails.}
+\fileEntry{backend/trade\_data/migrations/0002\_remove\_transaction\_...}{\reqBadge}{Heavy refactor of Transaction --- removes old indexes/fields, adds \texttt{hs\_code}, \texttt{buyer}, \texttt{seller}, country columns, \texttt{qty\_kg}, \texttt{qty\_mt}, \texttt{usd}; re-adds indexes.}{Migration chain breaks.}
+\fileEntry{backend/trade\_data/migrations/0003\_alter\_transaction\_buyer\_...}{\reqBadge}{Widens \texttt{buyer}, \texttt{seller}, country \texttt{max\_length}.}{Migration chain breaks.}
+\fileEntry{backend/trade\_data/migrations/0004\_alter\_transaction\_category\_...}{\reqBadge}{\texttt{AlterField} on 5 Transaction text fields.}{Migration chain breaks.}
+\fileEntry{backend/trade\_data/migrations/0005\_remove\_hstoproductmap\_product\_...}{\reqBadge}{Removes \texttt{HsToProductMap.product}.}{Migration chain breaks.}
+\fileEntry{backend/trade\_data/migrations/0006\_product\_productcategory\_...}{\reqBadge}{Creates Product, ProductCategory; removes Transaction.category/hs\_code/product; creates ProductSubCategory, ProductItem; adds Transaction.product\_item FK.}{Product hierarchy missing; trade\_ledger+search crash.}
+\fileEntry{backend/trade\_data/migrations/0007\_alter\_product\_name\_...}{\reqBadge}{Widens names and hs\_codes across the product hierarchy.}{Migration chain breaks.}
+\fileEntry{backend/trade\_data/migrations/0008\_transaction\_trade\_type.py}{\reqBadge}{Adds \texttt{trade\_type} (IMPORT/EXPORT, indexed) to Transaction.}{Import/export split broken.}
+\fileEntry{backend/trade\_data/migrations/0009\_companyembedding\_productembedding.py}{\reqBadge}{Creates CompanyEmbedding and ProductEmbedding (JSONField embeddings).}{GNN/similar-companies storage missing.}
+\fileEntry{backend/trade\_data/migrations/0010\_remove\_aggcompanymonthproduct\_...}{\reqBadge}{Removes legacy aggregate tables, adds origin\_country/destination\_country, fresh Transaction indexes.}{Migration chain breaks.}
+\fileEntry{backend/trade\_data/migrations/0011\_alter\_productsubcategory\_hs\_code.py}{\reqBadge}{Widens ProductSubCategory.hs\_code.}{Migration chain breaks.}
+\fileEntry{backend/trade\_data/migrations/0012\_auto\_20260317\_2359.py}{\reqBadge}{Enables Postgres \texttt{TrigramExtension} and \texttt{BtreeGinExtension} for fuzzy search.}{Trigram/GIN indexes unavailable; search degrades.}
+\fileEntry{backend/trade\_data/migrations/0013\_transaction\_tx\_type\_product\_idx\_and\_more.py}{\reqBadge}{Adds the three composite Transaction indexes \texttt{(trade\_type, product\_item)}, \texttt{(product\_item, trade\_type, seller)}, \texttt{(product\_item, trade\_type, buyer)} for hot search paths.}{Search aggregation queries slow down.}
+
+% ───── trade_ledger ─────
+\subsection{trade\_ledger/ — Trade intelligence APIs}
+
+Exposes the Trade Intelligence endpoints: Explorer, Company Overview /
+Products / Partners / Trends, Compare Companies, Similar Companies,
+and Link Prediction. All views read live from \texttt{trade\_data.Transaction}
+through service modules. The app has \emph{no \texttt{models.py}} and
+\emph{no actual migrations}. Several legacy files reference a
+nonexistent \texttt{trade\_ledger.models} module --- those are dead.
+
+\fileEntry{backend/trade\_ledger/\_\_init\_\_.py}{\reqBadge}{Package marker.}{App cannot import.}
+\fileEntry{backend/trade\_ledger/apps.py}{\reqBadge}{\texttt{TradeLedgerConfig}.}{App registration breaks.}
+\fileEntry{backend/trade\_ledger/urls.py}{\reqBadge}{URL map for \texttt{explorer/}, \texttt{company/<name>/{overview,products,partners,trends,similar,potential-partners,network-influence}}, \texttt{compare/}, \texttt{export-comparison-pdf/}, \texttt{product-clusters/}, \texttt{predict/{sellers,buyers,methods}}.}{All \texttt{/api/explorer/} and \texttt{/api/company/*} endpoints 404.}
+\fileEntry{backend/trade\_ledger/views.py}{\reqBadge}{Function views wrapping the service modules --- the entire Trade Intelligence API surface. Also decorates responses with CompanyEmbedding cluster/pagerank data.}{All trade-intelligence endpoints 404/500.}
+\fileEntry{backend/trade\_ledger/pdf\_export\_view.py}{\reqBadge}{\texttt{export\_comparison\_pdf} --- spawns a Node subprocess invoking \texttt{backend/generate\_comparison\_pdf.js} (Puppeteer) to render a company-comparison PDF and streams it back.}{\texttt{/api/export-comparison-pdf/} breaks.}
+\fileEntry{backend/trade\_ledger/services/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Services imports break.}
+\fileEntry{backend/trade\_ledger/services/company.py}{\reqBadge}{Company-overview aggregations (volume, revenue, MoM growth, top products and partners, partner geography, monthly trend).}{Company overview API breaks.}
+\fileEntry{backend/trade\_ledger/services/compare.py}{\reqBadge}{Per-company comparison aggregation (volume, value, partner diversity HHI, MoM growth, price stddev, pagerank).}{Compare API breaks.}
+\fileEntry{backend/trade\_ledger/services/explorer.py}{\reqBadge}{\texttt{get\_explorer\_companies} --- paginated company listing with direction/date/country/product filters and buyer/seller role classification.}{Explorer API breaks.}
+\fileEntry{backend/trade\_ledger/services/filters.py}{\reqBadge}{Single place that applies direction/company/date/country/product filters onto a Transaction queryset.}{All trade\_ledger services fail to filter.}
+\fileEntry{backend/trade\_ledger/services/gnn.py}{\reqBadge}{\texttt{get\_company\_embedding} and \texttt{get\_similar\_companies} --- cosine similarity over CompanyEmbedding rows with fuzzy-name matching.}{Similar-companies and potential-partners APIs break.}
+\fileEntry{backend/trade\_ledger/services/link\_prediction.py}{\reqBadge}{Node2Vec / common-neighbors / product-cotrade / Jaccard / preferential-attachment / combined buyer-seller predictors using NetworkX GraphML + CompanyEmbedding.}{\texttt{/api/predict/*} APIs break.}
+\fileEntry{backend/trade\_ledger/services/partners.py}{\reqBadge}{YoY growth, top partners, partner geography, product mix per partner.}{Company-partners API breaks.}
+\fileEntry{backend/trade\_ledger/services/products.py}{\reqBadge}{Product-level analytics: YoY growth, per-company product performance, avg-price trends, volume share, co-traded products, product clusters, partner matrix.}{Company-products API breaks.}
+\fileEntry{backend/trade\_ledger/services/trends.py}{\reqBadge}{\texttt{get\_volume\_price\_monthly}, \texttt{get\_yoy\_growth\_by\_quarter} feeding the trends endpoint.}{Company-trends API breaks.}
+\fileEntry{backend/trade\_ledger/tests/\_\_init\_\_.py}{\optBadge}{Test marker.}{Pytest collection breaks for this app.}
+\fileEntry{backend/trade\_ledger/tests/test\_views.py}{\optBadge}{Integration tests for Explorer / company / compare / GNN / link-prediction endpoints.}{Lose test coverage.}
+\fileEntry{backend/trade\_ledger/tests/test\_ai\_accuracy.py}{\optBadge}{Pytest ML-accuracy tests (confidence bounds, non-random predictions, edge cases).}{Lose test coverage.}
+\fileEntry{backend/trade\_ledger/tests/test\_link\_prediction.py}{\optBadge}{Per-method unit tests for link prediction.}{Lose test coverage.}
+\fileEntry{backend/trade\_ledger/management/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Commands undiscoverable.}
+\fileEntry{backend/trade\_ledger/management/commands/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Commands undiscoverable.}
+\fileEntry{backend/trade\_ledger/management/commands/build\_gnn\_graphs.py}{\optBadge}{Builds company-product and buyer-seller GraphML files from Transaction rows using NetworkX. Required only to regenerate the \texttt{.graphml} assets.}{Regeneration of link-prediction graphs breaks.}
+\fileEntry{backend/trade\_ledger/management/commands/generate\_gnn\_embeddings.py}{\optBadge}{Reads GraphML, runs Node2Vec and HDBSCAN, writes CompanyEmbedding/ProductEmbedding rows. Supports a \texttt{--fast} mode.}{GNN prep pipeline missing; app still serves the precomputed rows.}
+\fileEntry{backend/trade\_ledger/migrations/\_\_init\_\_.py}{\reqBadge}{Package marker --- no actual migration files because the app has no models.}{Django startup migration check fails.}
+
+% ───── trade_lens ─────
+\subsection{trade\_lens/ — Product analytics}
+
+Isolated \texttt{TradeLensProduct} and \texttt{TradeLensTransaction}
+tables (independent from \texttt{trade\_data.Transaction}) that feed
+the Trade Lens dashboard widgets. Single \texttt{ReadOnly} ViewSet at
+\texttt{/api/trade-lens/products/} with multiple \texttt{@action}
+endpoints for summary, overview, comparison, global view, details.
+
+\fileEntry{backend/trade\_lens/\_\_init\_\_.py}{\reqBadge}{Package marker.}{App cannot import.}
+\fileEntry{backend/trade\_lens/apps.py}{\reqBadge}{\texttt{TradeLensConfig}.}{App registration breaks.}
+\fileEntry{backend/trade\_lens/admin.py}{\reqBadge}{Admin for TradeLensProduct and TradeLensTransaction.}{Admin loses TradeLens data management; APIs still work.}
+\fileEntry{backend/trade\_lens/models.py}{\reqBadge}{\texttt{TradeLensProduct} (name, hs\_code, category) and \texttt{TradeLensTransaction} (trade\_date, price, quantity\_mt, auto-computed total\_value\_usd, buyer/seller/country/port/province, indexed).}{App breaks entirely.}
+\fileEntry{backend/trade\_lens/serializers.py}{\reqBadge}{Product and Transaction serializers plus flat Overview/Summary/Comparison/GlobalView serializers.}{TradeLens API responses break.}
+\fileEntry{backend/trade\_lens/views.py}{\reqBadge}{\texttt{TradeLensProductViewSet} with pagination, annotations for import/export volume/value/count, and \texttt{@action} endpoints for the dashboard widgets.}{\texttt{/api/trade-lens/*} endpoints break.}
+\fileEntry{backend/trade\_lens/urls.py}{\reqBadge}{\texttt{DefaultRouter} registration.}{URL include breaks.}
+\fileEntry{backend/trade\_lens/management/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Commands undiscoverable.}
+\fileEntry{backend/trade\_lens/management/commands/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Commands undiscoverable.}
+\fileEntry{backend/trade\_lens/migrations/\_\_init\_\_.py}{\reqBadge}{Package marker.}{Migration loader breaks.}
+\fileEntry{backend/trade\_lens/migrations/0001\_initial.py}{\reqBadge}{Creates TradeLensProduct and TradeLensTransaction with six indexes.}{TradeLens tables cannot be created.}
+
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════
+% FRONTEND
+% ═══════════════════════════════════════════════════════════════════
+\section{Frontend (\texttt{frontend/})}
+
+Create-React-App project (React 19 + Tailwind + Recharts +
+react-simple-maps + jspdf + framer-motion + react-router v7). Live
+entry point is \texttt{src/index.js} $\rightarrow$ \texttt{src/App.js}
+$\rightarrow$ route components. All API calls target the backend via
+\texttt{REACT\_APP\_API\_BASE\_URL}.
+
+\subsection{Frontend root (\texttt{frontend/})}
+
+\fileEntry{frontend/package.json}{\reqBadge}{CRA manifest declaring dependencies and npm scripts.}{App cannot install, build, or run.}
+\fileEntry{frontend/package-lock.json}{\reqBadge}{Locked dependency tree pinned for deterministic installs.}{Non-reproducible installs; not strictly fatal but strongly recommended.}
+\fileEntry{frontend/.env}{\reqBadge}{Default dev env providing \texttt{REACT\_APP\_API\_BASE\_URL=http://localhost:8000}.}{API calls resolve to \texttt{undefined/...} and fail.}
+\fileEntry{frontend/.env.local}{\optBadge}{Local override mirror of \texttt{.env} --- CRA gives it higher precedence.}{Harmless; \texttt{.env} still supplies the same value.}
+\fileEntry{frontend/.env.production}{\reqBadge}{Production env pointing \texttt{REACT\_APP\_API\_BASE\_URL} at the ngrok tunnel used by the deployed build.}{Production build hits \texttt{localhost:8000} and is broken in deployed environments.}
+\fileEntry{frontend/.gitignore}{\optBadge}{Excludes \texttt{node\_modules}, \texttt{build}, \texttt{coverage}, \texttt{.env.local}, and log files from git.}{Risk of committing build artifacts/secrets; no runtime impact.}
+\fileEntry{frontend/Dockerfile}{\optBadge}{Container spec (\texttt{node:18-alpine}, installs deps, runs \texttt{npm start} on 3000).}{Docker workflow breaks; \texttt{npm start} still works locally.}
+\fileEntry{frontend/postcss.config.js}{\reqBadge}{PostCSS pipeline wiring Tailwind and autoprefixer.}{Tailwind directives stop compiling; all styling breaks.}
+\fileEntry{frontend/tailwind.config.js}{\reqBadge}{Tailwind config scanning \texttt{src/**/*.{js,jsx,ts,tsx}}.}{Tailwind utility classes get purged; the UI loses all utility styling.}
+
+\subsection{frontend/public/}
+
+\fileEntry{frontend/public/index.html}{\reqBadge}{CRA HTML template with \texttt{\#root} mount, Google Fonts preconnect, favicon + manifest links.}{CRA build fails --- no HTML shell for the React app.}
+\fileEntry{frontend/public/favicon.ico}{\optBadge}{Browser tab icon.}{Missing favicon 404; app still runs.}
+\fileEntry{frontend/public/logo192.png}{\optBadge}{192x192 PWA/apple-touch icon.}{Manifest icon 404; app still runs.}
+\fileEntry{frontend/public/logo512.png}{\optBadge}{512x512 PWA icon.}{Manifest icon 404.}
+\fileEntry{frontend/public/manifest.json}{\optBadge}{PWA web-app manifest (stock CRA default).}{PWA install prompt disabled.}
+\fileEntry{frontend/public/robots.txt}{\optBadge}{Crawler directives (allow all).}{None.}
+
+\subsection{frontend/src/ — root files}
+
+\fileEntry{frontend/src/index.js}{\reqBadge}{React entry point. Creates the root, wraps \texttt{App} in \texttt{StrictMode}, imports \texttt{index.css} and \texttt{reportWebVitals}.}{No mount point; CRA build fails.}
+\fileEntry{frontend/src/index.css}{\reqBadge}{Tailwind directives plus the Zarailink design-system CSS variables for light/dark themes and global body/scrollbar styles.}{Tailwind utilities and all theme tokens disappear; the site is unstyled.}
+\fileEntry{frontend/src/App.js}{\reqBadge}{Root component defining react-router routes, Protected/Public guards, Suspense wrapper, and the Theme/Toast/Auth providers.}{No routing; nothing renders.}
+\fileEntry{frontend/src/App.css}{\deadBadge}{Default CRA stylesheet (spinning-logo animation). Not imported anywhere.}{None.}
+\fileEntry{frontend/src/reportWebVitals.js}{\optBadge}{CRA web-vitals stub called from \texttt{index.js} with no callback.}{Must also remove the call in \texttt{index.js}.}
+\fileEntry{frontend/src/setupTests.js}{\optBadge}{Jest setup --- imports \texttt{jest-dom}, mocks \texttt{matchMedia}, \texttt{IntersectionObserver}, \texttt{ResizeObserver}, \texttt{scrollTo}.}{Component tests that rely on these browser APIs fail.}
+
+\subsection{src/context/ — Global React contexts}
+
+\fileEntry{frontend/src/context/AuthContext.js}{\reqBadge}{\texttt{AuthProvider} and \texttt{useAuth} --- session auth via credentialed \texttt{fetch} to \texttt{/accounts/api/check-auth}, \texttt{/login}, \texttt{/logout}. Exposes \texttt{user}, \texttt{tokenBalance}, \texttt{login}, \texttt{logout}, \texttt{isAuthenticated}, \texttt{refreshUser}.}{\texttt{App.js} import fails; entire app fails to mount.}
+\fileEntry{frontend/src/context/ThemeContext.js}{\reqBadge}{\texttt{ThemeProvider} and \texttt{useTheme} --- persists dark-mode preference to \texttt{localStorage} and toggles \texttt{:root.dark}.}{\texttt{App.js} import fails; theming system breaks.}
+\fileEntry{frontend/src/context/\_\_tests\_\_/ThemeContext.test.js}{\optBadge}{Jest tests for an inline re-implementation of ThemeContext.}{None.}
+
+\subsection{src/hooks/ — Utility hooks}
+
+Local-storage-backed helpers for filters, watchlist, notes, activity
+history, offline detection, debounce, toasts, and onboarding tour.
+None of them call the backend.
+
+\fileEntry{frontend/src/hooks/index.js}{\optBadge}{Barrel re-export of all hooks.}{Barrel consumers break; direct imports still work.}
+\fileEntry{frontend/src/hooks/useDebounce.js}{\reqBadge}{\texttt{useDebounce}/\texttt{useDebouncedCallback} for typeahead inputs.}{TradeLedger and search components throw import errors.}
+\fileEntry{frontend/src/hooks/useFilterPersistence.js}{\optBadge}{Persists filter objects to \texttt{localStorage}.}{Filters reset on reload.}
+\fileEntry{frontend/src/hooks/useToast.js}{\optBadge}{Thin wrapper around \texttt{react-hot-toast}.}{Consumers must call \texttt{toast()} directly.}
+\fileEntry{frontend/src/hooks/useWatchlist.js}{\reqBadge}{Manages the \texttt{zarailink-watchlist} \texttt{localStorage} list.}{Watchlist page and \texttt{WatchlistButton} flows break.}
+\fileEntry{frontend/src/hooks/useActivityHistory.js}{\optBadge}{Tracks the last 50 actions in \texttt{zarailink-activity}.}{Activity-history features disappear.}
+\fileEntry{frontend/src/hooks/useCompanyNotes.js}{\reqBadge}{CRUD for per-company notes in \texttt{zarailink-notes}. Consumed by \texttt{CompanyNotes}.}{\texttt{CompanyNotes} component crashes on import.}
+\fileEntry{frontend/src/hooks/useOnboardingTour.js}{\optBadge}{\texttt{driver.js}-based guided tour gated by a \texttt{zarailink-onboarding-completed} flag.}{Onboarding tour disappears.}
+\fileEntry{frontend/src/hooks/useOffline.js}{\optBadge}{Tracks \texttt{navigator.onLine} and caches data in \texttt{zarailink-offline-data}.}{Offline detection removed.}
+\fileEntry{frontend/src/hooks/\_\_tests\_\_/useDebounce.test.js}{\optBadge}{Jest tests for an inline useDebounce.}{None.}
+\fileEntry{frontend/src/hooks/\_\_tests\_\_/useToast.test.js}{\optBadge}{Jest tests for toast helper behavior.}{None.}
+\fileEntry{frontend/src/hooks/\_\_tests\_\_/useWatchlist.test.js}{\optBadge}{Jest tests for watchlist add/remove.}{None.}
+
+\subsection{src/services/ — API layer}
+
+\fileEntry{frontend/src/services/api.js}{\reqBadge}{Shared axios client with \texttt{baseURL = \$\{REACT\_APP\_API\_BASE\_URL\}/api} and \texttt{withCredentials: true} for session cookies.}{\texttt{searchService} imports break; Search module fails.}
+\fileEntry{frontend/src/services/searchService.js}{\reqBadge}{\texttt{search()}, \texttt{getSupplierDetails()}, \texttt{compareSuppliers()} --- used by SearchResults, DealDetail, ComparePage.}{All three search screens throw on import.}
+
+\subsection{src/utils/}
+
+\fileEntry{frontend/src/utils/exportUtils.js}{\reqBadge}{\texttt{convertToCSV}, \texttt{downloadCSV}, \texttt{downloadPDF} used by the shared ExportButton.}{\texttt{ExportButton} import fails; any screen importing it crashes.}
+\fileEntry{frontend/src/utils/formatUtils.js}{\optBadge}{\texttt{isNA} / \texttt{formatOrNull} / \texttt{displayValue} helpers for rendering possibly-missing API values.}{Consumers must inline these checks.}
+
+\subsection{src/styles/}
+
+\fileEntry{frontend/src/styles/animations.css}{\optBadge}{Global button-press and transition animation classes.}{Subtle animations lost.}
+
+\subsection{src/components/Auth/ — Authentication screens}
+
+\fileEntry{frontend/src/components/Auth/Signup.js}{\reqBadge}{Signup form with country picker and POST to \texttt{/accounts/api/signup/}.}{\texttt{/signup} route unusable.}
+\fileEntry{frontend/src/components/Auth/Login.js}{\reqBadge}{Login form calling \texttt{useAuth().login()}; handles email-not-verified redirect.}{Login flow broken.}
+\fileEntry{frontend/src/components/Auth/ForgotPassword.js}{\reqBadge}{Email-entry form requesting a reset link.}{\texttt{/forgot-password} route fails.}
+\fileEntry{frontend/src/components/Auth/ResetPassword.js}{\reqBadge}{Token-based reset form hit from \texttt{/reset-password/:token}.}{Reset-password route fails.}
+\fileEntry{frontend/src/components/Auth/EmailVerification.js}{\reqBadge}{``Check your inbox'' screen with resend button.}{\texttt{/email-verification} route fails.}
+\fileEntry{frontend/src/components/Auth/VerifyEmailSuccess.js}{\reqBadge}{Handles \texttt{/verify-email/:token} deep link; calls backend to confirm.}{Email verification success route fails.}
+
+\subsection{src/components/Common/ — Design system}
+
+Re-usable UI primitives: modal, breadcrumb, pagination, sort selector,
+skeleton loaders, empty states, charts, export/share/verification/watchlist
+buttons, and the react-hot-toast provider. Several files are 0-byte
+placeholders for planned but unbuilt widgets.
+
+\fileEntry{frontend/src/components/Common/index.js}{\optBadge}{Barrel re-export of all common primitives.}{Barrel consumers break.}
+\fileEntry{frontend/src/components/Common/Breadcrumb.js}{\reqBadge}{Location-aware breadcrumb mapping route segments to labels.}{Multiple page imports crash.}
+\fileEntry{frontend/src/components/Common/Breadcrumb.css}{\reqBadge}{Breadcrumb styles.}{Renders unstyled.}
+\fileEntry{frontend/src/components/Common/Charts.js}{\optBadge}{Recharts wrappers: TrendLineChart, ComparisonBarChart, DistributionPieChart, StatsCard.}{Wrapper charts gone; most TI pages use Recharts directly.}
+\fileEntry{frontend/src/components/Common/Charts.css}{\optBadge}{Wrapper chart styles.}{None major.}
+\fileEntry{frontend/src/components/Common/EmptyState.js}{\reqBadge}{\texttt{EmptyState} + \texttt{NoCompaniesFound}/\texttt{NoSearchResults}/\texttt{ErrorState} variants.}{Directory/Ledger/Watchlist/TradeLens screens crash.}
+\fileEntry{frontend/src/components/Common/EmptyState.css}{\reqBadge}{Empty-state styles.}{Renders unstyled.}
+\fileEntry{frontend/src/components/Common/ExportButton.js}{\reqBadge}{CSV/PDF export dropdown backed by \texttt{exportUtils}.}{Directory/Ledger/Watchlist fail to import.}
+\fileEntry{frontend/src/components/Common/ExportButton.css}{\reqBadge}{Dropdown styles.}{Renders unstyled.}
+\fileEntry{frontend/src/components/Common/Modal.js}{\reqBadge}{Shared Modal + \texttt{UnlockConfirmModal}/\texttt{SuccessModal}/\texttt{InsufficientTokensModal}/\texttt{ErrorModal} used by CompanyProfile unlock flow and Subscription redeem flow.}{CompanyProfile and Subscription pages crash.}
+\fileEntry{frontend/src/components/Common/Modal.css}{\reqBadge}{Modal styles.}{Modals unstyled.}
+\fileEntry{frontend/src/components/Common/Pagination.js}{\reqBadge}{Reusable paginator with page-size selector.}{FindBuyers/FindSuppliers/TradeLedger fail to import.}
+\fileEntry{frontend/src/components/Common/Pagination.css}{\reqBadge}{Paginator styles.}{Unstyled.}
+\fileEntry{frontend/src/components/Common/ShareButton.js}{\optBadge}{Copy-to-clipboard share button for a given URL.}{Share action gone; rest of app works.}
+\fileEntry{frontend/src/components/Common/ShareButton.css}{\optBadge}{Share button styles.}{Minor styling loss.}
+\fileEntry{frontend/src/components/Common/Skeleton.js}{\reqBadge}{\texttt{Skeleton}/\texttt{SkeletonText}/\texttt{SkeletonCard}/\texttt{SkeletonTable} loading placeholders.}{FindBuyers, FindSuppliers, TradeLens crash.}
+\fileEntry{frontend/src/components/Common/Skeleton.css}{\reqBadge}{Shimmer animations.}{Skeletons render as static boxes.}
+\fileEntry{frontend/src/components/Common/SortSelector.js}{\reqBadge}{Labeled sort \texttt{<select>}.}{FindBuyers/FindSuppliers/Watchlist crash.}
+\fileEntry{frontend/src/components/Common/SortSelector.css}{\reqBadge}{Sort-selector styles.}{Unstyled.}
+\fileEntry{frontend/src/components/Common/ToastProvider.js}{\reqBadge}{Wraps children in a themed \texttt{react-hot-toast} Toaster.}{App.js import fails; toasts disappear.}
+\fileEntry{frontend/src/components/Common/VerificationBadge.js}{\optBadge}{Verified/pending badge chip component.}{Directory cards lose the badge.}
+\fileEntry{frontend/src/components/Common/VerificationBadge.css}{\optBadge}{Badge styles.}{Minor styling loss.}
+\fileEntry{frontend/src/components/Common/WatchlistButton.js}{\reqBadge}{Bookmark toggle used across directory, ledger, and intelligence pages.}{Multiple screens fail to import.}
+\fileEntry{frontend/src/components/Common/WatchlistButton.css}{\reqBadge}{Button styles.}{Unstyled.}
+\fileEntry{frontend/src/components/Common/\_\_tests\_\_/EmptyState.test.js}{\optBadge}{Unit tests for EmptyState.}{None.}
+\fileEntry{frontend/src/components/Common/\_\_tests\_\_/Pagination.test.js}{\optBadge}{Unit tests for Pagination.}{None.}
+\fileEntry{frontend/src/components/Common/\_\_tests\_\_/VerificationBadge.test.js}{\optBadge}{Unit tests for VerificationBadge.}{None.}
+\fileEntry{frontend/src/components/Common/\_\_tests\_\_/WatchlistButton.test.js}{\optBadge}{Unit tests for WatchlistButton.}{None.}
+
+\subsection{src/components/Dashboard/ — Landing page}
+
+\fileEntry{frontend/src/components/Dashboard/Dashboard.js}{\reqBadge}{Authenticated home page with search autocomplete and feature-navigation cards.}{\texttt{/dashboard} route fails.}
+\fileEntry{frontend/src/components/Dashboard/Dashboard.css}{\reqBadge}{Dashboard styles, reused by the Search screens via relative import.}{Dashboard, SearchResults, DealDetail, ComparePage render unstyled.}
+
+\subsection{src/components/Layout/ — App chrome}
+
+\fileEntry{frontend/src/components/Layout/Navbar.js}{\reqBadge}{Top navigation bar wiring AuthContext + ThemeContext + react-router, with dropdowns for Directory / Intelligence and framer-motion animated mobile menu.}{Every authenticated page crashes.}
+\fileEntry{frontend/src/components/Layout/Navbar.css}{\reqBadge}{Navbar styles.}{Unstyled.}
+
+\subsection{src/components/Search/ — Search UI}
+
+\fileEntry{frontend/src/components/Search/SearchHome.js}{\reqBadge}{Search landing page with product-suggest autocomplete and scope selector (WORLDWIDE/PAKISTAN).}{\texttt{/search} route fails.}
+\fileEntry{frontend/src/components/Search/SearchResults.js}{\reqBadge}{Paginated results consuming \texttt{searchService.search()} with filters, sort, and multi-select compare.}{\texttt{/search/results} fails.}
+\fileEntry{frontend/src/components/Search/DealDetail.js}{\reqBadge}{Supplier detail view with deal history, trends, and jsPDF-exported report ($\sim$52 KB --- largest frontend file).}{Supplier detail route fails.}
+\fileEntry{frontend/src/components/Search/ComparePage.js}{\reqBadge}{Side-by-side comparison with Recharts trend lines and PDF export.}{Compare route fails.}
+
+\subsection{src/components/Subscriptions/}
+
+\fileEntry{frontend/src/components/Subscriptions/Subscription.js}{\reqBadge}{Token/subscription page listing plans and driving the redeem-code modal.}{\texttt{/subscription} route fails.}
+\fileEntry{frontend/src/components/Subscriptions/Subscription.css}{\reqBadge}{Subscription page styles.}{Unstyled.}
+
+\subsection{src/components/TradeDirectory/}
+
+\fileEntry{frontend/src/components/TradeDirectory/FindBuyers.js}{\reqBadge}{Paginated buyer directory with filters, sort, export, watchlist, breadcrumb.}{\texttt{/trade-directory/find-buyers} fails.}
+\fileEntry{frontend/src/components/TradeDirectory/FindBuyers.css}{\reqBadge}{FindBuyers styles.}{Unstyled.}
+\fileEntry{frontend/src/components/TradeDirectory/FindSuppliers.js}{\reqBadge}{Supplier directory mirror of FindBuyers.}{FindSuppliers route fails.}
+\fileEntry{frontend/src/components/TradeDirectory/FindSuppliers.css}{\reqBadge}{FindSuppliers styles.}{Unstyled.}
+\fileEntry{frontend/src/components/TradeDirectory/CompanyProfile.js}{\reqBadge}{Company detail with the key-contact unlock flow (four modal variants).}{\texttt{/trade-directory/company/:id} fails.}
+\fileEntry{frontend/src/components/TradeDirectory/CompanyProfile.css}{\reqBadge}{Company-profile styles.}{Unstyled.}
+\fileEntry{frontend/src/components/TradeDirectory/CompanyNotes.js}{\optBadge}{Inline note editor backed by \texttt{useCompanyNotes}.}{CompanyProfile loses the notes widget.}
+\fileEntry{frontend/src/components/TradeDirectory/CompanyNotes.css}{\optBadge}{Notes styles.}{Minor styling loss.}
+
+\subsection{src/components/TradeIntelligence/}
+
+The biggest module in the frontend --- graph-driven analytics over the
+trade-transaction corpus. Company pages (Overview with
+\texttt{react-simple-maps}, Products/Partners with Recharts, Compare
+Companies with RadarChart), LinkPrediction (Node2Vec suggestions),
+TradeLedger (explorer), and the TradeLens suite (built on
+\texttt{react-chartjs-2}).
+
+\fileEntry{frontend/src/components/TradeIntelligence/TradeIntelligence.css}{\reqBadge}{Shared stylesheet for most TI pages.}{Most Trade Intelligence pages render unstyled.}
+\fileEntry{frontend/src/components/TradeIntelligence/TradeLedgerTable.css}{\optBadge}{TradeLedger-only table styles.}{Table appearance degrades.}
+\fileEntry{frontend/src/components/TradeIntelligence/CompanyOverview.js}{\reqBadge}{Overview with world map (\texttt{react-simple-maps}) and summary stats.}{Company overview route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/CompanyProducts.js}{\reqBadge}{Product-mix Bar/Pie/Line charts (Recharts).}{Company products route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/CompanyPartners.js}{\reqBadge}{Partner analysis with Recharts LineChart.}{Company partners route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/CompareCompanies.js}{\reqBadge}{Two-company comparison (RadarChart + BarChart).}{Compare route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/LinkPrediction.js}{\reqBadge}{UI for the Node2Vec/combined link-prediction API.}{Link-prediction route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/TradeLedger.js}{\reqBadge}{Transaction ledger explorer (pagination, export, watchlist, debounced search).}{Ledger route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/TradeLens.js}{\reqBadge}{Product-analytics index listing tradable products with KPIs.}{TradeLens index route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/TradeLensOverview.js}{\reqBadge}{Chart.js line-chart overview for a product.}{Overview route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/TradeLensSummary.js}{\reqBadge}{Line + Bar summary view.}{Summary route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/TradeLensComparison.js}{\reqBadge}{Multi-select product comparison.}{Comparison route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/TradeLensDetails.js}{\reqBadge}{Detailed transactions + top buyers/sellers for a product.}{Details route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/TradeLensGlobal.js}{\reqBadge}{Global trade view (worldwide importers/exporters).}{Global route fails.}
+\fileEntry{frontend/src/components/TradeIntelligence/TradePulse.js}{\optBadge}{``Trade Pulse, coming soon\dots'' placeholder page.}{\texttt{/trade-intelligence/pulse} route import fails --- safe to delete only if you also remove the route.}
+
+\subsection{src/components/Watchlist/}
+
+\fileEntry{frontend/src/components/Watchlist/Watchlist.js}{\reqBadge}{Watchlist page listing saved companies with sort, export, and clear actions.}{\texttt{/watchlist} route fails.}
+\fileEntry{frontend/src/components/Watchlist/Watchlist.css}{\reqBadge}{Watchlist styles.}{Unstyled.}
+
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════
+% SUMMARY / CLEANUP RECOMMENDATIONS
+% ═══════════════════════════════════════════════════════════════════
+\section{Key Findings \& Cleanup Recommendations}
+
+\subsection{What's broken but still sitting on disk}
+
+All previously identified broken files have been removed as part of the April 2026 cleanup.
+
+\subsection{Quantified cleanup estimates}
+
+All items listed in this section have now been completed as part of the April 2026 cleanup. The following work was carried out:
+
+\begin{itemize}[leftmargin=1.2cm]
+  \item \textbf{$\sim$60 debug scripts} at \texttt{backend/*.py} --- removed.
+  \item \textbf{$\sim$60 stale output files} (\texttt{.txt}, \texttt{.json}, \texttt{.log}) at \texttt{backend/} --- removed.
+  \item \textbf{\texttt{backend/ngrok.exe}} (32 MB Windows binary) --- removed.
+  \item \textbf{3 dead \texttt{.graphml} files} (\texttt{company\_company}, \texttt{company\_country}, \texttt{product\_country}) --- removed.
+  \item \textbf{\texttt{backend/utils/redis\_client.py}} --- removed (only caller was the deleted \texttt{index\_companies.py}).
+  \item \textbf{\texttt{backend/search/models/setfit\_intent\_classifier/}} (1.7 GB) --- removed.
+  \item \textbf{3 \texttt{.graphml} files} (\texttt{company\_company\_graph}, \texttt{company\_country\_graph}, \texttt{product\_country\_graph}) --- removed.
+  \item \textbf{0-byte frontend placeholder components}: all removed (\texttt{ProtectedRoute.js}, \texttt{ContactUnlockModal.js}, \texttt{TokenPurchaseModal.js}, \texttt{MarketBrief.js}, \texttt{Sidebar.js}, \texttt{KeyContactsTab.js}, \texttt{OverviewTab.js}, \texttt{SubscriptionPage.js}).
+  \item \textbf{Broken backend files} with nonexistent model references --- removed.
+  \item \textbf{\texttt{home/} and \texttt{trade\_directory/}} empty scaffold apps --- removed entirely.
+\end{itemize}
+
+\subsection{What you must not delete}
+
+\begin{itemize}[leftmargin=1.2cm]
+  \item Everything in \texttt{backend/zarailink/} --- the Django project nerve center.
+  \item All \texttt{migrations/*.py} files for the 7 live apps --- the DB schema chain.
+  \item \texttt{backend/.env} --- sources \texttt{SECRET\_KEY} for \texttt{settings.py}.
+  \item \texttt{backend/search/models/intent\_model/} --- the trained SetFit model.
+  \item \texttt{backend/manage.py}, \texttt{backend/conftest.py}, \texttt{backend/pytest.ini}, \texttt{backend/requirements.txt}.
+  \item Frontend: everything in \texttt{src/context/}, \texttt{src/services/}, and all route components referenced by \texttt{App.js}.
+  \item \texttt{frontend/.env} and \texttt{frontend/.env.production} --- define \texttt{REACT\_APP\_API\_BASE\_URL}.
+  \item \texttt{frontend/postcss.config.js} and \texttt{frontend/tailwind.config.js} --- without them, all styling breaks.
+\end{itemize}
+
+\subsection{Note on counts}
+
+This audit reflects the live source tree after the April 2026 cleanup.
+File counts exclude \texttt{.git/}, \texttt{node\_modules/},
+\texttt{\_\_pycache\_\_/}, \texttt{.venv/}, \texttt{frontend/build/}, and the
+\texttt{backend/search/models/intent\_model/} bundle (already listed
+as a single entry). The trained SetFit model, package lock files, and
+other large assets are enumerated as single entries rather than per
+internal file.
+
+\end{document}

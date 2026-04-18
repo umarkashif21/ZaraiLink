@@ -12,7 +12,28 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import warnings
 from dotenv import load_dotenv
+
+# ── Suppress verbose third-party startup noise (applies to all entrypoints) ──
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
+warnings.filterwarnings("ignore", category=UserWarning, module="transformers")
+warnings.filterwarnings("ignore", category=UserWarning, module="huggingface_hub")
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+
+# Silence transformers logger (sentencepiece, tokenizer warnings)
+try:
+    from transformers.utils import logging as _hf_logging
+    _hf_logging.set_verbosity_error()
+except Exception:
+    pass
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent

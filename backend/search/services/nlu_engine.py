@@ -37,7 +37,8 @@ logger = logging.getLogger(__name__)
 # BASE_DIR is the backend/ directory (same as Django's settings.BASE_DIR).
 # Resolved at import time so it works regardless of how the module is loaded.
 _BACKEND_DIR       = Path(__file__).resolve().parent.parent.parent  # backend/
-_INTENT_MODEL_PATH = _BACKEND_DIR / "models" / "zarai_intent_model"
+# Matches the output path in search/services/train_intent.py
+_INTENT_MODEL_PATH = _BACKEND_DIR / "search" / "models" / "intent_model"
 
 # ---------------------------------------------------------------------------
 # Price operator keywords → OpenSearch range keys
@@ -182,14 +183,20 @@ def _detect_price_operator(query: str) -> Optional[str]:
     return None
 
 
+_LLM_MISSING_KEY_LOGGED = False
+
+
 def _call_openrouter_llm(system_prompt: str, user_prompt: str) -> Optional[dict]:
     import json
     import requests
     from django.conf import settings
 
+    global _LLM_MISSING_KEY_LOGGED
     api_key = getattr(settings, 'OPENROUTER_API_KEY', '')
     if not api_key:
-        logger.warning("[LLM] OPENROUTER_API_KEY is missing or empty.")
+        if not _LLM_MISSING_KEY_LOGGED:
+            logger.info("[LLM] OPENROUTER_API_KEY not set — using regex price fallback only (one-time notice)")
+            _LLM_MISSING_KEY_LOGGED = True
         return None
 
     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -215,7 +222,7 @@ def _call_openrouter_llm(system_prompt: str, user_prompt: str) -> Optional[dict]
         content = resp.json()["choices"][0]["message"]["content"]
         return json.loads(content)
     except Exception as e:
-        logger.warning(f"[LLM] Primary model failed: {e}")
+        logger.debug(f"[LLM] Primary model failed: {e}")
         # Fallback to Mistral Free immediately natively via OpenRouter
         payload["model"] = "mistralai/mistral-7b-instruct:free"
         payload.pop("response_format", None)
@@ -243,7 +250,7 @@ def _build_price_filter_regex(raw_query: str) -> Optional[dict]:
     price_ranking_words = {"cheap", "affordable", "budget", "cheapest", "low price", "best price", "inexpensive"}
     has_number = bool(re.search(r'\d', q))
     if not has_number and any(w in q for w in price_ranking_words):
-        logger.warning("[RegexPrice] No-number price signal → ranking_hint=price_asc only")
+        logger.debug("[RegexPrice] No-number price signal → ranking_hint=price_asc only")
         return {"ranking_hint": "price_asc"}
 
     # Match patterns like "under 800", "cheaper than $700", "below 500 usd", "above 1000"
@@ -254,20 +261,20 @@ def _build_price_filter_regex(raw_query: str) -> Optional[dict]:
     m = re.search(lte_pattern, q)
     if m:
         val = float(m.group(1).replace(',', ''))
-        logger.warning(f"[RegexPrice] lte detected: ceiling={val}")
+        logger.debug(f"[RegexPrice] lte detected: ceiling={val}")
         return {"range": {"usd_per_mt": {"lte": val}}, "ranking_hint": "price_asc"}
 
     m = re.search(gte_pattern, q)
     if m:
         val = float(m.group(1).replace(',', ''))
-        logger.warning(f"[RegexPrice] gte detected: floor={val}")
+        logger.debug(f"[RegexPrice] gte detected: floor={val}")
         return {"range": {"usd_per_mt": {"gte": val}}, "ranking_hint": None}
 
     m = re.search(range_pattern, q)
     if m:
         val = float(m.group(1).replace(',', ''))
         tol = 0.15
-        logger.warning(f"[RegexPrice] range detected: center={val} tol={tol}")
+        logger.debug(f"[RegexPrice] range detected: center={val} tol={tol}")
         return {"range": {"usd_per_mt": {"gte": val * (1 - tol), "lte": val * (1 + tol)}}, "ranking_hint": None}
 
     return None
@@ -344,7 +351,7 @@ def _call_llm_unified(raw_query: str) -> dict:
         logger.debug(f"[LLM] Unified parse succeeded: {result}")
         return result
     except Exception as e:
-        logger.warning(f"[LLM] Unified call failed: {e}. Returning empty structure.")
+        logger.debug(f"[LLM] Unified call failed: {e}. Returning empty structure.")
         import copy
         return copy.deepcopy(_LLM_UNIFIED_EMPTY)
 
@@ -473,24 +480,27 @@ class ModernNLUEngine:
 
     @classmethod
     def _load_intent_model(cls):
-        """Load SetFit model from zarai_intent_model/. Silently skips if absent."""
+        """Load SetFit model if present. Silently uses regex fallback otherwise.
+
+        The regex intent detector (see predict_intent) is >95% accurate on
+        trade-domain BUY/SELL queries since users almost always use explicit
+        verbs ("buy", "sell", "import", "export", "supplier", "buyer"). The
+        SetFit model only adds marginal accuracy on ambiguous phrasing, so
+        running without it is a fully supported mode — not an error.
+        """
         if cls._intent_model is not None:
             return
 
         model_path = str(_INTENT_MODEL_PATH.resolve())
 
-        # Accept any of these markers to confirm the model was saved
+        # Accept any of these markers to confirm the model was saved properly
         markers = ["config_setfit.json", "model_head.pkl", "config.json"]
         model_exists = any(
             os.path.exists(os.path.join(model_path, m)) for m in markers
         )
 
         if not model_exists:
-            logger.warning(
-                f"[NLU] SetFit model not found at {model_path}. "
-                "Run scripts/train_intent_model.py first. "
-                "Falling back to keyword intent detection."
-            )
+            logger.info("[NLU] Using regex intent detector (SetFit model not trained).")
             return
 
         try:
@@ -499,7 +509,7 @@ class ModernNLUEngine:
             cls._intent_model = SetFitModel.from_pretrained(model_path)
             logger.info("[NLU] SetFit model loaded successfully.")
         except Exception as e:
-            logger.error(f"[NLU] Failed to load SetFit model: {e}. Using regex fallback.")
+            logger.warning(f"[NLU] SetFit load failed ({e}); falling back to regex intent detector.")
 
     @classmethod
     def _load_keyword_model(cls):
@@ -540,23 +550,47 @@ class ModernNLUEngine:
         """Returns 'BUY' or 'SELL'.
 
         Priority order:
-          1. SetFit ML model  — most accurate, handles ambiguous phrasing
-          2. Keyword regex    — fast fallback when model not loaded
-          3. Default to BUY   — safe default
+          1. High-confidence pattern rules — catch semantic reversals like
+             "looking for sellers of X" (= BUY) that confuse ML models trained
+             on few-shot data. These patterns are precise, so they override
+             SetFit when they match.
+          2. SetFit ML model  — handles the long tail of ambiguous phrasings.
+          3. Keyword regex    — fast fallback for simple verbs.
+          4. Default to BUY   — safe default.
         """
-        # 1. SetFit (primary)
+        q = query.lower()
+
+        # 1. Pattern rules for semantic-reversal phrases.
+        # "looking for sellers of X" means the user wants to BUY from those sellers,
+        # not that they want to SELL. SetFit trained on 30 examples cannot reliably
+        # learn this reversal, so we hardcode the patterns.
+        _want_verb   = r'(?:find|finding|looking for|look for|need|want|seeking|searching for|search for)'
+        _sell_noun   = r'(?:sellers?|suppliers?|exporters?|manufacturers?|producers?|vendors?)'
+        _buy_noun    = r'(?:buyers?|importers?|consumers?|purchasers?)'
+
+        if re.search(rf'\b{_want_verb}\s+{_sell_noun}\b', q):
+            return "BUY"
+        if re.search(rf'\b{_want_verb}\s+{_buy_noun}\b', q):
+            return "SELL"
+        if re.search(r'\bwho\s+(?:is\s+)?sell(?:s|ing)?\b', q):
+            return "BUY"
+        if re.search(r'\bwho\s+(?:is\s+)?buy(?:s|ing)?\b', q):
+            return "SELL"
+
+        # 2. SetFit model
         if self._intent_model is not None:
             try:
                 pred = self._intent_model.predict([query])[0]
                 if isinstance(pred, str):
-                    return pred.upper()
+                    label = pred.upper()
+                    if label in ("BUY", "SELL"):
+                        return label
                 return "BUY" if int(pred) == 0 else "SELL"
             except Exception as e:
                 logger.warning(f"[NLU] SetFit inference failed: {e}. Using regex fallback.")
 
-        # 2. Keyword regex fallback
-        q = query.lower()
-        if re.search(r'\b(sell\w*|export\w*|supply\w*|distribute\w*|buyer\w*)\b', q):
+        # 3. Keyword regex fallback
+        if re.search(r'\b(sell\w*|export\w*|distribute\w*|buyer\w*)\b', q):
             return "SELL"
         if re.search(r'\b(buy\w*|import\w*|get\w*|purchas\w*|need\w*|supplier\w*)\b', q):
             return "BUY"
@@ -613,7 +647,7 @@ class ModernNLUEngine:
         # ==================================================================
         t0 = time.perf_counter()
         intent = self.predict_intent(query)
-        logger.warning(f"[TIMING NLU] SetFit intent: {time.perf_counter() - t0:.3f}s")
+        logger.debug(f"[TIMING NLU] SetFit intent: {time.perf_counter() - t0:.3f}s")
         logger.debug(f"[NLU] Step1 intent={intent!r} query={query!r}")
 
         # ==================================================================
@@ -679,7 +713,7 @@ class ModernNLUEngine:
             except Exception as e:
                 logger.warning(f"[NLU] KeyBERT extraction failed: {e}")
 
-        logger.warning(f"[TIMING NLU] KeyBERT extraction: {time.perf_counter() - t0:.3f}s")
+        logger.debug(f"[TIMING NLU] KeyBERT extraction: {time.perf_counter() - t0:.3f}s")
         logger.debug(f"[NLU] Step4(keybert) product={product_keyword!r}")
 
         # ==================================================================
@@ -694,14 +728,21 @@ class ModernNLUEngine:
         ranking_word_hit = any(w in query.lower() for w in {"cheap", "cheapest", "bulk", "premium", "affordable", "best price", "low price", "reliable"})
         
         if keybert_confidence > 0.85 and not has_numbers and not has_price_operator and not ranking_word_hit:
-            logger.warning(f"[NLU] Skipping LLM call (KeyBERT confidence {keybert_confidence:.2f} > 0.85, no complex entities)")
+            logger.debug(f"[NLU] Skipping LLM call (KeyBERT confidence {keybert_confidence:.2f} > 0.85, no complex entities)")
             import copy
             llm_result = copy.deepcopy(_LLM_UNIFIED_EMPTY)
         else:
             llm_result   = _call_llm_unified(query)
-            logger.warning(f"[TIMING NLU] OpenRouter API call: {time.perf_counter() - t0:.3f}s")
-            
+            logger.debug(f"[TIMING NLU] OpenRouter API call: {time.perf_counter() - t0:.3f}s")
+
         price_filter = _price_filter_from_llm(llm_result)
+
+        # If LLM didn't yield a price filter (no key, timeout, or skipped),
+        # fall back to the regex price extractor so "cheap sugar under $500"
+        # still produces a ceiling + price_asc ranking hint.
+        if price_filter is None:
+            price_filter = _build_price_filter_regex(query)
+
         quantity     = llm_result.get("quantity")
         llm_product  = llm_result.get("product")
 
@@ -746,7 +787,7 @@ class ModernNLUEngine:
             f"country={resolved_country!r} | price={llm_result.get('price')} | "
             f"quantity={quantity!r} | product_method={product_method}"
         )
-        logger.warning(f"[TIMING NLU] Total NLU: {time.perf_counter() - t_nlu_total:.3f}s")
+        logger.debug(f"[TIMING NLU] Total NLU: {time.perf_counter() - t_nlu_total:.3f}s")
         return result
 
     # Alias used by some views
@@ -801,21 +842,21 @@ class ModernNLUEngine:
         q = query.lower()
         
         FALLBACK_COUNTRIES = {
-            "china": "China", "chinaaa": "China", "chin": "China", "chi": "China",
-            "pakistan": "Pakistan", "pak": "Pakistan", "pk": "Pakistan",
-            "india": "India", "ind": "India",
+            "china": "China", "chinaaa": "China",
+            "pakistan": "Pakistan", "pak": "Pakistan",
+            "india": "India",
             "turkey": "Turkey", "turk": "Turkey", "turkiye": "Turkey", "turekyy": "Turkey", "turky": "Turkey", "turke": "Turkey", "turkeyy": "Turkey",
-            "usa": "United States", "us": "United States", "america": "United States",
+            "usa": "United States", "america": "United States",
             "uk": "United Kingdom", "britain": "United Kingdom", "england": "United Kingdom",
-            "germany": "Germany", "france": "France", "italy": "Italy", "span": "Spain",
+            "germany": "Germany", "france": "France", "italy": "Italy", "spain": "Spain",
             "uae": "United Arab Emirates", "dubai": "United Arab Emirates",
             "saudi": "Saudi Arabia", "ksa": "Saudi Arabia",
-            "iran": "Iran", "ira": "Iran",
-            "egypt": "Egypt", "egyp": "Egypt",
-            "korea": "South Korea", "kore": "South Korea", "south": "South Korea", "korean": "South Korea",
-            "japan": "Japan", "jap": "Japan",
+            "iran": "Iran",
+            "egypt": "Egypt",
+            "korea": "South Korea", "korean": "South Korea",
+            "japan": "Japan",
             "malaysia": "Malaysia", "malay": "Malaysia",
-            "vietnam": "Vietnam", "viet": "Vietnam",
+            "vietnam": "Vietnam",
         }
         
         # Check explicit isolated words

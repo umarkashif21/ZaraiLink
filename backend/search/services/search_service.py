@@ -26,9 +26,10 @@ logger = logging.getLogger(__name__)
 OPENSEARCH_HOST = "http://localhost:9200"
 INDEX_NAME      = "trade_index"
 
-# Threshold: if the product keyword matches more than this many distinct
-# subcategories, ask the user to narrow down first.
-DISAMBIGUATION_THRESHOLD = 1
+# Only force the variant picker when the user's keyword is so broad that it
+# matches more than this many distinct subcategories. Below the threshold we
+# merge results across all matching variants so the user sees something.
+DISAMBIGUATION_THRESHOLD = 20
 
 
 class SearchService:
@@ -39,8 +40,6 @@ class SearchService:
     _os_client   = None
     _os_ok       = None   # None = unknown, True = up, False = down
     _nlu_engine  = None
-    _embed_model = None
-    _reranker    = None
 
     # =========================================================================
     # Init
@@ -128,12 +127,12 @@ class SearchService:
         _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
         nlu_result = cache.get(_cache_key)
         if nlu_result is not None:
-            logger.warning(f"[CACHE] NLU cache HIT for query='{raw_query[:40]}' — skipping LLM call")
+            logger.debug(f"[CACHE] NLU cache HIT for query='{raw_query[:40]}' — skipping LLM call")
         else:
-            logger.warning(f"[CACHE] NLU cache MISS for query='{raw_query[:40]}' — running full NLU")
+            logger.debug(f"[CACHE] NLU cache MISS for query='{raw_query[:40]}' — running full NLU")
             nlu_result = self._nlu_engine.parse(raw_query, ui_context=ui_context)
             cache.set(_cache_key, nlu_result, timeout=86400)  # 24 hours
-        logger.warning(f"[TIMING] NLU parse: {time.perf_counter() - t0:.3f}s")
+        logger.debug(f"[TIMING] NLU parse: {time.perf_counter() - t0:.3f}s")
 
         intent  = nlu_result.get("intent", "BUY")
         country = nlu_result.get("country")
@@ -158,19 +157,30 @@ class SearchService:
             product_keyword, hs_code, country=country, intent=intent,
             subcat_id=subcat_id, variant_name=variant_name, scope=orm_scope
         )
-        logger.warning(f"[TIMING] Subcategory resolve: {time.perf_counter() - t0:.3f}s")
+        logger.debug(f"[TIMING] Subcategory resolve: {time.perf_counter() - t0:.3f}s")
 
-        # If no hs_code was given AND multiple subcategories matched → disambiguate
+        # Disambiguation policy:
+        #   1. If any variant name exactly matches the keyword (case-insensitive),
+        #      pick that one and run the search — no picker.
+        #   2. Else if the number of matches is small (≤ DISAMBIGUATION_THRESHOLD),
+        #      merge results across all matching variants. User sees real data.
+        #   3. Only force the variant picker when the keyword is truly ambiguous
+        #      (>DISAMBIGUATION_THRESHOLD variants). At small catalogs this
+        #      almost never triggers.
         needs_disambig = False
-        if not hs_code:
-            if len(subcat_ids) > DISAMBIGUATION_THRESHOLD:
+        if not hs_code and variant_list:
+            kw_lower = (product_keyword or "").lower().strip()
+            exact = [v for v in variant_list if v['name'].lower().strip() == kw_lower]
+            if exact:
+                # Exact match wins — lock in that variant
+                subcat_ids   = [exact[0]['id']]
+                variant_list = exact
+            elif len(subcat_ids) > DISAMBIGUATION_THRESHOLD:
                 needs_disambig = True
-            elif len(subcat_ids) == 1:
-                if variant_list and variant_list[0]['name'].lower().strip() != product_keyword.lower().strip():
-                    needs_disambig = True
+            # else: keep all matches, let aggregation merge them
 
         if needs_disambig:
-            logger.warning(f"[TIMING] Total (disambig early-exit): {time.perf_counter() - t_total:.3f}s")
+            logger.debug(f"[TIMING] Total (disambig early-exit): {time.perf_counter() - t_total:.3f}s")
             return {
                 "nlu":                  nlu_result,
                 "profiles":             [],
@@ -213,11 +223,10 @@ class SearchService:
             raw_query=raw_query,
         )
         db_elapsed = time.perf_counter() - t0
-        logger.warning(f"[TIMING] DB aggregation: {db_elapsed:.3f}s")
+        logger.debug(f"[TIMING] DB aggregation: {db_elapsed:.3f}s")
         # Ranking is embedded inside _orm_search; estimate remainder as < 30 ms
-        logger.warning(f"[TIMING] Ranking: (included in DB aggregation above)")
 
-        logger.warning(f"[TIMING] Total: {time.perf_counter() - t_total:.3f}s")
+        logger.debug(f"[TIMING] Total: {time.perf_counter() - t_total:.3f}s")
 
         is_broad = False
         if not hs_code and not subcat_ids and len(product_keyword) > 1:
@@ -333,6 +342,15 @@ class SearchService:
             name__istartswith=product_keyword
         ).select_related("sub_category__category"))
 
+        # PASS 2.5: Contains match (catches "palm oil" → "Crude Palm Oil")
+        if not sc_qs and not item_qs:
+            sc_qs = list(ProductSubCategory.objects.filter(
+                name__icontains=product_keyword
+            ).select_related("category"))
+            item_qs = list(ProductItem.objects.filter(
+                name__icontains=product_keyword
+            ).select_related("sub_category__category"))
+
         # PASS 3: Fuzzy fallback via pg_trgm
         if not sc_qs and not item_qs:
             from django.contrib.postgres.search import TrigramSimilarity
@@ -406,31 +424,31 @@ class SearchService:
             else:  # SELL + WORLDWIDE
                 target_trade_type = "EXPORT"
 
-            availability_qs = Transaction.objects.filter(
-                trade_type=target_trade_type,
-                product_item__sub_category_id__in=subcat_ids,
-            )
-
-            # Also apply country filter if NLU extracted a specific country
-            if country:
-                country_field = "origin_country" if target_trade_type == "IMPORT" else "destination_country"
-                availability_qs = availability_qs.filter(
-                    **{country_field + "__icontains": country}
+            # Cache the availability check — product availability changes
+            # only when new transactions are ingested, not between searches.
+            _avail_parts = f"avail:{sorted(subcat_ids)}:{target_trade_type}:{country or ''}"
+            _avail_key = "avail_" + hashlib.md5(_avail_parts.encode()).hexdigest()
+            active_ids = cache.get(_avail_key)
+            if active_ids is None:
+                availability_qs = Transaction.objects.filter(
+                    trade_type=target_trade_type,
+                    product_item__sub_category_id__in=subcat_ids,
                 )
-
-            active_ids = set(
-                availability_qs.values_list(
-                    "product_item__sub_category_id", flat=True
-                ).distinct()
-            )
+                if country:
+                    country_field = "origin_country" if target_trade_type == "IMPORT" else "destination_country"
+                    availability_qs = availability_qs.filter(
+                        **{country_field + "__icontains": country}
+                    )
+                active_ids = set(
+                    availability_qs.values_list(
+                        "product_item__sub_category_id", flat=True
+                    ).distinct()
+                )
+                cache.set(_avail_key, active_ids, timeout=3600)  # 1 hour
 
             if active_ids:
-                # Only keep variants that have real transactions
                 variant_list = [v for v in variant_list if v["id"] in active_ids]
                 subcat_ids   = [sid for sid in subcat_ids if sid in active_ids]
-            # If active_ids is empty (genuinely no data), leave list intact so
-            # the aggregator can return a proper "0 results" response instead
-            # of silently dropping all variants.
 
         return subcat_ids, variant_list, []
 
@@ -526,7 +544,7 @@ class SearchService:
         """
         Use SupplierAggregator (pure Django ORM) to get company profiles.
         This is the guaranteed-to-work fallback path.
-        
+
         product_item_ids: if provided, the aggregator will filter by exact product item
         (ensures 'Dextrose Anhydrous' and 'Dextrose Ball' never share supplier lists).
         """
@@ -548,19 +566,35 @@ class SearchService:
         if country:
             country_filter = [country]
 
-
-
         if not subcat_ids:
             return [], 0
 
-        raw_results = aggregator.get_suppliers_for_subcategories(
-            subcategory_ids=subcat_ids,
-            intent=intent,
-            scope=scope,
-            country_filter=country_filter,
-            price_filter=price_filter,
-            product_item_filter=product_item_ids or None,  # Pin to exact item if known
-        )
+        # ── Aggregation-level cache (1 hour TTL) ──────────────────────────
+        # The DB aggregation is the heaviest part of search. Cache it so
+        # repeat queries for the same product/intent/scope skip the DB.
+        _agg_parts = [
+            "agg",
+            str(sorted(subcat_ids)),
+            intent,
+            scope,
+            str(country_filter or ""),
+            str(price_filter or ""),
+            str(sorted(product_item_ids) if product_item_ids else ""),
+        ]
+        _agg_key = "agg_" + hashlib.md5(":".join(_agg_parts).encode()).hexdigest()
+        raw_results = cache.get(_agg_key)
+        if raw_results is not None:
+            logger.debug(f"[CACHE] Aggregation cache HIT — skipping DB query")
+        else:
+            raw_results = aggregator.get_suppliers_for_subcategories(
+                subcategory_ids=subcat_ids,
+                intent=intent,
+                scope=scope,
+                country_filter=country_filter,
+                price_filter=price_filter,
+                product_item_filter=product_item_ids or None,
+            )
+            cache.set(_agg_key, raw_results, timeout=3600)  # 1 hour
 
         # ------------------------------------------------------------------
         # INTENT-AWARE COMPOSITE RANKING
@@ -696,7 +730,7 @@ class SearchService:
 
         Ranked by total transaction volume (most traded first).
         """
-        from django.db.models import Sum, Count
+        from django.db.models import Sum, Count, Q, Subquery, OuterRef
         from trade_data.models import ProductSubCategory, ProductItem, Transaction
         from search.services.nlu_engine import extract_product_keyword
 
@@ -713,113 +747,43 @@ class SearchService:
         if len(keyword) < 2:
             return []
 
-        # Match subcategory names (broad match)
-        sc_matches = ProductSubCategory.objects.filter(
-            name__icontains=keyword
-        ).select_related("category")
+        # Collect matching subcategory IDs from both SubCategory and Item names
+        sc_direct = set(
+            ProductSubCategory.objects.filter(
+                name__icontains=keyword
+            ).values_list("id", flat=True)[:30]
+        )
+        sc_via_item = set(
+            ProductItem.objects.filter(
+                name__icontains=keyword
+            ).values_list("sub_category_id", flat=True)[:30]
+        )
+        sc_ids = sc_direct | sc_via_item
 
-        # Also match via product item names (e.g., "Dextrose Anhydrous AR Grade")
-        item_matches = ProductItem.objects.filter(
-            name__icontains=keyword
-        ).select_related("sub_category__category")
-
-        # Build unified map: subcat_id → metadata
-        sc_map = {}
-        for sc in sc_matches[:30]:
-            sc_map[sc.id] = {
-                "hs_code":  sc.hs_code,
-                "name":     sc.name,
-                "category": sc.category.name,
-                "_sc_obj":  sc,
-            }
-        for item in item_matches[:30]:
-            sc = item.sub_category
-            if sc.id not in sc_map:
-                sc_map[sc.id] = {
-                    "hs_code":  sc.hs_code,
-                    "name":     sc.name,
-                    "category": sc.category.name,
-                    "_sc_obj":  sc,
-                }
-
-        if not sc_map:
+        if not sc_ids:
             return []
 
-        # Get total volume per subcategory
-        results = []
-        for sc_id, meta in sc_map.items():
-            vol = Transaction.objects.filter(
-                product_item__sub_category_id=sc_id
-            ).aggregate(total=Sum("qty_mt"), count=Count("id"))
+        # Single annotated query — replaces the N+1 per-subcategory loop
+        sc_qs = (
+            ProductSubCategory.objects
+            .filter(id__in=sc_ids)
+            .select_related("category")
+            .annotate(
+                total_volume=Sum("items__transaction__qty_mt"),
+                tx_count=Count("items__transaction__id"),
+            )
+            .order_by("-total_volume")
+            [:limit]
+        )
 
+        results = []
+        for sc in sc_qs:
             results.append({
-                "hs_code":      meta["hs_code"],
-                "name":         meta["name"],
-                "category":     meta["category"],
-                "total_volume": float(vol["total"] or 0),
-                "tx_count":     vol["count"] or 0,
+                "hs_code":      sc.hs_code,
+                "name":         sc.name,
+                "category":     sc.category.name,
+                "total_volume": float(sc.total_volume or 0),
+                "tx_count":     sc.tx_count or 0,
             })
 
-        results.sort(key=lambda x: x["total_volume"], reverse=True)
-        return results[:limit]
-
-    # =========================================================================
-    # SEMANTIC / RERANKING (detail page only — heavy models)
-    # =========================================================================
-
-    @classmethod
-    def _get_embed_model(cls):
-        if cls._embed_model is None:
-            from sentence_transformers import SentenceTransformer
-            logger.info("Loading embedding model: all-MiniLM-L6-v2")
-            cls._embed_model = SentenceTransformer("all-MiniLM-L6-v2")
-        return cls._embed_model
-
-    @classmethod
-    def _get_reranker(cls):
-        if cls._reranker is None:
-            from sentence_transformers import CrossEncoder
-            logger.info("Loading BGE-Reranker: BAAI/bge-reranker-base")
-            cls._reranker = CrossEncoder("BAAI/bge-reranker-base")
-        return cls._reranker
-
-    def semantic_search(self, query: str, top_k: int = 10) -> list:
-        """Semantic kNN search — detail page only."""
-        if not self._opensearch_available():
-            return []
-        model        = self._get_embed_model()
-        query_vector = model.encode(query).tolist()
-        os_query     = {
-            "size": top_k,
-            "query": {"knn": {"combined_vector": {"vector": query_vector, "k": top_k}}},
-        }
-        try:
-            response = self._os_client.search(index=INDEX_NAME, body=os_query)
-            return [hit["_source"] for hit in response.get("hits", {}).get("hits", [])]
-        except Exception as e:
-            logger.error(f"Semantic search failed: {e}")
-            return []
-
-    def rerank_results(self, query: str, profiles: list, max_rerank: int = 15) -> list:
-        """BGE-Reranker cross-encoder re-scoring — detail page only."""
-        if not profiles:
-            return profiles
-        reranker    = self._get_reranker()
-        to_rerank   = profiles[:max_rerank]
-        the_rest    = profiles[max_rerank:]
-        sentence_pairs = [
-            [query, f"Company: {p.get('company_name')}. Volume: {p.get('total_volume')} MT. "
-                    f"Shipments: {p.get('transaction_count')}. Last active: {p.get('last_shipped')}."]
-            for p in to_rerank
-        ]
-        try:
-            scores = reranker.predict(sentence_pairs)
-            for i, p in enumerate(to_rerank):
-                p["relevance_score"] = float(scores[i])
-            reranked = sorted(to_rerank, key=lambda x: x["relevance_score"], reverse=True)
-            for p in the_rest:
-                p["relevance_score"] = 0.0
-            return reranked + the_rest
-        except Exception as e:
-            logger.error(f"Reranking failed: {e}")
-            return profiles
+        return results

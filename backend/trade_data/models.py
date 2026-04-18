@@ -130,6 +130,10 @@ class Transaction(models.Model):
             models.Index(fields=['trade_type']),
             models.Index(fields=['origin_country']),
             models.Index(fields=['destination_country']),
+            # Composite indexes for the hot search aggregation queries
+            models.Index(fields=['trade_type', 'product_item'], name='tx_type_product_idx'),
+            models.Index(fields=['product_item', 'trade_type', 'seller'], name='tx_prod_type_seller_idx'),
+            models.Index(fields=['product_item', 'trade_type', 'buyer'], name='tx_prod_type_buyer_idx'),
         ]
 
     def __str__(self):
