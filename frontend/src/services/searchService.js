@@ -22,20 +22,18 @@ const searchService = {
      * @param {string} variantName - Explicit product variant name constraint
      * @returns {Promise<Object>} - The supplier details
      */
-    getSupplierDetails: async (sellerName, query, scope, subcatId, variantName) => {
+    getSupplierDetails: async (sellerName, query, scope, subcatId, variantName, intent) => {
         // New Endpoint: /api/search/supplier-detail/
         const params = { name: sellerName, query: query };
-        if (scope) {
-            params.scope = scope;
-        }
-        if (subcatId) params.subcat_id = subcatId;
+        if (scope)       params.scope        = scope;
+        if (subcatId)    params.subcat_id    = subcatId;
         if (variantName) params.variant_name = variantName;
+        if (intent)      params.intent       = intent;
 
-        const response = await api.get(`/search/supplier-detail/`, {
-            params: params
-        });
+        const response = await api.get(`/search/supplier-detail/`, { params });
         return response.data;
     },
+
 
     /**
      * compareSuppliers
@@ -54,6 +52,20 @@ const searchService = {
         if (intent) params.intent = intent;
 
         const response = await api.get(`/search/compare/`, { params });
+        return response.data;
+    },
+
+    /**
+     * getSupplierTransactions
+     */
+    getSupplierTransactions: async (sellerName, query, scope, subcatId, variantName, intent, page, pageSize, filters) => {
+        const params = { name: sellerName, query: query, page, page_size: pageSize, ...filters };
+        if (scope)       params.scope        = scope;
+        if (subcatId)    params.subcat_id    = subcatId;
+        if (variantName) params.variant_name = variantName;
+        if (intent)      params.intent       = intent;
+
+        const response = await api.get(`/search/supplier-transactions/`, { params });
         return response.data;
     }
 };

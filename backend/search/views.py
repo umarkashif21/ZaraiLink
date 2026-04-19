@@ -462,54 +462,69 @@ class SearchViewSet(viewsets.ViewSet):
     # ----------------------------------------------------------------
     @action(detail=False, methods=['get'], url_path='supplier-detail')
     def supplier_detail(self, request):
-        seller_name = request.query_params.get('name')
-        query       = request.query_params.get('query')
-        subcat_id   = request.query_params.get('subcat_id')
+        seller_name  = request.query_params.get('name')
+        query        = request.query_params.get('query')
+        subcat_id    = request.query_params.get('subcat_id')
         variant_name = request.query_params.get('variant_name')
 
         if not seller_name or not query:
             return Response({"error": "Params 'name' and 'query' are required"}, status=400)
 
-        scope = request.query_params.get('scope', 'import').lower()
+        scope     = request.query_params.get('scope', 'import').lower()
         orm_scope = 'EXPORT' if scope == 'export' else 'IMPORT'
 
-        # Use the NLU cache — same key as execute_search uses — to avoid
-        # a fresh LLM call that might return a different intent.
-        import hashlib
-        from django.core.cache import cache
-        _cache_raw = f"nlu:{query.lower().strip()}:{scope}"
-        _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
-        parsed_query = cache.get(_cache_key)
-        if parsed_query is None:
-            parsed_query = self.search_service._nlu_engine.parse(query)
+        # --- Intent resolution (priority order) ---
+        # 1. Explicit intent from URL param (most reliable — set by frontend based on active pill tab)
+        explicit_intent = request.query_params.get('intent', '').upper()
 
-        intent = parsed_query.get('intent', 'BUY')
+        if explicit_intent in ('BUY', 'SELL'):
+            intent = explicit_intent
+            parsed_query = {'intent': intent, 'product': query, 'hs_code': ''}
+        else:
+            # 2. NLU cache (fast path when user came from a natural-language search)
+            import hashlib
+            from django.core.cache import cache
+            _cache_raw = f"nlu:{query.lower().strip()}:{scope}"
+            _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
+            parsed_query = cache.get(_cache_key)
+            if parsed_query is None:
+                # 3. Run NLU only if nothing else resolved
+                parsed_query = self.search_service._nlu_engine.parse(query)
+            intent = parsed_query.get('intent', 'BUY')
+            # For numeric HS-code queries NLU yields UNKNOWN — treat as BUY
+            if intent not in ('BUY', 'SELL'):
+                intent = 'BUY'
 
         # Resolve exact subcategory if selected from UI
+        hs_code_hint = query if all(c.isdigit() or c == '.' for c in query.strip()) else parsed_query.get("hs_code", "")
         subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
-            product_keyword=parsed_query.get("product", ""),
-            hs_code=parsed_query.get("hs_code", ""),
+            product_keyword=parsed_query.get("product", query),
+            hs_code=hs_code_hint,
             intent=intent,
             subcat_id=int(subcat_id) if subcat_id else None,
             variant_name=variant_name,
             scope=orm_scope
         )
 
-        # Route to the correct aggregator based on BOTH intent AND scope.
+        # Route to the correct aggregator
         if intent == 'SELL':
-            details = self.aggregator.get_buyer_details(seller_name, subcat_ids, product_item_filter=product_item_ids, scope=orm_scope)
+            details = self.aggregator.get_buyer_details(
+                seller_name, subcat_ids, product_item_filter=product_item_ids, scope=orm_scope
+            )
         else:
-            details = self.aggregator.get_supplier_details(seller_name, subcat_ids, product_item_filter=product_item_ids, scope=orm_scope)
+            details = self.aggregator.get_supplier_details(
+                seller_name, subcat_ids, product_item_filter=product_item_ids, scope=orm_scope
+            )
 
         if not details:
             entity_type = "Buyer" if intent == 'SELL' else "Supplier"
-            return Response({"error": f"{entity_type} not found"}, status=404)
+            return Response({"error": f"{entity_type} '{seller_name}' not found in the selected scope."}, status=404)
 
         return Response({
-            "supplier":              details,
-            "comparables":           [],
+            "supplier": details,
+            "comparables": [],
             "trade_lens_product_id": None,
-            "type":                  "BUYER" if intent == 'SELL' else "SUPPLIER",
+            "type": "BUYER" if intent == 'SELL' else "SUPPLIER",
         })
 
     # ----------------------------------------------------------------
@@ -563,3 +578,92 @@ class SearchViewSet(viewsets.ViewSet):
         import re
         match = re.search(r'\b(?:top|best|first|suggest)\s+(\d+)\b', query.lower())
         return int(match.group(1)) if match else None
+
+    # ----------------------------------------------------------------
+    # SUPPLIER TRANSACTIONS — GET /api/search/supplier-transactions/
+    # ----------------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='supplier-transactions')
+    def supplier_transactions(self, request):
+        seller_name = request.query_params.get('name')
+        query = request.query_params.get('query')
+        subcat_id = request.query_params.get('subcat_id')
+        variant_name = request.query_params.get('variant_name')
+
+        if not seller_name or not query:
+            return Response({"error": "Params 'name' and 'query' are required"}, status=400)
+
+        scope = request.query_params.get('scope', 'import').lower()
+        orm_scope = 'EXPORT' if scope == 'export' else 'IMPORT'
+
+        try:
+            page = int(request.query_params.get('page', 1))
+        except ValueError:
+            page = 1
+        try:
+            page_size = int(request.query_params.get('page_size', 15))
+        except ValueError:
+            page_size = 15
+
+        try:
+            # Intent
+            explicit_intent = request.query_params.get('intent', '').upper()
+            if explicit_intent in ('BUY', 'SELL'):
+                intent = explicit_intent
+                subcat_ids = None
+                product_item_ids = None
+                is_buyer = (intent == 'SELL')
+            else:
+                import hashlib
+                from django.core.cache import cache
+                _cache_raw = f"nlu:{query.lower().strip()}:{scope}"
+                _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
+                parsed_query = cache.get(_cache_key)
+                if parsed_query is None:
+                    parsed_query = self.search_service._nlu_engine.parse(query)
+                intent = parsed_query.get('intent', 'BUY')
+                if intent not in ('BUY', 'SELL'):
+                    intent = 'BUY'
+                is_buyer = (intent == 'SELL')
+
+                try:
+                    hs_code_hint = query if all(c.isdigit() or c == '.' for c in query.strip()) else parsed_query.get("hs_code", "")
+                    subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
+                        product_keyword=parsed_query.get("product", query),
+                        hs_code=hs_code_hint,
+                        intent=intent,
+                        subcat_id=int(subcat_id) if subcat_id else None,
+                        variant_name=variant_name,
+                        scope=orm_scope
+                    )
+                except Exception:
+                    # If subcategory resolution fails just load all transactions for entity
+                    subcat_ids = None
+                    product_item_ids = None
+
+            # Filters
+            filters = {}
+            if request.query_params.get('start_date'): filters['start_date'] = request.query_params.get('start_date')
+            if request.query_params.get('end_date'): filters['end_date'] = request.query_params.get('end_date')
+            if request.query_params.get('buyer'): filters['buyer'] = request.query_params.get('buyer')
+            if request.query_params.get('seller'): filters['seller'] = request.query_params.get('seller')
+            if request.query_params.get('country'): filters['country'] = request.query_params.get('country')
+            if request.query_params.get('min_qty'): filters['min_qty'] = float(request.query_params.get('min_qty'))
+            if request.query_params.get('max_qty'): filters['max_qty'] = float(request.query_params.get('max_qty'))
+            if request.query_params.get('min_price'): filters['min_price'] = float(request.query_params.get('min_price'))
+            if request.query_params.get('max_price'): filters['max_price'] = float(request.query_params.get('max_price'))
+
+            data = self.aggregator.get_supplier_transactions(
+                entity_name=seller_name,
+                is_buyer=is_buyer,
+                subcat_ids=subcat_ids,
+                product_item_filter=product_item_ids,
+                scope=orm_scope,
+                filters=filters,
+                page=page,
+                page_size=page_size
+            )
+            return Response(data)
+
+        except Exception as exc:
+            logger.exception("supplier_transactions error: %s", exc)
+            return Response({"error": str(exc)}, status=500)

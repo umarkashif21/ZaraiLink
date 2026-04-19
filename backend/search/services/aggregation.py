@@ -1,6 +1,6 @@
 import datetime
-from django.db.models import Sum, Count, Avg, Max, F, ExpressionWrapper, FloatField
-from django.db.models.functions import TruncMonth
+from django.db.models import Sum, Count, Avg, Max, Min, F, ExpressionWrapper, FloatField, Q
+from django.db.models.functions import TruncMonth, TruncQuarter
 from trade_data.models import Transaction
 import math
 
@@ -212,20 +212,22 @@ class SupplierAggregator:
         """
         Get detailed stats, sparklines, and history for a specific supplier within a category.
         """
-        # Filter transactions for specific seller and optional subcategories
-        queryset = Transaction.objects.filter(seller__iexact=seller_name.strip())
+        # 1. First, build the MARKET queryset (all transactions for these products in this scope)
+        market_qs = Transaction.objects.all()
         if subcategory_ids:
-            queryset = queryset.filter(product_item__sub_category_id__in=subcategory_ids)
-        queryset = queryset.order_by('-reporting_date')
-        
+            market_qs = market_qs.filter(product_item__sub_category_id__in=subcategory_ids)
+            
         scope = scope or 'WORLDWIDE'
         if scope == 'PAKISTAN':
-            queryset = queryset.filter(trade_type='EXPORT', origin_country='Pakistan')
+            market_qs = market_qs.filter(trade_type='EXPORT', origin_country='Pakistan')
         else:
-            queryset = queryset.filter(trade_type='IMPORT')
+            market_qs = market_qs.filter(trade_type='IMPORT')
 
         if product_item_filter:
-            queryset = queryset.filter(product_item__id__in=product_item_filter)
+            market_qs = market_qs.filter(product_item__id__in=product_item_filter)
+
+        # 2. Derive the ENTITY queryset from the market queryset
+        queryset = market_qs.filter(seller__iexact=seller_name.strip()).order_by('-reporting_date')
 
         if not queryset.exists():
             return None
@@ -319,6 +321,9 @@ class SupplierAggregator:
         last_month_start = datetime.date.today() - datetime.timedelta(days=30)
         recent_buyers = queryset.filter(reporting_date__gte=last_month_start).values('buyer').distinct().count()
         
+        intelligence = self._calculate_intelligence(queryset, is_buyer=False, entity_name=seller_name)
+        overview = self._compute_overview_metrics(queryset, is_buyer=False, intelligence=intelligence)
+
         return {
             "name": seller_name,
             "stats": {
@@ -337,27 +342,34 @@ class SupplierAggregator:
             },
             "sparkline": sparkline,
             "history": history,
-            "intelligence": self._calculate_intelligence(queryset, is_buyer=False, entity_name=seller_name)
+            "intelligence": intelligence,
+            "overview": overview,
+            "market_pricing": self._compute_market_pricing(queryset, market_qs, is_buyer=False, entity_name=seller_name),
+            "company_intel": self._compute_company_profile(seller_name, is_buyer=False)
         }
 
     def get_buyer_details(self, buyer_name, subcategory_ids, product_item_filter=None, scope='WORLDWIDE'):
         """
         Get detailed stats, sparklines, and history for a specific BUYER within a category.
         """
-        # Filter transactions where 'buyer' is the target
-        queryset = Transaction.objects.filter(buyer__iexact=buyer_name.strip())
+        # 1. First, build the MARKET queryset
+        market_qs = Transaction.objects.all()
         if subcategory_ids:
-            queryset = queryset.filter(product_item__sub_category_id__in=subcategory_ids)
-        queryset = queryset.order_by('-reporting_date')
-        
+            market_qs = market_qs.filter(product_item__sub_category_id__in=subcategory_ids)
+            
         scope = scope or 'WORLDWIDE'
-        if scope == 'PAKISTAN':
-            queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
-        else:
-            queryset = queryset.filter(trade_type='EXPORT')
+        if scope == 'IMPORT':
+            market_qs = market_qs.filter(trade_type='IMPORT')
+        elif scope == 'PAKISTAN':
+            market_qs = market_qs.filter(trade_type='IMPORT', destination_country='Pakistan')
+        else:  # EXPORT or WORLDWIDE
+            market_qs = market_qs.filter(trade_type='EXPORT')
         
         if product_item_filter:
-            queryset = queryset.filter(product_item__id__in=product_item_filter)
+            market_qs = market_qs.filter(product_item__id__in=product_item_filter)
+
+        # 2. Derive the ENTITY queryset
+        queryset = market_qs.filter(buyer__iexact=buyer_name.strip()).order_by('-reporting_date')
 
 
 
@@ -446,6 +458,9 @@ class SupplierAggregator:
         last_month_start = datetime.date.today() - datetime.timedelta(days=30)
         recent_suppliers = queryset.filter(reporting_date__gte=last_month_start).values('seller').distinct().count()
         
+        intelligence = self._calculate_intelligence(queryset, is_buyer=True, entity_name=buyer_name)
+        overview = self._compute_overview_metrics(queryset, is_buyer=True, intelligence=intelligence)
+
         return {
             "name": buyer_name,
             "type": "BUYER",
@@ -465,7 +480,259 @@ class SupplierAggregator:
             },
             "sparkline": sparkline,
             "history": history,
-            "intelligence": self._calculate_intelligence(queryset, is_buyer=True, entity_name=buyer_name)
+            "intelligence": intelligence,
+            "overview": overview,
+            "market_pricing": self._compute_market_pricing(queryset, market_qs, is_buyer=True, entity_name=buyer_name),
+            "company_intel": self._compute_company_profile(buyer_name, is_buyer=True)
+        }
+
+    def _compute_overview_metrics(self, queryset, is_buyer=False, intelligence=None):
+        """
+        Compute all metrics needed for the Overview tab.
+        Pass pre-computed intelligence dict to avoid a double DB call.
+        """
+        from django.db.models import Sum, Count, Avg, Min, Max, Case, When, Value, CharField
+        from django.db.models.functions import TruncMonth
+        import datetime
+
+        # ── Active Period ──────────────────────────────────────────────────
+        dates      = queryset.aggregate(first=Min('reporting_date'), last=Max('reporting_date'))
+        first_date = dates['first']
+        last_date  = dates['last']
+
+        active_period    = 'N/A'
+        last_active      = 'N/A'
+        vol_trend_text   = None
+        price_trend_text = None
+
+        if first_date and last_date:
+            months_span = (last_date.year - first_date.year) * 12 + (last_date.month - first_date.month)
+            years = max(1, round(months_span / 12))
+            year_str = f"{years} year{'s' if years != 1 else ''}"
+            active_period = f"{first_date.strftime('%b %Y')} - {last_date.strftime('%b %Y')} ({year_str})"
+
+            days_since = (datetime.date.today() - last_date).days
+            if days_since <= 90:
+                last_active = f"{last_date.strftime('%b %Y')} (Recent)"
+            elif days_since <= 365:
+                m = max(1, days_since // 30)
+                last_active = f"{last_date.strftime('%b %Y')} ({m} month{'s' if m != 1 else ''} ago)"
+            else:
+                y = max(1, days_since // 365)
+                last_active = f"{last_date.strftime('%b %Y')} ({y} year{'s' if y != 1 else ''} ago)"
+
+        # ── Typical Shipment Size (25th–75th percentile) ───────────────────
+        qtys = list(queryset.values_list('qty_mt', flat=True).order_by('qty_mt')[:500])
+        typical_shipment_size = 'N/A'
+        if qtys:
+            n   = len(qtys)
+            p25 = float(qtys[max(0, n * 25 // 100)])
+            p75 = float(qtys[min(n - 1, n * 75 // 100)])
+            if abs(p75 - p25) < 1:
+                typical_shipment_size = f"{round(p25):,} MT per shipment"
+            else:
+                typical_shipment_size = f"{round(p25):,}\u2013{round(p75):,} MT per shipment"
+
+        # ── Geographic Data ────────────────────────────────────────────────
+        total_vol = float(queryset.aggregate(total=Sum('qty_mt'))['total'] or 0)
+
+        geo_vols = list(
+            queryset.values('origin_country')
+                    .annotate(vol=Sum('qty_mt'))
+                    .exclude(origin_country__isnull=True)
+                    .exclude(origin_country='')
+                    .order_by('-vol')[:5]
+        )
+
+        primary_region = 'N/A'
+        geo_presence   = []
+        geo_summary    = ''
+
+        if geo_vols and total_vol > 0:
+            top     = geo_vols[0]
+            top_pct = round(float(top['vol']) / total_vol * 100)
+            primary_region = f"{top['origin_country']} ({top_pct}% of volume)"
+
+            for gv in geo_vols:
+                vol = float(gv['vol'] or 0)
+                pct = round(vol / total_vol * 100)
+                if pct > 0:
+                    geo_presence.append({'country': gv['origin_country'], 'volume_mt': round(vol), 'pct': pct})
+
+            if len(geo_presence) >= 2:
+                geo_summary = (f"Primarily {geo_presence[0]['country']}-sourced with secondary suppliers "
+                               f"in {geo_presence[1]['country']}")
+                if len(geo_presence) >= 3:
+                    geo_summary += f" and {geo_presence[2]['country']}"
+            elif geo_presence:
+                geo_summary = f"Primarily sourced from {geo_presence[0]['country']}"
+
+        # ── Top Counterparties ─────────────────────────────────────────────
+        cp_field = 'seller' if is_buyer else 'buyer'
+
+        top_cps = list(
+            queryset.values(cp_field)
+                    .annotate(vol=Sum('qty_mt'), count=Count('id'))
+                    .exclude(**{cp_field + '__isnull': True})
+                    .exclude(**{cp_field: ''})
+                    .order_by('-vol')[:6]
+        )
+
+        top_cp_list = []
+        for cp in top_cps[:5]:
+            name = cp[cp_field] or 'Unknown'
+            vol  = float(cp['vol'] or 0)
+            top_cp_list.append({'name': f"[{name}]", 'volume_mt': round(vol),
+                                 'shipment_count': cp['count'], 'is_others': False})
+
+        total_cps = (queryset.values(cp_field)
+                             .exclude(**{cp_field + '__isnull': True})
+                             .exclude(**{cp_field: ''})
+                             .distinct().count())
+        if total_cps > 5:
+            top5_vol   = sum(c['volume_mt'] for c in top_cp_list)
+            others_vol = max(0, round(total_vol - top5_vol))
+            top_cp_list.append({'name': f'+{total_cps - 5} other {"suppliers" if is_buyer else "buyers"}',
+                                 'volume_mt': others_vol, 'shipment_count': None, 'is_others': True})
+
+        if total_cps >= 6:
+            cp_note = f"Diversified {'supplier' if is_buyer else 'buyer'} base with strong repeat relationships"
+        elif total_cps >= 3:
+            cp_note = f"Moderate {'supplier' if is_buyer else 'buyer'} base with established relationships"
+        else:
+            cp_note = f"Concentrated {'supplier' if is_buyer else 'buyer'} base with key long-term partners"
+
+        # ── Shipment Size Distribution ─────────────────────────────────────
+        size_dist_qs = queryset.annotate(
+            bucket=Case(
+                When(qty_mt__lt=50,  then=Value('Small (< 50 MT)')),
+                When(qty_mt__lt=100, then=Value('Small (50\u2013100 MT)')),
+                When(qty_mt__lt=200, then=Value('Medium (100\u2013200 MT)')),
+                default=Value('Large (200+ MT)'),
+                output_field=CharField(),
+            )
+        ).values('bucket').annotate(count=Count('id'))
+
+        size_dict    = {s['bucket']: s['count'] for s in size_dist_qs}
+        total_tx_cnt = sum(size_dict.values()) or 1
+        bucket_order = ['Small (< 50 MT)', 'Small (50\u2013100 MT)', 'Medium (100\u2013200 MT)', 'Large (200+ MT)']
+        size_distribution = [
+            {'range': b, 'count': size_dict[b], 'pct': round(size_dict[b] / total_tx_cnt * 100)}
+            for b in bucket_order if size_dict.get(b, 0) > 0
+        ]
+
+        # ── Frequency Pattern ──────────────────────────────────────────────
+        monthly_data = list(
+            queryset.annotate(month=TruncMonth('reporting_date'))
+                    .values('month').annotate(count=Count('id')).order_by('month')
+        )
+
+        freq_label       = 'Sporadic'
+        freq_desc        = 'Occasional activity with gaps'
+        activity_pattern = 'Sporadic'
+
+        if monthly_data:
+            active_months = len(monthly_data)
+            first_m, last_m = monthly_data[0]['month'], monthly_data[-1]['month']
+            span = max(1, (last_m.year - first_m.year) * 12 + (last_m.month - first_m.month) + 1)
+            rate  = active_months / span
+            avg_pm = round(sum(m['count'] for m in monthly_data) / active_months, 1)
+
+            if rate >= 0.8:
+                freq_label, activity_pattern = 'Monthly Consistent', 'Consistent'
+                freq_desc = f"Average {avg_pm} shipment{'s' if avg_pm != 1 else ''} per month"
+            elif rate >= 0.5:
+                freq_label, activity_pattern = 'Regular', 'Regular'
+                freq_desc = f"Average {avg_pm} shipment{'s' if avg_pm != 1 else ''} per active month"
+            else:
+                freq_desc = f"Occasional activity ({active_months} active months over {span})"
+
+            # Volume trend: compare first vs second half
+            if len(monthly_data) >= 6:
+                mid = len(monthly_data) // 2
+                monthly_vols = list(
+                    queryset.annotate(month=TruncMonth('reporting_date'))
+                            .values('month').annotate(vol=Sum('qty_mt')).order_by('month')
+                )
+                first_vols = [float(m['vol'] or 0) for m in monthly_vols[:mid]]
+                last_vols  = [float(m['vol'] or 0) for m in monthly_vols[mid:]]
+                avg_fv = sum(first_vols) / len(first_vols) if first_vols else 0
+                avg_lv = sum(last_vols)  / len(last_vols)  if last_vols  else 0
+                if avg_fv > 0:
+                    vpct = round((avg_lv - avg_fv) / avg_fv * 100)
+                    vol_trend_text = (f"\u2191 +{vpct}% over period" if vpct > 0
+                                     else f"\u2193 {vpct}% over period" if vpct < 0
+                                     else "Stable over period")
+
+            # Price trend
+            monthly_prices = list(
+                queryset.annotate(month=TruncMonth('reporting_date'))
+                        .values('month').annotate(price=Avg('usd_per_mt')).order_by('month')
+            )
+            valid_mp = [float(m['price'] or 0) for m in monthly_prices if m.get('price')]
+            if len(valid_mp) >= 6:
+                mid_p = len(valid_mp) // 2
+                avg_pf = sum(valid_mp[:mid_p]) / mid_p
+                avg_pl = sum(valid_mp[mid_p:]) / (len(valid_mp) - mid_p)
+                if avg_pf > 0:
+                    ppct = round((avg_pl - avg_pf) / avg_pf * 100)
+                    if ppct != 0:
+                        price_trend_text = (f"\u2191 +{ppct}% trend" if ppct > 0 else f"\u2193 {ppct}% trend")
+
+        # ── Behavioral Summary ─────────────────────────────────────────────
+        behavioral_summary = 'Regular shipment activity observed'
+        if size_distribution:
+            dom = max(size_distribution, key=lambda x: x['count'])
+            cadence = 'consistent' if activity_pattern == 'Consistent' else 'regular' if activity_pattern == 'Regular' else 'irregular'
+            if 'Large' in dom['range']:
+                behavioral_summary = f"Large bulk shipments with {cadence} cadence"
+            elif 'Medium' in dom['range']:
+                behavioral_summary = f"Mid-size bulk shipments with {cadence} cadence"
+            else:
+                behavioral_summary = f"Small frequent shipments with {cadence} cadence"
+
+        # ── Market / Price Positioning ─────────────────────────────────────
+        market_position_label = 'Mid-Range Competitive'
+        market_position_desc  = 'Pricing positioned in the middle tier for this product category'
+        price_stability       = 'Stable pricing with minimal volatility'
+
+        if intelligence:
+            pl = intelligence.get('pricing_label', '')
+            ml = intelligence.get('momentum_label', '')
+            if pl == 'Premium':
+                market_position_label = 'Premium Positioned'
+                market_position_desc  = 'Pricing positioned in the upper tier for this product category'
+            elif pl == 'Competitive':
+                market_position_label = 'Highly Competitive'
+                market_position_desc  = 'Pricing positioned in the lower tier for this product category'
+            elif pl == 'Opportunistic':
+                market_position_label = 'Opportunistic Pricing'
+                market_position_desc  = 'Pricing varies significantly based on market conditions'
+
+            if ml == 'Growing':
+                price_stability = 'Consistent with gradual upward trend'
+            elif ml == 'Declining':
+                price_stability = 'Showing gradual downward price movement'
+
+        return {
+            'active_period':           active_period,
+            'last_active':             last_active,
+            'typical_shipment_size':   typical_shipment_size,
+            'primary_region':          primary_region,
+            'top_counterparties':      top_cp_list,
+            'top_counterparties_note': cp_note,
+            'geo_presence':            geo_presence,
+            'geo_summary':             geo_summary,
+            'frequency_label':         freq_label,
+            'frequency_desc':          freq_desc,
+            'activity_pattern':        activity_pattern,
+            'behavioral_summary':      behavioral_summary,
+            'size_distribution':       size_distribution,
+            'market_position_label':   market_position_label,
+            'market_position_desc':    market_position_desc,
+            'price_stability':         price_stability,
+            'vol_trend_text':          vol_trend_text,
+            'price_trend_text':        price_trend_text,
         }
 
     def _calculate_intelligence(self, queryset, is_buyer=False, entity_name=""):
@@ -668,3 +935,530 @@ class SupplierAggregator:
             })
 
         return results
+
+    def _compute_market_pricing(self, entity_qs, market_qs, is_buyer, entity_name):
+        """
+        Computes market-level metrics and benchmarks the specific entity against the market.
+        Used for the 'Market & Pricing' sub-tab.
+        """
+        result = {}
+        
+        # 1. Market Overview
+        market_stats = market_qs.aggregate(
+            total_vol=Sum('qty_mt'),
+            total_tx=Count('id'),
+            min_price=Min('usd_per_mt'),
+            max_price=Max('usd_per_mt')
+        )
+        total_market_vol = float(market_stats['total_vol'] or 0)
+        
+        trade_dir = market_qs.values_list('trade_type', flat=True).first() or "Unknown"
+        
+        if is_buyer:
+            top_route_qs = market_qs.values('destination_country', 'origin_country').annotate(v=Sum('qty_mt')).order_by('-v').first()
+            top_route = f"{top_route_qs['origin_country']} → {top_route_qs['destination_country']}" if top_route_qs else "Unknown"
+        else:
+            top_route_qs = market_qs.values('origin_country', 'destination_country').annotate(v=Sum('qty_mt')).order_by('-v').first()
+            top_route = f"{top_route_qs['origin_country']} → {top_route_qs['destination_country']}" if top_route_qs else "Unknown"
+
+        result["overview"] = {
+            "total_volume": total_market_vol,
+            "total_transactions": market_stats['total_tx'],
+            "trade_direction": trade_dir,
+            "top_route": top_route
+        }
+        
+        # 2. Price Intelligence (Monthly Trend)
+        monthly_market = market_qs.annotate(
+            month=TruncMonth('reporting_date')
+        ).values('month').annotate(
+            avg_price=Avg('usd_per_mt'),
+            vol=Sum('qty_mt')
+        ).order_by('month')
+        
+        market_trend = []
+        prices = []
+        for m in monthly_market:
+            m_price = float(m['avg_price'] or 0)
+            if m_price > 0:
+                prices.append(m_price)
+            market_trend.append({
+                "date": m['month'].strftime("%Y-%m-%d"),
+                "price": m_price,
+                "volume": float(m['vol'] or 0)
+            })
+        
+        prices.sort()
+        median_price = prices[len(prices)//2] if prices else 0.0
+        
+        result["price_intelligence"] = {
+            "trend": market_trend,
+            "min": float(market_stats['min_price'] or 0),
+            "max": float(market_stats['max_price'] or 0),
+            "median": median_price
+        }
+
+        # 3. Supplier/Buyer Price Positioning
+        entity_stats = entity_qs.aggregate(
+            weighted_price_sum=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField())),
+            total_vol=Sum('qty_mt')
+        )
+        e_vol = float(entity_stats['total_vol'] or 0)
+        e_wps = float(entity_stats.get('weighted_price_sum') or 0)
+        entity_avg_price = round(e_wps / e_vol, 2) if e_vol > 0 else 0.0
+
+        market_wps_agg = market_qs.aggregate(
+            weighted_price_sum=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()))
+        )
+        m_wps = float(market_wps_agg.get('weighted_price_sum') or 0)
+        market_avg_price = round(m_wps / total_market_vol, 2) if total_market_vol > 0 else 0.0
+
+        diff_pct = 0.0
+        if market_avg_price > 0:
+            diff_pct = round(((entity_avg_price - market_avg_price) / market_avg_price) * 100, 1)
+
+        result["positioning"] = {
+            "market_avg": market_avg_price,
+            "entity_avg": entity_avg_price,
+            "differential_pct": diff_pct
+        }
+
+        # 4. Country Level Pricing & Volume
+        geo_field = 'destination_country' if is_buyer else 'origin_country'
+        country_agg = market_qs.values(geo_field).annotate(
+            avg_price=Avg('usd_per_mt'),
+            vol=Sum('qty_mt')
+        ).order_by('-vol')
+
+        country_metrics = []
+        for c in country_agg:
+            v_amt = float(c['vol'] or 0)
+            sh = (v_amt / total_market_vol * 100) if total_market_vol > 0 else 0
+            country_metrics.append({
+                "country": c[geo_field],
+                "avg_price": float(c['avg_price'] or 0),
+                "volume": v_amt,
+                "share_pct": round(sh, 1)
+            })
+        
+        result["country_pricing"] = country_metrics
+
+        # 5. Supply Chain Flow
+        routes = market_qs.values('origin_country', 'destination_country').annotate(
+            vol=Sum('qty_mt'),
+            avg_p=Avg('usd_per_mt')
+        ).order_by('-vol')[:10]
+        
+        flow = []
+        for r in routes:
+            v_amt = float(r['vol'] or 0)
+            sh = (v_amt / total_market_vol * 100) if total_market_vol > 0 else 0
+            flow.append({
+                "source": r['origin_country'],
+                "destination": r['destination_country'],
+                "volume": v_amt,
+                "share_pct": round(sh, 1),
+                "avg_price": float(r['avg_p'] or 0)
+            })
+        result["supply_chain"] = flow
+
+        # 6. Demand & Volume Trends
+        # We reuse the market_trend list but calculate direction
+        if len(market_trend) >= 6:
+            last_3 = sum(x['volume'] for x in market_trend[-3:])
+            prev_3 = sum(x['volume'] for x in market_trend[-6:-3])
+            trend_val = ((last_3 - prev_3) / prev_3 * 100) if prev_3 > 0 else 0
+        else:
+            trend_val = 0
+            
+        peak_month = max(market_trend, key=lambda x: x['volume']) if market_trend else None
+        low_month = min(market_trend, key=lambda x: x['volume']) if market_trend else None
+
+        result["demand_trends"] = {
+            "trend_direction_pct": round(trend_val, 1),
+            "peak_period": peak_month['date'] if peak_month else None,
+            "low_period": low_month['date'] if low_month else None
+        }
+
+        # 7. Competitive Benchmarking
+        competitor_field = 'seller'
+        competitors = market_qs.values(competitor_field).annotate(
+            total_vol=Sum('qty_mt'),
+            wps=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()))
+        ).order_by('-total_vol')[:50]  # Get top 50 for the scatter plot
+        
+        comp_data = []
+        for cpt in competitors:
+            c_name = cpt[competitor_field]
+            if not c_name: continue
+            
+            c_vol = float(cpt['total_vol'] or 0)
+            c_wps = float(cpt.get('wps') or 0)
+            c_avg = round(c_wps / c_vol, 2) if c_vol > 0 else 0.0
+            
+            c_diff = 0.0
+            if market_avg_price > 0:
+                c_diff = round(((c_avg - market_avg_price) / market_avg_price) * 100, 1)
+
+            comp_data.append({
+                "name": c_name,
+                "volume": c_vol,
+                "avg_price": c_avg,
+                "is_current": c_name.lower() == entity_name.lower(),
+                "price_diff": c_diff
+            })
+            
+        result["benchmarks"] = comp_data
+
+        return result
+
+    def _compute_company_profile(self, entity_name, is_buyer):
+        """
+        Computes the entirely unified metrics for the Company across ALL their products.
+        """
+        import datetime
+        from django.db.models import Sum, Count, Avg, F, ExpressionWrapper, FloatField
+        from django.db.models.functions import TruncQuarter
+
+        # 1. Base Queryset (All products for this entity)
+        entity_q = entity_name.strip()
+        if is_buyer:
+            qs = Transaction.objects.filter(buyer__iexact=entity_q)
+            partner_field = 'seller'
+            route_label = 'origin_country' # the countries they source from
+            export_label = 'destination_country' # countries they export to (rare if they are pure buyer acting as supplier here? well entity could be both)
+        else:
+            qs = Transaction.objects.filter(seller__iexact=entity_q)
+            partner_field = 'buyer'
+            route_label = 'destination_country'
+            export_label = 'origin_country'
+            
+        total_tx = qs.count()
+        if total_tx == 0:
+            return None
+            
+        # Overall KPIs
+        stats = qs.aggregate(
+            vol=Sum('qty_mt'),
+            val=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()))
+        )
+        total_vol = float(stats['vol'] or 0)
+        total_val = float(stats['val'] or 0)
+
+        # Trade Direction
+        import_tx = qs.filter(trade_type='IMPORT').count()
+        export_tx = qs.filter(trade_type='EXPORT').count()
+        if total_tx > 0:
+            dominant_direction = "Export" if export_tx > import_tx else "Import"
+            direction_pct = round(max(export_tx, import_tx) / total_tx * 100)
+        else:
+            dominant_direction = "Unknown"
+            direction_pct = 0
+
+        # Product Portfolio
+        products = qs.values('product_item__sub_category__name').annotate(
+            vol=Sum('qty_mt'),
+            wps=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()))
+        ).order_by('-vol')
+        
+        portfolio = []
+        for p in products:
+            p_vol = float(p['vol'] or 0)
+            if p_vol <= 0: continue
+            p_val = float(p.get('wps') or 0)
+            p_avg = round(p_val / p_vol, 2)
+            share = round((p_vol / total_vol * 100), 1) if total_vol > 0 else 0
+            
+            p_name = p['product_item__sub_category__name'] or "Unknown Product Category"
+            portfolio.append({
+                "product": p_name,
+                "volume": p_vol,
+                "avg_price": p_avg,
+                "share_pct": share
+            })
+            
+        top_products = portfolio[:5]
+        
+        # Partner Network
+        partners = qs.values(partner_field).annotate(
+            vol=Sum('qty_mt'),
+            first_tx=Min('reporting_date'),
+            last_tx=Max('reporting_date'),
+            tx_count=Count('id')
+        ).order_by('-vol')
+        
+        partner_list = []
+        total_partners = len([p for p in partners if p[partner_field]])
+        long_term_partners = 0
+        total_relationship_days = 0
+        relationships_counted = 0
+        repeat_partners = 0
+
+        for p in partners:
+            p_name = p.get(partner_field)
+            if not p_name: continue
+            
+            p_vol = float(p['vol'] or 0)
+            share = round((p_vol / total_vol * 100), 1) if total_vol > 0 else 0
+            
+            # Days between first and last tx
+            first_d = p['first_tx']
+            last_d = p['last_tx']
+            days_length = 0
+            if first_d and last_d:
+                days_length = (last_d - first_d).days
+                total_relationship_days += days_length
+                relationships_counted += 1
+                if days_length >= 365:
+                    long_term_partners += 1
+                    
+            if p['tx_count'] > 1:
+                repeat_partners += 1
+            
+            partner_list.append({
+                "name": p_name,
+                "volume": p_vol,
+                "share_pct": share
+            })
+            
+        top_partners = partner_list[:5]
+        
+        # Partner Concentration check
+        top_5_share = sum(p['share_pct'] for p in top_partners)
+        if top_5_share > 80:
+            concentration_label = "Highly Concentrated"
+        elif top_5_share > 50:
+            concentration_label = "Moderately Diversified"
+        else:
+            concentration_label = "Highly Diversified"
+            
+        avg_rel_length_years = round((total_relationship_days / relationships_counted) / 365.25, 1) if relationships_counted > 0 else 0.0
+        repeat_ratio = round((repeat_partners / total_partners) * 100) if total_partners > 0 else 0
+
+        # Geographic Presence (Export = destination for a Supplier, or source for a Buyer)
+        # We will calculate top Origins and top Destinations.
+        def get_geo(field):
+            geo = qs.values(field).annotate(vol=Sum('qty_mt')).order_by('-vol')
+            g_list = []
+            for g in geo:
+                if not g[field]: continue
+                v = float(g['vol'] or 0)
+                sh = round((v / total_vol * 100), 1) if total_vol > 0 else 0
+                g_list.append({"country": g[field], "volume": v, "share_pct": sh})
+            return g_list[:5]
+            
+        export_geo = get_geo('destination_country')
+        source_geo = get_geo('origin_country')
+
+        # Activity & Growth Trends (Quarterly)
+        qtr_trends = qs.annotate(
+            qtr=TruncQuarter('reporting_date')
+        ).values('qtr').annotate(
+            vol=Sum('qty_mt')
+        ).order_by('qtr')
+        
+        activity_trends = []
+        for q in qtr_trends:
+            if not q['qtr']: continue
+            q_date = q['qtr']
+            # Format as Q1 2022
+            quarter = (q_date.month - 1) // 3 + 1
+            activity_trends.append({
+                "date_raw": q_date,
+                "qtr": f"Q{quarter} {q_date.year}",
+                "volume": float(q['vol'] or 0)
+            })
+            
+        # YoY Growth
+        # To calculate YoY, let's take the last 4 quarters vs the previous 4 quarters from the activity_trends
+        yoy_growth = 0
+        trend_label = "Stable"
+        peak_qtr = "N/A"
+        if len(activity_trends) > 0:
+            peak = max(activity_trends, key=lambda x: x['volume'])
+            peak_qtr = peak['qtr']
+            
+            if len(activity_trends) >= 8:
+                last_4 = sum(x['volume'] for x in activity_trends[-4:])
+                prev_4 = sum(x['volume'] for x in activity_trends[-8:-4])
+                if prev_4 > 0:
+                    yoy_growth = round(((last_4 - prev_4) / prev_4) * 100)
+                    if yoy_growth > 5: trend_label = "Growing"
+                    elif yoy_growth < -5: trend_label = "Declining"
+            elif len(activity_trends) >= 2:
+                # Fallback to simple latest vs previous if we don't have enough data
+                last_1 = activity_trends[-1]['volume']
+                prev_1 = activity_trends[-2]['volume']
+                if prev_1 > 0:
+                    yoy_growth = round(((last_1 - prev_1) / prev_1) * 100)
+                    if yoy_growth > 5: trend_label = "Growing"
+                    elif yoy_growth < -5: trend_label = "Declining"
+                    
+        # Product <-> Partner Mapping
+        # For the top 5 products, who are the top 3 buyers/sellers?
+        product_names = [p['product'] for p in top_products]
+        mapping = []
+        for p_name in product_names:
+            p_qs = qs.filter(product_item__sub_category__name=p_name).values(partner_field).annotate(vol=Sum('qty_mt')).order_by('-vol')
+            p_partners = []
+            for pq in p_qs:
+                if not pq[partner_field]: continue
+                p_partners.append({"name": pq[partner_field], "volume": float(pq['vol'] or 0)})
+            p_partners = p_partners[:3]
+            mapping.append({
+                "product": p_name,
+                "partners": p_partners
+            })
+
+        return {
+            "overview": {
+                "total_volume": total_vol,
+                "total_transactions": total_tx,
+                "trade_value": total_val,
+                "trade_direction_label": dominant_direction,
+                "trade_direction_pct": direction_pct
+            },
+            "portfolio": {
+                "top": top_products,
+                "all_count": len(portfolio)
+            },
+            "network": {
+                "top": top_partners,
+                "total_count": total_partners,
+                "concentration_label": concentration_label,
+                "top_5_share_pct": top_5_share
+            },
+            "geography": {
+                "exports": export_geo,
+                "sources": source_geo
+            },
+            "trends": {
+                "quarterly": [{ "qtr": x["qtr"], "volume": x["volume"] } for x in activity_trends],
+                "yoy_growth": yoy_growth,
+                "trend_label": trend_label,
+                "peak_qtr": peak_qtr,
+                "status": "Active" # Or calculate based on recent activity
+            },
+            "behavior": {
+                "unique_partners": total_partners,
+                "repeat_ratio_pct": repeat_ratio,
+                "avg_length_years": avg_rel_length_years,
+                "long_term_partners": long_term_partners
+            },
+            "mapping": mapping
+        }
+
+    def get_supplier_transactions(self, entity_name, is_buyer, subcat_ids, product_item_filter, scope, filters, page, page_size):
+        """
+        Gets paginated transactions with server-side filtering for the Transactions Tab.
+        """
+        queryset = Transaction.objects.all()
+
+        # Apply Product constraints
+        if subcat_ids:
+            queryset = queryset.filter(product_item__sub_category_id__in=subcat_ids)
+        if product_item_filter:
+            queryset = queryset.filter(product_item__id__in=product_item_filter)
+
+        # Apply Scope 
+        scope = scope or 'WORLDWIDE'
+        if is_buyer:
+            if scope == 'PAKISTAN':
+                queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
+            elif scope == 'IMPORT':
+                queryset = queryset.filter(trade_type='IMPORT')
+            else:
+                queryset = queryset.filter(trade_type='EXPORT')
+            queryset = queryset.filter(buyer__iexact=entity_name.strip())
+            cp_field = 'seller'
+            cp_country_field = 'origin_country'
+        else:
+            if scope == 'PAKISTAN':
+                queryset = queryset.filter(trade_type='EXPORT', origin_country='Pakistan')
+            else:
+                queryset = queryset.filter(trade_type='IMPORT')
+            queryset = queryset.filter(seller__iexact=entity_name.strip())
+            cp_field = 'buyer'
+            cp_country_field = 'destination_country'
+
+        # Apply User Filters
+        if filters.get('start_date'):
+            queryset = queryset.filter(reporting_date__gte=filters['start_date'])
+        if filters.get('end_date'):
+            queryset = queryset.filter(reporting_date__lte=filters['end_date'])
+        if filters.get('min_qty'):
+            queryset = queryset.filter(qty_mt__gte=filters['min_qty'])
+        if filters.get('max_qty'):
+            queryset = queryset.filter(qty_mt__lte=filters['max_qty'])
+        if filters.get('min_price'):
+            queryset = queryset.filter(usd_per_mt__gte=filters['min_price'])
+        if filters.get('max_price'):
+            queryset = queryset.filter(usd_per_mt__lte=filters['max_price'])
+
+        if is_buyer and filters.get('seller'):
+            queryset = queryset.filter(seller__icontains=filters['seller'])
+        elif not is_buyer and filters.get('buyer'):
+            queryset = queryset.filter(buyer__icontains=filters['buyer'])
+
+        if filters.get('country') and filters['country'].lower() != 'all countries':
+            queryset = queryset.filter(**{f"{cp_country_field}__iexact": filters['country']})
+
+        # Calculate Summaries (based on filtered data)
+        stats = queryset.aggregate(
+            total_vol=Sum('qty_mt'),
+            total_tx=Count('id'),
+            avg_price=Avg('usd_per_mt')
+        )
+
+        total_tx = stats['total_tx'] or 0
+        total_vol = float(stats['total_vol'] or 0)
+        avg_price = float(stats['avg_price'] or 0)
+
+        # Top Counterparties (based on filtered data)
+        # Handle cases where cp_field might be null
+        top_cps = list(
+            queryset.exclude(**{f"{cp_field}__isnull": True})
+                    .exclude(**{f"{cp_field}": ''})
+                    .values(cp_field)
+                    .annotate(vol=Sum('qty_mt'))
+                    .order_by('-vol')[:5]
+        )
+        top_cps_formatted = [{"name": cp[cp_field], "volume": float(cp['vol'] or 0)} for cp in top_cps]
+
+        # Top Countries (based on filtered data)
+        top_countries = list(
+            queryset.exclude(**{f"{cp_country_field}__isnull": True})
+                    .exclude(**{f"{cp_country_field}": ''})
+                    .values(cp_country_field)
+                    .annotate(vol=Sum('qty_mt'))
+                    .order_by('-vol')[:3]
+        )
+        top_countries_formatted = [{"name": cp[cp_country_field], "volume": float(cp['vol'] or 0)} for cp in top_countries]
+
+        # Pagination for Records
+        offset = (page - 1) * page_size
+        records_qs = queryset.order_by('-reporting_date')[offset : offset + page_size]
+
+        records = []
+        for tx in records_qs:
+            records.append({
+                "id": tx.id,
+                "date": str(tx.reporting_date) if tx.reporting_date else "-",
+                "buyer": tx.buyer or "-",
+                "seller": tx.seller or "-",
+                "country": getattr(tx, cp_country_field) or "-",
+                "quantity": float(tx.qty_mt or 0),
+                "price": float(tx.usd_per_mt or 0)
+            })
+
+        return {
+            "summary": {
+                "total_transactions": total_tx,
+                "total_volume": total_vol,
+                "average_price": avg_price
+            },
+            "top_entities": top_cps_formatted,
+            "top_countries": top_countries_formatted,
+            "records": records,
+            "total_count": total_tx
+        }
