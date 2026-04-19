@@ -582,7 +582,7 @@ class SupplierAggregator:
         for cp in top_cps[:5]:
             name = cp[cp_field] or 'Unknown'
             vol  = float(cp['vol'] or 0)
-            top_cp_list.append({'name': f"[{name}]", 'volume_mt': round(vol),
+            top_cp_list.append({'name': name, 'volume_mt': round(vol),
                                  'shipment_count': cp['count'], 'is_others': False})
 
         total_cps = (queryset.values(cp_field)

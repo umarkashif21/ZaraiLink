@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
-import { Filter, Search, AlertCircle, TrendingUp, BarChart2, ChevronRight } from 'lucide-react';
+import { Filter, AlertCircle, TrendingUp, BarChart2, ChevronRight } from 'lucide-react';
 import '../Dashboard/Dashboard.css';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
@@ -111,6 +111,11 @@ const DataDashboard = () => {
             scope:  pill.scope,
             intent: pill.intent,
         });
+        // Pass the active sidebar refinement as variant_name so DealDetail
+        // scopes its stats to the filtered product (e.g. "Dextrose Anhydrous")
+        if (selectedRefinements.length > 0) {
+            params.set('variant_name', selectedRefinements[0]);
+        }
         return `/search/supplier/${encodeURIComponent(name)}?${params.toString()}`;
     };
 
@@ -122,6 +127,10 @@ const DataDashboard = () => {
             scope:     pill.scope,
             intent:    pill.intent,
         });
+        // Pass active refinement as variant_name for consistent scoping in compare view
+        if (selectedRefinements.length > 0) {
+            params.set('variant_name', selectedRefinements[0]);
+        }
         return `/search/compare?${params.toString()}`;
     };
 
@@ -146,10 +155,10 @@ const DataDashboard = () => {
                         </p>
                     </div>
                     <button
-                        onClick={() => navigate('/search')}
+                        onClick={() => navigate('/dashboard')}
                         className="text-indigo-600 font-bold hover:underline flex items-center gap-1 text-sm"
                     >
-                        <Search size={14} /> New Search
+                        ← Back to Dashboard
                     </button>
                 </div>
             </div>

@@ -609,9 +609,23 @@ class SearchViewSet(viewsets.ViewSet):
             explicit_intent = request.query_params.get('intent', '').upper()
             if explicit_intent in ('BUY', 'SELL'):
                 intent = explicit_intent
-                subcat_ids = None
-                product_item_ids = None
                 is_buyer = (intent == 'SELL')
+                # Still resolve subcategories using subcat_id/variant_name so the
+                # Transactions tab is scoped to the filtered product (e.g. "Dextrose Anhydrous"),
+                # not all products under the HS code.
+                try:
+                    hs_code_hint = query if all(c.isdigit() or c == '.' for c in query.strip()) else ''
+                    subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
+                        product_keyword=query,
+                        hs_code=hs_code_hint,
+                        intent=intent,
+                        subcat_id=int(subcat_id) if subcat_id else None,
+                        variant_name=variant_name,
+                        scope=orm_scope
+                    )
+                except Exception:
+                    subcat_ids = None
+                    product_item_ids = None
             else:
                 import hashlib
                 from django.core.cache import cache

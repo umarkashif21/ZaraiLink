@@ -204,13 +204,7 @@ const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
                         <p style={{ fontSize: '0.8125rem', color: C.textSecondary, margin: '0 0 1.5rem' }}>
                             {ov.frequency_desc?.replace('shipments', isBuyer ? 'orders' : 'shipments') || ''}
                         </p>
-                        <p style={lbl}>Behavioral Summary</p>
-                        <p style={{ fontSize: '0.875rem', fontWeight: 700, color: C.textPrimary, margin: 0 }}>
-                            {isBuyer
-                                ? (ov.behavioral_summary || '').replace('shipments', 'orders').replace('cadence', 'procurement cadence')
-                                : ov.behavioral_summary || '—'
-                            }
-                        </p>
+
                     </div>
                 </div>
             </section>
@@ -227,7 +221,7 @@ const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
                                 borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : 'none',
                             }}>
                                 <span style={{ fontSize: '0.8125rem', color: cp.is_others ? C.textTertiary : '#374151', fontWeight: 500, paddingRight: '0.5rem' }}>
-                                    {cp.name}
+                                    {(cp.name || '').replace(/\[|\]/g, '')}
                                 </span>
                                 <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: cp.is_others ? C.textTertiary : C.textPrimary, whiteSpace: 'nowrap' }}>
                                     {(cp.volume_mt || 0).toLocaleString()} MT
@@ -577,7 +571,7 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
                     <div>
                         <p style={lbl}>Trend Direction</p>
                         <p style={{ ...val, color: mk.demand_trends.trend_direction_pct >= 0 ? C.primaryHover : '#ef4444' }}>
-                            {mk.demand_trends.trend_direction_pct >= 0 ? 'Growing' : 'Declining'} {mk.demand_trends.trend_direction_pct > 0 ? '+' : ''}{mk.demand_trends.trend_direction_pct}%
+                            {mk.demand_trends.trend_direction_pct >= 0 ? 'Growing' : 'Declining'}
                         </p>
                     </div>
                     <div style={{ borderLeft: `1px solid ${C.border}`, borderRight: `1px solid ${C.border}` }}>
@@ -717,7 +711,7 @@ const CompanyTab = ({ supplier, isBuyer }) => {
 
             {/* ── 2. Product Portfolio (Core Capabilities) ── */}
             <section style={card}>
-                <h3 style={sec}>Product Portfolio (Core Capabilities)</h3>
+                <h3 style={sec}>Product Portfolio</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                     {/* Left List */}
                     <div>
@@ -774,7 +768,7 @@ const CompanyTab = ({ supplier, isBuyer }) => {
 
             {/* ── 3. Partner Network ── */}
             <section style={card}>
-                <h3 style={sec}>Partner Network (Trading Relationships)</h3>
+                <h3 style={sec}>Partner Network</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                     {/* Left List */}
                     <div>
@@ -824,9 +818,7 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                             <p style={{ fontSize: '0.7rem', color: C.textSecondary, margin: '0 0 0.5rem' }}>
                                 Top 5 partners capture {cp.network.top_5_share_pct}% of total volume.
                             </p>
-                            <div style={{ background: '#f0fdf4', padding: '0.5rem', borderRadius: '0.25rem', color: C.primaryHover, fontSize: '0.65rem', fontWeight: 600 }}>
-                                Risk Assessment: Balanced reliance base. Shows consistent capability without high single-point dependence.
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -910,13 +902,7 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                     </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', borderTop: `1px solid ${C.border}`, paddingTop: '1.25rem' }}>
-                    <div>
-                        <p style={lbl}>Growth Rate (YoY)</p>
-                        <p style={{ ...val, color: cp.trends.yoy_growth >= 0 ? C.primaryHover : '#ef4444' }}>
-                            {cp.trends.yoy_growth > 0 ? '+' : ''}{cp.trends.yoy_growth}%
-                        </p>
-                        <p style={{ fontSize: '0.65rem', color: C.textTertiary, marginTop: '0.25rem' }}>Recent vs Previous 4Q</p>
-                    </div>
+
                     <div style={{ borderLeft: `1px solid ${C.border}`, paddingLeft: '1rem' }}>
                         <p style={lbl}>Trend Direction</p>
                         <p style={val}>{cp.trends.trend_label}</p>
@@ -937,7 +923,7 @@ const CompanyTab = ({ supplier, isBuyer }) => {
 
             {/* ── 6. Buyer/Supplier Behavior (Trust & Reliability Signals) ── */}
             <section style={card}>
-                <h3 style={sec}>{isBuyer ? 'Supplier Behavior' : 'Buyer Behavior'} (Trust & Reliability Signals)</h3>
+                <h3 style={sec}>{isBuyer ? 'Supplier Behavior' : 'Buyer Behavior'}</h3>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                     <div style={{ border: `1px solid ${C.border}`, borderRadius: '0.25rem', padding: '1rem' }}>
@@ -954,13 +940,7 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                         </p>
                         <p style={{ fontSize: '0.65rem', color: C.textTertiary, margin: '0.25rem 0 0' }}>% with >1 transaction</p>
                     </div>
-                    <div style={{ border: `1px solid ${C.border}`, borderRadius: '0.25rem', padding: '1rem' }}>
-                        <p style={lbl}>Avg Relationship Length</p>
-                        <p style={{ fontSize: '1.875rem', fontWeight: 800, color: C.textPrimary, margin: '0' }}>
-                            {cp.behavior.avg_length_years} <span style={{ fontSize: '1rem' }}>years</span>
-                        </p>
-                        <p style={{ fontSize: '0.65rem', color: C.textTertiary, margin: '0.25rem 0 0' }}>Average duration</p>
-                    </div>
+
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginTop: '1rem' }}>
@@ -971,18 +951,13 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                         </p>
                         <p style={{ fontSize: '0.65rem', color: C.textSecondary, margin: '0.25rem 0 0' }}>Presenting >12 months engagement</p>
                     </div>
-                    <div style={{ border: `1px dashed ${C.border}`, borderRadius: '0.25rem', padding: '1rem' }}>
-                        <p style={lbl}>Trust Signal</p>
-                        <p style={{ fontSize: '0.8125rem', color: C.textSecondary, margin: '0', lineHeight: 1.5 }}>
-                            High repeat ratio and long-term partnerships indicate strong {isBuyer ? 'buyer' : 'supplier'} reliability and customer satisfaction constraints across diverse product lines.
-                        </p>
-                    </div>
+
                 </div>
             </section>
 
             {/* ── 7. Product <-> Partner Mapping ── */}
             <section style={card}>
-                <h3 style={sec}>Product ↔ Partner Mapping (Advanced Intelligence)</h3>
+                <h3 style={sec}>Product ↔ Partner Mapping</h3>
                 <p style={{ fontSize: '0.75rem', color: C.textSecondary, marginBottom: '1rem' }}>
                     Top {isBuyer ? 'supplier' : 'buyer'} relationships by product category — shows which counterparties buy/sell which products.
                 </p>
@@ -1019,12 +994,7 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                         </tbody>
                     </table>
                 </div>
-                <div style={{ marginTop: '1rem', background: '#f8fafc', padding: '0.875rem', borderRadius: '0.5rem' }}>
-                    <p style={{ fontSize: '0.75rem', fontWeight: 700, margin: '0 0 0.25rem' }}>Key Insight</p>
-                    <p style={{ fontSize: '0.75rem', color: C.textSecondary, margin: 0 }}>
-                        Shows cross-product partner overlap. Major counterparties cross multiple product lines, indicating robust and established procurement channels.
-                    </p>
-                </div>
+
             </section>
 
         </div>
@@ -1153,7 +1123,7 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
             {/* ── Summary ── */}
             <section style={{ ...card, background: C.gradientHero, border: 'none', padding: '1.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                    <h3 style={{ ...sec, margin: 0, color: 'white', opacity: 0.95 }}>📊 Transaction Data Summary</h3>
+                    <h3 style={{ ...sec, margin: 0, color: 'white', opacity: 0.95 }}>Transaction Data Summary</h3>
                     <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.45)', margin: 0 }}>Results update based on applied filters</p>
                 </div>
                 <div style={{ display: 'flex', gap: '3rem' }}>
@@ -1562,8 +1532,6 @@ const DealDetail = () => {
         {
             label: L.volumeCard,
             value: `${(supplier.stats?.total_volume || 0).toLocaleString()} MT`,
-            sub: ov.vol_trend_text || 'Over active period',
-            pos: ov.vol_trend_text?.startsWith('↑'),
         },
         {
             label: L.shipmentsCard,
@@ -1573,8 +1541,6 @@ const DealDetail = () => {
         {
             label: L.priceCard,
             value: `$${(supplier.stats?.avg_price || 0).toFixed(0)}/MT`,
-            sub: ov.price_trend_text || 'Based on shipment records',
-            pos: ov.price_trend_text?.startsWith('↑'),
         },
         {
             label: L.counterpartyCard,
@@ -1630,23 +1596,6 @@ const DealDetail = () => {
                                 <h1 style={{ fontSize: '1.875rem', fontWeight: 900, color: C.textPrimary, margin: 0, letterSpacing: '-0.02em' }}>
                                     {supplier.name}
                                 </h1>
-                                <span style={{
-                                    background: C.primary, color: 'white', fontSize: '0.6rem',
-                                    fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase',
-                                    padding: '0.2rem 0.55rem', borderRadius: '0.2rem',
-                                }}>
-                                    VERIFIED
-                                </span>
-                                {isTopEntity && (
-                                    <span style={{
-                                        background: C.primaryLight, color: C.primaryHover, fontSize: '0.6rem',
-                                        fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-                                        padding: '0.2rem 0.55rem', borderRadius: '0.2rem',
-                                        border: `1px solid ${C.primaryBorder}`,
-                                    }}>
-                                        {L.badgeLabel}
-                                    </span>
-                                )}
                             </div>
                             <p style={{ color: C.textSecondary, fontSize: '0.875rem', fontWeight: 500, margin: 0 }}>
                                 {variantName || query} — {ov.active_period || 'N/A'}
