@@ -3,7 +3,6 @@ import { useLocation, Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, TrendingUp, Package, Globe, Download } from 'lucide-react';
 import searchService from '../../services/searchService';
 import Navbar from '../Layout/Navbar';
-import '../Dashboard/Dashboard.css';
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';

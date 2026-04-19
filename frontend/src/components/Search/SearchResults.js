@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Filter, BarChart2, Package, ChevronRight, AlertCircle } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
-import '../Dashboard/Dashboard.css';
 import searchService from '../../services/searchService';
 import SummaryView from './SummaryView';
 import DataDashboard from './DataDashboard';
@@ -313,18 +312,18 @@ const SearchResults = () => {
     }
 
     return (
-        <div className="dashboard-wrapper">
+        <div className="min-h-screen bg-slate-50 font-sans">
             <Navbar />
 
             {/* Search bar */}
-            <div className="bg-white border-b-2 border-gray-100 sticky top-0 z-10 shadow-sm">
-                <div className="dashboard-container" style={{ padding: '1rem 2rem', maxWidth: '1400px', margin: '0 auto' }}>
+            <div className="bg-white border-b-2 border-slate-100 sticky top-0 z-10 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 md:px-8 w-full" >
                     <form onSubmit={handleSearch} className="w-full relative">
                         <input
                             type="text"
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-gray-200 focus:border-emerald-500 focus:ring-0 transition-all font-medium text-gray-700 placeholder-gray-400"
+                            className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-slate-200 focus:border-emerald-500 focus:ring-0 transition-all font-medium text-slate-700 placeholder-slate-400"
                             placeholder="Search again..."
                             style={{ fontSize: '1rem' }}
                         />
@@ -332,13 +331,13 @@ const SearchResults = () => {
                 </div>
             </div>
 
-            <div className="dashboard-container flex gap-8" style={{ paddingTop: '2rem' }}>
+            <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex flex-col md:flex-row gap-8" className="max-w-7xl mx-auto px-6 py-8 flex items-start gap-8">
 
                 {/* Left Sidebar: Filters (hidden during disambiguation) */}
                 {!needsDisambig && (
                     <aside className="w-64 hidden md:block space-y-6 flex-shrink-0">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-gray-700 flex items-center gap-2 text-lg">
+                            <h3 className="font-bold text-slate-700 flex items-center gap-2 text-lg">
                                 <Filter size={20} /> Filters
                             </h3>
                             {selectedCountry && (
@@ -349,12 +348,12 @@ const SearchResults = () => {
                         </div>
 
                         {availableCountries.length > 0 && (
-                            <div className="border-b-2 border-gray-100 pb-4">
-                                <h4 className="text-sm font-bold text-gray-700 py-2">Country</h4>
+                            <div className="border-b-2 border-slate-100 pb-4">
+                                <h4 className="text-sm font-bold text-slate-700 py-2">Country</h4>
                                 <select
                                     value={tempCountry}
                                     onChange={(e) => setTempCountry(e.target.value)}
-                                    className="w-full mt-2 block rounded-lg border-2 border-gray-200 py-2 pl-2 pr-8 text-sm focus:border-emerald-500 focus:outline-none"
+                                    className="w-full mt-2 block rounded-lg border-2 border-slate-200 py-2 pl-2 pr-8 text-sm focus:border-emerald-500 focus:outline-none"
                                 >
                                     <option value="">All Countries</option>
                                     {availableCountries.map(c => (
@@ -364,36 +363,36 @@ const SearchResults = () => {
                             </div>
                         )}
 
-                        <div className="border-b-2 border-gray-100 pb-4">
-                            <h4 className="text-sm font-bold text-gray-700 py-2">Price Range ($/MT)</h4>
+                        <div className="border-b-2 border-slate-100 pb-4">
+                            <h4 className="text-sm font-bold text-slate-700 py-2">Price Range ($/MT)</h4>
                             <div className="flex items-center gap-2 mt-2">
                                 <input
                                     type="number"
                                     placeholder="Min"
                                     value={tempPriceMin}
                                     onChange={(e) => setTempPriceMin(e.target.value)}
-                                    className="w-full rounded-lg border-2 border-gray-200 py-2 px-2 text-sm focus:border-emerald-500 focus:outline-none"
+                                    className="w-full rounded-lg border-2 border-slate-200 py-2 px-2 text-sm focus:border-emerald-500 focus:outline-none"
                                 />
-                                <span className="text-gray-400 font-bold">-</span>
+                                <span className="text-slate-400 font-bold">-</span>
                                 <input
                                     type="number"
                                     placeholder="Max"
                                     value={tempPriceMax}
                                     onChange={(e) => setTempPriceMax(e.target.value)}
-                                    className="w-full rounded-lg border-2 border-gray-200 py-2 px-2 text-sm focus:border-emerald-500 focus:outline-none"
+                                    className="w-full rounded-lg border-2 border-slate-200 py-2 px-2 text-sm focus:border-emerald-500 focus:outline-none"
                                 />
                             </div>
                         </div>
 
-                        <div className="border-b-2 border-gray-100 pb-4">
-                            <h4 className="text-sm font-bold text-gray-700 py-2">Min. Trade Volume (MT)</h4>
+                        <div className="border-b-2 border-slate-100 pb-4">
+                            <h4 className="text-sm font-bold text-slate-700 py-2">Min. Trade Volume (MT)</h4>
                             <div className="mt-2">
                                 <input
                                     type="number"
                                     placeholder="e.g. 500"
                                     value={tempVolumeMin}
                                     onChange={(e) => setTempVolumeMin(e.target.value)}
-                                    className="w-full rounded-lg border-2 border-gray-200 py-2 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+                                    className="w-full rounded-lg border-2 border-slate-200 py-2 px-3 text-sm focus:border-emerald-500 focus:outline-none"
                                 />
                             </div>
                         </div>
@@ -412,10 +411,10 @@ const SearchResults = () => {
 
                     {/* ── Broad Search Warning ──────────────────────────── */}
                     {isBroadSearch && !loading && (
-                        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border-2 border-amber-100 p-8 shadow-sm">
+                        <div className="text-center py-16 text-slate-400 bg-white rounded-xl border-2 border-amber-100 p-8 shadow-sm">
                             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌐</div>
-                            <h2 className="text-xl font-bold text-gray-900 mb-2">Search is too broad</h2>
-                            <p className="font-medium text-gray-500 max-w-md mx-auto">
+                            <h2 className="text-xl font-bold text-slate-900 mb-2">Search is too broad</h2>
+                            <p className="font-medium text-slate-500 max-w-md mx-auto">
                                 No specific high-confidence product match was found for "{query}".
                                 Try being more specific with the product name.
                             </p>
@@ -428,10 +427,10 @@ const SearchResults = () => {
                             <div className="flex items-center gap-3 mb-6">
                                 <AlertCircle size={22} className="text-amber-500" />
                                 <div>
-                                    <h2 className="text-xl font-bold text-gray-900">
+                                    <h2 className="text-xl font-bold text-slate-900">
                                         Multiple products matched "{query}"
                                     </h2>
-                                    <p className="text-sm text-gray-500 mt-0.5">
+                                    <p className="text-sm text-slate-500 mt-0.5">
                                         Select the exact product you're looking for to see accurate prices and suppliers.
                                     </p>
                                 </div>
@@ -444,26 +443,26 @@ const SearchResults = () => {
                                     <button
                                         key={v.hs_code + (v.id || 'drill')}
                                         onClick={() => handleVariantPick(v)}
-                                        className="text-left p-5 bg-white rounded-xl border-2 border-gray-100 hover:border-emerald-500 hover:shadow-md transition-all group"
+                                        className="text-left p-5 bg-white rounded-xl border-2 border-slate-100 hover:border-emerald-500 hover:shadow-md transition-all group"
                                         style={{ cursor: 'pointer' }}
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1.5">
                                                     <Package size={16} className="text-emerald-500 flex-shrink-0" />
-                                                    <span className="font-bold text-gray-900 group-hover:text-emerald-700 transition-colors text-sm">
+                                                    <span className="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors text-sm">
                                                         {v.name}
                                                     </span>
                                                 </div>
-                                                <div className="text-xs text-gray-400">
+                                                <div className="text-xs text-slate-400">
                                                     {v.category ? `${v.category} · ` : ''}HS {v.hs_code}
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-end gap-1">
                                                 {v.is_drill_down && (
-                                                    <span className="text-xs font-bold text-indigo-500 bg-indigo-50 rounded-full px-2 py-0.5">Drill Down ›</span>
+                                                    <span className="text-xs font-bold text-emerald-500 bg-emerald-50 rounded-full px-2 py-0.5">Drill Down ›</span>
                                                 )}
-                                                <ChevronRight size={16} className="text-gray-300 group-hover:text-emerald-500 flex-shrink-0 mt-1" />
+                                                <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-500 flex-shrink-0 mt-1" />
                                             </div>
                                         </div>
                                     </button>
@@ -472,15 +471,15 @@ const SearchResults = () => {
 
                             {/* Pagination Controls */}
                             {variants.length > DISAMBIG_PAGE_SIZE && (
-                                <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-                                    <p className="text-sm text-gray-500">
+                                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+                                    <p className="text-sm text-slate-500">
                                         Showing {((disambigPage - 1) * DISAMBIG_PAGE_SIZE) + 1}–{Math.min(disambigPage * DISAMBIG_PAGE_SIZE, variants.length)} of {variants.length} matches
                                     </p>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => setDisambigPage(p => Math.max(1, p - 1))}
                                             disabled={disambigPage === 1}
-                                            className="px-4 py-2 rounded-lg border-2 border-gray-200 text-sm font-bold text-gray-600 hover:border-emerald-500 hover:text-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                            className="px-4 py-2 rounded-lg border-2 border-slate-200 text-sm font-bold text-slate-600 hover:border-emerald-500 hover:text-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                         >
                                             ← Prev
                                         </button>
@@ -493,7 +492,7 @@ const SearchResults = () => {
                                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                                                         p === disambigPage
                                                             ? 'bg-emerald-600 text-white border-2 border-emerald-600'
-                                                            : 'border-2 border-gray-200 text-gray-600 hover:border-emerald-500 hover:text-emerald-700'
+                                                            : 'border-2 border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-700'
                                                     }`}
                                                 >
                                                     {p}
@@ -503,7 +502,7 @@ const SearchResults = () => {
                                         <button
                                             onClick={() => setDisambigPage(p => Math.min(Math.ceil(variants.length / DISAMBIG_PAGE_SIZE), p + 1))}
                                             disabled={disambigPage >= Math.ceil(variants.length / DISAMBIG_PAGE_SIZE)}
-                                            className="px-4 py-2 rounded-lg border-2 border-gray-200 text-sm font-bold text-gray-600 hover:border-emerald-500 hover:text-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                            className="px-4 py-2 rounded-lg border-2 border-slate-200 text-sm font-bold text-slate-600 hover:border-emerald-500 hover:text-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                         >
                                             Next →
                                         </button>
@@ -520,29 +519,29 @@ const SearchResults = () => {
                             {/* ── Tab Pill Buttons for Intent Mapping ──────────────── */}
                             {showPills && (
                                 <div className="mb-6">
-                                    <h3 className="text-gray-500 font-bold uppercase tracking-wide text-xs mb-3">Select Trade Direction</h3>
+                                    <h3 className="text-slate-500 font-bold uppercase tracking-wide text-xs mb-3">Select Trade Direction</h3>
                                     <div className="flex flex-wrap gap-3">
                                         <button
                                             onClick={() => handleRawTabClick('IMPORT', 'BUY')}
-                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'IMPORT' && overrideIntent === 'BUY' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500 hover:text-indigo-600'}`}
+                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'IMPORT' && overrideIntent === 'BUY' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-500 hover:text-emerald-600'}`}
                                         >
                                             Foreign Suppliers
                                         </button>
                                         <button
                                             onClick={() => handleRawTabClick('EXPORT', 'SELL')}
-                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'EXPORT' && overrideIntent === 'SELL' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500 hover:text-indigo-600'}`}
+                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'EXPORT' && overrideIntent === 'SELL' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-500 hover:text-emerald-600'}`}
                                         >
                                             Foreign Buyers
                                         </button>
                                         <button
                                             onClick={() => handleRawTabClick('IMPORT', 'SELL')}
-                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'IMPORT' && overrideIntent === 'SELL' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500 hover:text-indigo-600'}`}
+                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'IMPORT' && overrideIntent === 'SELL' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-500 hover:text-emerald-600'}`}
                                         >
                                             Pakistani Buyers
                                         </button>
                                         <button
                                             onClick={() => handleRawTabClick('EXPORT', 'BUY')}
-                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'EXPORT' && overrideIntent === 'BUY' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500 hover:text-indigo-600'}`}
+                                            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${scope === 'EXPORT' && overrideIntent === 'BUY' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-500 hover:text-emerald-600'}`}
                                         >
                                             Pakistani Suppliers
                                         </button>
@@ -551,7 +550,7 @@ const SearchResults = () => {
                             )}
 
                             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                                <h2 className="text-2xl font-bold text-gray-800 font-primary">
+                                <h2 className="text-2xl font-bold text-slate-800 font-primary">
                                     {loading ? 'Searching...' : (() => {
                                         if (activeIntent === 'UNKNOWN') {
                                             const supplierCount = sortedResults.filter(r => r.type === 'Supplier').length;
@@ -564,11 +563,11 @@ const SearchResults = () => {
 
                                 {!loading && !error && sortedResults.length > 0 && (
                                     <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium text-gray-500">Sort by:</span>
+                                        <span className="text-sm font-medium text-slate-500">Sort by:</span>
                                         <select
                                             value={sortBy}
                                             onChange={(e) => setSortBy(e.target.value)}
-                                            className="rounded-lg border-2 border-gray-200 py-1.5 pl-3 pr-8 text-sm focus:border-emerald-500 focus:outline-none font-medium text-gray-700 bg-white"
+                                            className="rounded-lg border-2 border-slate-200 py-1.5 pl-3 pr-8 text-sm focus:border-emerald-500 focus:outline-none font-medium text-slate-700 bg-white"
                                         >
                                             <option value="relevance">Relevance</option>
                                             <option value="price_asc">Price: Low to High</option>
@@ -580,7 +579,7 @@ const SearchResults = () => {
                             </div>
 
                             {loading && (
-                                <div className="text-center py-16 text-gray-400">
+                                <div className="text-center py-16 text-slate-400">
                                     <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔍</div>
                                     <p className="font-medium">Searching trade records...</p>
                                 </div>
@@ -593,9 +592,9 @@ const SearchResults = () => {
                             )}
 
                             {!loading && !error && sortedResults.length === 0 && (
-                                <div className="text-center py-16 text-gray-400">
+                                <div className="text-center py-16 text-slate-400">
                                     <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📭</div>
-                                    <p className="font-medium text-gray-600">No {entityLabel.toLowerCase()} found matching your filters</p>
+                                    <p className="font-medium text-slate-600">No {entityLabel.toLowerCase()} found matching your filters</p>
                                     <p className="text-sm mt-1">Try adjusting the price, volume, or country.</p>
                                 </div>
                             )}
@@ -609,31 +608,31 @@ const SearchResults = () => {
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="text-xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">
+                                                <h3 className="text-xl font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
                                                     {supplier.name}
                                                 </h3>
                                             </div>
-                                            <div className="text-sm text-gray-500 mb-4 font-medium">{supplier.country}</div>
+                                            <div className="text-sm text-slate-500 mb-4 font-medium">{supplier.country}</div>
 
-                                            <div className="flex gap-8 text-sm text-gray-700">
+                                            <div className="flex gap-8 text-sm text-slate-700">
                                                 <div>
-                                                    <span className="block text-gray-400 text-xs uppercase font-bold tracking-wider">Avg Price</span>
-                                                    <span className="font-bold text-lg text-gray-800">${supplier.avg_price.toFixed(2)}/MT</span>
+                                                    <span className="block text-slate-400 text-xs uppercase font-bold tracking-wider">Avg Price</span>
+                                                    <span className="font-bold text-lg text-slate-800">${supplier.avg_price.toFixed(2)}/MT</span>
                                                 </div>
                                                 <div>
-                                                    <span className="block text-gray-400 text-xs uppercase font-bold tracking-wider">Volume</span>
-                                                    <span className="font-bold text-lg text-gray-800">{supplier.total_volume.toLocaleString()} MT</span>
+                                                    <span className="block text-slate-400 text-xs uppercase font-bold tracking-wider">Volume</span>
+                                                    <span className="font-bold text-lg text-slate-800">{supplier.total_volume.toLocaleString()} MT</span>
                                                 </div>
                                                 <div>
-                                                    <span className="block text-gray-400 text-xs uppercase font-bold tracking-wider">Shipments</span>
-                                                    <span className="font-bold text-lg text-gray-800">{supplier.shipment_count}</span>
+                                                    <span className="block text-slate-400 text-xs uppercase font-bold tracking-wider">Shipments</span>
+                                                    <span className="font-bold text-lg text-slate-800">{supplier.shipment_count}</span>
                                                 </div>
                                                 {supplier.volume_fit !== 'N/A' && supplier.volume_fit && (
                                                     <div>
-                                                        <span className="block text-gray-400 text-xs uppercase font-bold tracking-wider">Volume Fit</span>
+                                                        <span className="block text-slate-400 text-xs uppercase font-bold tracking-wider">Volume Fit</span>
                                                         <span className={`font-bold text-sm ${supplier.volume_fit === 'Strong' ? 'text-emerald-600' :
                                                             supplier.volume_fit === 'Good' ? 'text-blue-600' :
-                                                                supplier.volume_fit === 'Partial' ? 'text-amber-600' : 'text-gray-500'
+                                                                supplier.volume_fit === 'Partial' ? 'text-amber-600' : 'text-slate-500'
                                                             }`}>{supplier.volume_fit}</span>
                                                     </div>
                                                 )}
@@ -643,8 +642,7 @@ const SearchResults = () => {
                                         <div className="flex flex-col gap-3">
                                             <Link
                                                 to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scope)}${subcatId ? `&subcat_id=${encodeURIComponent(subcatId)}` : ''}${variantName ? `&variant_name=${encodeURIComponent(variantName)}` : ''}${overrideIntent ? `&intent=${encodeURIComponent(overrideIntent)}` : ''}`}
-                                                className="stat-action text-center"
-                                                style={{ textDecoration: 'none' }}
+                                                className="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold rounded-lg transition-all shadow-md shadow-emerald-500/20 text-center text-sm block"
                                             >
                                                 View Deal
                                             </Link>
@@ -652,14 +650,14 @@ const SearchResults = () => {
                                                 onClick={() => toggleCompare(supplier.name)}
                                                 className={`px-4 py-2 border-2 text-sm font-bold rounded-md transition-colors ${selectedSuppliers.includes(supplier.name)
                                                         ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
-                                                        : 'bg-white border-gray-200 text-gray-700 hover:border-emerald-500 hover:text-emerald-600'
+                                                        : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-600'
                                                     }`}>
                                                 {selectedSuppliers.includes(supplier.name) ? 'Added ✓' : 'Compare'}
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div className="mt-5 pt-4 border-t-2 border-gray-50 flex items-center text-xs text-gray-400 gap-4 font-medium">
+                                    <div className="mt-5 pt-4 border-t-2 border-slate-50 flex items-center text-xs text-slate-400 gap-4 font-medium">
                                         <span className="flex items-center gap-1">
                                             <BarChart2 size={14} /> Based on {supplier.shipment_count} shipments
                                         </span>
@@ -676,22 +674,22 @@ const SearchResults = () => {
                     <aside className="w-72 hidden lg:block space-y-6 flex-shrink-0">
                         {marketSnapshot && (
                             <div className="stat-card flex-col items-start gap-4">
-                                <h4 className="font-bold text-gray-800 mb-2 w-full border-b-2 border-gray-100 pb-2">Market Snapshot</h4>
+                                <h4 className="font-bold text-slate-800 mb-2 w-full border-b-2 border-slate-100 pb-2">Market Snapshot</h4>
                                 <div className="space-y-4 w-full">
                                     <div>
-                                        <div className="text-xs text-gray-500 uppercase font-bold">Global Avg Price</div>
-                                        <div className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Courier New, monospace' }}>
+                                        <div className="text-xs text-slate-500 uppercase font-bold">Global Avg Price</div>
+                                        <div className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Courier New, monospace' }}>
                                             ${marketSnapshot.avg_price_global.toFixed(2)}
                                         </div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-gray-500 uppercase font-bold">
+                                        <div className="text-xs text-slate-500 uppercase font-bold">
                                             {activeIntent === 'SELL' ? 'Top Destination' : 'Top Origin'}
                                         </div>
-                                        <div className="text-lg font-bold text-gray-900">{marketSnapshot.top_country}</div>
+                                        <div className="text-lg font-bold text-slate-900">{marketSnapshot.top_country}</div>
                                     </div>
                                     {searchEngine && (
-                                        <div className="text-xs text-gray-400 pt-2 border-t border-gray-100">
+                                        <div className="text-xs text-slate-400 pt-2 border-t border-slate-100">
                                             Powered by {searchEngine === 'opensearch' ? '🏎 OpenSearch' : '🗄 Trade DB'}
                                         </div>
                                     )}
@@ -704,15 +702,15 @@ const SearchResults = () => {
 
             {/* ── Sticky Compare Bar ────────────────────────────────────────────── */}
             {selectedSuppliers.length > 0 && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 z-50 transform transition-transform duration-300">
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 z-50 transform transition-transform duration-300">
                     <div className="max-w-7xl mx-auto flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
                                 <BarChart2 size={20} />
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 font-bold uppercase tracking-wider">Comparing</p>
-                                <p className="text-gray-900 font-bold">
+                                <p className="text-sm text-slate-500 font-bold uppercase tracking-wider">Comparing</p>
+                                <p className="text-slate-900 font-bold">
                                     {selectedSuppliers[0]}
                                     {selectedSuppliers.length > 1 && <span className="text-emerald-600 ml-1">(+{selectedSuppliers.length - 1} more)</span>}
                                 </p>
@@ -721,7 +719,7 @@ const SearchResults = () => {
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setSelectedSuppliers([])}
-                                className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 transition-colors"
+                                className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
                             >
                                 Clear
                             </button>

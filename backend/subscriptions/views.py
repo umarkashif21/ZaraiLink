@@ -27,48 +27,33 @@ def list_plans(request):
 @permission_classes([IsAuthenticated])
 @transaction.atomic
 def redeem_code(request):
-    """Redeem a subscription code"""
-    code_str = request.data.get('code', '').strip().upper()
+    """Bypass code and just instantly give tokens based on plan (Demo Mode)"""
     plan_id = request.data.get('plan_id')
     
-    if not code_str:
+    if not plan_id:
         return Response({
             'status': 'error',
-            'message': 'Please enter a redeem code'
+            'message': 'No plan selected.'
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
+        plan = SubscriptionPlan.objects.get(id=plan_id)
         
-        code = RedeemCode.objects.select_for_update().get(code=code_str)
+        request.user.token_balance += plan.tokens_included
+        request.user.save()
         
-        
-        if plan_id and code.plan.id != plan_id:
-            return Response({
-                'status': 'error',
-                'message': f'This code is for "{code.plan.plan_name}", not the selected plan'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        
-        success, message = code.redeem(request.user)
-        
-        if success:
-            return Response({
-                'status': 'success',
-                'message': message,
-                'tokens_added': code.plan.tokens_included,
-                'plan_name': code.plan.plan_name,
-                'new_balance': request.user.token_balance
-            })
-        else:
-            return Response({
-                'status': 'error',
-                'message': message
-            }, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'success',
+            'message': f'Successfully activated {plan.plan_name}. Added {plan.tokens_included} tokens!',
+            'tokens_added': plan.tokens_included,
+            'plan_name': plan.plan_name,
+            'new_balance': request.user.token_balance
+        })
             
-    except RedeemCode.DoesNotExist:
+    except SubscriptionPlan.DoesNotExist:
         return Response({
             'status': 'error',
-            'message': 'Invalid redeem code'
+            'message': 'Invalid subscription plan.'
         }, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({

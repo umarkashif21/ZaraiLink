@@ -4,7 +4,6 @@ import { Download } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Navbar from '../Layout/Navbar';
-import '../Dashboard/Dashboard.css';
 import searchService from '../../services/searchService';
 import { LineChart, Line, BarChart, Bar, ScatterChart, Scatter, PieChart, Pie, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 
@@ -22,7 +21,7 @@ const C = {
     textTertiary: '#94a3b8',
     border: '#e2e8f0',
     borderLight: '#f1f5f9',
-    bg: '#f0fdf4',
+    bg: '#f8fafc',
     card: '#ffffff',
     // Rich accent tiers
     accentBlue: '#3b82f6',

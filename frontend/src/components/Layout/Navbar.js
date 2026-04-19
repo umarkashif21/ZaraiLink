@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import './Navbar.css';
 
 const Navbar = () => {
   const { user, tokenBalance, logout } = useAuth();
@@ -11,7 +10,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   const handleLogout = async () => {
@@ -30,115 +28,140 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        {}
-        <Link to="/dashboard" className="navbar-logo">
-          {/* <span className="logo-icon">🌾</span> */}
-          <span className="logo-text">ZaraiLink</span>
+    <nav className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 shadow-lg">
+      <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+        
+        {/* Logo */}
+        <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-slate-900">
+            Z
+          </div>
+          <span className="text-xl font-bold text-white tracking-tight">ZaraiLink</span>
         </Link>
 
-        {}
-        <div className="navbar-menu">
+        {/* Navigation Menu (Desktop) */}
+        <div className="hidden md:flex items-center gap-6 ml-12 flex-1">
           <Link 
             to="/dashboard" 
-            className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isActive('/dashboard') ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            }`}
           >
-            Home
+            Dashboard
           </Link>
           
-          {}
+          {/* Trade Directory Dropdown */}
           <div 
-            className="nav-dropdown"
+            className="relative h-16 flex items-center"
             onMouseEnter={() => setActiveDropdown('directory')}
             onMouseLeave={() => setActiveDropdown(null)}
           >
-            <button className={`nav-link dropdown-toggle ${isActive('/trade-directory') ? 'active' : ''}`}>
-              Trade Directory ▼
+            <button className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+              isActive('/trade-directory') ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            }`}>
+              Intelligence ▼
             </button>
             <AnimatePresence>
               {activeDropdown === 'directory' && (
                 <motion.div 
-                  className="dropdown-content"
+                  className="absolute top-full left-0 mt-1 w-56 bg-white rounded-xl shadow-2xl border border-slate-200 py-2 overflow-hidden"
                   variants={dropdownVariants}
                   initial="hidden"
                   animate="visible"
                   exit="exit"
                 >
-                  <Link to="/trade-directory/find-suppliers">Find Suppliers</Link>
-                  <Link to="/trade-directory/find-buyers">Find Buyers</Link>
+                  <Link to="/trade-directory/find-suppliers" className="block px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+                    Find Suppliers
+                  </Link>
+                  <Link to="/trade-directory/find-buyers" className="block px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+                    Find Buyers
+                  </Link>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-
-
           <Link 
             to="/subscription" 
-            className={`nav-link ${isActive('/subscription') ? 'active' : ''}`}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isActive('/subscription') ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            }`}
           >
             Subscription
           </Link>
           
           <Link 
             to="/watchlist" 
-            className={`nav-link ${isActive('/watchlist') ? 'active' : ''}`}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isActive('/watchlist') ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            }`}
           >
-            ⭐ Watchlist
+            Watchlist
           </Link>
         </div>
 
-        {}
-        <div className="navbar-right">
-          {}
+        {/* Right Section */}
+        <div className="flex items-center gap-4">
+          
+          {/* Theme Toggle */}
           <motion.button 
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="theme-toggle" 
+            className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-colors"
             onClick={toggleTheme}
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {isDarkMode ? '☀️' : '🌙'}
           </motion.button>
 
-          {}
-          <div className="token-display">
-            {/* <span className="token-icon">💎</span> */}
-            <span className="token-count">{tokenBalance || 0}</span>
+          {/* Tokens */}
+          <div className="hidden sm:flex items-center px-3 py-1.5 bg-slate-800 border border-emerald-500/30 rounded-full">
+            <span className="text-sm font-black text-emerald-400 font-mono tracking-wider">{tokenBalance || 0}</span>
           </div>
 
-          {}
+          {/* User Menu */}
           <div 
-            className="user-menu"
+            className="relative h-16 flex items-center"
             onMouseEnter={() => setActiveDropdown('user')}
             onMouseLeave={() => setActiveDropdown(null)}
           >
-            <button className="user-button">
-              <div className="user-avatar">
+            <button className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-slate-800 transition-colors">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-slate-900 font-bold text-sm">
                 {user?.name?.charAt(0)?.toUpperCase() || 'U'}
               </div>
-              <span className="user-name">{user?.name || user?.email}</span>
-              <span className="dropdown-arrow">▼</span>
+              <span className="hidden sm:block text-sm font-medium text-slate-300 max-w-[120px] truncate">
+                {user?.name || user?.email}
+              </span>
+              <span className="text-slate-500 text-xs">▼</span>
             </button>
             <AnimatePresence>
               {activeDropdown === 'user' && (
                 <motion.div 
-                  className="user-dropdown"
+                  className="absolute top-full right-0 mt-1 w-64 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden"
                   variants={dropdownVariants}
                   initial="hidden"
                   animate="visible"
                   exit="exit"
                 >
-                  <div className="user-info">
-                    <strong>{user?.name || 'User'}</strong>
-                    <span>{user?.email}</span>
+                  <div className="px-4 py-4 bg-slate-50 border-b border-slate-100">
+                    <div className="font-bold text-slate-900 text-sm truncate">{user?.name || 'User'}</div>
+                    <div className="text-slate-500 text-xs truncate mt-0.5">{user?.email}</div>
                   </div>
-                  <hr />
-                  <button onClick={handleLogout} className="logout-button">
-                    {/* <span>🚪</span> */} Sign Out
-                  </button>
+                  <div className="py-2">
+                    <Link 
+                      to="/profile" 
+                      onClick={() => setActiveDropdown(null)}
+                      className="block px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors"
+                    >
+                      View Profile
+                    </Link>
+                    <button 
+                      onClick={handleLogout} 
+                      className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -150,4 +173,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

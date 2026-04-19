@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
 import { Package, ChevronRight } from 'lucide-react';
-import '../Dashboard/Dashboard.css';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 
 import { useAuth } from '../../context/AuthContext';
-import { Modal } from '../Common/Modal';
 import Navbar from '../Layout/Navbar';
 import './Subscription.css';
 
@@ -11,12 +10,7 @@ const Subscription = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  
-  const [showRedeemModal, setShowRedeemModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const [redeemCode, setRedeemCode] = useState('');
   const [redeeming, setRedeeming] = useState(false);
-  const [redeemMessage, setRedeemMessage] = useState({ type: '', text: '' });
 
   const [billingCycle, setBillingCycle] = useState('monthly');
 
@@ -38,14 +32,37 @@ const Subscription = () => {
     }
   };
 
-  const handleRedeemClick = (plan) => {
-    setSelectedPlan(plan);
-    setShowRedeemModal(true);
-    setRedeemCode('');
-    setRedeemMessage({ type: '', text: '' });
+  const handleRedeemClick = async (plan) => {
+    setRedeeming(true);
+    try {
+      const csrftoken = getCookie('csrftoken');
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/subscriptions/redeem/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken,
+        },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          plan_id: plan.id  
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 'success') {
+        alert(`Success! ${data.tokens_added} tokens added. New balance: ${data.new_balance}`);
+        await refreshUser(); 
+      } else {
+        alert(data.message || 'Failed to redeem plan');
+      }
+    } catch (error) {
+      alert('Network error. Please try again.');
+    } finally {
+      setRedeeming(false);
+    }
   };
 
-  
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -60,59 +77,6 @@ const Subscription = () => {
     }
     return cookieValue;
   }
-
-  const handleRedeem = async () => {
-    if (!redeemCode.trim()) {
-      setRedeemMessage({ type: 'error', text: 'Please enter a redeem code' });
-      return;
-    }
-
-    setRedeeming(true);
-    setRedeemMessage({ type: '', text: '' });
-
-    try {
-      const csrftoken = getCookie('csrftoken');
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/subscriptions/redeem/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken,
-        },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          code: redeemCode.trim(),
-          plan_id: selectedPlan?.id  
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.status === 'success') {
-        setRedeemMessage({
-          type: 'success',
-          text: `${data.tokens_added} tokens added! New balance: ${data.new_balance}`
-        });
-        await refreshUser(); 
-        
-        
-        setTimeout(() => {
-          setShowRedeemModal(false);
-        }, 2000);
-      } else {
-        setRedeemMessage({
-          type: 'error',
-          text: data.message || 'Failed to redeem code'
-        });
-      }
-    } catch (error) {
-      setRedeemMessage({
-        type: 'error',
-        text: 'Network error. Please try again.'
-      });
-    } finally {
-      setRedeeming(false);
-    }
-  };
 
   const filteredPlans = plans.filter(plan => {
     const name = plan.plan_name.toLowerCase();
@@ -202,8 +166,9 @@ const Subscription = () => {
             <button
               onClick={() => handleRedeemClick(plan)}
               className="btn-redeem"
+              disabled={redeeming}
             >
-              Redeem Code
+              Get Plan
             </button>
           </div>
         ))}
@@ -216,51 +181,7 @@ const Subscription = () => {
       )}
 
       {}
-      <Modal
-        isOpen={showRedeemModal}
-        onClose={() => setShowRedeemModal(false)}
-        title={`Redeem ${selectedPlan?.plan_name || 'Code'}`}
-      >
-        <div className="redeem-modal-content">
-          <p className="redeem-instructions">
-            Enter your redemption code to activate your subscription
-          </p>
 
-          <input
-            type="text"
-            value={redeemCode}
-            onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
-            placeholder="ENTER-CODE-HERE"
-            className="redeem-input"
-            maxLength={16}
-            disabled={redeeming}
-            onKeyPress={(e) => e.key === 'Enter' && handleRedeem()}
-          />
-
-          {redeemMessage.text && (
-            <div className={`redeem-message ${redeemMessage.type}`}>
-              {redeemMessage.text}
-            </div>
-          )}
-
-          <div className="modal-actions">
-            <button
-              onClick={() => setShowRedeemModal(false)}
-              className="btn-cancel"
-              disabled={redeeming}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleRedeem}
-              className="btn-confirm"
-              disabled={redeeming || !redeemCode.trim()}
-            >
-              {redeeming ? 'Redeeming...' : 'Redeem'}
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
     </>
   );

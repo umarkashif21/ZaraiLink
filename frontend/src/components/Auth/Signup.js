@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const countries = [
   "Afghanistan","Albania","Algeria","Andorra","Angola","Argentina","Armenia","Australia","Austria","Azerbaijan",
@@ -37,6 +38,7 @@ export default function Signup() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const validate = () => {
@@ -85,8 +87,14 @@ export default function Signup() {
       const data = await response.json();
 
       if (response.ok) {
-        
-        navigate("/verify-email", { state: { email } });
+        // Auto log in the user
+        const loginRes = await login(email, password);
+        if (loginRes.success) {
+          navigate("/dashboard");
+        } else {
+          setErrors({ general: 'Account created, but automatic login failed. Please sign in.' });
+          setTimeout(() => navigate('/login'), 2000);
+        }
       } else {
         
         if (data.errors) {
@@ -244,7 +252,7 @@ export default function Signup() {
               loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#1A4D2E] hover:bg-[#163f26]"
             }`}
           >
-            {loading ? "Processing..." : "Verify Your Email"}
+            {loading ? "Processing..." : "Create Account"}
           </button>
         </form>
       </div>

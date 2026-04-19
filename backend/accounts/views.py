@@ -56,89 +56,13 @@ def api_signup(request):
             print("Here3")
             user = form.save()
 
-            
-            verification_url = request.build_absolute_uri(
-                f"/accounts/api/verify-email/{user.verification_token}/"
-            )
-
-            
-            html_content = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body {  font-family: Arial, sans-serif; line-height: 1.6; color: #333; } 
-                    .container {  max-width: 600px; margin: 0 auto; padding: 20px; } 
-                    .header {  background-color: #1A4D2E; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; } 
-                    .content {  background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; } 
-                    .button {  display: inline-block; padding: 12px 30px; background-color: #1A4D2E; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; } 
-                    .footer {  text-align: center; padding: 20px; color: #666; font-size: 12px; } 
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>Welcome to ZaraiLink!</h1>
-                    </div>
-                    <div class="content">
-                        <h2>Hi {user.first_name},</h2>
-                        <p>Thank you for registering with ZaraiLink - Your Agri-Trade Intelligence Platform!</p>
-                        <p>To complete your registration and activate your account, please verify your email address by clicking the button below:</p>
-                        <div style="text-align: center;">
-                            <a href="{verification_url}" class="button">Verify Email Address</a>
-                        </div>
-                        <p>Or copy and paste this link into your browser:</p>
-                        <p style="word-break: break-all; color: #1A4D2E;">{verification_url}</p>
-                        <p><strong>This verification link will expire in 24 hours.</strong></p>
-                        <p>If you didn't create an account with ZaraiLink, please ignore this email.</p>
-                    </div>
-                    <div class="footer">
-                        <p>&copy; 2025 ZaraiLink. All rights reserved.</p>
-                        <p>Optimize Data. Empower Tomorrow.</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """
-
-            
-            text_content = f"""
-            Welcome to ZaraiLink!
-
-            Hi {user.first_name},
-
-            Thank you for registering with ZaraiLink - Your Agri-Trade Intelligence Platform!
-
-            To complete your registration and activate your account, please verify your email address by clicking the link below:
-
-            {verification_url}
-
-            This verification link will expire in 24 hours.
-
-            If you didn't create an account with ZaraiLink, please ignore this email.
-
-            © 2025 ZaraiLink. All rights reserved.
-            Optimize Data. Empower Tomorrow.
-            """
-
-            
-            try:
-                email = EmailMultiAlternatives(
-                    subject="Verify your ZaraiLink Account",
-                    body=text_content,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[user.email]
-                )
-                email.attach_alternative(html_content, "text/html")
-                email.send(fail_silently=False)
-                print(f"Verification email sent to {user.email}")
-            except Exception as email_error:
-                print(f"Failed to send verification email: {email_error}")
-                
+            user.email_verified = True
+            user.is_active = True
+            user.save()
 
             return JsonResponse({
                 "success": True,
-                "message": "Account created! Please check your email to verify your account.",
+                "message": "Account created! You are now ready to log in.",
                 "email": user.email
             })
         else:
@@ -162,23 +86,8 @@ def api_login(request):
         password = data.get("password")
 
         
-        try:
-            user_check = User.objects.get(email=email)
-            if not user_check.email_verified:
-                return JsonResponse({
-                    "error": "Please verify your email address before logging in. Check your inbox for the verification link.",
-                    "email_not_verified": True
-                }, status=403)
-        except User.DoesNotExist:
-            pass
-
         user = authenticate(request, email=email, password=password)
         if user:
-            if not user.email_verified:
-                return JsonResponse({
-                    "error": "Please verify your email address before logging in.",
-                    "email_not_verified": True
-                }, status=403)
 
             login(request, user)
             return JsonResponse({

@@ -9,10 +9,9 @@ import ToastProvider from "./components/Common/ToastProvider";
 import Signup from "./components/Auth/Signup";
 import Login from "./components/Auth/Login";
 import ForgotPassword from "./components/Auth/ForgotPassword";
-import EmailVerification from "./components/Auth/EmailVerification";
 import ResetPassword from "./components/Auth/ResetPassword";
-import VerifyEmailSuccess from "./components/Auth/VerifyEmailSuccess";
 import Dashboard from "./components/Dashboard/Dashboard";
+import LandingPage from "./components/Marketing/LandingPage";
 import FindSuppliers from "./components/TradeDirectory/FindSuppliers";
 import FindBuyers from "./components/TradeDirectory/FindBuyers";
 import CompanyProfile from "./components/TradeDirectory/CompanyProfile";
@@ -29,6 +28,7 @@ const SearchHome = React.lazy(() => import("./components/Search/SearchHome"));
 const SearchResults = React.lazy(() => import("./components/Search/SearchResults"));
 const DealDetail = React.lazy(() => import("./components/Search/DealDetail"));
 const ComparePage = React.lazy(() => import("./components/Search/ComparePage"));
+const UserProfile = React.lazy(() => import("./components/Profile/UserProfile"));
 
 
 const PageLoader = () => (
@@ -88,7 +88,7 @@ function App() {
                   path="/"
                   element={
                     <PublicRoute>
-                      <Login />
+                      <LandingPage />
                     </PublicRoute>
                   }
                 />
@@ -109,14 +109,21 @@ function App() {
                   }
                 />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/email-verification" element={<EmailVerification />} />
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
-                <Route path="/verify-email/:token" element={<VerifyEmailSuccess />} />
 
                 { }
                 <Route
                   path="/dashboard"
                   element={<Dashboard />}
+                />
+                
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <UserProfile />
+                    </ProtectedRoute>
+                  }
                 />
 
                 { }
