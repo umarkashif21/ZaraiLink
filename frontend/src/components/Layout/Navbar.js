@@ -72,33 +72,7 @@ const Navbar = () => {
             </AnimatePresence>
           </div>
 
-          {}
-          <div 
-            className="nav-dropdown"
-            onMouseEnter={() => setActiveDropdown('intelligence')}
-            onMouseLeave={() => setActiveDropdown(null)}
-          >
-            <button className={`nav-link dropdown-toggle ${isActive('/trade-intelligence') ? 'active' : ''}`}>
-              Trade Intelligence ▼
-            </button>
-            <AnimatePresence>
-              {activeDropdown === 'intelligence' && (
-                <motion.div 
-                  className="dropdown-content"
-                  variants={dropdownVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                >
-                  <Link to="/trade-intelligence/ledger">Trade Ledger</Link>
-                  <Link to="/trade-intelligence/compare">Compare Companies</Link>
-                  <div className="dropdown-divider"></div>
-                  <Link to="/trade-intelligence/pulse">Trade Pulse</Link>
-                  <Link to="/trade-intelligence/lens">Trade Lens</Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+
 
           <Link 
             to="/subscription" 

@@ -57,8 +57,6 @@ INSTALLED_APPS = [
     'subscriptions',
     'companies',
     'trade_data',
-    'trade_ledger',
-    'trade_lens',
     'search', # Search & Trade Facilitator
     'django.contrib.postgres',
     'django_extensions',
