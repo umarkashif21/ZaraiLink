@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, ChevronRight } from 'lucide-react';
+import { Search, X, ChevronRight, Hash, Package, Zap } from 'lucide-react';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
@@ -16,6 +16,14 @@ const SearchHome = () => {
     const debounceRef = useRef(null);
     const inputRef = useRef(null);
     const suggestionsRef = useRef(null);
+
+    // Dynamic search mode detection
+    const searchMode = (() => {
+        if (!query.trim()) return null;
+        if (/^[\d.]+$/.test(query.trim())) return 'hscode';
+        if (scope && scope !== 'WORLDWIDE') return 'ai';
+        return 'product';
+    })();
 
     // ── Debounced autocomplete fetch ──────────────────────────────────────
     const fetchSuggestions = useCallback(async (q) => {
@@ -69,19 +77,35 @@ const SearchHome = () => {
 
     // ── Handlers ─────────────────────────────────────────────────────────
     const handleSelectSuggestion = (suggestion) => {
-        // If it's an HS Code drill-down item
-        if (suggestion.is_final !== undefined) {
-            // Because we have the Dual-Track Router, we just navigate to /search/results
-            // with the selected HS Code. The router will serve SummaryView for <8, DataDashboard for >=8
+        // Non-leaf (drill-down) HS code — just update the input to let user drill further
+        if (suggestion.is_final !== undefined && !suggestion.is_final) {
             setQuery(suggestion.hs_code);
             setSelectedHsCode(suggestion.hs_code);
-            setSelectedProductName(suggestion.name);
-            setShowSuggestions(false);
-            navigate(`/search/results?q=${encodeURIComponent(suggestion.hs_code)}&hs_code=${encodeURIComponent(suggestion.hs_code)}`);
+            setSelectedProductName(null);
+            // Keep suggestions open so user can drill down
             return;
         }
 
-        // Standard text autocomplete
+        // Leaf product with a specific human-readable name (e.g. "Dextrose Anhydrous")
+        // → navigate as a text search so we get results filtered to that exact product.
+        // This uses the proven text-search + variant_name backend path rather than
+        // the HS-level DataDashboard which would show all 1702.3000 products.
+        if (suggestion.is_final !== undefined && suggestion.is_final) {
+            setQuery(suggestion.name);
+            setSelectedHsCode(suggestion.hs_code);
+            setSelectedProductName(suggestion.name);
+            setShowSuggestions(false);
+            const params = new URLSearchParams({
+                q:            suggestion.name,
+                hs_code:      suggestion.hs_code,
+                variant_name: suggestion.name,
+                scope:        scope || 'IMPORT',   // default to IMPORT so pills appear
+            });
+            navigate(`/search/results?${params.toString()}`);
+            return;
+        }
+
+        // Plain text autocomplete (no is_final metadata)
         setQuery(suggestion.name);
         setSelectedHsCode(suggestion.hs_code);
         setSelectedProductName(suggestion.name);
@@ -102,6 +126,7 @@ const SearchHome = () => {
         } else {
             params.set('scope', scope);
             if (selectedHsCode) params.set('hs_code', selectedHsCode);
+            if (selectedProductName) params.set('variant_name', selectedProductName);
         }
         navigate(`/search/results?${params.toString()}`);
     };
@@ -178,6 +203,27 @@ const SearchHome = () => {
                             >
                                 <X size={14} />
                             </button>
+                        </div>
+                    )}
+
+                    {/* Search Mode Badge */}
+                    {searchMode && !selectedProductName && (
+                        <div className="mt-2 flex justify-center">
+                            {searchMode === 'hscode' && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                                    <Hash size={11} /> HS Code Mode — browsing by trade code
+                                </span>
+                            )}
+                            {searchMode === 'product' && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                    <Package size={11} /> Product Search — browse matching variants
+                                </span>
+                            )}
+                            {searchMode === 'ai' && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-violet-100 text-violet-700 border border-violet-200">
+                                    <Zap size={11} /> AI Query Mode — powered by natural language
+                                </span>
+                            )}
                         </div>
                     )}
 

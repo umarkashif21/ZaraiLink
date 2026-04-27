@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Filter, BarChart2, Package, ChevronRight, AlertCircle } from 'lucide-react';
+import { Filter, BarChart2, Package, ChevronRight, AlertCircle, Lock, Zap } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
 import searchService from '../../services/searchService';
 import SummaryView from './SummaryView';
 import DataDashboard from './DataDashboard';
+import { useAuth } from '../../context/AuthContext';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
@@ -74,6 +75,18 @@ const SearchResults = () => {
     const [availableCountries, setAvailableCountries] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState(null);
     const [searchEngine, setSearchEngine] = useState('');
+    const [scopeMismatch, setScopeMismatch] = useState(null);
+
+    // ── Paywall State ──────────────────────────────────────────────────────────
+    const { isAuthenticated, refreshUser } = useAuth();
+    const [accessState, setAccessState] = useState('NO_ACCESS');
+    const [paywallPrice, setPaywallPrice] = useState(500);
+    const [totalProfilesCount, setTotalProfilesCount] = useState(0);
+    const [purchaseLoading, setPurchaseLoading] = useState(false);
+    
+    // Server-resolved context
+    const [serverSubcatId, setServerSubcatId] = useState(null);
+    const [serverVariantName, setServerVariantName] = useState(null);
 
     // ── Comparison State ───────────────────────────────────────────────────
     const [selectedSuppliers, setSelectedSuppliers] = useState([]);
@@ -121,11 +134,21 @@ const SearchResults = () => {
             if (data.is_category_bridge) {
                 // Backend matched an exact category! Fast-track to HS Code navigation.
                 const params = new URLSearchParams({ q: data.hs_code, hs_code: data.hs_code });
+                if (variantName) params.set('variant_name', variantName);
+                if (subcatId) params.set('subcat_id', subcatId);
                 navigate(`/search/results?${params.toString()}`, { replace: true });
                 return;
             }
 
-            if (data.needs_disambiguation) {
+            if (data.scope_mismatch) {
+                setScopeMismatch(data.scope_mismatch);
+                setNeedsDisambig(false);
+                setIsBroadSearch(false);
+                setVariants([]);
+                setResults([]);
+                setMarketSnapshot(null);
+            } else if (data.needs_disambiguation) {
+                setScopeMismatch(null);
                 setNeedsDisambig(true);
                 setIsBroadSearch(false);
                 setVariants(data.variants || []);
@@ -140,6 +163,7 @@ const SearchResults = () => {
                 setResults([]);
                 setMarketSnapshot(null);
             } else {
+                setScopeMismatch(null);
                 setNeedsDisambig(false);
                 setIsBroadSearch(false);
                 setVariants([]);
@@ -159,6 +183,14 @@ const SearchResults = () => {
                     // No backend intent and no override — stay UNKNOWN to show pills
                     setParsedIntent('UNKNOWN');
                 }
+                
+                setAccessState(data.access_state || 'NO_ACCESS');
+                setPaywallPrice(data.paywall_price || 500);
+                setTotalProfilesCount(data.total_profiles_count || (data.results ? data.results.length : 0));
+                
+                setServerSubcatId(data.active_subcat_id || null);
+                setServerVariantName(data.active_variant || null);
+
                 const countries = [
                     ...new Set((data.results || []).map(s => s.country).filter(Boolean))
                 ].sort();
@@ -258,6 +290,46 @@ const SearchResults = () => {
         setTempPriceMin('');
         setTempPriceMax('');
         setTempVolumeMin('');
+    };
+
+    // ── Paywall Purchase Logic ──────────────────────────────────────────────
+    const handlePurchase = async () => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
+        setPurchaseLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/subscriptions/purchase-access/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    access_type: (subcatId || serverSubcatId) ? 'PRODUCT' : 'HS_CODE',
+                    hscode: hsCode || initialQuery || query,
+                    subcat_id: subcatId || serverSubcatId,
+                    product_name: variantName || serverVariantName
+                })
+            });
+            const data = await res.json();
+            
+            if (!res.ok) {
+                alert(`Purchase failed: ${data.error || data.message || 'Unknown error'}`);
+                if (res.status === 402) {
+                    navigate('/subscription'); 
+                }
+            } else {
+                await refreshUser();
+                fetchResults(); // Refresh data smoothly
+            }
+        } catch (err) {
+            alert('Network error during purchase.');
+        } finally {
+            setPurchaseLoading(false);
+        }
     };
 
     // ── Entity type label ──────────────────────────────────────────────────
@@ -409,8 +481,36 @@ const SearchResults = () => {
                 {/* Main Content */}
                 <main className="flex-1 space-y-4">
 
+                    {/* ── Scope Mismatch Banner ──────────────────────── */}
+                    {scopeMismatch && !loading && (
+                        <div className="text-center py-16 bg-white rounded-xl border-2 border-blue-100 p-8 shadow-sm">
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔄</div>
+                            <h2 className="text-xl font-bold text-slate-900 mb-3">
+                                No {scopeMismatch.current_scope} data for "{scopeMismatch.product}"
+                            </h2>
+                            <p className="font-medium text-slate-500 max-w-lg mx-auto mb-6 leading-relaxed">
+                                In the past {scopeMismatch.year_max - scopeMismatch.year_min + 1} year{scopeMismatch.year_max - scopeMismatch.year_min > 0 ? 's' : ''} ({scopeMismatch.year_min}–{scopeMismatch.year_max}), <strong className="text-slate-700">{scopeMismatch.product}</strong> wasn't {scopeMismatch.current_label}.
+                                However, it was <strong className="text-emerald-600">{scopeMismatch.alt_label}</strong> ({scopeMismatch.alt_records.toLocaleString()} records found).
+                            </p>
+                            <button
+                                onClick={() => {
+                                    const newScope = scopeMismatch.alt_scope.toUpperCase();
+                                    const newIntent = newScope === 'IMPORT' ? 'BUY' : 'SELL';
+                                    setScopeMismatch(null);
+                                    const params = new URLSearchParams(location.search);
+                                    params.set('scope', newScope);
+                                    params.set('intent', newIntent);
+                                    navigate(`/search/results?${params.toString()}`, { replace: true });
+                                }}
+                                className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all hover:-translate-y-0.5"
+                            >
+                                Switch to Analyse {scopeMismatch.alt_scope === 'import' ? 'Imports' : 'Exports'} →
+                            </button>
+                        </div>
+                    )}
+
                     {/* ── Broad Search Warning ──────────────────────────── */}
-                    {isBroadSearch && !loading && (
+                    {isBroadSearch && !loading && !scopeMismatch && (
                         <div className="text-center py-16 text-slate-400 bg-white rounded-xl border-2 border-amber-100 p-8 shadow-sm">
                             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌐</div>
                             <h2 className="text-xl font-bold text-slate-900 mb-2">Search is too broad</h2>
@@ -422,7 +522,7 @@ const SearchResults = () => {
                     )}
 
                     {/* ── Disambiguation Panel ───────────────────────────── */}
-                    {needsDisambig && !loading && (
+                    {needsDisambig && !loading && !scopeMismatch && (
                         <div>
                             <div className="flex items-center gap-3 mb-6">
                                 <AlertCircle size={22} className="text-amber-500" />
@@ -513,7 +613,7 @@ const SearchResults = () => {
                     )}
 
                     {/* ── Normal Results ─────────────────────────────────── */}
-                    {!needsDisambig && !isBroadSearch && (
+                    {!needsDisambig && !isBroadSearch && !scopeMismatch && (
                         <div className="flex flex-col">
 
                             {/* ── Tab Pill Buttons for Intent Mapping ──────────────── */}
@@ -553,16 +653,21 @@ const SearchResults = () => {
                                 <h2 className="text-2xl font-bold text-slate-800 font-primary">
                                     {loading ? 'Searching...' : (() => {
                                         if (activeIntent === 'UNKNOWN') {
-                                            const supplierCount = sortedResults.filter(r => r.type === 'Supplier').length;
-                                            const buyerCount = sortedResults.filter(r => r.type === 'Buyer').length;
-                                            return `${supplierCount} Suppliers & ${buyerCount} Buyers found for "${query}"`;
+                                            const total = accessState === 'NO_ACCESS' && totalProfilesCount > 0 ? totalProfilesCount : sortedResults.length;
+                                            return `${total} Suppliers & Buyers found for "${query}"`;
                                         }
-                                        return `${sortedResults.length} ${entityLabel} found for "${query}"`;
+                                        const count = accessState === 'NO_ACCESS' && totalProfilesCount > 0 ? totalProfilesCount : sortedResults.length;
+                                        return `${count} ${entityLabel} found for "${query}"`;
                                     })()}
                                 </h2>
 
                                 {!loading && !error && sortedResults.length > 0 && (
                                     <div className="flex items-center gap-2">
+                                        {accessState === 'NO_ACCESS' && (
+                                            <span className="text-sm font-bold text-amber-500 bg-amber-50 px-3 py-1.5 rounded-lg mr-2 border border-amber-200 shadow-sm flex items-center gap-1.5">
+                                                <Lock size={14} /> Showing 2 previews
+                                            </span>
+                                        )}
                                         <span className="text-sm font-medium text-slate-500">Sort by:</span>
                                         <select
                                             value={sortBy}
@@ -599,10 +704,13 @@ const SearchResults = () => {
                                 </div>
                             )}
 
-                            {!loading && !error && sortedResults.map((supplier, idx) => (
+                            {!loading && !error && sortedResults.map((supplier, idx) => {
+                                const isLocked = accessState === 'NO_ACCESS';
+                                
+                                return (
                                 <div
                                     key={idx}
-                                    className="action-card bg-white mb-4 hover:border-emerald-500 transition-all cursor-default relative overflow-visible group"
+                                    className={`action-card bg-white mb-4 transition-all relative overflow-hidden group ${isLocked ? 'pointer-events-none border-slate-200 shadow-sm' : 'hover:border-emerald-500 shadow-md cursor-default'}`}
                                     style={{ padding: '1.5rem', marginBottom: '1.5rem' }}
                                 >
                                     <div className="flex justify-between items-start">
@@ -640,20 +748,29 @@ const SearchResults = () => {
                                         </div>
 
                                         <div className="flex flex-col gap-3">
-                                            <Link
-                                                to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scope)}${subcatId ? `&subcat_id=${encodeURIComponent(subcatId)}` : ''}${variantName ? `&variant_name=${encodeURIComponent(variantName)}` : ''}${overrideIntent ? `&intent=${encodeURIComponent(overrideIntent)}` : ''}`}
-                                                className="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold rounded-lg transition-all shadow-md shadow-emerald-500/20 text-center text-sm block"
-                                            >
-                                                View Deal
-                                            </Link>
-                                            <button
-                                                onClick={() => toggleCompare(supplier.name)}
-                                                className={`px-4 py-2 border-2 text-sm font-bold rounded-md transition-colors ${selectedSuppliers.includes(supplier.name)
-                                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
-                                                        : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-600'
-                                                    }`}>
-                                                {selectedSuppliers.includes(supplier.name) ? 'Added ✓' : 'Compare'}
-                                            </button>
+                                            {!isLocked ? (
+                                                <>
+                                                    <Link
+                                                        to={`/search/supplier/${encodeURIComponent(supplier.name)}?q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scope)}${subcatId ? `&subcat_id=${encodeURIComponent(subcatId)}` : ''}${variantName ? `&variant_name=${encodeURIComponent(variantName)}` : ''}${overrideIntent ? `&intent=${encodeURIComponent(overrideIntent)}` : ''}`}
+                                                        className="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold rounded-lg transition-all shadow-md shadow-emerald-500/20 text-center text-sm block"
+                                                    >
+                                                        View Deal
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => toggleCompare(supplier.name)}
+                                                        className={`px-4 py-2 border-2 text-sm font-bold rounded-md transition-colors ${selectedSuppliers.includes(supplier.name)
+                                                                ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
+                                                                : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-600'
+                                                            }`}>
+                                                        {selectedSuppliers.includes(supplier.name) ? 'Added ✓' : 'Compare'}
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col gap-3 ml-6 flex-shrink-0 opacity-40 blur-sm pointer-events-none">
+                                                    <div className="w-[120px] h-[36px] bg-emerald-500 rounded-lg"></div>
+                                                    <div className="w-[120px] h-[38px] bg-slate-200 rounded-lg"></div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -664,7 +781,62 @@ const SearchResults = () => {
                                         <span>Last active: {supplier.last_shipment_date}</span>
                                     </div>
                                 </div>
-                            ))}
+                            )})}
+
+                            {/* Inline Teaser CTA (Unified Paywall Integration) */}
+                            {!loading && !error && accessState === 'NO_ACCESS' && sortedResults.length > 0 && (
+                                <div className="mt-8 bg-gradient-to-br from-emerald-50 via-white to-teal-50/30 p-8 pt-10 rounded-2xl border border-emerald-200 shadow-[0_10px_35px_rgba(16,185,129,0.08)] overflow-hidden relative group">
+                                    <div className="absolute -top-12 -right-12 opacity-5 pointer-events-none transform group-hover:scale-110 transition-transform duration-700">
+                                        <Zap size={200} />
+                                    </div>
+                                    
+                                    <div className="relative z-10 text-center max-w-lg mx-auto">
+                                        <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-5 border border-emerald-100 text-emerald-600 rotate-3">
+                                            <Lock size={28} />
+                                        </div>
+                                        
+                                        <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">
+                                            Unlock Refined Intelligence
+                                        </h3>
+                                        
+                                        <p className="text-slate-600 mb-8 font-medium leading-relaxed">
+                                            You're currently viewing restricted previews. Unlock to instantly reveal all supply chain metrics, pricing analytics, and actionable 'View Deal' links for {variantName || serverVariantName || query || 'this product'}.
+                                        </p>
+
+                                        <div className="flex flex-col gap-3 items-center">
+                                            {isAuthenticated ? (
+                                                <button
+                                                    onClick={handlePurchase}
+                                                    disabled={purchaseLoading}
+                                                    className="w-full md:w-auto px-10 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold rounded-xl shadow-[0_8px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_10px_25px_rgba(16,185,129,0.4)] transition-all hover:-translate-y-1 flex items-center justify-center gap-3 text-lg"
+                                                >
+                                                    {purchaseLoading ? (
+                                                        <>
+                                                            <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+                                                            <span>Processing Securely...</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Zap size={20} className="fill-white/20" />
+                                                            <span>Unlock for {(paywallPrice).toLocaleString()} Tokens</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => navigate('/login')}
+                                                    className="w-full md:w-auto px-10 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-xl transition-all hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"
+                                                >
+                                                    Sign in to Unlock
+                                                </button>
+                                            )}
+                                            <span className="text-xs text-slate-400 font-medium tracking-wide mt-2">
+                                                Tokens will be deducted from your account balance.
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </main>

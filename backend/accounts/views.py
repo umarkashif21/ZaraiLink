@@ -311,3 +311,55 @@ def api_resend_verification(request):
 
     except Exception as e:
         return JsonResponse({"error": "Invalid request", "details": str(e)}, status=400)
+
+
+@csrf_exempt
+def api_update_profile(request):
+    """Update the authenticated user's display name."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    try:
+        data = json.loads(request.body)
+        name = data.get("name", "").strip()
+        if not name:
+            return JsonResponse({"error": "Name cannot be empty"}, status=400)
+        parts = name.split(" ", 1)
+        request.user.first_name = parts[0]
+        request.user.last_name = parts[1] if len(parts) > 1 else ""
+        request.user.save(update_fields=["first_name", "last_name"])
+        return JsonResponse({
+            "success": True,
+            "name": f"{request.user.first_name} {request.user.last_name}".strip()
+        })
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+@csrf_exempt
+def api_change_password(request):
+    """Change the authenticated user's password after verifying the current one."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    try:
+        data = json.loads(request.body)
+        current_password = data.get("current_password", "")
+        new_password = data.get("new_password", "")
+        if not current_password or not new_password:
+            return JsonResponse({"error": "Both current and new password are required"}, status=400)
+        if len(new_password) < 8:
+            return JsonResponse({"error": "New password must be at least 8 characters"}, status=400)
+        user = authenticate(request, email=request.user.email, password=current_password)
+        if not user:
+            return JsonResponse({"error": "Current password is incorrect"}, status=400)
+        user.set_password(new_password)
+        user.save()
+        # Keep the user logged in after password change
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, user)
+        return JsonResponse({"success": True, "message": "Password updated successfully"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)

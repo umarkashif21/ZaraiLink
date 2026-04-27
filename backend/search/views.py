@@ -61,11 +61,26 @@ class SearchViewSet(viewsets.ViewSet):
         if search_result.get('is_category_bridge'):
             return Response({
                 "is_category_bridge": True,
-                "hs_code": search_result['hs_code']
+                "hs_code": search_result['hs_code'],
+                "subcat_id": search_result.get('subcat_id'),
+                "variant_name": search_result.get('variant_name')
             })
 
         parsed_query = search_result.get('nlu', {})
         raw_profiles = search_result.get('profiles', [])
+
+        # ── Scope Mismatch — product exists only in opposite scope ─────
+        if search_result.get('scope_mismatch'):
+            return Response({
+                "query":                query,
+                "parsed_query":         parsed_query,
+                "needs_disambiguation": False,
+                "scope_mismatch":       search_result['scope_mismatch'],
+                "results":              [],
+                "variants":             [],
+                "market_snapshot":      None,
+                "count":                0,
+            })
 
         # ── Disambiguation — return early with variant picker ──────────
         if search_result.get('needs_disambiguation'):
@@ -116,6 +131,41 @@ class SearchViewSet(viewsets.ViewSet):
             "top_country":      mapped_results[0]["country"] if mapped_results else "N/A",
         }
 
+        # ── Apply Access Restrictions ──────────────────────────────────────────
+        from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS, HS_CODE_PRICE, PRODUCT_PRICE
+        
+        active_hs_code = hs_code or parsed_query.get('hs_code', '')
+        resolved_hs_code = search_result.get('active_hs_code')
+        if resolved_hs_code:
+            active_hs_code = resolved_hs_code
+
+        active_subcat_id = None
+        if subcat_id:
+            try:
+                active_subcat_id = int(subcat_id)
+            except ValueError:
+                pass
+
+        if not active_subcat_id:
+            active_subcat_id = search_result.get('active_subcat_id')
+
+        resolved_variant_name = variant_name
+        if active_subcat_id and not resolved_variant_name:
+            from trade_data.models import ProductSubCategory
+            variant_obj = ProductSubCategory.objects.filter(id=active_subcat_id).first()
+            if variant_obj:
+                resolved_variant_name = variant_obj.name
+
+        access_state = get_access_state(request.user, active_hs_code, active_subcat_id)
+
+        # Store total count before slicing so frontend can show "36 results found, showing 2"
+        total_profiles_count = len(mapped_results)
+
+        if access_state not in (FULL_ACCESS, PRODUCT_ACCESS):
+            mapped_results = mapped_results[:2]
+
+        paywall_price = PRODUCT_PRICE if active_subcat_id else HS_CODE_PRICE
+
         return Response({
             "query":                query,
             "parsed_query":         parsed_query,
@@ -124,11 +174,15 @@ class SearchViewSet(viewsets.ViewSet):
             "variants":             [],
             "matched_subcategories": [],
             "available_variants":  [],
-            "active_variant":      None,
+            "active_variant":      resolved_variant_name,
+            "active_subcat_id":    active_subcat_id,
             "results":             mapped_results,
             "market_snapshot":     market_snapshot,
             "count":               len(mapped_results),
             "search_engine":       search_result.get("search_engine", "orm"),
+            "access_state":        access_state,
+            "paywall_price":       paywall_price,
+            "total_profiles_count": total_profiles_count,
         })
 
     # ----------------------------------------------------------------
@@ -155,6 +209,7 @@ class SearchViewSet(viewsets.ViewSet):
                 "category":     s["category"],
                 "total_volume": s["total_volume"],
                 "tx_count":     s["tx_count"],
+                "is_final":     s.get("is_final", False),
             })
 
         return Response(result)
@@ -272,26 +327,46 @@ class SearchViewSet(viewsets.ViewSet):
         is_alpha = not all(c.isdigit() or c == '.' for c in q)
         
         if is_alpha:
-            # Word search: like "Glucose" -> Find all matching codes in Category/Subcategory
-            cat_qs = ProductCategory.objects.filter(name__icontains=q)
-            subcat_qs = ProductSubCategory.objects.filter(name__icontains=q)
-            
-            matched_codes = {}
-            for row in cat_qs:
-                matched_codes[row.hs_code] = row.name
-            for row in subcat_qs:
-                if row.hs_code not in matched_codes:
-                    matched_codes[row.hs_code] = row.name
-                    
+            # Word search: like "dextrose" -> Return each individual subcategory variant
+            # so users see the full list (e.g. "Dextrose Ball", "Dextrose Anhydrous", etc.)
+            # matching what the autocomplete dropdown shows — NOT HS-code-grouped rows.
+            subcat_qs = list(ProductSubCategory.objects.filter(name__icontains=q))
+            cat_qs = list(ProductCategory.objects.filter(name__icontains=q))
+
             results = []
-            for hs, b_name in matched_codes.items():
-                # Count transactions
-                cnt = Transaction.objects.filter(hs_code__startswith=hs).count()
+            seen_subcat_ids = set()
+
+            # Each individual subcategory variant gets its own row
+            for sc in subcat_qs:
+                if sc.id in seen_subcat_ids:
+                    continue
+                seen_subcat_ids.add(sc.id)
+                cnt = Transaction.objects.filter(hs_code__startswith=sc.hs_code).count()
                 if cnt > 0:
-                    cname = get_contextual_name(hs, b_name)
-                    is_leaf = len(hs.replace('.', '')) >= 5  # Arbitrary threshold for alpha matched codes
-                    results.append({"hs_code": hs, "name": cname, "count": cnt, "is_leaf": is_leaf})
-            
+                    results.append({
+                        "hs_code": sc.hs_code,
+                        "name": sc.name,
+                        "subcat_id": sc.id,
+                        "count": cnt,
+                        "is_leaf": True,
+                    })
+
+            # Add broad categories not already covered by a subcategory row
+            seen_hs = {r["hs_code"] for r in results}
+            for cat in cat_qs:
+                if cat.hs_code not in seen_hs:
+                    cnt = Transaction.objects.filter(hs_code__startswith=cat.hs_code).count()
+                    if cnt > 0:
+                        is_leaf = len(cat.hs_code.replace('.', '')) >= 5
+                        results.append({
+                            "hs_code": cat.hs_code,
+                            "name": cat.name,
+                            "subcat_id": None,
+                            "count": cnt,
+                            "is_leaf": is_leaf,
+                        })
+                    seen_hs.add(cat.hs_code)
+
             results.sort(key=lambda x: x["count"], reverse=True)
             return Response(results)
 
@@ -381,14 +456,21 @@ class SearchViewSet(viewsets.ViewSet):
         else:
             qs = qs.filter(trade_type='EXPORT')
 
+        qs_base = qs
+
+        subcat_names = []
         if subcat_filter:
             subcat_names = [s.strip() for s in subcat_filter.split(',') if s.strip()]
             if subcat_names:
-                qs = qs.filter(product_item__sub_category__name__in=subcat_names)
+                from django.db.models import Q
+                qs = qs.filter(
+                    Q(product_item__sub_category__name__in=subcat_names) | 
+                    Q(product_item__name__in=subcat_names)
+                )
 
         # Sidebar: use ProductSubCategory names (clean tariff names, not raw invoice text)
         refinements = list(
-            qs.values('product_item__sub_category__name')
+            qs_base.values('product_item__sub_category__name')
               .annotate(count=Count('id'))
               .order_by('-count')
         )
@@ -405,6 +487,7 @@ class SearchViewSet(viewsets.ViewSet):
             entity_field = 'buyer'
             country_field = 'destination_country'
 
+        # Sort and construct profiles
         raw_profiles = list(
             qs.values(entity_field, country_field)
               .annotate(
@@ -424,36 +507,53 @@ class SearchViewSet(viewsets.ViewSet):
             profiles.append({
                 "name":               p[entity_field] or "Unknown",
                 "country":            p[country_field] or "N/A",
-                "total_volume":       round(vol, 2),
+                "total_volume":       round(vol, 4) if vol > 0 and vol < 1 else round(vol, 2),
                 "avg_price":          round(price, 2),
                 "shipment_count":     count,
                 "last_shipment_date": str(p['last_shipment']) if p['last_shipment'] else None,
-                "avg_shipment_vol":   round(vol / count, 2) if count > 0 else 0,
+                "avg_shipment_vol":   round(vol / count, 4) if count > 0 and (vol / count) < 1 else (round(vol / count, 2) if count > 0 else 0),
                 "type":               "Supplier" if intent in ('FOREIGN_SUPPLIERS', 'PAKISTANI_SUPPLIERS') else "Buyer",
             })
 
-        # Raw shipment rows — this is what the DataDashboard table renders
-        raw_rows = qs.select_related('product_item__sub_category').order_by('-reporting_date')[:500]
-        shipments = []
-        for tx in raw_rows:
-            shipments.append({
-                "date":                str(tx.reporting_date),
-                "description":         tx.product_item.sub_category.name if tx.product_item and tx.product_item.sub_category else (tx.product_item.name if tx.product_item else ""),
-                "seller":              tx.seller,
-                "buyer":               tx.buyer,
-                "origin_country":      tx.origin_country,
-                "destination_country": tx.destination_country,
-                "quantity":            float(tx.qty_mt or 0),
-                "price":               float(tx.usd_per_mt or 0) if tx.usd_per_mt else None,
-            })
+        # ─── 4. Apply Access Restrictions ─────────────────────────────────────────────
+        from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS, NO_ACCESS, HS_CODE_PRICE, PRODUCT_PRICE
+
+        # If they filtered to a subcategory, find its ID for access check
+        primary_product_name = subcat_names[0] if subcat_names else None
+        active_subcat_id = None
+        if primary_product_name:
+            from trade_data.models import ProductSubCategory
+            subcat_obj = ProductSubCategory.objects.filter(name=primary_product_name, hs_code__startswith=q).first()
+            if not subcat_obj:
+                subcat_obj = ProductSubCategory.objects.filter(name=primary_product_name).first()
+            if subcat_obj:
+                active_subcat_id = subcat_obj.id
+
+        access_state = get_access_state(request.user, q, active_subcat_id)
+
+        # Explicit data sanitization layer (Frontend is secondary, Backend is authority)
+        if access_state in (FULL_ACCESS, PRODUCT_ACCESS):
+            visible_profiles = profiles
+            full_profiles = profiles
+        else:
+            visible_profiles = profiles[:2]
+            full_profiles = []
+
+        paywall_price = PRODUCT_PRICE if active_subcat_id else HS_CODE_PRICE
+
+        print(f"[HS DASHBOARD DEBUG] q={q} intent={intent} count={total_count} qs.count()={qs.count()} len(raw_profiles)={len(raw_profiles)} len(profiles)={len(profiles)} len(visible_profiles)={len(visible_profiles)} subcat_names={subcat_names}")
 
         return Response({
             "hs_code":          q,
             "hs_description":   hs_description,
             "total_shipments":  total_count,
             "sidebar_counts":   sidebar_counts,
-            "profiles":         profiles,
-            "shipments":        shipments,
+            # Output security parameters directly to frontend config
+            "access_state":     access_state,
+            "paywall_price":    paywall_price,
+            "visible_profiles": visible_profiles,
+            "full_profiles":    full_profiles,
+            "total_profiles_count": len(profiles),
         })
 
 

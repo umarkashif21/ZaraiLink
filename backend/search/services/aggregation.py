@@ -218,7 +218,9 @@ class SupplierAggregator:
             market_qs = market_qs.filter(product_item__sub_category_id__in=subcategory_ids)
             
         scope = scope or 'WORLDWIDE'
-        if scope == 'PAKISTAN':
+        if scope == 'EXPORT':
+            market_qs = market_qs.filter(trade_type='EXPORT')
+        elif scope == 'PAKISTAN':
             market_qs = market_qs.filter(trade_type='EXPORT', origin_country='Pakistan')
         else:
             market_qs = market_qs.filter(trade_type='IMPORT')
@@ -251,13 +253,13 @@ class SupplierAggregator:
 
         sparkline = []
         for entry in monthly_data:
-            sparkline.append({
-                "date": entry['month'].strftime("%Y-%m-%d"),
-                "volume": float(entry['vol'] or 0),
-                "price": float(entry['price'] or 0)
-            })
-
-        # 3. Transaction History (Top 50 for table)
+            valid_price = float(entry['price'] or 0)
+            if valid_price > 0:
+                sparkline.append({
+                    "date": entry['month'].strftime("%Y-%m-%d"),
+                    "volume": float(entry['vol'] or 0),
+                    "price": valid_price
+                })
         history = []
         for tx in queryset[:50]:
             history.append({
@@ -394,11 +396,13 @@ class SupplierAggregator:
 
         sparkline = []
         for entry in monthly_data:
-            sparkline.append({
-                "date": entry['month'].strftime("%Y-%m-%d"),
-                "volume": float(entry['vol'] or 0),
-                "price": float(entry['price'] or 0)
-            })
+            valid_price = float(entry['price'] or 0)
+            if valid_price > 0:
+                sparkline.append({
+                    "date": entry['month'].strftime("%Y-%m-%d"),
+                    "volume": float(entry['vol'] or 0),
+                    "price": valid_price
+                })
 
         # 3. Transaction History (Top 50 latest purchases)
         history = []

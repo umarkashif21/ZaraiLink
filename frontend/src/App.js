@@ -116,7 +116,7 @@ function App() {
                   path="/dashboard"
                   element={<Dashboard />}
                 />
-                
+
                 <Route
                   path="/profile"
                   element={
@@ -198,10 +198,7 @@ function App() {
 
 
                 {/* Search Module Routes */}
-                <Route
-                  path="/search"
-                  element={<SearchHome />}
-                />
+                <Route path="/search" element={<Navigate to="/dashboard" replace />} />
                 <Route
                   path="/search/results"
                   element={<SearchResults />}

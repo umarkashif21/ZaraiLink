@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
-import { Filter, AlertCircle, TrendingUp, BarChart2, ChevronRight } from 'lucide-react';
+import { Filter, AlertCircle, TrendingUp, BarChart2, ChevronRight, Lock, Zap } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
@@ -15,43 +16,89 @@ const PILLS = [
 const DataDashboard = () => {
     const location  = useLocation();
     const navigate  = useNavigate();
+    const { isAuthenticated, refreshUser } = useAuth(); // USING NEW AUTH CONTEXT
 
-    const qp    = new URLSearchParams(location.search);
-    const rawQuery = qp.get('q') || '';
-    const hsCodeParam = qp.get('hs_code') || '';
-    
-    // The main target identifier (prefer hs_code if we routed from autocomplete)
+    // ── All URL-derived values are computed fresh on every render ──────────
+    const qp = useMemo(() => new URLSearchParams(location.search), [location.search]);
+
+    const rawQuery      = qp.get('q') || '';
+    const hsCodeParam   = qp.get('hs_code') || '';
     const displayTarget = hsCodeParam || rawQuery;
 
-    const [activePill, setActivePill]           = useState(qp.get('dashboard_intent') || 'FOREIGN_SUPPLIERS');
-    const [selectedRefinements, setSelectedRefinements] = useState(
-        qp.get('refines') ? qp.get('refines').split(',').filter(Boolean) : []
-    );
+    // Active pill — read directly from URL
+    const activePill = qp.get('dashboard_intent') || 'FOREIGN_SUPPLIERS';
 
-    const [hsDescription, setHsDescription] = useState('');
+    // Selected refinements — derived from URL
+    const selectedRefinements = useMemo(() => {
+        const refines = qp.get('refines');
+        if (refines) return refines.split(',').filter(Boolean);
+        const variant = qp.get('variant_name');
+        if (variant) return [variant];
+        return [];
+    }, [qp]);
+
+    // ── Local UI state ───────────────────────────────────
+    const [hsDescription, setHsDescription]   = useState('');
     const [totalShipments, setTotalShipments] = useState(0);
     const [sidebarCounts, setSidebarCounts]   = useState([]);
     const [profiles, setProfiles]             = useState([]);
     const [loading, setLoading]               = useState(true);
     const [error, setError]                   = useState(null);
     const [selectedEntities, setSelectedEntities] = useState([]);
+    const [totalProfilesCount, setTotalProfilesCount] = useState(0);
+    const [refreshKey, setRefreshKey]         = useState(0); // For handling post-purchase refetch
+    
+    // Paywall State
+    const [accessState, setAccessState]       = useState('NO_ACCESS');
+    const [purchaseLoading, setPurchaseLoading] = useState(false);
 
-    // Sync pill + refinements to URL
-    useEffect(() => {
+    // Calculated pricing based on exact requirements
+    const currentTokenCost = selectedRefinements.length > 0 
+        ? selectedRefinements.length * 500 
+        : 5000;
+
+    // ── URL mutators (user-driven only, no effects) ────────────────────────
+    const switchPill = (pillId) => {
         const p = new URLSearchParams(location.search);
-        let changed = false;
-        if (p.get('dashboard_intent') !== activePill) { p.set('dashboard_intent', activePill); changed = true; }
-        const refStr = selectedRefinements.join(',');
-        if ((p.get('refines') || '') !== refStr) {
-            refStr ? p.set('refines', refStr) : p.delete('refines');
-            changed = true;
-        }
-        if (changed) navigate(`/search/results?${p.toString()}`, { replace: true });
-    }, [activePill, selectedRefinements]); // eslint-disable-line
+        p.set('dashboard_intent', pillId);
+        p.delete('refines');       // Clear product filter on pill switch
+        p.delete('variant_name');  // Clear variant too
+        navigate(`/search/results?${p.toString()}`, { replace: true });
+        setSelectedEntities([]);
+    };
 
-    // Fetch data
+    const toggleRefinement = (name) => {
+        const p = new URLSearchParams(location.search);
+        const current = selectedRefinements;
+        const next = current.includes(name)
+            ? current.filter(n => n !== name)
+            : [...current, name];
+        next.length ? p.set('refines', next.join(',')) : p.delete('refines');
+        p.delete('variant_name'); // Migrate variant_name → refines on first toggle
+        navigate(`/search/results?${p.toString()}`, { replace: true });
+    };
+
+    const clearRefinements = () => {
+        const p = new URLSearchParams(location.search);
+        p.delete('refines');
+        p.delete('variant_name');
+        navigate(`/search/results?${p.toString()}`, { replace: true });
+    };
+
+    // ── Fetch data whenever URL-derived values change ─────────────────────
     useEffect(() => {
         if (!displayTarget) return;
+
+        // Ensure dashboard_intent is in the URL on first visit (no re-render cascade)
+        if (!qp.get('dashboard_intent')) {
+            const p = new URLSearchParams(location.search);
+            p.set('dashboard_intent', activePill);
+            navigate(`/search/results?${p.toString()}`, { replace: true });
+            // Don't return — still fetch with current values
+        }
+
+        const controller = new AbortController();
+
         const fetchData = async () => {
             setLoading(true);
             setError(null);
@@ -63,45 +110,88 @@ const DataDashboard = () => {
                 if (selectedRefinements.length > 0) {
                     params.set('subcat', selectedRefinements.join(','));
                 }
-                const res = await fetch(`${API_BASE}/api/search/hs-dashboard/?${params.toString()}`);
+                const res = await fetch(
+                    `${API_BASE}/api/search/hs-dashboard/?${params.toString()}`,
+                    { 
+                        signal: controller.signal,
+                        credentials: 'include' // EXTREMELY IMPORTANT: Includes Django Session!
+                    }
+                );
                 if (!res.ok) throw new Error(`Server error: ${res.status}`);
                 const data = await res.json();
+                
                 setHsDescription(data.hs_description || rawQuery);
                 setTotalShipments(data.total_shipments || 0);
-                // Only update sidebar counts when no refinement is active — keep full list visible
-                if (selectedRefinements.length === 0) {
-                    setSidebarCounts(data.sidebar_counts || []);
-                }
-                setProfiles(data.profiles || []);
+                let counts = data.sidebar_counts || [];
+                // If a variant was pre-selected from autocomplete but isn't grouped as a subcategory, inject it so the checkbox renders
+                selectedRefinements.forEach(ref => {
+                    if (!counts.some(c => c.name === ref)) {
+                        counts.unshift({ name: ref, count: data.total_shipments || 'exact' });
+                    }
+                });
+                setSidebarCounts(counts);
+                setProfiles(data.visible_profiles || []); 
+                setTotalProfilesCount(data.total_profiles_count || (data.visible_profiles ? data.visible_profiles.length : 0));
+                setAccessState(data.access_state || 'NO_ACCESS');
             } catch (err) {
+                // Ignore AbortError
+                if (err.name === 'AbortError') return;
                 setError(err.message);
             } finally {
-                setLoading(false);
+                // Only clear loading if this request wasn't aborted
+                if (!controller.signal.aborted) setLoading(false);
             }
         };
+
         fetchData();
-    }, [displayTarget, rawQuery, activePill, selectedRefinements]);
 
-    const toggleRefinement = (name) => {
-        setSelectedRefinements(prev =>
-            prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
-        );
+        return () => controller.abort();
+    }, [displayTarget, activePill, selectedRefinements.join(','), refreshKey]); // Added refreshKey
+
+    // ── Paywall Logic ───────────────────────────────────────────────────────
+    const handlePurchase = async () => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
+        setPurchaseLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/subscriptions/purchase-access/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', // EXTREMELY IMPORTANT: Replaces old Authorization header chunk
+                body: JSON.stringify({
+                    access_type: selectedRefinements.length > 0 ? 'PRODUCT' : 'HS_CODE',
+                    hscode: displayTarget,
+                    product_name: selectedRefinements.length > 0 ? selectedRefinements.join(',') : null
+                })
+            });
+            const data = await res.json();
+            
+            if (!res.ok) {
+                alert(`Purchase failed: ${data.error || data.message || 'Unknown error'}`);
+                if (res.status === 402) {
+                    // Not enough tokens
+                    navigate('/subscription'); 
+                }
+            } else {
+                // Refresh data seamlessly without reloading the entire page
+                await refreshUser(); // updates token count in navbar via AuthContext
+                setRefreshKey(prev => prev + 1); // trigger useEffect to grab un-redacted profile data
+            }
+        } catch (err) {
+            alert('Network error during purchase.');
+        } finally {
+            setPurchaseLoading(false);
+        }
     };
 
-    const toggleCompare = (name) => {
-        setSelectedEntities(prev => {
-            if (prev.includes(name)) return prev.filter(n => n !== name);
-            if (prev.length >= 4) { alert('You can compare up to 4 at once.'); return prev; }
-            return [...prev, name];
-        });
-    };
-
-    // Compute active pill metadata
-    const pill = PILLS.find(p => p.id === activePill) || PILLS[0];
+    // ── Derived metadata ──────────────────────────────────────────────────
+    const pill        = PILLS.find(p => p.id === activePill) || PILLS[0];
     const entityLabel = activePill.includes('SUPPLIER') ? 'Suppliers' : 'Buyers';
-
-    // Filter profiles by selected refinements (sidebar cross-filter not supported for profiles — just show all)
-    const visibleProfiles = profiles;
 
     // Build deal detail URL
     const dealUrl = (name) => {
@@ -110,8 +200,6 @@ const DataDashboard = () => {
             scope:  pill.scope,
             intent: pill.intent,
         });
-        // Pass the active sidebar refinement as variant_name so DealDetail
-        // scopes its stats to the filtered product (e.g. "Dextrose Anhydrous")
         if (selectedRefinements.length > 0) {
             params.set('variant_name', selectedRefinements[0]);
         }
@@ -126,11 +214,18 @@ const DataDashboard = () => {
             scope:     pill.scope,
             intent:    pill.intent,
         });
-        // Pass active refinement as variant_name for consistent scoping in compare view
         if (selectedRefinements.length > 0) {
             params.set('variant_name', selectedRefinements[0]);
         }
         return `/search/compare?${params.toString()}`;
+    };
+
+    const toggleCompare = (name) => {
+        setSelectedEntities(prev => {
+            if (prev.includes(name)) return prev.filter(n => n !== name);
+            if (prev.length >= 4) { alert('You can compare up to 4 at once.'); return prev; }
+            return [...prev, name];
+        });
     };
 
     return (
@@ -152,6 +247,11 @@ const DataDashboard = () => {
                             <span className="text-slate-300">{hsDescription}</span>
                             <span className="text-slate-600 mx-2">•</span>
                             <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded text-xs">{totalShipments.toLocaleString()} Shipments</span>
+                            {selectedRefinements.length > 0 && (
+                                <span className="ml-2 text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded text-xs font-bold">
+                                    Filtered: {selectedRefinements.join(', ')}
+                                </span>
+                            )}
                         </p>
                     </div>
                     <button
@@ -184,7 +284,7 @@ const DataDashboard = () => {
                                         type="checkbox"
                                         checked={selectedRefinements.includes(sc.name)}
                                         onChange={() => toggleRefinement(sc.name)}
-                                        className="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-emerald-600"
+                                        className="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                                     />
                                     <div className="flex-1 flex justify-between items-start text-xs">
                                         <span className="text-slate-700 group-hover:text-emerald-700 leading-tight">{sc.name}</span>
@@ -196,7 +296,7 @@ const DataDashboard = () => {
 
                         {selectedRefinements.length > 0 && (
                             <button
-                                onClick={() => setSelectedRefinements([])}
+                                onClick={clearRefinements}
                                 className="w-full mt-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                             >
                                 Clear All
@@ -213,7 +313,7 @@ const DataDashboard = () => {
                         {PILLS.map(p => (
                             <button
                                 key={p.id}
-                                onClick={() => { setActivePill(p.id); setSelectedRefinements([]); setSelectedEntities([]); }}
+                                onClick={() => switchPill(p.id)}
                                 className={`flex flex-col items-start px-4 py-3 rounded-xl transition-all text-left ${
                                     activePill === p.id
                                         ? 'bg-emerald-500 text-slate-900 shadow-md shadow-emerald-500/20'
@@ -230,7 +330,12 @@ const DataDashboard = () => {
                     {!loading && !error && (
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-xl font-bold text-slate-800">
-                                {visibleProfiles.length} {entityLabel} found for HS {displayTarget}
+                                {totalProfilesCount} {entityLabel} found for HS {displayTarget}
+                                {selectedRefinements.length > 0 && (
+                                    <span className="ml-2 text-sm font-normal text-slate-400">
+                                        · filtered by {selectedRefinements.join(', ')}
+                                    </span>
+                                )}
                             </h2>
                         </div>
                     )}
@@ -251,7 +356,7 @@ const DataDashboard = () => {
                     )}
 
                     {/* Empty */}
-                    {!loading && !error && visibleProfiles.length === 0 && (
+                    {!loading && !error && profiles.length === 0 && (
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 py-16 text-center">
                             <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📭</div>
                             <h3 className="text-slate-600 font-bold mb-1">No {entityLabel} Found</h3>
@@ -260,21 +365,25 @@ const DataDashboard = () => {
                     )}
 
                     {/* Profile Cards */}
-                    {!loading && !error && visibleProfiles.map((entity, idx) => (
+                    {!loading && !error && profiles.map((entity, idx) => {
+                        const isLocked = accessState === 'NO_ACCESS';
+                        
+                        return (
                         <div
                             key={idx}
-                            className="action-card bg-white mb-4 hover:border-emerald-500 transition-all cursor-default relative overflow-visible group"
+                            className={`action-card bg-white mb-4 transition-all relative overflow-hidden group ${isLocked ? 'pointer-events-none border-slate-200 shadow-sm' : 'hover:border-emerald-500 shadow-md cursor-default'}`}
                             style={{ padding: '1.5rem', marginBottom: '1.5rem' }}
                         >
                             <div className="flex justify-between items-start">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-1">
+                                <div className="w-full">
+                                    <div className="flex items-center gap-3 mb-1">
                                         <h3 className="text-xl font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
                                             {entity.name}
                                         </h3>
                                     </div>
                                     <div className="text-sm text-slate-500 mb-4 font-medium">{entity.country}</div>
 
+                                    {/* Metrics Array */}
                                     <div className="flex gap-8 text-sm text-slate-700">
                                         <div>
                                             <span className="block text-slate-400 text-xs uppercase font-bold tracking-wider">Avg Price</span>
@@ -284,7 +393,7 @@ const DataDashboard = () => {
                                         </div>
                                         <div>
                                             <span className="block text-slate-400 text-xs uppercase font-bold tracking-wider">Volume</span>
-                                            <span className="font-bold text-lg text-slate-800">{entity.total_volume.toLocaleString()} MT</span>
+                                            <span className="font-bold text-lg text-slate-800">{entity.total_volume ? entity.total_volume.toLocaleString() : 0} MT</span>
                                         </div>
                                         <div>
                                             <span className="block text-slate-400 text-xs uppercase font-bold tracking-wider">Shipments</span>
@@ -292,39 +401,103 @@ const DataDashboard = () => {
                                         </div>
                                         <div>
                                             <span className="block text-slate-400 text-xs uppercase font-bold tracking-wider">Avg Shipment</span>
-                                            <span className="font-bold text-lg text-slate-800">{entity.avg_shipment_vol.toLocaleString()} MT</span>
+                                            <span className="font-bold text-lg text-slate-800">{entity.avg_shipment_vol ? entity.avg_shipment_vol.toLocaleString() : 0} MT</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-3">
-                                    <Link
-                                        to={dealUrl(entity.name)}
-                                        className="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold rounded-lg transition-all shadow-md shadow-emerald-500/20 text-center text-sm block"
-                                    >
-                                        View Deal
-                                    </Link>
-                                    <button
-                                        onClick={() => toggleCompare(entity.name)}
-                                        className={`px-4 py-2 border-2 text-sm font-bold rounded-md transition-colors ${
-                                            selectedEntities.includes(entity.name)
-                                                ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
-                                                : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-600'
-                                        }`}
-                                    >
-                                        {selectedEntities.includes(entity.name) ? 'Added ✓' : 'Compare'}
-                                    </button>
-                                </div>
+                                {!isLocked ? (
+                                    <div className="flex flex-col gap-3 ml-6 flex-shrink-0">
+                                        <Link
+                                            to={dealUrl(entity.name)}
+                                            className="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold rounded-lg transition-all shadow-md shadow-emerald-500/20 text-center text-sm block min-w-[120px]"
+                                        >
+                                            View Deal
+                                        </Link>
+                                        <button
+                                            onClick={() => toggleCompare(entity.name)}
+                                            className={`px-4 py-2 border-2 text-sm font-bold rounded-md transition-colors ${
+                                                selectedEntities.includes(entity.name)
+                                                    ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
+                                                    : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-600'
+                                            }`}
+                                        >
+                                            {selectedEntities.includes(entity.name) ? 'Added ✓' : 'Compare'}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-3 ml-6 flex-shrink-0 opacity-40 blur-sm pointer-events-none">
+                                        <div className="w-[120px] h-[36px] bg-emerald-500 rounded-lg"></div>
+                                        <div className="w-[120px] h-[38px] bg-slate-200 rounded-lg"></div>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="mt-5 pt-4 border-t-2 border-slate-50 flex items-center text-xs text-slate-400 gap-4 font-medium">
+                            <div className="mt-5 pt-4 border-t-2 border-slate-50 flex items-center text-xs text-slate-400 gap-4 font-medium transition-all">
                                 <span className="flex items-center gap-1">
                                     <BarChart2 size={14} /> Based on {entity.shipment_count} shipments
                                 </span>
                                 <span>Last active: {entity.last_shipment_date || 'N/A'}</span>
                             </div>
                         </div>
-                    ))}
+                    )})}
+
+                    {/* Inline Teaser CTA (Replaces old dummy wall blocks) */}
+                    {!loading && !error && accessState === 'NO_ACCESS' && profiles.length > 0 && (
+                        <div className="mt-8 bg-gradient-to-br from-emerald-50 via-white to-teal-50/30 p-8 pt-10 rounded-2xl border border-emerald-200 shadow-xl overflow-hidden relative group">
+                            <div className="absolute -top-12 -right-12 opacity-5 pointer-events-none transform group-hover:scale-110 transition-transform duration-700">
+                                <Zap size={200} />
+                            </div>
+                            
+                            <div className="relative z-10 text-center max-w-lg mx-auto">
+                                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-5 border border-emerald-100 text-emerald-600 rotate-3">
+                                    <Lock size={28} />
+                                </div>
+                                
+                                <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">
+                                    {selectedRefinements.length > 0 ? 'Unlock Refined Intelligence' : 'Unlock Category Intelligence'}
+                                </h3>
+                                
+                                <p className="text-slate-600 mb-8 font-medium leading-relaxed">
+                                    {selectedRefinements.length > 0 
+                                        ? `You're currently viewing restricted previews. Unlock to instantly reveal all supply chain metrics, pricing analytics, and actionable 'View Deal' links for ${selectedRefinements.join(', ')}.`
+                                        : `You're currently viewing restricted previews. Unlock to instantly reveal complete lists, in-depth pricing, and contact details for every company operating in HS ${displayTarget}.`}
+                                </p>
+
+                                <div className="flex flex-col gap-3 items-center">
+                                    {isAuthenticated ? (
+                                        <button
+                                            onClick={handlePurchase}
+                                            disabled={purchaseLoading}
+                                            className="w-full md:w-auto px-10 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold rounded-xl shadow-[0_8px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_10px_25px_rgba(16,185,129,0.4)] transition-all hover:-translate-y-1 flex items-center justify-center gap-3 text-lg"
+                                        >
+                                            {purchaseLoading ? (
+                                                <>
+                                                    <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+                                                    <span>Processing Securely...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Zap size={20} className="fill-white/20" />
+                                                    <span>Unlock for {currentTokenCost.toLocaleString()} Tokens</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => navigate('/login')}
+                                            className="w-full md:w-auto px-10 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-xl transition-all hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"
+                                        >
+                                            Sign in to Unlock
+                                        </button>
+                                    )}
+                                    <span className="text-xs text-slate-400 font-medium tracking-wide mt-2">
+                                        Tokens will be deducted from your account balance.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

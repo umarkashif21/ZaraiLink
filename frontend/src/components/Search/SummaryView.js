@@ -100,7 +100,21 @@ const SummaryView = () => {
                                         {item.count.toLocaleString()} shipments found
                                     </span>
                                     <Link 
-                                        to={`/search/results?q=${encodeURIComponent(item.hs_code)}&hs_code=${encodeURIComponent(item.hs_code)}${item.is_leaf ? '&mode=dashboard' : ''}`}
+                                        to={(() => {
+                                            if (item.subcat_id) {
+                                                // Specific product variant — go directly to filtered dashboard
+                                                const p = new URLSearchParams({
+                                                    q: item.name,
+                                                    hs_code: item.hs_code,
+                                                    subcat_id: item.subcat_id,
+                                                    variant_name: item.name,
+                                                    mode: 'dashboard',
+                                                });
+                                                return `/search/results?${p.toString()}`;
+                                            }
+                                            // Broad HS code — navigate as before
+                                            return `/search/results?q=${encodeURIComponent(item.hs_code)}&hs_code=${encodeURIComponent(item.hs_code)}${item.is_leaf ? '&mode=dashboard' : ''}`;
+                                        })()}
                                         className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-lg flex items-center gap-1 transition-transform hover:scale-105"
                                         style={{ textDecoration: 'none' }}
                                     >

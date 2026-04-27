@@ -15,6 +15,8 @@ urlpatterns = [
     path("api/logout/", views.api_logout, name="api_logout"),
     path("api/check-auth/", views.api_check_auth, name="api_check_auth"),
     path("api/forgot-password/", views.api_forgot_password, name="api_forgot_password"),
+    path("api/update-profile/", views.api_update_profile, name="api_update_profile"),
+    path("api/change-password/", views.api_change_password, name="api_change_password"),
 
     
     path("api/verify-email/<uuid:token>/", views.api_verify_email, name="api_verify_email"),

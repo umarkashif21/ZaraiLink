@@ -71,11 +71,16 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         sector = self.request.query_params.get('sector', '').strip()
         company_type = self.request.query_params.get('type', '').strip()
         role = self.request.query_params.get('role', '').strip()
+        country = self.request.query_params.get('country', '').strip()
         
         if company_type:
             queryset = queryset.filter(company_type_id=company_type)
         if role:
             queryset = queryset.filter(company_role_id=role)
+        if country:
+            queryset = queryset.filter(country__iexact=country)
+        if sector:
+            queryset = queryset.filter(sector_id=sector)
             
         
         use_ai = self.request.query_params.get('use_ai', 'false').lower() == 'true'
@@ -163,12 +168,22 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def regions(self, request):
-        """Get available regions dynamically"""
+        """Get available regions (provinces) dynamically"""
         regions = Company.objects.filter(
             verification_status='verified',
             province__isnull=False
         ).exclude(province='').values_list('province', flat=True).distinct().order_by('province')
         return Response(list(regions))
+
+    @action(detail=False, methods=['get'])
+    def countries(self, request):
+        """Get distinct countries across all verified companies"""
+        role = self.request.query_params.get('role', '').strip()
+        qs = Company.objects.filter(verification_status='verified').exclude(country='').exclude(country__isnull=True)
+        if role:
+            qs = qs.filter(company_role_id=role)
+        countries = qs.values_list('country', flat=True).distinct().order_by('country')
+        return Response(list(countries))
     
     @action(detail=False, methods=['get'])
     def hsn_codes(self, request):

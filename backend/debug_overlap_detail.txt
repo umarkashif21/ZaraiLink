@@ -1,4 +1,0 @@
-Total: 3
-ID: 25768, Source: C:\Users\Dell\Documents\ZaraiLink\import_data_1year.xlsx, Subcat: 717, Seller: Seawall Enterprise Ltd
-ID: 35195, Source: ../import_data_1year.xlsx, Subcat: 717, Seller: Seawall Enterprise Ltd
-ID: 44622, Source: ../import_data_1year.xlsx, Subcat: 745, Seller: Seawall Enterprise Ltd

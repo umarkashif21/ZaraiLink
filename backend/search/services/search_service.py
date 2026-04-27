@@ -148,16 +148,29 @@ class SearchService:
                 hs_codes = list(set(m.hs_code for m in all_matches))
                 if len(hs_codes) == 1 and len(hs_codes[0].replace('.', '')) >= 7:
                     logger.warning(f"[NLU] Bypassing NLU for exact DB matched Category: '{rq}', directing to leaf HS {hs_codes[0]}")
+                    
+                    # If the match was purely a subcategory, pass the variant info so the dashboard filters correctly
+                    subcat_id = subcats[0].id if subcats and not cats else None
+                    variant_name = subcats[0].name if subcats and not cats else None
+                    
                     return {
                         "is_category_bridge": True,
                         "hs_code": hs_codes[0],
+                        "subcat_id": subcat_id,
+                        "variant_name": variant_name
                     }
-                else:
+                elif cats:
+                    # Only fallback to broad SummaryView if there's a broad category match involved.
                     logger.warning(f"[NLU] Bypassing NLU for exact DB broad/multiple Category: '{rq}'. Sending to SummaryView.")
                     return {
                         "is_category_bridge": True,
                         "hs_code": rq, # SummaryView expects the name to query
                     }
+                else:
+                    # If multiple subcategories matched (e.g., same name under different HS codes),
+                    # do NOT send to SummaryView. Let them fall through to NLU / Disambig logic
+                    # so they can pick the exact variant from the DisambiguationPicker!
+                    pass
             else:
                 # ------- NLU CACHE -------
                 _cache_raw = f"nlu:{raw_query.lower().strip()}:{ui_context.lower()}"
@@ -195,6 +208,27 @@ class SearchService:
             subcat_id=subcat_id, variant_name=variant_name, scope=orm_scope
         )
         logger.warning(f"[TIMING] Subcategory resolve: {time.perf_counter() - t0:.3f}s")
+
+        # ------------------------------------------------------------------
+        # Step 3b: Scope mismatch early exit
+        # If the product exists in the opposite trade direction but NOT the
+        # selected one, tell the user immediately instead of showing an
+        # empty disambiguation picker or 0-result page.
+        # ------------------------------------------------------------------
+        scope_info = getattr(self, '_scope_mismatch', None)
+
+        if scope_info:
+            logger.warning(f"[SCOPE MISMATCH] Product '{scope_info['product']}' not found in {scope_info['current_scope']}, but exists in {scope_info['alt_scope']}")
+            return {
+                "nlu":                  nlu_result,
+                "profiles":             [],
+                "total_raw_hits":       0,
+                "needs_disambiguation": False,
+                "is_broad_search":      False,
+                "variants":             [],
+                "search_engine":        "none",
+                "scope_mismatch":       scope_info,
+            }
 
         # If multiple subcategories matched → disambiguate.
         # NOTE: Skip disambiguation when intent is UNKNOWN — we want to show all
@@ -275,6 +309,9 @@ class SearchService:
         if not hs_code and not subcat_ids and len(product_keyword) > 1:
             is_broad = True
 
+        active_subcat_id = subcat_ids[0] if len(subcat_ids) == 1 else None
+        active_hs_code_resolved = variant_list[0].get("hs_code") if len(variant_list) == 1 and isinstance(variant_list[0], dict) else None
+
         return {
             "nlu":                  nlu_result,
             "profiles":             profiles,
@@ -283,6 +320,8 @@ class SearchService:
             "is_broad_search":      is_broad,
             "variants":             [],
             "search_engine":        "orm",
+            "active_subcat_id":     active_subcat_id,
+            "active_hs_code":       active_hs_code_resolved,
         }
 
     # =========================================================================
@@ -530,7 +569,7 @@ class SearchService:
                 sc_map[sc.id] = {
                     "id":       sc.id,
                     "hs_code":  sc.hs_code,
-                    "name":     _get_display_name(item, is_item=True),
+                    "name":     _get_display_name(sc),
                     "category": sc.category.name if hasattr(sc, 'category') and sc.category else ''
                 }
 
@@ -543,6 +582,8 @@ class SearchService:
         # frontend lets the user pick direction (import/export) themselves.
         # Applying a scope filter here would incorrectly kill half the results.
         # ------------------------------------------------------------------
+        self._scope_mismatch = None  # Reset on every call
+
         if subcat_ids and not hs_code:
             target_trade_type = scope
 
@@ -568,9 +609,43 @@ class SearchService:
                 # Only keep variants that have real transactions
                 variant_list = [v for v in variant_list if v["id"] in active_ids]
                 subcat_ids   = [sid for sid in subcat_ids if sid in active_ids]
-            # If active_ids is empty (genuinely no data), leave list intact so
-            # the aggregator can return a proper "0 results" response instead
-            # of silently dropping all variants.
+            else:
+                # Zero data in selected scope — check the OPPOSITE scope
+                opposite_type = "EXPORT" if target_trade_type == "IMPORT" else "IMPORT"
+                from django.db.models import Min, Max
+                opposite_qs = Transaction.objects.filter(
+                    trade_type=opposite_type,
+                    product_item__sub_category_id__in=subcat_ids,
+                )
+                opposite_count = opposite_qs.count()
+
+                if opposite_count > 0:
+                    # Data exists in the other scope — build mismatch metadata
+                    date_range = opposite_qs.aggregate(
+                        min_date=Min("reporting_date"),
+                        max_date=Max("reporting_date"),
+                    )
+                    product_display = product_keyword or "this product"
+                    current_label = "exported" if target_trade_type == "EXPORT" else "imported"
+                    alt_label     = "imported" if target_trade_type == "EXPORT" else "exported"
+                    alt_scope     = "import" if target_trade_type == "EXPORT" else "export"
+
+                    min_year = date_range["min_date"].year if date_range["min_date"] else "?"
+                    max_year = date_range["max_date"].year if date_range["max_date"] else "?"
+
+                    self._scope_mismatch = {
+                        "product": product_display,
+                        "current_scope": target_trade_type.lower(),
+                        "alt_scope": alt_scope,
+                        "current_label": current_label,
+                        "alt_label": alt_label,
+                        "alt_records": opposite_count,
+                        "year_min": min_year,
+                        "year_max": max_year,
+                    }
+                    # Clear variants so disambiguation picker does NOT show
+                    variant_list = []
+                    subcat_ids = []
 
         return subcat_ids, variant_list, []
 
@@ -877,32 +952,39 @@ class SearchService:
 
         print(f"[AUTOCOMPLETE DEBUG] sc_matches={sc_matches.count()} cat_matches={cat_matches.count()}", flush=True)
 
-        # Build unified map: hs_code -> metadata
-        sc_map = {}
+        seen_names = set()
+        suggestions = []
+
         for sc in sc_matches[:30]:
-            sc_map[sc.hs_code] = {
-                "hs_code":  sc.hs_code,
-                "name":     sc.name,
-                "category": sc.category.name if sc.category else "Category",
-                "is_leaf":  True,  # 7-digit
-            }
+            name_lower = sc.name.lower().strip()
+            if name_lower not in seen_names:
+                seen_names.add(name_lower)
+                suggestions.append({
+                    "hs_code":  sc.hs_code,
+                    "name":     sc.name,
+                    "category": sc.category.name if getattr(sc, 'category', None) else "Category",
+                    "is_leaf":  True,
+                })
+
         for cat in cat_matches[:30]:
-            if cat.hs_code not in sc_map:
-                sc_map[cat.hs_code] = {
+            name_lower = cat.name.lower().strip()
+            if name_lower not in seen_names:
+                seen_names.add(name_lower)
+                suggestions.append({
                     "hs_code":  cat.hs_code,
                     "name":     cat.name,
                     "category": "Broad Category",
                     "is_leaf":  False,
-                }
+                })
 
-        if not sc_map:
+        if not suggestions:
             return []
 
-        # Get total volume per subcategory
+        # Get total volume per autocomplete suggestion
         results = []
-        for hs_code, meta in sc_map.items():
+        for meta in suggestions:
             vol = Transaction.objects.filter(
-                hs_code__startswith=hs_code
+                hs_code__startswith=meta["hs_code"]
             ).aggregate(total=Sum("qty_mt"), count=Count("id"))
 
             results.append({

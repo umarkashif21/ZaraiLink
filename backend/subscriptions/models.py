@@ -197,3 +197,56 @@ class RedeemCode(models.Model):
         )
         
         return True, "Code redeemed successfully"
+
+
+class UserAccess(models.Model):
+    """
+    Tracks which HS codes or individual products a user has unlocked.
+
+    access_type='HS_CODE'  → full category unlock (costs 5,000 tokens)
+    access_type='PRODUCT'  → single subcategory unlock (costs 500 tokens)
+
+    HS_CODE access on a code supersedes any PRODUCT access under the same code.
+    product_name is required when access_type='PRODUCT', null otherwise.
+    """
+
+    ACCESS_TYPE_CHOICES = [
+        ('HS_CODE', 'HS Code (Category)'),
+        ('PRODUCT', 'Product (Subcategory)'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='access_grants',
+    )
+    access_type = models.CharField(max_length=10, choices=ACCESS_TYPE_CHOICES)
+    hscode = models.CharField(
+        max_length=20,
+        db_index=True,
+        help_text="The HS code this access applies to, e.g. '1702.3000'"
+    )
+    subcat_id = models.IntegerField(
+        blank=True,
+        null=True,
+        help_text="Canonical ID of ProductSubCategory when access_type=PRODUCT. Null for HS_CODE access."
+    )
+    tokens_spent = models.IntegerField(default=0)
+    purchased_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'User Access Grant'
+        verbose_name_plural = 'User Access Grants'
+        ordering = ['-purchased_at']
+        # Prevent buying the same thing twice
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'hscode', 'subcat_id'],
+                name='unique_user_access_grant'
+            )
+        ]
+
+    def __str__(self):
+        if self.access_type == 'HS_CODE':
+            return f"{self.user.email} → HS {self.hscode} (full)"
+        return f"{self.user.email} → HS {self.hscode} / Subcat {self.subcat_id}"
