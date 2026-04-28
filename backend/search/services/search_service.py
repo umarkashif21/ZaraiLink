@@ -143,10 +143,19 @@ class SearchService:
             or raw_query
         )
 
+        # HS code fast path: NLU detected query is a raw HS code string.
+        # Pass it directly so _resolve_subcategories uses hs_code-based lookup.
+        if nlu_result.get("is_hs_query") and not hs_code:
+            hs_code = product_keyword
+            logger.info(f"[Search] HS code query detected, using hs_code={hs_code!r}")
+
         # ------------------------------------------------------------------
         # Step 2: Determine scope for ORM aggregator
+        # NLU may have inferred a different scope from query signals (e.g. "pakistan sugar"
+        # auto-switches to PAKISTAN scope). Use the NLU's ui_context if it changed.
         # ------------------------------------------------------------------
-        orm_scope  = self._map_scope(ui_context)
+        nlu_ui_context = nlu_result.get("ui_context", ui_context)
+        orm_scope  = self._map_scope(nlu_ui_context)
         orm_intent = intent
 
         # ------------------------------------------------------------------
@@ -190,6 +199,25 @@ class SearchService:
                 "variants":             variant_list,
                 "search_engine":        "none",
             }
+
+        # Company name fallback: if no product subcategories matched, treat the
+        # keyword as a company name and search transactions directly.
+        if not subcat_ids and product_keyword and len(product_keyword) >= 3:
+            logger.info(f"[Search] No product match for '{product_keyword}' — trying company name search")
+            company_profiles = self._company_name_fallback(
+                product_keyword, orm_intent, orm_scope, nlu_result, top_k
+            )
+            if company_profiles:
+                logger.debug(f"[TIMING] Total (company fallback): {time.perf_counter() - t_total:.3f}s")
+                return {
+                    "nlu":                  nlu_result,
+                    "profiles":             company_profiles,
+                    "total_raw_hits":       len(company_profiles),
+                    "needs_disambiguation": False,
+                    "is_broad_search":      False,
+                    "variants":             [],
+                    "search_engine":        "orm",
+                }
 
         # ------------------------------------------------------------------
         # Step 4a: Try OpenSearch (fast BM25 path) - DISABLED TEMPORARILY
@@ -361,8 +389,12 @@ class SearchService:
                 similarity=TrigramSimilarity('name', product_keyword)
             ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("sub_category__category"))
 
-        # PASS 4: Needle-in-haystack — word-by-word search for garbled queries
-        if not sc_qs and not item_qs and " " in product_keyword:
+        # PASS 4: Needle-in-haystack — word-by-word search for garbled queries.
+        # Guard removed: previously required a space in product_keyword, which meant
+        # single-word garbled queries ("dextrozz") could never reach this pass.
+        # Pass 3 trigram already handles most single-word typos, but removing the
+        # guard makes Pass 4 available as an additional safety net.
+        if not sc_qs and not item_qs and product_keyword:
             words = sorted([w for w in product_keyword.split() if len(w) > 2], key=len, reverse=True)
             for word in words:
                 sc_qs = list(ProductSubCategory.objects.filter(name__istartswith=word).select_related("category"))
@@ -619,18 +651,20 @@ class SearchService:
             signal_text   = nlu_result.get("product_keyword", "").lower() + " " + raw_query.lower()
 
             # Determine weight preset
+            # FIX: Increased recency weight (w4) from 0.1 to 0.25 so stale suppliers
+            # don't dominate results. Adjusted other weights proportionally.
             if ranking_hint == "price_asc" or any(
                 w in signal_text for w in ["cheap", "affordable", "low price", "best price", "cheapest", "under", "inexpensive", "bargain"]
             ):
-                w1, w2, w3, w4 = 0.2, 0.2, 0.5, 0.1
+                w1, w2, w3, w4 = 0.15, 0.15, 0.5, 0.2
                 preset_name = "price_asc"
             elif ranking_hint == "price_desc" or any(
                 w in signal_text for w in ["bulk", "large quantity", "reliable", "established", "premium", "top supplier", "biggest"]
             ):
-                w1, w2, w3, w4 = 0.5, 0.3, 0.1, 0.1
+                w1, w2, w3, w4 = 0.45, 0.25, 0.05, 0.25
                 preset_name = "bulk/premium"
             else:
-                w1, w2, w3, w4 = 0.4, 0.3, 0.2, 0.1
+                w1, w2, w3, w4 = 0.35, 0.25, 0.15, 0.25
                 preset_name = "default"
 
             logger.info(
@@ -678,11 +712,17 @@ class SearchService:
                 cnt_norm = minmax(r["shipment_count"], min_cnt, max_cnt)
                 rec_norm = minmax(recencies[i], min_rec, max_rec)
                 
-                # Exclude price component if avg_price is 0/null to prevent div-by-zero
+                # Price component: use inverted price when data is available.
+                # When avg_price is 0/null:
+                #   - price_asc mode: skip (0 contribution) — we don't know if cheap, rank lower
+                #   - other modes: assign neutral 0.5 so no-price-data suppliers land in middle,
+                #     not unfairly at the bottom of results that have nothing to do with price.
                 score = w1 * vol_norm + w2 * cnt_norm + w4 * rec_norm
                 if r.get("avg_price"):
                     p_norm = minmax(1.0 / r["avg_price"], min_inv_p, max_inv_p)
                     score += w3 * p_norm
+                elif preset_name != "price_asc":
+                    score += w3 * 0.5
                     
                 r["composite_score"] = score
 
@@ -707,6 +747,76 @@ class SearchService:
             })
 
         return profiles, len(profiles)
+
+    # =========================================================================
+    # INTERNAL — Company Name Fallback
+    # =========================================================================
+
+    def _company_name_fallback(self, keyword: str, intent: str, scope: str, nlu_result: dict, top_k: int) -> list:
+        """
+        Fallback search path when no product subcategory matched the keyword.
+        Searches Transaction.seller (BUY) or Transaction.buyer (SELL) directly by name.
+        Enables queries like 'SEAWALL' (company name) to return meaningful results.
+        """
+        from trade_data.models import Transaction
+        from django.db.models import Sum, Count, Max, ExpressionWrapper, F, FloatField, Case, When, Value
+
+        company_field = 'seller' if intent == 'BUY' else 'buyer'
+        country_field = 'origin_country' if intent == 'BUY' else 'destination_country'
+
+        qs = Transaction.objects.filter(**{f'{company_field}__icontains': keyword})
+
+        if scope == 'PAKISTAN':
+            if intent == 'BUY':
+                qs = qs.filter(trade_type='EXPORT', origin_country='Pakistan')
+            else:
+                qs = qs.filter(trade_type='IMPORT', destination_country='Pakistan')
+        else:
+            if intent == 'BUY':
+                qs = qs.filter(trade_type='IMPORT').exclude(origin_country='Pakistan')
+            else:
+                qs = qs.filter(trade_type='EXPORT').exclude(destination_country='Pakistan')
+
+        results = qs.values(company_field, country_field).annotate(
+            total_volume=Sum('qty_mt'),
+            weighted_price_sum=Sum(ExpressionWrapper(
+                Case(
+                    When(usd_per_mt__isnull=False, then=F('qty_mt') * F('usd_per_mt')),
+                    default=Value(0.0),
+                    output_field=FloatField(),
+                ),
+                output_field=FloatField(),
+            )),
+            priced_volume=Sum(Case(
+                When(usd_per_mt__isnull=False, then=F('qty_mt')),
+                default=Value(0.0),
+                output_field=FloatField(),
+            )),
+            shipment_count=Count('tx_reference', distinct=True),
+            last_shipment_date=Max('reporting_date'),
+        ).order_by('-total_volume')[:top_k]
+
+        profiles = []
+        for r in results:
+            tv = float(r['total_volume'] or 0)
+            wps = float(r.get('weighted_price_sum') or 0)
+            pv = float(r.get('priced_volume') or 0)
+            avg_price = round(wps / pv, 2) if pv > 0 else 0.0
+            profiles.append({
+                "company_name":      r[company_field],
+                "type":              "SELLER" if intent == "BUY" else "BUYER",
+                "transaction_count": r['shipment_count'],
+                "total_volume":      tv,
+                "avg_price":         avg_price,
+                "last_shipped":      r['last_shipment_date'],
+                "country":           r[country_field],
+                "hs_codes":          [],
+                "relevance_score":   0.0,
+                "volume_score":      None,
+                "volume_fit":        "N/A",
+            })
+
+        return profiles
 
     # =========================================================================
     # INTERNAL — helpers

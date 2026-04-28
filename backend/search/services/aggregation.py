@@ -1,5 +1,5 @@
 import datetime
-from django.db.models import Sum, Count, Avg, Max, F, ExpressionWrapper, FloatField
+from django.db.models import Sum, Count, Avg, Max, F, ExpressionWrapper, FloatField, Q, Case, When, Value
 from django.db.models.functions import TruncMonth
 from trade_data.models import Transaction
 import math
@@ -75,90 +75,111 @@ class SupplierAggregator:
         # if even ONE of their shipments was above the ceiling, even if their average
         # price is well within the limit.  The correct semantic is supplier-level.
 
-        # Aggregate — NO hard volume filter at DB level
-        results = queryset.values(target_field, country_field).annotate(
+        # Aggregate by company name only (not by country).
+        # Previously grouped by (target_field, country_field) which split one supplier who
+        # traded from multiple origins/destinations into multiple result rows, showing the
+        # same company name twice with artificially divided volumes.
+        # Fix: group by company only, then determine primary country via a second targeted
+        # query that finds the most-traded-with country for each company.
+        results = queryset.values(target_field).annotate(
             total_volume=Sum('qty_mt'),
-            weighted_price_sum=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField())),
+            weighted_price_sum=Sum(ExpressionWrapper(
+                Case(
+                    When(usd_per_mt__isnull=False, then=F('qty_mt') * F('usd_per_mt')),
+                    default=Value(0.0),
+                    output_field=FloatField(),
+                ),
+                output_field=FloatField(),
+            )),
+            priced_volume=Sum(Case(
+                When(usd_per_mt__isnull=False, then=F('qty_mt')),
+                default=Value(0.0),
+                output_field=FloatField(),
+            )),
             shipment_count=Count('tx_reference', distinct=True),
             last_shipment_date=Max('reporting_date'),
             max_shipment_vol=Max('qty_mt'),
             avg_shipment_vol=Avg('qty_mt')
         ).order_by('-total_volume')
-        
+
+        # Build primary-country map: company_name → most-traded country (by shipment count).
+        # Runs as one additional DB query using the same filtered queryset.
+        country_rows = (
+            queryset
+            .values(target_field, country_field)
+            .annotate(cnt=Count('id'))
+            .order_by(target_field, '-cnt')
+        )
+        primary_country: dict = {}
+        for row in country_rows:
+            name = row[target_field]
+            if name not in primary_country:          # first row is the highest-count country
+                primary_country[name] = row[country_field] or "Unknown"
+
         # Convert to list + Volume Compatibility Scoring
         counterparties = []
         for r in results:
             tv = float(r['total_volume'] or 0)
             wps = float(r.get('weighted_price_sum') or 0)
-            avg_price = round(wps / tv, 2) if tv > 0 else 0.0
+            pv = float(r.get('priced_volume') or 0)
+            avg_price = round(wps / pv, 2) if pv > 0 else 0.0
 
-            # Post-aggregation price filter (HAVING-equivalent on computed avg_price)
-            # This is the correct level: filter based on supplier's weighted average price,
-            # not individual transaction row prices.
+            # Post-aggregation price filter (HAVING-equivalent on computed avg_price).
+            # Filters on the supplier's weighted average, not individual transaction rows.
             if price_filter:
                 ceiling = price_filter.get('ceiling')
                 floor = price_filter.get('floor')
-                supplier_name = r.get(target_field, '?')
 
-                if ceiling is not None:
-                    passes = avg_price <= ceiling
-                    if not passes:
-                        continue
-
-                if floor is not None:
-                    passes = avg_price == 0 or avg_price >= floor
-                    if not passes:
-                        continue
-
-            entry = {
-                "name": r[target_field],
-                "country": r[country_field],
-                "total_volume": tv,
-                "avg_price": avg_price,
-                "shipment_count": r['shipment_count'],
-                "last_shipment_date": r['last_shipment_date'],
-                "max_shipment_vol": float(r['max_shipment_vol'] or 0),
-                "avg_shipment_vol": float(r['avg_shipment_vol'] or 0),
-                "type": "Buyer" if intent == 'SELL' else "Supplier",
-                "volume_score": None,
-                "volume_fit": "N/A"
-            }
-            
-            if volume_filter and volume_filter > 0:
-                mss = entry['max_shipment_vol']
-                total = entry['total_volume']
-                avg = entry['avg_shipment_vol']
-                V = float(volume_filter)
-                
-                # Soft floor: exclude extreme mismatches (max single < 30% of V)
-                # BUT only if they also have low total volume
-                if mss < 0.3 * V and total < 0.5 * V:
+                if ceiling is not None and avg_price > ceiling:
                     continue
-                
-                # Volume Compatibility Score
-                single_match = min(mss / V, 1.0) if V > 0 else 0
+                if floor is not None and avg_price > 0 and avg_price < floor:
+                    continue
+
+            company_name = r[target_field]
+            entry = {
+                "name":              company_name,
+                "country":           primary_country.get(company_name, "Unknown"),
+                "total_volume":      tv,
+                "avg_price":         avg_price,
+                "shipment_count":    r['shipment_count'],
+                "last_shipment_date": r['last_shipment_date'],
+                "max_shipment_vol":  float(r['max_shipment_vol'] or 0),
+                "avg_shipment_vol":  float(r['avg_shipment_vol'] or 0),
+                "type":              "Buyer" if intent == 'SELL' else "Supplier",
+                "volume_score":      None,
+                "volume_fit":        "N/A",
+            }
+
+            if volume_filter and volume_filter > 0:
+                mss   = entry['max_shipment_vol']
+                total = entry['total_volume']
+                avg   = entry['avg_shipment_vol']
+                V     = float(volume_filter)
+
+                # Exclude only suppliers whose entire trade history is negligible relative
+                # to the requested volume. The previous condition (mss < 0.3V AND total < 0.5V)
+                # incorrectly excluded frequent small shippers (e.g. 100 × 1 MT shipments)
+                # who have proven operational capacity even if no single shipment was large.
+                if total < 0.05 * V:
+                    continue
+
+                single_match   = min(mss   / V, 1.0) if V > 0 else 0
                 capacity_match = min(total / V, 1.0) if V > 0 else 0
-                avg_match = min(avg / V, 1.0) if V > 0 else 0
-                
+                avg_match      = min(avg   / V, 1.0) if V > 0 else 0
+
                 vol_score = 0.5 * single_match + 0.3 * capacity_match + 0.2 * avg_match
                 entry['volume_score'] = round(vol_score, 3)
-                
-                # Label
-                if vol_score >= 0.8:
-                    entry['volume_fit'] = 'Strong'
-                elif vol_score >= 0.5:
-                    entry['volume_fit'] = 'Good'
-                elif vol_score >= 0.3:
-                    entry['volume_fit'] = 'Partial'
-                else:
-                    entry['volume_fit'] = 'Low'
-            
+
+                if   vol_score >= 0.8: entry['volume_fit'] = 'Strong'
+                elif vol_score >= 0.5: entry['volume_fit'] = 'Good'
+                elif vol_score >= 0.3: entry['volume_fit'] = 'Partial'
+                else:                  entry['volume_fit'] = 'Low'
+
             counterparties.append(entry)
-        
-        # If volume scoring was applied, sort by volume_score descending
+
         if volume_filter and volume_filter > 0:
             counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
-            
+
         return counterparties
 
 
@@ -485,23 +506,31 @@ class SupplierAggregator:
             else: pricing_label = "Stable"
 
         # 4. Momentum Label
-        # Based on shipment growth in last 90 days vs previous 90
-        today = datetime.date.today()
-        last_90 = today - datetime.timedelta(days=90)
-        prev_90 = today - datetime.timedelta(days=180)
-        
-        vol_recent = queryset.filter(reporting_date__gte=last_90).aggregate(s=Sum('qty_mt'))['s'] or 0
-        vol_prev = queryset.filter(reporting_date__gte=prev_90, reporting_date__lt=last_90).aggregate(s=Sum('qty_mt'))['s'] or 0
-        
-        growth = (vol_recent - vol_prev) / vol_prev if vol_prev > 0 else 0
-        
-        if growth > 0.1: momentum_label = "Growing"
-        elif growth < -0.1: momentum_label = "Declining"
-        else: momentum_label = "Stable"
-        
-        # If no recent volume but has history
-        if vol_recent == 0 and total_vol > 0:
-            momentum_label = "Declining"
+        # FIX: Use dataset's max date as reference instead of today().
+        # Using today() with a 2023 dataset means vol_recent=0 for ALL suppliers
+        # (no data in last 90 days from today=2026), making every supplier "Declining".
+        dataset_max_date = queryset.aggregate(m=Max('reporting_date'))['m']
+        if dataset_max_date is None:
+            momentum_label = "Stable"
+        else:
+            ref_date = dataset_max_date
+            last_90 = ref_date - datetime.timedelta(days=90)
+            prev_90 = ref_date - datetime.timedelta(days=180)
+
+            vol_recent = queryset.filter(reporting_date__gte=last_90).aggregate(s=Sum('qty_mt'))['s'] or 0
+            vol_prev = queryset.filter(reporting_date__gte=prev_90, reporting_date__lt=last_90).aggregate(s=Sum('qty_mt'))['s'] or 0
+
+            growth = (vol_recent - vol_prev) / vol_prev if vol_prev > 0 else 0
+
+            if growth > 0.1:
+                momentum_label = "Growing"
+            elif growth < -0.1:
+                momentum_label = "Declining"
+            else:
+                momentum_label = "Stable"
+
+            if vol_recent == 0 and total_vol > 0:
+                momentum_label = "Declining"
 
         # 5. Generated Summary
         summary = ""

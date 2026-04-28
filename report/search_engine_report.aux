@@ -1,0 +1,116 @@
+\relax 
+\providecommand\zref@newlabel[2]{}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Executive Summary}{3}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}System Architecture Overview}{4}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}High-Level Component Map}{4}{subsection.2.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces ZaraiLink search engine component map. Solid gold arrows show active dependencies; dashed arrow indicates a dormant path.}}{4}{figure.caption.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Technology Stack}{4}{subsection.2.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Technology stack by layer}}{4}{table.caption.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Stage 1: Natural Language Understanding Engine}{5}{section.3}\protected@file@percent }
+\newlabel{sec:nlu}{{3}{5}{Stage 1: Natural Language Understanding Engine}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overview}{5}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Fast Path: HS Code Detection}{5}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Intent Detection Pipeline}{5}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}LLM Unified Extraction}{5}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Product Keyword Resolution}{6}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Country Identification}{6}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Scope Inference}{6}{subsection.3.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Scope inference rules}}{7}{table.caption.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}NLU Output Schema}{7}{subsection.3.8}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces NLU output schema (Python)}}{7}{lstlisting.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.9}NLU Caching}{7}{subsection.3.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Stage 2: Product Resolution}{8}{section.4}\protected@file@percent }
+\newlabel{sec:resolution}{{4}{8}{Stage 2: Product Resolution}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Overview}{8}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Five-Pass Matching Cascade}{8}{subsection.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Product resolution pass cascade}}{8}{table.caption.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}HS Code Resolution}{8}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Scope-Aware Trade Type Mapping}{8}{subsection.4.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Intent $\times $ scope $\rightarrow $ trade type mapping}}{9}{table.caption.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Availability Check Cache}{9}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Stage 3: Search Execution}{10}{section.5}\protected@file@percent }
+\newlabel{sec:execution}{{5}{10}{Stage 3: Search Execution}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Three-Path Execution Strategy}{10}{subsection.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Search execution path selection. The current active path is Path~C (ORM aggregation). Path~B (OpenSearch) is fully implemented but dormant pending cluster setup.}}{10}{figure.caption.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Path A: ORM Aggregation (Active)}{10}{subsection.5.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}{\ignorespaces Core ORM aggregation query structure (simplified)}}{10}{lstlisting.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Path B: OpenSearch Hybrid (Dormant)}{11}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Path C: Company-Name Fallback}{11}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Search Request Parameters}{11}{subsection.5.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces GET /api/search/ request parameters}}{11}{table.caption.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Stage 4: Aggregation, Intelligence \& Ranking}{12}{section.6}\protected@file@percent }
+\newlabel{sec:ranking}{{6}{12}{Stage 4: Aggregation, Intelligence \& Ranking}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}SupplierAggregator}{12}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Intelligence Metrics}{12}{subsection.6.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Per-company intelligence signals}}{12}{table.caption.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Volume-Fit Scoring}{12}{subsection.6.3}\protected@file@percent }
+\newlabel{eq:volfit}{{1}{13}{Volume-Fit Scoring}{equation.6.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Intent-Aware Composite Ranking}{13}{subsection.6.4}\protected@file@percent }
+\newlabel{eq:score}{{2}{13}{Intent-Aware Composite Ranking}{equation.6.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Composite ranking weight presets}}{13}{table.caption.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Aggregation Cache}{13}{subsection.6.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}API Endpoints}{14}{section.7}\protected@file@percent }
+\newlabel{sec:api}{{7}{14}{API Endpoints}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Main Search --- \texttt  {GET /api/search/}}{14}{subsection.7.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}{\ignorespaces Search response schema}}{14}{lstlisting.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Autocomplete --- \texttt  {GET /api/search/autocomplete/}}{14}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Supplier Detail --- \texttt  {GET /api/search/supplier-detail/}}{15}{subsection.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Supplier Compare --- \texttt  {GET /api/search/compare/}}{15}{subsection.7.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Caching Architecture}{16}{section.8}\protected@file@percent }
+\newlabel{sec:caching}{{8}{16}{Caching Architecture}{section.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Cache Backend Selection}{16}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Cache Hierarchy}{16}{subsection.8.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Cache tiers and TTLs}}{16}{table.caption.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Cache Key Construction}{16}{subsection.8.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}{\ignorespaces Cache key construction pattern}}{16}{lstlisting.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Machine Learning Models}{18}{section.9}\protected@file@percent }
+\newlabel{sec:ml}{{9}{18}{Machine Learning Models}{section.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Model Inventory}{18}{subsection.9.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces ML model inventory}}{18}{table.caption.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}SetFit Intent Classifier}{18}{subsection.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}LightGBM LambdaRank}{18}{subsection.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}KeyBERT Keyword Extraction}{19}{subsection.9.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Resilience \& Fallback Design}{20}{section.10}\protected@file@percent }
+\newlabel{sec:resilience}{{10}{20}{Resilience \& Fallback Design}{section.10}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Failure modes and fallbacks}}{20}{table.caption.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11}Logging \& Observability}{21}{section.11}\protected@file@percent }
+\newlabel{sec:logging}{{11}{21}{Logging \& Observability}{section.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.1}Logger Configuration}{21}{subsection.11.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.2}Log Namespaces}{21}{subsection.11.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Log namespace reference}}{21}{table.caption.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {12}Database Schema Interaction}{22}{section.12}\protected@file@percent }
+\newlabel{sec:db}{{12}{22}{Database Schema Interaction}{section.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.1}Core Tables Used}{22}{subsection.12.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Database tables accessed by the search engine}}{22}{table.caption.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.2}PostgreSQL Extensions Required}{22}{subsection.12.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {5}{\ignorespaces pg\_trgm installation}}{22}{lstlisting.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {13}End-to-End Query Walkthrough}{23}{section.13}\protected@file@percent }
+\newlabel{sec:walkthrough}{{13}{23}{End-to-End Query Walkthrough}{section.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {13.1}Stage 1: NLU}{23}{subsection.13.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {13.2}Stage 2: Product Resolution}{23}{subsection.13.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {13.3}Stage 3: Search Execution}{23}{subsection.13.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {6}{\ignorespaces Effective SQL (paraphrased)}}{23}{lstlisting.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {13.4}Stage 4: Aggregation \& Ranking}{24}{subsection.13.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {13.5}Response}{24}{subsection.13.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {7}{\ignorespaces Abbreviated API response}}{24}{lstlisting.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {14}Source Code Structure}{25}{section.14}\protected@file@percent }
+\newlabel{sec:code}{{14}{25}{Source Code Structure}{section.14}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces Search module source files}}{25}{table.caption.15}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces Model artefacts}}{25}{table.caption.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {15}Configuration \& Deployment Notes}{26}{section.15}\protected@file@percent }
+\newlabel{sec:config}{{15}{26}{Configuration \& Deployment Notes}{section.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {15.1}Environment Variables}{26}{subsection.15.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {15}{\ignorespaces Relevant environment variables}}{26}{table.caption.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {15.2}Development Setup}{26}{subsection.15.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {15.3}Required PostgreSQL Extension}{26}{subsection.15.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {15.4}Enabling OpenSearch}{26}{subsection.15.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {8}{\ignorespaces Enabling OpenSearch path}}{27}{lstlisting.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {16}Key Design Decisions}{28}{section.16}\protected@file@percent }
+\newlabel{sec:decisions}{{16}{28}{Key Design Decisions}{section.16}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {17}Future Work}{28}{section.17}\protected@file@percent }
+\newlabel{sec:future}{{17}{28}{Future Work}{section.17}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {18}Conclusion}{29}{section.18}\protected@file@percent }
+\gdef \@abspage@last{30}

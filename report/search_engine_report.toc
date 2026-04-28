@@ -1,0 +1,68 @@
+\contentsline {section}{\numberline {1}Executive Summary}{3}{section.1}%
+\contentsline {section}{\numberline {2}System Architecture Overview}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}High-Level Component Map}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Technology Stack}{4}{subsection.2.2}%
+\contentsline {section}{\numberline {3}Stage 1: Natural Language Understanding Engine}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Overview}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Fast Path: HS Code Detection}{5}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Intent Detection Pipeline}{5}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}LLM Unified Extraction}{5}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Product Keyword Resolution}{6}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Country Identification}{6}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}Scope Inference}{6}{subsection.3.7}%
+\contentsline {subsection}{\numberline {3.8}NLU Output Schema}{7}{subsection.3.8}%
+\contentsline {subsection}{\numberline {3.9}NLU Caching}{7}{subsection.3.9}%
+\contentsline {section}{\numberline {4}Stage 2: Product Resolution}{8}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Overview}{8}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Five-Pass Matching Cascade}{8}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}HS Code Resolution}{8}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Scope-Aware Trade Type Mapping}{8}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Availability Check Cache}{9}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Stage 3: Search Execution}{10}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Three-Path Execution Strategy}{10}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Path A: ORM Aggregation (Active)}{10}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Path B: OpenSearch Hybrid (Dormant)}{11}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Path C: Company-Name Fallback}{11}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Search Request Parameters}{11}{subsection.5.5}%
+\contentsline {section}{\numberline {6}Stage 4: Aggregation, Intelligence \& Ranking}{12}{section.6}%
+\contentsline {subsection}{\numberline {6.1}SupplierAggregator}{12}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Intelligence Metrics}{12}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Volume-Fit Scoring}{12}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Intent-Aware Composite Ranking}{13}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Aggregation Cache}{13}{subsection.6.5}%
+\contentsline {section}{\numberline {7}API Endpoints}{14}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Main Search --- \texttt {GET /api/search/}}{14}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Autocomplete --- \texttt {GET /api/search/autocomplete/}}{14}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Supplier Detail --- \texttt {GET /api/search/supplier-detail/}}{15}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Supplier Compare --- \texttt {GET /api/search/compare/}}{15}{subsection.7.4}%
+\contentsline {section}{\numberline {8}Caching Architecture}{16}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Cache Backend Selection}{16}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Cache Hierarchy}{16}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Cache Key Construction}{16}{subsection.8.3}%
+\contentsline {section}{\numberline {9}Machine Learning Models}{18}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Model Inventory}{18}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}SetFit Intent Classifier}{18}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}LightGBM LambdaRank}{18}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}KeyBERT Keyword Extraction}{19}{subsection.9.4}%
+\contentsline {section}{\numberline {10}Resilience \& Fallback Design}{20}{section.10}%
+\contentsline {section}{\numberline {11}Logging \& Observability}{21}{section.11}%
+\contentsline {subsection}{\numberline {11.1}Logger Configuration}{21}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}Log Namespaces}{21}{subsection.11.2}%
+\contentsline {section}{\numberline {12}Database Schema Interaction}{22}{section.12}%
+\contentsline {subsection}{\numberline {12.1}Core Tables Used}{22}{subsection.12.1}%
+\contentsline {subsection}{\numberline {12.2}PostgreSQL Extensions Required}{22}{subsection.12.2}%
+\contentsline {section}{\numberline {13}End-to-End Query Walkthrough}{23}{section.13}%
+\contentsline {subsection}{\numberline {13.1}Stage 1: NLU}{23}{subsection.13.1}%
+\contentsline {subsection}{\numberline {13.2}Stage 2: Product Resolution}{23}{subsection.13.2}%
+\contentsline {subsection}{\numberline {13.3}Stage 3: Search Execution}{23}{subsection.13.3}%
+\contentsline {subsection}{\numberline {13.4}Stage 4: Aggregation \& Ranking}{24}{subsection.13.4}%
+\contentsline {subsection}{\numberline {13.5}Response}{24}{subsection.13.5}%
+\contentsline {section}{\numberline {14}Source Code Structure}{25}{section.14}%
+\contentsline {section}{\numberline {15}Configuration \& Deployment Notes}{26}{section.15}%
+\contentsline {subsection}{\numberline {15.1}Environment Variables}{26}{subsection.15.1}%
+\contentsline {subsection}{\numberline {15.2}Development Setup}{26}{subsection.15.2}%
+\contentsline {subsection}{\numberline {15.3}Required PostgreSQL Extension}{26}{subsection.15.3}%
+\contentsline {subsection}{\numberline {15.4}Enabling OpenSearch}{26}{subsection.15.4}%
+\contentsline {section}{\numberline {16}Key Design Decisions}{28}{section.16}%
+\contentsline {section}{\numberline {17}Future Work}{28}{section.17}%
+\contentsline {section}{\numberline {18}Conclusion}{29}{section.18}%

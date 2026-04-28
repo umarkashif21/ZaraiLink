@@ -43,8 +43,18 @@ _INTENT_MODEL_PATH = _BACKEND_DIR / "search" / "models" / "intent_model"
 # ---------------------------------------------------------------------------
 # Price operator keywords → OpenSearch range keys
 # ---------------------------------------------------------------------------
-_LTE_PHRASES = {"under", "below", "max", "less than", "cheaper than", "at most"}
-_GTE_PHRASES = {"above", "over", "min", "more than", "at least", "minimum"}
+_LTE_PHRASES = {
+    "under", "below", "max", "less than", "cheaper than", "at most",
+    "no more than", "not more than", "not exceeding", "not above",
+    "maximum", "ceiling", "up to", "upto", "within", "lower than",
+    "cheaper", "no greater than", "not greater than",
+}
+_GTE_PHRASES = {
+    "above", "over", "min", "more than", "at least", "minimum",
+    "greater than", "higher than", "not less than", "at minimum",
+    "floor", "starting from", "starting at", "no less than",
+    "not below", "not under", "exceeding", "beyond",
+}
 
 # ---------------------------------------------------------------------------
 # Stop words for product keyword extraction
@@ -52,28 +62,181 @@ _GTE_PHRASES = {"above", "over", "min", "more than", "at least", "minimum"}
 # Order matters — multi-word phrases first before single words.
 # ---------------------------------------------------------------------------
 _INTENT_STOP_PHRASES = [
-    # Multi-word first
-    "i wanna buy", "i wanna sell", "i want to buy", "i want to sell", 
+    # ── Multi-word phrases — longest/most specific first ──────────────────
+    # "I am ..." forms
+    "i am currently looking to buy", "i am currently looking to sell",
+    "i am interested in buying", "i am interested in selling",
+    "i am interested in importing", "i am interested in exporting",
+    "i am interested in purchasing",
     "i am looking to buy", "i am looking to sell",
-    "looking to buy", "looking to sell", "looking for buyers of", "looking for sellers of",
-    "looking for suppliers of", "find buyers for", "find sellers for", "find suppliers for",
-    "find buyers of", "find sellers of", "find suppliers of",
-    "get the product called", "search for", "im looking for", "i am looking for",
-    "want to buy", "want to sell", "want to import", "want to export",
-    "need to buy", "need to sell", "need to import", "need to export",
+    "i am looking to import", "i am looking to export",
+    "i am looking for buyers of", "i am looking for sellers of",
+    "i am looking for suppliers of",
+    "i am searching for", "i am seeking",
+    "i am in need of", "i am in search of",
+    # "I would like ..." forms
+    "i would like to buy", "i would like to sell",
+    "i would like to import", "i would like to export",
+    "i would like to purchase", "i would like to source",
+    "i would like to procure",
+    # "I want/need ..." forms
+    "i wanna buy", "i wanna sell",
+    "i want to buy", "i want to sell",
+    "i want to import", "i want to export",
+    "i want to purchase", "i want to procure",
     "i need to buy", "i need to sell",
+    "i need to import", "i need to export",
+    "i need to purchase",
+    "i want", "i need",
+    # "Interested in ..." forms (without leading "I am")
+    "interested in buying", "interested in selling",
+    "interested in importing", "interested in exporting",
+    "interested in purchasing", "interested in sourcing",
+    "interested in procuring",
+    "interested in",
+    # "Looking ..." forms
+    "looking to buy", "looking to sell",
+    "looking to import", "looking to export",
+    "looking to source", "looking to procure",
+    "looking for buyers of", "looking for sellers of",
+    "looking for suppliers of", "looking for",
+    # "Find ..." forms
+    "find buyers for", "find sellers for", "find suppliers for",
+    "find buyers of", "find sellers of", "find suppliers of",
+    "find me",
+    # "Can you ..." / "Help me ..." forms
+    "can you help me find", "can you find me", "can you show me",
+    "can you provide", "can you suggest",
+    "help me find", "help me source",
+    "show me",
+    # "Search / Get ..." forms
+    "get the product called", "get me",
+    "search for suppliers of", "search for buyers of", "search for",
+    "im looking for", "i am looking for",
+    # "Want/Need to ..." (without leading "I")
+    "want to buy", "want to sell", "want to import", "want to export",
+    "want to purchase", "want to procure", "want to source",
+    "need to buy", "need to sell", "need to import", "need to export",
+    "need to purchase", "need to source",
+    # "Where/How/Who ..." forms
     "where do i get", "where can i buy", "where can i get", "where do i buy",
-    "how do i get", "how can i buy", "where to buy", "where to find",
-    "who sells", "who buys", "who supplies",
-    "suppliers of", "buyers of", "looking for",
-    "import of", "export of",
-    "i want", "i need", "wanna buy", "wanna sell",
-    # Single words last
+    "where can i find", "where can i source",
+    "how do i get", "how can i buy", "how can i source",
+    "where to buy", "where to find", "where to source", "where to get",
+    "who sells", "who buys", "who supplies", "who is selling", "who is buying",
+    "who can supply", "who can provide", "who manufactures", "who produces",
+    "is there anyone selling", "is there anyone buying",
+    # "Any ..." forms
+    "any supplier of", "any buyer of", "any seller of",
+    "any importer of", "any exporter of",
+    # Noun-phrase forms
+    "suppliers of", "buyers of", "sellers of", "importers of", "exporters of",
+    "manufacturers of", "producers of", "distributors of", "vendors of",
+    "import of", "export of", "source of", "supply of",
+    # "We ..." forms (company queries)
+    "we are looking for", "we are interested in buying", "we are interested in",
+    "we are searching for", "we are seeking",
+    "we need", "we want", "we require", "we are looking to buy",
+    "we are looking to import", "we are looking to source",
+    "our company needs", "our company wants", "our company requires",
+    "our company is looking for", "our firm needs", "our firm requires",
+    "our organization needs", "our organization requires",
+    # Polite/formal forms
+    "kindly provide", "kindly send", "kindly share",
+    "please provide", "please send", "please share",
+    "please help me find", "please suggest",
+    "request for quotation for", "request for quote for",
+    "seeking quotation for", "seeking quote for",
+    "require quotation for", "require quote for",
+    "need quotation for", "need quote for",
+    # Urgency + context phrases
+    "urgent requirement for", "urgently need", "urgent need",
+    "urgently require", "urgent requirement of",
+    "requirement for", "requirement of",
+    "in need of", "in search of", "in market for",
+    # ── Single words last ─────────────────────────────────────────────────
     "where", "how", "what", "which",
     "buy", "sell", "purchase", "import", "export", "get",
-    "supplier", "suppliers", "buyer", "buyers",
-    "find", "search", "looking", "please", "need",
-    "for", "me", "best",
+    "supplier", "suppliers", "buyer", "buyers", "seller", "sellers",
+    "importer", "importers", "exporter", "exporters",
+    "manufacturer", "manufacturers", "producer", "producers",
+    "distributor", "distributors", "vendor", "vendors",
+    "find", "search", "looking", "please", "need", "required",
+    "kindly", "urgently", "urgent",
+    "interested", "require", "seek", "source", "procure",
+    "for", "me", "best", "good", "quality",
+    "wholesale", "retail", "direct",
+    "rate", "rates", "price", "prices", "quote", "quotation",
+    "inquiry", "enquiry", "enquiries",
+    "of", "from", "at", "by", "with", "the", "a", "an",
+    "in", "to", "and", "or",
+    "are", "is", "was", "we", "our", "i",
+    "currently", "immediately", "asap",
+    # Corporate noise words that survive phrase stripping
+    "company", "companies", "firm", "business", "organization",
+    "factory", "plant", "office",
+    # Unit and currency noise
+    "usd", "pkr", "eur", "gbp", "percent", "pct",
+    "ton", "tons", "tonne", "tonnes", "kg", "kilogram",
+    "mt", "metric", "per", "unit", "units",
+]
+
+# ---------------------------------------------------------------------------
+# KeyBERT stop words — passed to KeyBERT.extract_keywords() in parse().
+# These are words KeyBERT should NOT surface as product keywords.
+# Broader than _INTENT_STOP_PHRASES because KeyBERT is called AFTER the
+# country is already stripped from cleaned_query, and works at word-level.
+# ---------------------------------------------------------------------------
+_KB_STOP = [
+    # Intent verbs — base forms AND common inflections (KeyBERT checks exact lowercase match)
+    "buy", "buying", "bought",
+    "sell", "selling", "sold",
+    "purchase", "purchasing", "purchased",
+    "import", "importing", "imported",
+    "export", "exporting", "exported",
+    "get", "getting", "got",
+    "find", "finding", "found",
+    "search", "searching", "searched",
+    "source", "sourcing", "sourced",
+    "procure", "procuring", "procured",
+    "order", "ordering", "ordered",
+    "inquire", "inquiring", "enquire", "enquiring",
+    "need", "needed", "needing", "needs",
+    "want", "wanted", "wanting", "wants",
+    "require", "requires", "requiring", "required", "requirement", "requirements",
+    "seek", "seeks", "seeking", "sought",
+    "provide", "provides", "providing", "provided",
+    "interested", "interest",
+    "looking",
+    # Role nouns
+    "supplier", "suppliers", "buyer", "buyers", "seller", "sellers",
+    "importer", "importers", "exporter", "exporters",
+    "manufacturer", "manufacturers", "producer", "producers",
+    "distributor", "distributors", "vendor", "vendors",
+    "company", "companies", "firm", "firms", "business", "organization",
+    "factory", "factories", "plant", "plants",
+    # Price / quantity noise
+    "under", "above", "below", "over", "cheap", "cheaper", "cheapest",
+    "affordable", "expensive", "price", "rate", "cost", "value",
+    "bulk", "wholesale", "retail", "direct",
+    "urgent", "urgently", "asap", "immediate", "immediately",
+    "ton", "tons", "tonne", "tonnes", "kg", "kilogram", "kilograms",
+    "mt", "metric", "per", "unit", "units",
+    # Polite / filler words
+    "please", "kindly", "urgently", "currently",
+    "quotation", "quote", "inquiry", "enquiry",
+    "rate", "rates", "best",
+    # Prepositions and articles
+    "of", "from", "at", "by", "with", "the", "a", "an", "in", "to", "for",
+    "and", "or",
+    "are", "is", "was", "we", "our", "i",
+    # Corporate noise
+    "company", "companies", "firm", "business", "organization",
+    "factory", "plant", "office",
+    # Currency / units (may appear after price strip misses something)
+    "usd", "pkr", "eur", "gbp", "percent", "pct",
+    "ton", "tons", "tonne", "tonnes", "kg", "kilogram",
+    "mt", "metric", "per", "unit", "units",
 ]
 
 
@@ -95,9 +258,15 @@ def extract_product_keyword(raw_query: str) -> str:
     """
     q = raw_query.lower().strip()
 
-    # Dynamic Stripping of garbled intent verbs (buyyy, gettsds, importttt, etc.)
-    # \w* catches ANY junk characters appended to the base word
-    q = re.sub(r'\b(buy\w*|sell\w*|get\w*|import\w*|export\w*|purchas\w*|wanna|want\w*)\b', ' ', q)
+    # Dynamic stripping of intent verbs — catches garbled/extended forms (buyyy, importttt, etc.)
+    # Also strips: interested→interest\w*, require→requir\w*, seek→seek\w*, source→sourc\w*,
+    # procure→procur\w*, order→order\w*, inquire→inquir\w*, enquire→enquir\w*
+    q = re.sub(
+        r'\b(buy\w*|sell\w*|get\w*|import\w*|export\w*|purchas\w*|procur\w*|'
+        r'wanna|want\w*|interest\w*|requir\w*|seek\w*|sourc\w*|'
+        r'order\w*|inquir\w*|enquir\w*|distribut\w*)\b',
+        ' ', q
+    )
 
     # Strip each stop phrase (longest first already, since list is ordered)
     for phrase in _INTENT_STOP_PHRASES:
@@ -192,10 +361,17 @@ def _call_openrouter_llm(system_prompt: str, user_prompt: str) -> Optional[dict]
     from django.conf import settings
 
     global _LLM_MISSING_KEY_LOGGED
+
+    # ── Prefer direct Gemini API if GOOGLE_API_KEY is set ────────────────────
+    google_api_key = getattr(settings, 'GOOGLE_API_KEY', '')
+    if google_api_key:
+        return _call_gemini_direct(system_prompt, user_prompt, google_api_key)
+
+    # ── Fallback: OpenRouter ──────────────────────────────────────────────────
     api_key = getattr(settings, 'OPENROUTER_API_KEY', '')
     if not api_key:
         if not _LLM_MISSING_KEY_LOGGED:
-            logger.info("[LLM] OPENROUTER_API_KEY not set — using regex price fallback only (one-time notice)")
+            logger.info("[LLM] No API key set (GOOGLE_API_KEY or OPENROUTER_API_KEY) — using regex fallback (one-time notice)")
             _LLM_MISSING_KEY_LOGGED = True
         return None
 
@@ -206,7 +382,7 @@ def _call_openrouter_llm(system_prompt: str, user_prompt: str) -> Optional[dict]
     }
 
     payload = {
-        "model": "deepseek/deepseek-chat",
+        "model": "google/gemini-2.0-flash-lite",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_prompt}
@@ -217,17 +393,16 @@ def _call_openrouter_llm(system_prompt: str, user_prompt: str) -> Optional[dict]
     }
 
     try:
-        resp = requests.post(url, headers=headers, json=payload, timeout=4)
+        resp = requests.post(url, headers=headers, json=payload, timeout=10)
         resp.raise_for_status()
         content = resp.json()["choices"][0]["message"]["content"]
         return json.loads(content)
     except Exception as e:
         logger.debug(f"[LLM] Primary model failed: {e}")
-        # Fallback to Mistral Free immediately natively via OpenRouter
-        payload["model"] = "mistralai/mistral-7b-instruct:free"
-        payload.pop("response_format", None)
+        # Fallback to Gemini 2.5 Flash via OpenRouter
+        payload["model"] = "google/gemini-2.5-flash"
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=4)
+            resp = requests.post(url, headers=headers, json=payload, timeout=10)
             resp.raise_for_status()
             content = resp.json()["choices"][0]["message"]["content"].strip()
             if content.startswith("```json"):
@@ -239,24 +414,171 @@ def _call_openrouter_llm(system_prompt: str, user_prompt: str) -> Optional[dict]
             logger.warning(f"[LLM] Fallback model failed: {fallback_e}")
             return None
 
+
+def _call_gemini_direct(system_prompt: str, user_prompt: str, api_key: str) -> Optional[dict]:
+    """Call Gemini 2.0 Flash directly via Google AI (Generative Language) API."""
+    import json
+    import requests
+
+    # Primary: gemini-2.0-flash-lite (fastest), Fallback: gemini-2.0-flash
+    for model in ("gemini-2.0-flash-lite", "gemini-2.0-flash"):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        payload = {
+            "system_instruction": {"parts": [{"text": system_prompt}]},
+            "contents": [{"parts": [{"text": user_prompt}]}],
+            "generationConfig": {
+                "temperature": 0,
+                "maxOutputTokens": 200,
+                "responseMimeType": "application/json"
+            }
+        }
+        try:
+            resp = requests.post(url, json=payload, timeout=10)
+            resp.raise_for_status()
+            content = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+            if content.startswith("```json"):
+                content = content[7:].rstrip("` \n")
+            elif content.startswith("```"):
+                content = content[3:].rstrip("` \n")
+            result = json.loads(content)
+            logger.debug(f"[LLM] Gemini direct ({model}) OK")
+            return result
+        except Exception as e:
+            logger.debug(f"[LLM] Gemini direct ({model}) failed: {e}")
+            continue
+
+    logger.warning("[LLM] All Gemini direct models failed")
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Written-number word-to-digit conversion
+# Used by _build_price_filter_regex so "eight hundred" → 800 when LLM offline.
+# ---------------------------------------------------------------------------
+_W2D_ONES = {
+    "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14,
+    "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18,
+    "nineteen": 19, "twenty": 20, "thirty": 30, "forty": 40,
+    "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90,
+}
+_W2D_MULTS = {"hundred": 100, "thousand": 1_000, "million": 1_000_000}
+_W2D_ALL   = set(_W2D_ONES) | set(_W2D_MULTS)
+# Regex that greedily matches a run of number-words (with optional "and")
+_WRITTEN_NUM_RE = re.compile(
+    r'\b((?:' + '|'.join(sorted(_W2D_ALL, key=len, reverse=True)) + r')(?:\s+and\s+|\s+))*(?:'
+    + '|'.join(sorted(_W2D_ALL, key=len, reverse=True)) + r')\b',
+    re.IGNORECASE,
+)
+
+
+def _words_to_number(phrase: str) -> Optional[float]:
+    """
+    Convert a string of English number-words to a float.
+    "eight hundred"    → 800.0
+    "one thousand five hundred" → 1500.0
+    Returns None if any word is unrecognised.
+    """
+    tokens = re.sub(r'\band\b', ' ', phrase.lower()).split()
+    total, current = 0, 0
+    for tok in tokens:
+        if tok in _W2D_ONES:
+            current += _W2D_ONES[tok]
+        elif tok == "hundred":
+            current = (current or 1) * 100
+        elif tok in ("thousand", "million"):
+            mult = _W2D_MULTS[tok]
+            total = (total + (current or 1)) * mult
+            current = 0
+        else:
+            return None
+    total += current
+    return float(total) if total > 0 else None
+
+
+def _normalize_written_numbers(text: str) -> str:
+    """
+    Replace number-word sequences in text with their digit equivalents.
+    "sugar under eight hundred usd" → "sugar under 800 usd"
+    """
+    def _replace(m: re.Match) -> str:
+        val = _words_to_number(m.group(0))
+        return str(int(val)) if val is not None else m.group(0)
+    return _WRITTEN_NUM_RE.sub(_replace, text)
+
+
 def _build_price_filter_regex(raw_query: str) -> Optional[dict]:
     """
     Regex-based price extraction — used as fallback when LLM is unavailable.
-    Handles: 'under 800', 'cheaper than 800', 'below $500', 'above 1000 usd', 'cheap' (no number).
+    Handles:
+      - Digit patterns:   'under 800', 'below $500', 'above 1000 usd'
+      - Written numbers:  'under eight hundred', 'above one thousand'
+      - Symbol operators: 'sugar < $500', 'price > 1000'
+      - Ranking signals:  'cheap', 'bulk', 'premium' (no number)
     """
     q = raw_query.lower()
 
-    # Detect ranking-only signals (cheap/affordable with no number)
-    price_ranking_words = {"cheap", "affordable", "budget", "cheapest", "low price", "best price", "inexpensive"}
-    has_number = bool(re.search(r'\d', q))
-    if not has_number and any(w in q for w in price_ranking_words):
-        logger.debug("[RegexPrice] No-number price signal → ranking_hint=price_asc only")
-        return {"ranking_hint": "price_asc"}
+    # Detect ranking-only signals (no number present)
+    price_asc_words  = {
+        "cheap", "cheapest", "cheaply", "affordable", "affordably",
+        "budget", "budget friendly", "budget-friendly",
+        "low price", "low prices", "low cost", "low-cost", "low rate",
+        "best price", "best rate", "best deal", "good deal",
+        "inexpensive", "economical", "economically", "cost effective", "cost-effective",
+        "reasonable", "reasonably priced", "reasonably", "reasonable rate",
+        "bargain", "discount", "discounted", "discounts",
+        "value for money", "competitive price", "competitive rate",
+    }
+    price_desc_words = {
+        "bulk", "premium", "grade a", "grade-a", "top grade",
+        "high quality", "high-quality", "superior quality",
+        "first class", "first-class", "top quality",
+        "reliable", "reputable", "trusted", "verified", "certified",
+        "established", "well established", "well-established",
+        "top supplier", "leading supplier", "large quantity", "high volume",
+        "industrial grade", "industrial-grade", "commercial grade",
+        "organic",
+    }
+    has_number = bool(re.search(r'\d', q)) or bool(_WRITTEN_NUM_RE.search(q))
+    if not has_number:
+        if any(w in q for w in price_asc_words):
+            logger.debug("[RegexPrice] No-number price_asc signal → ranking_hint=price_asc only")
+            return {"ranking_hint": "price_asc"}
+        if any(w in q for w in price_desc_words):
+            logger.debug("[RegexPrice] No-number price_desc signal → ranking_hint=price_desc only")
+            return {"ranking_hint": "price_desc"}
 
-    # Match patterns like "under 800", "cheaper than $700", "below 500 usd", "above 1000"
-    lte_pattern = r'\b(?:under|below|less than|cheaper than|no more than|at most|max)\s*\$?([\d,]+(?:\.\d+)?)'
-    gte_pattern = r'\b(?:above|over|more than|at least|minimum|min)\s*\$?([\d,]+(?:\.\d+)?)'
-    range_pattern = r'\b(?:around|roughly|approximately|about)\s*\$?([\d,]+(?:\.\d+)?)'
+    # Normalise written numbers before the digit patterns run.
+    # "sugar under eight hundred" → "sugar under 800"
+    q = _normalize_written_numbers(q)
+    logger.debug(f"[RegexPrice] after written-num normalisation: {q!r}")
+
+    # Symbol operators: 'sugar < $500', 'price >= 1000', 'cost ≤ 700'
+    sym_lte = re.search(r'(?:<=?|≤)\s*\$?([\d,]+(?:\.\d+)?)', q)
+    if sym_lte:
+        val = float(sym_lte.group(1).replace(',', ''))
+        logger.debug(f"[RegexPrice] symbol-lte detected: ceiling={val}")
+        return {"range": {"usd_per_mt": {"lte": val}}, "ranking_hint": "price_asc"}
+
+    sym_gte = re.search(r'(?:>=?|≥)\s*\$?([\d,]+(?:\.\d+)?)', q)
+    if sym_gte:
+        val = float(sym_gte.group(1).replace(',', ''))
+        logger.debug(f"[RegexPrice] symbol-gte detected: floor={val}")
+        return {"range": {"usd_per_mt": {"gte": val}}, "ranking_hint": None}
+
+    # Word-form operators
+    lte_pattern   = (
+        r'\b(?:under|below|less than|cheaper than|no more than|not more than|'
+        r'at most|max|maximum|not exceed(?:ing)?|up to|upto|within|'
+        r'lower than|not above|no greater than|ceiling)\s*\$?([\d,]+(?:\.\d+)?)'
+    )
+    gte_pattern   = (
+        r'\b(?:above|over|more than|at least|minimum|min|greater than|higher than|'
+        r'not less than|at minimum|floor|starting from|starting at|no less than|'
+        r'not below|not under|exceeding|beyond)\s*\$?([\d,]+(?:\.\d+)?)'
+    )
+    range_pattern = r'\b(?:around|roughly|approximately|about|near|close to)\s*\$?([\d,]+(?:\.\d+)?)'
 
     m = re.search(lte_pattern, q)
     if m:
@@ -281,42 +603,29 @@ def _build_price_filter_regex(raw_query: str) -> Optional[dict]:
 
 
 _LLM_UNIFIED_PROMPT = '''\
-You are a query parser for ZaraiLink, a B2B trade platform connecting Pakistani
-and foreign buyers/sellers of physical commodities.
-
-Extract structured information from the user's trade search query.
+You are a query parser for ZaraiLink, a B2B trade platform for physical commodities.
+Extract structured info from a trade search query.
 Return ONLY valid JSON. No explanation, no markdown, no backticks.
 
 Rules:
-- product: extract the raw product keyword as the user wrote it, minimal normalization.
-  "purchase dex" -> "dex". "I need wheat grain cheap" -> "wheat grain". null if unclear.
-  This is used as a search keyword not a display name — keep it close to the original.
-- country: full country name if mentioned, null otherwise. Cross-check only —
-  do not use this to replace the existing country resolver downstream.
-- price.operator: "lte" for max price (under/below/cheap/affordable/at most),
-                  "gte" for min price (above/premium/at least), null if none
+- products: array of up to 2 product keywords as the user wrote them (minimal normalization).
+  "purchase dex" -> ["dex"]. "I need wheat grain cheap" -> ["wheat grain"].
+  "import sugar and cotton from India" -> ["sugar", "cotton"]. [] if unclear.
+  Keep close to original — used as search keywords not display names.
+- country: full country name if mentioned, null otherwise.
+- price.operator: "lte" for max price (under/below/cheap/at most), "gte" for min (above/at least), null if none
 - price.value: numeric only, null if not mentioned. Written numbers: eight hundred -> 800
 - price.currency: "USD" default if price mentioned but currency unclear, null if no price
 - price.ranking_hint: "price_asc" if cheapest wanted, "price_desc" if premium, null otherwise
 - quantity: raw string as mentioned, null if not mentioned
-- On any ambiguity return null, never guess
+- On any ambiguity return null/[], never guess
 
 Return this exact schema:
-{
-  "product": string | null,
-  "country": string | null,
-  "price": {
-    "operator": "lte" | "gte" | null,
-    "value": number | null,
-    "currency": string | null,
-    "ranking_hint": "price_asc" | "price_desc" | null
-  },
-  "quantity": string | null
-}
+{"products":[],"country":null,"price":{"operator":null,"value":null,"currency":null,"ranking_hint":null},"quantity":null}
 '''
 
 _LLM_UNIFIED_EMPTY: dict = {
-    "product": None,
+    "products": [],
     "country": None,
     "price": {"operator": None, "value": None, "currency": None, "ranking_hint": None},
     "quantity": None,
@@ -336,9 +645,12 @@ def _call_llm_unified(raw_query: str) -> dict:
         if not parsed:
             raise ValueError("LLM returned empty result")
 
-        # Ensure the price sub-dict always exists
         result = copy.deepcopy(_LLM_UNIFIED_EMPTY)
-        result["product"]  = parsed.get("product") or None
+        # Support both old "product" (string) and new "products" (array) fields
+        raw_products = parsed.get("products") or []
+        if not raw_products and parsed.get("product"):
+            raw_products = [parsed["product"]]
+        result["products"] = [p for p in raw_products if p and str(p).strip()][:2]
         result["country"]  = parsed.get("country") or None
         result["quantity"] = parsed.get("quantity") or None
         price_raw = parsed.get("price") or {}
@@ -445,24 +757,34 @@ def _build_perspective_filter(
 
 
 # ===========================================================================
+# Feature flags
+# ===========================================================================
+
+# Set True  → GLiNER loads at startup and is used as last-resort country extractor.
+# Set False → GLiNER is skipped entirely (saves ~300 MB RAM + 3-5 s startup time).
+#             Country detection still works via FALLBACK_COUNTRIES dict, LLM hint,
+#             and RapidFuzz. Only rare country names in complex sentences are lost.
+_GLINER_ENABLED = False  # ← change this one line to re-enable GLiNER
+
+
+# ===========================================================================
 # ModernNLUEngine
 # ===========================================================================
 
 class ModernNLUEngine:
     """
-    Phase-4 NLU Engine — SetFit + KeyBERT + GLiNER + RapidFuzz.
+    NLU Engine — LLM-primary architecture.
 
-    Intent   : SetFit (zarai_intent_model, fine-tuned on trade data).
-               Falls back to keyword regex when model not found.
-    Keyword  : KeyBERT extracts the best product keyword from the query.
-               Falls back to stop-word strip (extract_product_keyword) when
-               KeyBERT is unavailable.
-    Entities : GLiNER zero-shot NER for country / quantity / price entities.
-               Falls back gracefully when model unavailable.
-    Country  : RapidFuzz fuzzy match (unchanged).
-    Price    : OpenRouter LLM (unchanged).
+    Extraction priority (highest to lowest):
+      Product  : LLM → KeyBERT → stop-word strip
+      Country  : FALLBACK_COUNTRIES dict → LLM hint → GLiNER (if enabled) → RapidFuzz
+      Price    : LLM → regex fallback
+      Quantity : LLM only
+      Intent   : SetFit → pattern rules → keyword regex → default BUY
 
-    All models are loaded lazily at startup and cached as class attributes.
+    When OPENROUTER_API_KEY is set, the LLM call handles product + country + price
+    + quantity in a single request. KeyBERT, regex, and GLiNER serve as offline
+    fallbacks for when the LLM is unavailable or returns null for a field.
     """
 
     _intent_model  = None   # SetFit
@@ -526,7 +848,12 @@ class ModernNLUEngine:
 
     @classmethod
     def _load_ner_model(cls):
-        """Load GLiNER for entity extraction."""
+        """Load GLiNER for country extraction (last-resort fallback).
+        Skipped entirely when _GLINER_ENABLED = False.
+        """
+        if not _GLINER_ENABLED:
+            logger.info("[NLU] GLiNER disabled (_GLINER_ENABLED=False). Country detection via dict + LLM + RapidFuzz.")
+            return
         if cls._ner_model is not None:
             return
         try:
@@ -535,7 +862,7 @@ class ModernNLUEngine:
             cls._ner_model = GLiNER.from_pretrained("urchade/gliner_base")
             logger.info("[NLU] GLiNER loaded.")
         except Exception as e:
-            logger.info(f"[NLU] GLiNER not available — will use keyword product extraction: {e}")
+            logger.info(f"[NLU] GLiNER not available — country detection via dict + LLM + RapidFuzz: {e}")
 
     def __init__(self):
         self._load_intent_model()
@@ -575,6 +902,26 @@ class ModernNLUEngine:
         if re.search(r'\bwho\s+(?:is\s+)?sell(?:s|ing)?\b', q):
             return "BUY"
         if re.search(r'\bwho\s+(?:is\s+)?buy(?:s|ing)?\b', q):
+            return "SELL"
+
+        # BUY signals: "our company requires/needs X" — unambiguous procurement intent
+        if re.search(r'\b(?:our\s+(?:company|firm|organization|factory)\s+)?(?:requires?|needs?|requirement\s+for)\b', q):
+            # Only if no explicit SELL verb is present
+            if not re.search(r'\b(?:sell|selling|sold|offer|supply|for\s+sale|available|export)\b', q):
+                return "BUY"
+
+        # Additional SELL signals not covered by the pattern rules above.
+        # "for sale" / "on sale" — user has something to sell
+        if re.search(r'\bfor\s+sale\b', q):
+            return "SELL"
+        # "we have X", "we are selling X" — user is offering product
+        if re.search(r'\bwe\s+(?:have|are\s+(?:selling|offering|supplying)|sell|supply|offer|produce|manufacture)\b', q):
+            return "SELL"
+        # "I am a supplier/seller/exporter" — user identifies as seller
+        if re.search(r"\bi\s+(?:am|'?m)\s+(?:a\s+)?(?:seller|supplier|exporter|producer|manufacturer|vendor)\b", q):
+            return "SELL"
+        # "X in stock" / "stock to sell/offload" / "available for sale"
+        if re.search(r'\b(?:in\s+stock|stock\s+to\s+(?:sell|offload)|available\s+for\s+(?:sale|export)|to\s+offload|our\s+stock|have\s+stock)\b', q):
             return "SELL"
 
         # 2. SetFit model
@@ -642,6 +989,38 @@ class ModernNLUEngine:
         t_nlu_total = time.perf_counter()
 
         # ==================================================================
+        # HS CODE FAST PATH
+        # If the entire query is a digit/dot pattern (e.g. "1702.3090", "17021990"),
+        # treat it as an HS code and bypass the full NLU pipeline.
+        # The caller (execute_search) picks up "is_hs_query=True" and passes the
+        # value as hs_code to _resolve_subcategories, enabling direct DB lookup.
+        # ==================================================================
+        # HS code detection: normalize spaced/dashed formats before matching.
+        # Handles: "1702.3090", "17021990", "1702 30 90", "17-02-30-90", "1702.30.90"
+        _hs_candidate = re.sub(r'[\s\-]', '', query.strip())
+        _hs_candidate = re.sub(r'\.', '', _hs_candidate)  # strip dots for length check
+        _is_hs = (
+            re.match(r'^[\d.]+$', query.strip()) or
+            (re.match(r'^[\d\s\-\.]+$', query.strip()) and 4 <= len(_hs_candidate) <= 10)
+        )
+        if _is_hs:
+            # Normalise to dotted format: "17 02 30 90" → "1702.3090"
+            _hs_normalised = re.sub(r'[\s\-]', '', query.strip())
+            logger.info(f"[NLU] HS code query detected: {query.strip()!r} → normalised: {_hs_normalised!r}")
+            return {
+                "intent":          "BUY",
+                "product":         _hs_normalised,
+                "product_keyword": _hs_normalised,
+                "country":         None,
+                "quantity":        None,
+                "price_filter":    None,
+                "os_filter":       _build_perspective_filter("BUY", ui_context, None),
+                "entities":        [],
+                "ui_context":      ui_context,
+                "is_hs_query":     True,
+            }
+
+        # ==================================================================
         # STEP 1 — Intent Detection
         # SetFit model is primary; regex is the fallback.
         # ==================================================================
@@ -651,29 +1030,67 @@ class ModernNLUEngine:
         logger.debug(f"[NLU] Step1 intent={intent!r} query={query!r}")
 
         # ==================================================================
-        # STEP 2 — GLiNER Entity Extraction
-        # Extracts country and raw entities. Product from GLiNER is used only
-        # as a cross-check, not the primary product keyword.
+        # STEP 2 — LLM: PRIMARY extractor for product, country, price, quantity.
+        # When OPENROUTER_API_KEY is set, a single API call returns all four fields
+        # as structured JSON. Everything below is fallback for when LLM is absent
+        # or returns null for a particular field.
+        # When no API key is set, _call_llm_unified returns _LLM_UNIFIED_EMPTY
+        # instantly (no network call) and the offline path handles everything.
         # ==================================================================
-        entities = self.extract_entities(query)
-        gliner_country = (
-            _extract_entity(entities, "country")
-            or _extract_entity(entities, "location")
+        t0 = time.perf_counter()
+        llm_result   = _call_llm_unified(query)
+        llm_products = llm_result.get("products") or []
+        llm_product  = llm_products[0] if llm_products else None   # primary
+        llm_product2 = llm_products[1] if len(llm_products) > 1 else None  # secondary
+        llm_country  = llm_result.get("country")
+        quantity     = llm_result.get("quantity")
+        price_filter = _price_filter_from_llm(llm_result)
+        logger.debug(
+            f"[TIMING NLU] LLM call: {time.perf_counter() - t0:.3f}s | "
+            f"products={llm_products!r} country={llm_country!r} price={llm_result.get('price')}"
         )
-        logger.debug(f"[NLU] Step2 gliner_entities={len(entities)} gliner_country={gliner_country!r}")
 
         # ==================================================================
-        # STEP 3 — Country Resolution (RapidFuzz — DO NOT TOUCH)
+        # STEP 3 — Country Resolution
+        # Layer 1: Fast regex/dict lookup — always runs, no model needed.
+        # Layer 2: LLM country hint (when LLM worked and dict missed).
+        # Layer 3: GLiNER span extraction — last resort (only when _GLINER_ENABLED).
         # ==================================================================
         resolved_country = self._detect_country_fallback(query)
-        if not resolved_country and gliner_country:
-            resolved_country = self._resolve_country(gliner_country)
+
+        if not resolved_country and llm_country:
+            resolved_country = self._resolve_country(llm_country)
+            logger.debug(f"[NLU] Country resolved via LLM hint: {resolved_country!r}")
+
+        entities = []
+        if not resolved_country and self._ner_model is not None:
+            entities = self.extract_entities(query)
+            gliner_country = (
+                _extract_entity(entities, "country")
+                or _extract_entity(entities, "location")
+            )
+            if gliner_country:
+                resolved_country = self._resolve_country(gliner_country)
+                logger.debug(f"[NLU] Country resolved via GLiNER: {resolved_country!r}")
+
         logger.debug(f"[NLU] Step3 resolved_country={resolved_country!r}")
 
         # ==================================================================
-        # STEP 4 — Product Keyword Extraction
-        # Strip the resolved country so it doesn't pollute keyword scoring.
-        # Priority: KeyBERT > LLM cross-check > stop-word strip
+        # SCOPE INFERENCE
+        # Override ui_context from query signals (_infer_scope is always active).
+        # When _SCOPE_TOGGLE_ENABLED on the frontend, the user-chosen scope reaches
+        # here as ui_context; _infer_scope only overrides it when a strong signal
+        # is present in the query text.
+        # ==================================================================
+        inferred_scope = self._infer_scope(query, resolved_country)
+        if inferred_scope:
+            logger.debug(f"[NLU] Scope inferred from query: {inferred_scope!r} (was {ui_context!r})")
+            ui_context = inferred_scope
+
+        # ==================================================================
+        # STEP 4 — Product Keyword
+        # Strip resolved country from query before keyword extraction.
+        # Priority: LLM product (Step 2) → KeyBERT (fallback) → stop-word strip (last resort)
         # ==================================================================
         cleaned_query = query
         if resolved_country:
@@ -682,23 +1099,12 @@ class ModernNLUEngine:
                 cleaned_query, flags=re.IGNORECASE,
             )
 
-        _KB_STOP = [
-            "buy", "sell", "purchase", "import", "export",
-            "need", "want", "get", "find", "search", "source",
-            "supplier", "suppliers", "buyer", "buyers",
-            "looking", "require", "required", "seeking",
-            "under", "above", "below", "over", "cheap", "cheaper",
-            "affordable", "expensive", "price", "rate", "cost",
-            "bulk", "urgent", "urgently", "asap", "immediate",
-            "ton", "tons", "kg", "mt", "per",
-        ]
+        product_keyword  = llm_product   # LLM is primary
+        product_keyword2 = llm_product2  # secondary (may be None)
+        product_method   = "llm" if llm_product else "none"
 
-        product_keyword = None
-        product_method  = "none"
-        keybert_confidence = 0.0
-
-        t0 = time.perf_counter()
-        if self._keyword_model is not None:
+        if not product_keyword and self._keyword_model is not None:
+            t0 = time.perf_counter()
             try:
                 kw_results = self._keyword_model.extract_keywords(
                     cleaned_query,
@@ -708,55 +1114,11 @@ class ModernNLUEngine:
                 )
                 if kw_results:
                     product_keyword = kw_results[0][0]
-                    keybert_confidence = kw_results[0][1]
                     product_method  = "keybert"
             except Exception as e:
                 logger.warning(f"[NLU] KeyBERT extraction failed: {e}")
+            logger.debug(f"[TIMING NLU] KeyBERT fallback: {time.perf_counter() - t0:.3f}s product={product_keyword!r}")
 
-        logger.debug(f"[TIMING NLU] KeyBERT extraction: {time.perf_counter() - t0:.3f}s")
-        logger.debug(f"[NLU] Step4(keybert) product={product_keyword!r}")
-
-        # ==================================================================
-        # STEP 5 — Unified LLM Call (price + quantity + product fallback)
-        # One API call extracts everything at once.
-        # ==================================================================
-        t0 = time.perf_counter()
-        
-        # Confidence Gate: if KeyBERT is > 0.85 and no complex modifiers, skip LLM
-        has_numbers = bool(re.search(r'\d', query))
-        has_price_operator = _detect_price_operator(query)
-        ranking_word_hit = any(w in query.lower() for w in {"cheap", "cheapest", "bulk", "premium", "affordable", "best price", "low price", "reliable"})
-        
-        if keybert_confidence > 0.85 and not has_numbers and not has_price_operator and not ranking_word_hit:
-            logger.debug(f"[NLU] Skipping LLM call (KeyBERT confidence {keybert_confidence:.2f} > 0.85, no complex entities)")
-            import copy
-            llm_result = copy.deepcopy(_LLM_UNIFIED_EMPTY)
-        else:
-            llm_result   = _call_llm_unified(query)
-            logger.debug(f"[TIMING NLU] OpenRouter API call: {time.perf_counter() - t0:.3f}s")
-
-        price_filter = _price_filter_from_llm(llm_result)
-
-        # If LLM didn't yield a price filter (no key, timeout, or skipped),
-        # fall back to the regex price extractor so "cheap sugar under $500"
-        # still produces a ceiling + price_asc ranking hint.
-        if price_filter is None:
-            price_filter = _build_price_filter_regex(query)
-
-        quantity     = llm_result.get("quantity")
-        llm_product  = llm_result.get("product")
-
-        logger.debug(
-            f"[NLU] Step5(llm) product={llm_product!r} "
-            f"price={llm_result.get('price')} quantity={quantity!r}"
-        )
-
-        # If KeyBERT returned nothing, use the LLM product
-        if not product_keyword and llm_product:
-            product_keyword = llm_product
-            product_method  = "llm"
-
-        # Final fallback — stop-word strip
         if not product_keyword:
             product_keyword = extract_product_keyword(cleaned_query)
             product_method  = "stopword"
@@ -764,26 +1126,35 @@ class ModernNLUEngine:
         logger.debug(f"[NLU] Step4 final product={product_keyword!r} via={product_method}")
 
         # ==================================================================
-        # Build OS/ORM filters
+        # STEP 5 — Price filter fallback
+        # Regex handles all cases when LLM was unavailable or returned no price.
+        # ==================================================================
+        if price_filter is None:
+            price_filter = _build_price_filter_regex(query)
+
+        # ==================================================================
+        # Build OS/ORM filters (uses final ui_context after scope inference)
         # ==================================================================
         os_filter = _build_perspective_filter(intent, ui_context, resolved_country)
         if price_filter:
             os_filter.setdefault("bool", {}).setdefault("must", []).append(price_filter)
 
         result = {
-            "intent":          intent,
-            "product":         product_keyword,
-            "product_keyword": product_keyword,
-            "country":         resolved_country,
-            "quantity":        quantity,
-            "price_filter":    price_filter,
-            "os_filter":       os_filter,
-            "entities":        entities,
-            "ui_context":      ui_context,
+            "intent":            intent,
+            "product":           product_keyword,
+            "product_keyword":   product_keyword,
+            "product_keyword2":  product_keyword2,   # second product if mentioned
+            "country":           resolved_country,
+            "quantity":          quantity,
+            "price_filter":      price_filter,
+            "os_filter":         os_filter,
+            "entities":          entities,
+            "ui_context":        ui_context,
         }
 
         logger.info(
             f"[NLU] Final parse | intent={intent} | product={product_keyword!r} | "
+            f"product2={product_keyword2!r} | "
             f"country={resolved_country!r} | price={llm_result.get('price')} | "
             f"quantity={quantity!r} | product_method={product_method}"
         )
@@ -816,23 +1187,35 @@ class ModernNLUEngine:
         except ImportError:
             return raw_country.capitalize()
             
+        # FIX: Expanded from 27 to 80+ countries. The original list missed Bangladesh,
+        # Philippines, Myanmar, Morocco, Russia, Netherlands, Iran, and many others.
         STANDARD_COUNTRIES = [
             "Pakistan", "China", "United States", "India", "Afghanistan",
             "United Arab Emirates", "Saudi Arabia", "Germany", "United Kingdom",
             "Australia", "Canada", "Singapore", "Malaysia", "Indonesia",
             "Turkey", "Brazil", "France", "Italy", "Spain", "Japan", "South Korea",
-            "Vietnam", "Thailand", "Egypt", "South Africa", "Nigeria", "Kenya"
+            "Vietnam", "Thailand", "Egypt", "South Africa", "Nigeria", "Kenya",
+            "Bangladesh", "Myanmar", "Philippines", "Morocco", "Hong Kong", "Taiwan",
+            "Russia", "Netherlands", "Poland", "Ukraine", "Iran", "Iraq",
+            "Jordan", "Kuwait", "Qatar", "Bahrain", "Oman", "Israel",
+            "Mexico", "Argentina", "Colombia", "Chile", "Peru",
+            "Belgium", "Switzerland", "Sweden", "Norway", "Denmark", "Finland",
+            "Portugal", "Greece", "Czech Republic", "Romania", "Hungary",
+            "New Zealand", "Sri Lanka", "Nepal", "Kazakhstan", "Uzbekistan",
+            "Algeria", "Tunisia", "Libya", "Sudan", "Tanzania", "Ethiopia", "Ghana",
+            "Angola", "Mozambique", "Zimbabwe", "Zambia",
+            "Azerbaijan", "Georgia", "Armenia",
         ]
-        
+
         match = rapidfuzz.process.extractOne(
-            raw_country.lower(), 
-            STANDARD_COUNTRIES, 
-            scorer=rapidfuzz.fuzz.WRatio, 
-            score_cutoff=60.0 # Lowered slightly for "turk" -> "Turkey"
+            raw_country.lower(),
+            STANDARD_COUNTRIES,
+            scorer=rapidfuzz.fuzz.WRatio,
+            score_cutoff=60.0,
         )
         if match:
-            return match[0] # The matched string (e.g., "China")
-        return raw_country.capitalize() # fallback
+            return match[0]
+        return raw_country.capitalize()
 
     def _detect_country_fallback(self, query: str) -> Optional[str]:
         """
@@ -841,22 +1224,72 @@ class ModernNLUEngine:
         """
         q = query.lower()
         
+        # FIX: Expanded FALLBACK_COUNTRIES to cover countries that were silently dropped
+        # (Bangladesh, Philippines, Myanmar, Morocco, Russia, Netherlands, Iran etc.)
         FALLBACK_COUNTRIES = {
-            "china": "China", "chinaaa": "China",
-            "pakistan": "Pakistan", "pak": "Pakistan",
-            "india": "India",
-            "turkey": "Turkey", "turk": "Turkey", "turkiye": "Turkey", "turekyy": "Turkey", "turky": "Turkey", "turke": "Turkey", "turkeyy": "Turkey",
-            "usa": "United States", "america": "United States",
-            "uk": "United Kingdom", "britain": "United Kingdom", "england": "United Kingdom",
-            "germany": "Germany", "france": "France", "italy": "Italy", "spain": "Spain",
+            "china": "China", "chinaaa": "China", "chinese": "China",
+            "pakistan": "Pakistan", "pak": "Pakistan", "pakistani": "Pakistan",
+            "india": "India", "indian": "India",
+            "turkey": "Turkey", "turk": "Turkey", "turkiye": "Turkey",
+            "turekyy": "Turkey", "turky": "Turkey", "turke": "Turkey", "turkeyy": "Turkey",
+            "turkish": "Turkey",
+            "usa": "United States", "america": "United States", "american": "United States", "us": "United States",
+            "uk": "United Kingdom", "britain": "United Kingdom", "england": "United Kingdom", "british": "United Kingdom",
+            "germany": "Germany", "german": "Germany",
+            "france": "France", "french": "France",
+            "italy": "Italy", "italian": "Italy",
+            "spain": "Spain", "spanish": "Spain",
             "uae": "United Arab Emirates", "dubai": "United Arab Emirates",
             "saudi": "Saudi Arabia", "ksa": "Saudi Arabia",
-            "iran": "Iran",
-            "egypt": "Egypt",
+            "iran": "Iran", "iranian": "Iran",
+            "iraq": "Iraq", "iraqi": "Iraq",
+            "egypt": "Egypt", "egyptian": "Egypt",
             "korea": "South Korea", "korean": "South Korea",
-            "japan": "Japan",
+            "japan": "Japan", "japanese": "Japan",
             "malaysia": "Malaysia", "malay": "Malaysia",
-            "vietnam": "Vietnam",
+            "vietnam": "Vietnam", "vietnamese": "Vietnam",
+            # Previously missing countries:
+            "bangladesh": "Bangladesh", "bangla": "Bangladesh",
+            "myanmar": "Myanmar", "burma": "Myanmar",
+            "philippines": "Philippines", "philippine": "Philippines",
+            "morocco": "Morocco", "moroccan": "Morocco",
+            "hk": "Hong Kong",
+            "taiwan": "Taiwan", "taiwanese": "Taiwan",
+            "russia": "Russia", "russian": "Russia",
+            "netherlands": "Netherlands", "holland": "Netherlands", "dutch": "Netherlands",
+            "poland": "Poland", "polish": "Poland",
+            "ukraine": "Ukraine", "ukrainian": "Ukraine",
+            "jordan": "Jordan", "jordanian": "Jordan",
+            "kuwait": "Kuwait", "kuwaiti": "Kuwait",
+            "qatar": "Qatar", "qatari": "Qatar",
+            "bahrain": "Bahrain", "bahraini": "Bahrain",
+            "oman": "Oman", "omani": "Oman",
+            "israel": "Israel", "israeli": "Israel",
+            "mexico": "Mexico", "mexican": "Mexico",
+            "argentina": "Argentina", "argentinian": "Argentina",
+            "colombia": "Colombia", "colombian": "Colombia",
+            "brazil": "Brazil", "brazilian": "Brazil",
+            "chile": "Chile", "chilean": "Chile",
+            "sri lanka": "Sri Lanka", "lanka": "Sri Lanka",
+            "nepal": "Nepal", "nepali": "Nepal",
+            "belgium": "Belgium", "belgian": "Belgium",
+            "switzerland": "Switzerland", "swiss": "Switzerland",
+            "sweden": "Sweden", "swedish": "Sweden",
+            "norway": "Norway", "norwegian": "Norway",
+            "denmark": "Denmark", "danish": "Denmark",
+            "finland": "Finland", "finnish": "Finland",
+            "australia": "Australia", "australian": "Australia",
+            "canada": "Canada", "canadian": "Canada",
+            "singapore": "Singapore",
+            "indonesia": "Indonesia", "indonesian": "Indonesia",
+            "thailand": "Thailand", "thai": "Thailand",
+            "afghanistan": "Afghanistan", "afghan": "Afghanistan",
+            "kenya": "Kenya", "kenyan": "Kenya",
+            "nigeria": "Nigeria", "nigerian": "Nigeria",
+            "ghana": "Ghana", "ghanaian": "Ghana",
+            "ethiopia": "Ethiopia", "ethiopian": "Ethiopia",
+            "kazakhstan": "Kazakhstan",
+            "uzbekistan": "Uzbekistan",
         }
         
         # Check explicit isolated words
@@ -880,7 +1313,17 @@ class ModernNLUEngine:
                 "United Arab Emirates", "Saudi Arabia", "Germany", "United Kingdom",
                 "Australia", "Canada", "Singapore", "Malaysia", "Indonesia",
                 "Turkey", "Brazil", "France", "Italy", "Spain", "Japan", "South Korea",
-                "Vietnam", "Thailand", "Egypt", "South Africa", "Nigeria", "Kenya"
+                "Vietnam", "Thailand", "Egypt", "South Africa", "Nigeria", "Kenya",
+                "Bangladesh", "Myanmar", "Philippines", "Morocco", "Hong Kong", "Taiwan",
+                "Russia", "Netherlands", "Poland", "Ukraine", "Iran", "Iraq",
+                "Jordan", "Kuwait", "Qatar", "Bahrain", "Oman", "Israel",
+                "Mexico", "Argentina", "Colombia", "Chile", "Peru",
+                "Belgium", "Switzerland", "Sweden", "Norway", "Denmark", "Finland",
+                "Portugal", "Greece", "Czech Republic", "Romania", "Hungary",
+                "New Zealand", "Sri Lanka", "Nepal", "Kazakhstan", "Uzbekistan",
+                "Algeria", "Tunisia", "Libya", "Sudan", "Tanzania", "Ethiopia", "Ghana",
+                "Angola", "Mozambique", "Zimbabwe", "Zambia",
+                "Azerbaijan", "Georgia", "Armenia",
             ]
             for w in words:
                 if len(w) >= 4 and w not in blacklisted_words:
@@ -894,6 +1337,28 @@ class ModernNLUEngine:
             
         return None
 
+    def _infer_scope(self, query: str, resolved_country: Optional[str]) -> Optional[str]:
+        """
+        Infer WORLDWIDE or PAKISTAN scope from query signals.
+        Returns 'pakistan', 'worldwide', or None (let caller decide).
+
+        This enables removing the explicit scope toggle requirement:
+        - "Pakistan sugar supplier" → automatically uses PAKISTAN scope
+        - "sugar from China" → automatically uses WORLDWIDE scope
+        - "sugar suppliers" (ambiguous) → None, caller keeps its default
+        """
+        q = query.lower()
+        local_signals = {
+            "local", "domestic", "pakistan", "pakistani",
+            "karachi", "lahore", "islamabad", "faisalabad", "sialkot",
+            "multan", "peshawar", "rawalpindi", "hyderabad", "quetta",
+            "gujranwala", "gujrat", "sargodha",
+        }
+        if any(s in q for s in local_signals):
+            return "pakistan"
+        if resolved_country and resolved_country.lower() not in {"pakistan", ""}:
+            return "worldwide"
+        return None
 
 
 # ===========================================================================

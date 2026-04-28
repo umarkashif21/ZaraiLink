@@ -201,10 +201,15 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'zarailink': {  
+        'zarailink': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'search': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }

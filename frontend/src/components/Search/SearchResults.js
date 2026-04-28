@@ -49,6 +49,7 @@ const SearchResults = () => {
 
     // ── Comparison State ───────────────────────────────────────────────────
     const [selectedSuppliers, setSelectedSuppliers] = useState([]);
+    const [compareToast, setCompareToast] = useState(false);
 
     const toggleCompare = (supplierName) => {
         setSelectedSuppliers(prev => {
@@ -56,14 +57,33 @@ const SearchResults = () => {
                 return prev.filter(name => name !== supplierName);
             }
             if (prev.length >= 4) {
-                alert("You can only compare up to 4 suppliers at once.");
+                setCompareToast(true);
+                setTimeout(() => setCompareToast(false), 3000);
                 return prev;
             }
             return [...prev, supplierName];
         });
     };
 
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'N/A';
+        try {
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diffMs = now - d;
+            const diffDays = Math.floor(diffMs / 86400000);
+            if (diffDays < 30) return `${diffDays}d ago`;
+            const diffMonths = Math.floor(diffDays / 30);
+            if (diffMonths < 12) return `${diffMonths}mo ago`;
+            return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        } catch {
+            return dateStr;
+        }
+    };
+
     // ── Fetch results ──────────────────────────────────────────────────────
+    // FIX: Use `query` state (tracks what user typed) not `initialQuery` (frozen URL param).
+    // Previously results didn't update when the user typed in the top bar until Enter.
     const fetchResults = useCallback(async () => {
         if (!query) return;
         setLoading(true);
@@ -71,11 +91,11 @@ const SearchResults = () => {
         try {
             const filters = { scope };
             if (hsCode) filters.hs_code = hsCode;
-            if (subcatId) filters.subcat_id = subcatId;      // Exact subcategory DB id
-            if (variantName) filters.variant_name = variantName;   // Exact product name
+            if (subcatId) filters.subcat_id = subcatId;
+            if (variantName) filters.variant_name = variantName;
             if (selectedCountry) filters.country = selectedCountry;
 
-            const data = await searchService.search(initialQuery, filters);
+            const data = await searchService.search(query, filters);
 
             if (data.needs_disambiguation) {
                 setNeedsDisambig(true);
@@ -111,12 +131,12 @@ const SearchResults = () => {
         } finally {
             setLoading(false);
         }
-    }, [initialQuery, scope, hsCode, selectedCountry]);
+    }, [query, scope, hsCode, selectedCountry, variantName, subcatId]);
 
     useEffect(() => {
-        const timer = setTimeout(fetchResults, initialQuery ? 100 : 0);
+        const timer = setTimeout(fetchResults, query ? 300 : 0);
         return () => clearTimeout(timer);
-    }, [fetchResults, initialQuery]);
+    }, [fetchResults]);
 
     // ── When user picks a variant from the disambiguation panel ───────────
     const handleVariantPick = (variant) => {
@@ -153,9 +173,9 @@ const SearchResults = () => {
         setTempPriceMax('');
         setTempVolumeMin('');
         setHsCode(null);
-        setSubcatId(null);      // Clear variant pin from previous disambiguation click
-        setVariantName(null);   // Clear variant name pin from previous disambiguation click
-        navigate(`/search/results?q=${encodeURIComponent(query)}&scope=${scope}`);
+        setSubcatId(null);
+        setVariantName(null);
+        navigate(`/search/results?q=${encodeURIComponent(query)}`);
     };
 
     const applyFilters = () => {
@@ -468,7 +488,7 @@ const SearchResults = () => {
                                         <span className="flex items-center gap-1">
                                             <BarChart2 size={14} /> Based on {supplier.shipment_count} shipments
                                         </span>
-                                        <span>Last active: {supplier.last_shipment_date}</span>
+                                        <span>Last active: {formatDate(supplier.last_shipment_date)}</span>
                                     </div>
                                 </div>
                             ))}
@@ -506,6 +526,13 @@ const SearchResults = () => {
                     </aside>
                 )}
             </div>
+
+            {/* ── Compare limit toast ───────────────────────────────────────────── */}
+            {compareToast && (
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-600 text-white text-sm font-bold px-6 py-3 rounded-xl shadow-lg transition-all">
+                    You can compare up to 4 suppliers at once.
+                </div>
+            )}
 
             {/* ── Sticky Compare Bar ────────────────────────────────────────────── */}
             {selectedSuppliers.length > 0 && (

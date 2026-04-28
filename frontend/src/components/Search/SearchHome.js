@@ -4,6 +4,13 @@ import { Search, X, ChevronRight } from 'lucide-react';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
+// ── Scope toggle flag ─────────────────────────────────────────────────────────
+// Set to true  → Worldwide / Pakistan buttons appear; user manually picks scope.
+// Set to false → buttons hidden; scope is inferred automatically from query text
+//                by _infer_scope() on the backend (e.g. "lahore sugar" → Pakistan).
+const SCOPE_TOGGLE_ENABLED = false; // ← change this one line to re-enable the toggle
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SearchHome = () => {
     const [query, setQuery] = useState('');
     const [scope, setScope] = useState('WORLDWIDE');
@@ -26,7 +33,9 @@ const SearchHome = () => {
         }
         setLoadingSuggestions(true);
         try {
-            const res = await fetch(`${API_BASE}/api/search/autocomplete/?q=${encodeURIComponent(q)}`);
+            const res = await fetch(
+                `${API_BASE}/api/search/autocomplete/?q=${encodeURIComponent(q)}&scope=${scope.toLowerCase()}`
+            );
             if (res.ok) {
                 const data = await res.json();
                 setSuggestions(data);
@@ -37,18 +46,15 @@ const SearchHome = () => {
         } finally {
             setLoadingSuggestions(false);
         }
-    }, []);
+    }, [scope]);
 
     useEffect(() => {
-        // Clear previous selection when user types freely
         setSelectedHsCode(null);
         setSelectedProductName(null);
-
         clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
             fetchSuggestions(query);
-        }, 250); // 250ms debounce — feels instant
-
+        }, 250);
         return () => clearTimeout(debounceRef.current);
     }, [query, fetchSuggestions]);
 
@@ -80,10 +86,7 @@ const SearchHome = () => {
         e.preventDefault();
         if (!query.trim()) return;
 
-        const params = new URLSearchParams({
-            q: query,
-            scope,
-        });
+        const params = new URLSearchParams({ q: query, scope });
         if (selectedHsCode) {
             params.set('hs_code', selectedHsCode);
         }
@@ -208,29 +211,40 @@ const SearchHome = () => {
                     )}
                 </form>
 
-                {/* Scope Toggle */}
-                <div className="flex justify-center gap-2">
-                    <button
-                        type="button"
-                        onClick={() => setScope('WORLDWIDE')}
-                        className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'WORLDWIDE'
-                            ? 'bg-indigo-600 text-white shadow-md'
-                            : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500'
-                        }`}
-                    >
-                        Worldwide
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setScope('PAKISTAN')}
-                        className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'PAKISTAN'
-                            ? 'bg-indigo-600 text-white shadow-md'
-                            : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500'
-                        }`}
-                    >
-                        Pakistan
-                    </button>
-                </div>
+                {/* Scope Toggle — shown only when SCOPE_TOGGLE_ENABLED = true */}
+                {SCOPE_TOGGLE_ENABLED && (
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="flex justify-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setScope('WORLDWIDE')}
+                                title="Show international suppliers/buyers (foreign trade data)"
+                                className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'WORLDWIDE'
+                                    ? 'bg-indigo-600 text-white shadow-md'
+                                    : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500'
+                                }`}
+                            >
+                                Worldwide
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setScope('PAKISTAN')}
+                                title="Show Pakistani local suppliers/buyers (domestic trade data)"
+                                className={`px-6 py-2 rounded-full font-medium transition-all ${scope === 'PAKISTAN'
+                                    ? 'bg-indigo-600 text-white shadow-md'
+                                    : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-500'
+                                }`}
+                            >
+                                Pakistan
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-400">
+                            {scope === 'WORLDWIDE'
+                                ? 'Searching foreign exporters/importers globally'
+                                : 'Searching Pakistani domestic suppliers/buyers'}
+                        </p>
+                    </div>
+                )}
 
                 {/* Intent Pills */}
                 <div className="flex flex-wrap justify-center gap-3">
@@ -250,9 +264,9 @@ const SearchHome = () => {
                 <div className="pt-12 text-gray-500 text-sm">
                     <p className="mb-4 font-medium uppercase tracking-wide">Example Queries</p>
                     <div className="flex flex-wrap justify-center gap-4 text-gray-400">
-                        <span>"Dextrose suppliers in Pakistan"</span>
+                        <span>"Dextrose Anhydrous from China"</span>
                         <span>•</span>
-                        <span>"Buy Urea 46%"</span>
+                        <span>"Cheap sugar under $400"</span>
                         <span>•</span>
                         <span>"Who sells PVC Resin?"</span>
                     </div>

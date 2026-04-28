@@ -97,15 +97,23 @@ class SearchViewSet(viewsets.ViewSet):
                 "relevance_score":    p.get("relevance_score", 0.0),
             })
 
-        prices = [r["avg_price"] for r in mapped_results if r["avg_price"] > 0]
         # Volume-weighted average price: high-volume suppliers dominate, tiny outliers get near-zero weight.
         _vw_num = sum(r["avg_price"] * r["total_volume"] for r in mapped_results if r["avg_price"] > 0 and r["total_volume"] > 0)
         _vw_den = sum(r["total_volume"] for r in mapped_results if r["avg_price"] > 0 and r["total_volume"] > 0)
         vw_avg_price = round(_vw_num / _vw_den, 2) if _vw_den > 0 else 0
+
+        # Top country: by total volume across all results (not just first result's country)
+        from collections import defaultdict
+        _country_vols = defaultdict(float)
+        for r in mapped_results:
+            if r.get("country") and r["country"] not in ("N/A", "Unknown", ""):
+                _country_vols[r["country"]] += r["total_volume"]
+        top_country = max(_country_vols, key=_country_vols.get) if _country_vols else (mapped_results[0]["country"] if mapped_results else "N/A")
+
         market_snapshot = {
             "total_count":      len(mapped_results),
             "avg_price_global": vw_avg_price,
-            "top_country":      mapped_results[0]["country"] if mapped_results else "N/A",
+            "top_country":      top_country,
         }
 
         return Response({
@@ -180,9 +188,10 @@ class SearchViewSet(viewsets.ViewSet):
         intent = parsed_query.get('intent', 'BUY')
 
         # Resolve exact subcategory if selected from UI
+        # FIX: hs_code comes from request params, NOT from NLU result (NLU has no 'hs_code' key)
         subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
             product_keyword=parsed_query.get("product", ""),
-            hs_code=parsed_query.get("hs_code", ""),
+            hs_code=request.query_params.get('hs_code', '') or '',
             intent=intent,
             subcat_id=int(subcat_id) if subcat_id else None,
             variant_name=variant_name,
@@ -235,9 +244,10 @@ class SearchViewSet(viewsets.ViewSet):
             intent = parsed_query.get('intent', 'BUY')
         intent = intent.upper()
 
+        # FIX: hs_code comes from request params, NOT from NLU result (NLU has no 'hs_code' key)
         subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
             product_keyword=parsed_query.get("product", ""),
-            hs_code=parsed_query.get("hs_code", ""),
+            hs_code=request.query_params.get('hs_code', '') or '',
             intent=intent,
             subcat_id=int(subcat_id) if subcat_id else None,
             variant_name=variant_name,

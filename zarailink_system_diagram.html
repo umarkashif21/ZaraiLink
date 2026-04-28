@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zarailink — Complete System Architecture Diagram</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0d1117;color:#e6edf3;line-height:1.4}
+
+  /* HEADER */
+  header{background:linear-gradient(135deg,#0d2818,#1a4a2a);padding:22px 36px;border-bottom:3px solid #2ea043}
+  header h1{font-size:24px;color:#7ee787;letter-spacing:.5px}
+  header p{font-size:12px;color:#7d8590;margin-top:4px}
+
+  /* TABS */
+  nav{display:flex;gap:4px;padding:10px 36px;background:#161b22;border-bottom:1px solid #30363d;flex-wrap:wrap}
+  nav button{padding:8px 16px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#8b949e;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+  nav button:hover{background:#30363d;color:#e6edf3}
+  nav button.active{background:#2ea043;color:#fff;border-color:#2ea043}
+
+  /* SECTIONS */
+  .section{display:none;padding:24px 36px}
+  .section.active{display:block}
+  .section h2{font-size:18px;color:#7ee787;border-left:4px solid #2ea043;padding-left:12px;margin-bottom:6px}
+  .section .desc{font-size:12px;color:#7d8590;padding-left:16px;margin-bottom:24px}
+
+  /* ZOOM CONTROLS */
+  .zbar{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+  .zbar button{padding:5px 12px;border-radius:5px;border:1px solid #30363d;background:#21262d;color:#c9d1d9;cursor:pointer;font-size:12px}
+  .zbar button:hover{background:#2ea043;color:#fff}
+  .zbar span{font-size:11px;color:#6e7681}
+
+  .canvas{background:#0d1117;border:1px solid #21262d;border-radius:10px;overflow:auto;height:78vh;position:relative}
+  .stage{transform-origin:top left;transition:transform .15s;display:inline-block;padding:30px;min-width:100%}
+
+  /* LAYERED ARCHITECTURE */
+  .layer{
+    background:#161b22;border:1.5px solid #30363d;border-radius:10px;
+    padding:12px 16px;margin-bottom:8px;position:relative;
+  }
+  .layer-title{
+    position:absolute;top:-9px;left:14px;background:#0d1117;padding:0 8px;
+    font-size:10px;font-weight:700;letter-spacing:1.5px;color:#7d8590;text-transform:uppercase;
+  }
+  .layer.l-users   { border-color:#bf8700; background:rgba(191,135,0,.06) }
+  .layer.l-front   { border-color:#1f6feb; background:rgba(31,111,235,.06) }
+  .layer.l-mid     { border-color:#6e7681; background:rgba(110,118,129,.06) }
+  .layer.l-api     { border-color:#a371f7; background:rgba(163,113,247,.06) }
+  .layer.l-svc     { border-color:#2ea043; background:rgba(46,160,67,.06) }
+  .layer.l-ml      { border-color:#db61a2; background:rgba(219,97,162,.06) }
+  .layer.l-ext     { border-color:#f97583; background:rgba(249,117,131,.06) }
+  .layer.l-data    { border-color:#39c5cf; background:rgba(57,197,207,.06) }
+
+  .layer.l-users   .layer-title { color:#e3b341 }
+  .layer.l-front   .layer-title { color:#79c0ff }
+  .layer.l-mid     .layer-title { color:#8b949e }
+  .layer.l-api     .layer-title { color:#d2a8ff }
+  .layer.l-svc     .layer-title { color:#7ee787 }
+  .layer.l-ml      .layer-title { color:#ffa7c4 }
+  .layer.l-ext     .layer-title { color:#ffa198 }
+  .layer.l-data    .layer-title { color:#7ce0e8 }
+
+  .row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:6px}
+  .col2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+
+  /* CARDS */
+  .card{
+    background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;
+    min-width:140px;text-align:center;font-size:12px;color:#e6edf3;
+    box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .15s,border-color .15s;
+  }
+  .card:hover{transform:translateY(-2px);border-color:#2ea043}
+  .card .ttl{font-weight:600;font-size:13px;margin-bottom:3px}
+  .card .sub{font-size:10px;color:#7d8590;margin-top:3px;line-height:1.3}
+  .card.actor    { background:rgba(191,135,0,.12); border-color:#bf8700 }
+  .card.frontend { background:rgba(31,111,235,.12); border-color:#1f6feb }
+  .card.middle   { background:rgba(110,118,129,.12); border-color:#6e7681 }
+  .card.api      { background:rgba(163,113,247,.12); border-color:#a371f7; font-family:monospace }
+  .card.svc      { background:rgba(46,160,67,.12); border-color:#2ea043 }
+  .card.ml       { background:rgba(219,97,162,.12); border-color:#db61a2 }
+  .card.ext      { background:rgba(249,117,131,.12); border-color:#f97583 }
+  .card.db       { background:rgba(57,197,207,.12); border-color:#39c5cf;
+                   border-radius:8px 8px 22px 22px / 8px 8px 8px 8px;
+                   border-top-width:3px }
+  .card.cloud    { background:rgba(249,117,131,.12); border-color:#f97583;
+                   border-radius:30px 30px 30px 30px/40px 40px 40px 40px;padding:14px 20px }
+
+  /* DOWN ARROWS BETWEEN LAYERS */
+  .arrow-down{
+    width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;
+    border-top:14px solid #30363d;margin:6px auto;
+  }
+
+  /* ICONS */
+  .ico{font-size:18px;display:block;margin-bottom:4px}
+
+  /* COLUMNS LAYOUT */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+  /* SEARCH PIPELINE STAGES */
+  .stage-box{
+    background:#0d1117;border:2px solid #a371f7;border-radius:12px;padding:18px;margin-bottom:18px;position:relative;
+  }
+  .stage-box.s1{border-color:#1f6feb}
+  .stage-box.s2{border-color:#2ea043}
+  .stage-box.s3{border-color:#bf8700}
+  .stage-box.s4{border-color:#db61a2}
+  .stage-num{
+    position:absolute;top:-14px;left:18px;background:#1f6feb;color:#fff;
+    font-size:11px;font-weight:700;padding:4px 12px;border-radius:14px;letter-spacing:1px;
+  }
+  .stage-box.s2 .stage-num{background:#2ea043}
+  .stage-box.s3 .stage-num{background:#bf8700}
+  .stage-box.s4 .stage-num{background:#db61a2}
+  .stage-title{font-size:14px;font-weight:600;color:#e6edf3;margin-bottom:10px}
+  .stage-content{display:flex;gap:10px;flex-wrap:wrap}
+
+  /* SEQUENCE DIAGRAM */
+  .seq{display:grid;grid-template-columns:120px 1fr 1fr 1fr 1fr 1fr;gap:0;margin-top:16px}
+  .seq-head{
+    text-align:center;padding:10px;background:#21262d;border:1px solid #30363d;
+    font-weight:600;font-size:12px;color:#7ee787;
+  }
+  .seq-section{
+    grid-column:1/-1;background:rgba(46,160,67,.08);border-left:3px solid #2ea043;
+    padding:10px 14px;margin:6px 0;font-size:11px;font-weight:600;color:#7ee787;text-transform:uppercase;letter-spacing:1px;
+  }
+  .seq-row{display:contents}
+  .seq-num{text-align:center;padding:8px;border-bottom:1px dotted #30363d;font-size:11px;color:#6e7681;font-weight:600}
+  .seq-msg{
+    grid-column:2/-1;padding:6px 14px;border-bottom:1px dotted #30363d;
+    font-size:11px;color:#c9d1d9;display:flex;align-items:center;gap:8px;
+  }
+  .seq-arrow{display:inline-block;color:#7ee787;font-weight:bold;font-size:14px}
+  .seq-from-to{font-size:10px;color:#7d8590;font-weight:600;min-width:120px}
+
+  /* ER DIAGRAM */
+  .er-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .entity{
+    background:#161b22;border:1.5px solid #39c5cf;border-radius:8px;
+    overflow:hidden;font-size:11px;
+  }
+  .entity-name{
+    background:rgba(57,197,207,.18);padding:6px 10px;
+    font-weight:700;font-size:12px;color:#7ce0e8;border-bottom:1px solid #39c5cf;
+    font-family:monospace;
+  }
+  .entity-field{
+    padding:4px 10px;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;gap:10px;
+    font-family:monospace;font-size:10px;color:#c9d1d9;
+  }
+  .entity-field:last-child{border-bottom:none}
+  .entity-field .ft{color:#79c0ff}
+  .entity-field .pk{background:#bf8700;color:#fff;padding:0 5px;border-radius:3px;font-size:9px}
+  .entity-field .fk{background:#a371f7;color:#fff;padding:0 5px;border-radius:3px;font-size:9px}
+  .entity-field .uk{background:#2ea043;color:#fff;padding:0 5px;border-radius:3px;font-size:9px}
+
+  .relationships{
+    margin-top:24px;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;
+  }
+  .relationships h3{font-size:13px;color:#7ee787;margin-bottom:10px}
+  .rel-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;font-family:monospace;color:#c9d1d9}
+  .rel-list div{padding:4px 10px;background:#0d1117;border-radius:4px}
+  .rel-list .ent{color:#7ce0e8;font-weight:600}
+  .rel-list .typ{color:#bf8700}
+
+  /* TREE LAYOUT for routes */
+  .tree-root{
+    text-align:center;background:#1f6feb;color:#fff;font-weight:700;
+    padding:10px 24px;border-radius:8px;display:inline-block;margin:0 auto 20px;font-size:13px;
+  }
+  .tree-center{text-align:center}
+  .tree-modules{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:14px}
+  .tree-mod{background:#161b22;border:1.5px solid #1f6feb;border-radius:10px;padding:14px}
+  .tree-mod h4{font-size:12px;color:#79c0ff;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #1f6feb;padding-bottom:6px}
+  .tree-mod ul{list-style:none}
+  .tree-mod li{font-family:monospace;font-size:10px;color:#c9d1d9;padding:3px 0;border-bottom:1px dotted #21262d}
+  .tree-mod li:last-child{border-bottom:none}
+  .tree-mod .pth{color:#7ee787}
+
+  /* BADGES */
+  .badge{display:inline-block;font-size:9px;padding:1px 6px;border-radius:3px;font-weight:600;margin-left:4px;vertical-align:middle}
+  .badge.pub{background:#bf8700;color:#fff}
+  .badge.prot{background:#2ea043;color:#fff}
+
+  /* FOOTER */
+  footer{text-align:center;padding:18px;color:#484f58;font-size:11px;border-top:1px solid #21262d;margin-top:20px}
+
+  /* SVG arrow helper for legends */
+  .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;padding:14px;background:#161b22;border-radius:8px;border:1px solid #30363d}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:11px;color:#8b949e}
+  .legend-dot{width:14px;height:14px;border-radius:3px;border:1.5px solid}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌾 Zarailink — Complete System Architecture</h1>
+  <p>Agricultural Trade Intelligence SaaS · Pakistan · Built from full source code analysis</p>
+</header>
+
+<nav>
+  <button class="active" onclick="show('s1',this)">① System Overview</button>
+  <button onclick="show('s2',this)">② Search Pipeline</button>
+  <button onclick="show('s3',this)">③ Frontend Routes</button>
+  <button onclick="show('s4',this)">④ Data Models</button>
+  <button onclick="show('s5',this)">⑤ ML / AI Layer</button>
+  <button onclick="show('s6',this)">⑥ Auth Sequence</button>
+  <button onclick="show('s7',this)">⑦ Trade Intelligence</button>
+</nav>
+
+<!-- ════════════════════════════════════════════════════
+     1 · SYSTEM OVERVIEW (Layered Architecture)
+════════════════════════════════════════════════════ -->
+<div id="s1" class="section active">
+  <h2>Complete Layered System Architecture</h2>
+  <p class="desc">Standard layered architecture diagram following N-tier conventions. Each layer represented as horizontal band with components inside, arrows showing data flow downward.</p>
+
+  <div class="zbar">
+    <button onclick="zm('d1',0.15)">＋ Zoom In</button>
+    <button onclick="zm('d1',-0.15)">－ Zoom Out</button>
+    <button onclick="zr('d1')">↺ Reset</button>
+    <span>Scroll inside the canvas to pan</span>
+  </div>
+
+  <div class="canvas">
+    <div class="stage" id="d1" style="min-width:1200px">
+
+      <!-- USERS -->
+      <div class="layer l-users">
+        <div class="layer-title">👤 Actors / Users</div>
+        <div class="row">
+          <div class="card actor"><span class="ico">🧑‍🌾</span><div class="ttl">Agri Trader</div><div class="sub">Browse, search, save companies</div></div>
+          <div class="card actor"><span class="ico">📦</span><div class="ttl">Exporter</div><div class="sub">Find buyers, market intel</div></div>
+          <div class="card actor"><span class="ico">🚢</span><div class="ttl">Importer</div><div class="sub">Find suppliers, compare</div></div>
+          <div class="card actor"><span class="ico">⚙️</span><div class="ttl">Admin</div><div class="sub">Django Admin, manage data</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- FRONTEND -->
+      <div class="layer l-front">
+        <div class="layer-title">⚛️ Presentation Layer — React SPA + TailwindCSS + Axios</div>
+        <div class="row">
+          <div class="card frontend"><div class="ttl">Auth</div><div class="sub">Login · Signup · Verify · Reset</div></div>
+          <div class="card frontend"><div class="ttl">Search UI</div><div class="sub">Home · Results · Detail · Compare</div></div>
+          <div class="card frontend"><div class="ttl">Trade Directory</div><div class="sub">Suppliers · Buyers · Profile</div></div>
+          <div class="card frontend"><div class="ttl">Trade Intelligence</div><div class="sub">Ledger · Pulse · Lens · Predict</div></div>
+          <div class="card frontend"><div class="ttl">Dashboard</div><div class="sub">Watchlist · Activity · Notes</div></div>
+          <div class="card frontend"><div class="ttl">Subscriptions</div><div class="sub">Plans · Redeem · Tokens</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- MIDDLEWARE -->
+      <div class="layer l-mid">
+        <div class="layer-title">🛡 Middleware Stack — Django</div>
+        <div class="row">
+          <div class="card middle"><div class="ttl">Security</div></div>
+          <div class="card middle"><div class="ttl">Session</div></div>
+          <div class="card middle"><div class="ttl">CORS</div></div>
+          <div class="card middle"><div class="ttl">CSRF</div></div>
+          <div class="card middle"><div class="ttl">Authentication</div></div>
+          <div class="card middle"><div class="ttl">Auditlog</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- API GATEWAY -->
+      <div class="layer l-api">
+        <div class="layer-title">🔌 API Gateway — Django REST Framework</div>
+        <div class="row">
+          <div class="card api"><div class="ttl">accounts/</div><div class="sub">9 endpoints</div></div>
+          <div class="card api"><div class="ttl">api/search/</div><div class="sub">3 endpoints</div></div>
+          <div class="card api"><div class="ttl">api/companies/</div><div class="sub">7 endpoints</div></div>
+          <div class="card api"><div class="ttl">api/trade-ledger/</div><div class="sub">14 endpoints</div></div>
+          <div class="card api"><div class="ttl">api/trade-lens/</div><div class="sub">3 endpoints</div></div>
+          <div class="card api"><div class="ttl">api/subscriptions/</div><div class="sub">3 endpoints</div></div>
+          <div class="card api"><div class="ttl">api/market-intel/</div><div class="sub">1 endpoint</div></div>
+          <div class="card api"><div class="ttl">admin/</div><div class="sub">Django Admin</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- BACKEND SERVICES -->
+      <div class="layer l-svc">
+        <div class="layer-title">🔧 Business Logic / Backend Services</div>
+        <div class="row">
+          <div class="card svc"><div class="ttl">Accounts Service</div><div class="sub">Auth · Verify · Tokens</div></div>
+          <div class="card svc"><div class="ttl">Search Pipeline</div><div class="sub">4-Stage NLU + Ranking</div></div>
+          <div class="card svc"><div class="ttl">Company Service</div><div class="sub">Directory · Contacts · AI</div></div>
+          <div class="card svc"><div class="ttl">Subscription Service</div><div class="sub">Plans · Redeem · Tokens</div></div>
+          <div class="card svc"><div class="ttl">Market Intel Service</div><div class="sub">Alerts · News · Recs</div></div>
+          <div class="card svc"><div class="ttl">Trade Ledger Service</div><div class="sub">Analytics · GNN · Predict</div></div>
+          <div class="card svc"><div class="ttl">Trade Lens Service</div><div class="sub">Product Analytics</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- ML + EXTERNAL -->
+      <div class="grid-2">
+        <div class="layer l-ml">
+          <div class="layer-title">🤖 ML / AI Layer</div>
+          <div class="row">
+            <div class="card ml"><div class="ttl">LightGBM LTR</div><div class="sub">lgbm_ltr.txt</div></div>
+            <div class="card ml"><div class="ttl">SentenceTransformer</div><div class="sub">Semantic embeddings</div></div>
+            <div class="card ml"><div class="ttl">SetFit Classifier</div><div class="sub">Intent detection</div></div>
+            <div class="card ml"><div class="ttl">GLiNER</div><div class="sub">Zero-shot NER</div></div>
+            <div class="card ml"><div class="ttl">HDBSCAN</div><div class="sub">Clustering</div></div>
+            <div class="card ml"><div class="ttl">Node2Vec GNN</div><div class="sub">4 GraphML files</div></div>
+            <div class="card ml"><div class="ttl">KeyBERT</div><div class="sub">Keyword extraction</div></div>
+          </div>
+        </div>
+        <div class="layer l-ext">
+          <div class="layer-title">☁️ External Services</div>
+          <div class="row">
+            <div class="card cloud"><div class="ttl">OpenAI API</div><div class="sub">GPT-4o-mini · text-embedding-3-small</div></div>
+            <div class="card cloud"><div class="ttl">OpenSearch</div><div class="sub">BM25 full-text · ORM fallback</div></div>
+            <div class="card cloud"><div class="ttl">Google Vertex AI</div><div class="sub">Optional LLM backend</div></div>
+            <div class="card cloud"><div class="ttl">Gmail SMTP</div><div class="sub">Transactional email</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- DATA LAYER -->
+      <div class="layer l-data">
+        <div class="layer-title">🗄 Data Layer / Persistence</div>
+        <div class="row">
+          <div class="card db"><div class="ttl">PostgreSQL</div><div class="sub">30+ tables · primary RDBMS</div></div>
+          <div class="card db"><div class="ttl">Redis</div><div class="sub">Session · NLU cache · HNSW vectors</div></div>
+          <div class="card db"><div class="ttl">Auditlog DB</div><div class="sub">Change tracking</div></div>
+          <div class="card db"><div class="ttl">CSV Source</div><div class="sub">Pakistan Govt Trade Records</div></div>
+          <div class="card db"><div class="ttl">Pickle Index</div><div class="sub">search_index.pkl</div></div>
+          <div class="card db"><div class="ttl">GraphML Files</div><div class="sub">4 Node2Vec graphs</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="border-color:#bf8700"></div>Actor</div>
+    <div class="legend-item"><div class="legend-dot" style="border-color:#1f6feb"></div>Frontend</div>
+    <div class="legend-item"><div class="legend-dot" style="border-color:#a371f7"></div>API Endpoint</div>
+    <div class="legend-item"><div class="legend-dot" style="border-color:#2ea043"></div>Backend Service</div>
+    <div class="legend-item"><div class="legend-dot" style="border-color:#db61a2"></div>ML Model</div>
+    <div class="legend-item"><div class="legend-dot" style="border-color:#f97583;border-radius:50%"></div>External Cloud</div>
+    <div class="legend-item"><div class="legend-dot" style="border-color:#39c5cf;border-radius:0 0 6px 6px"></div>Database</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     2 · SEARCH PIPELINE
+════════════════════════════════════════════════════ -->
+<div id="s2" class="section">
+  <h2>4-Stage Search Pipeline (Sequential Flow)</h2>
+  <p class="desc">Standard pipeline diagram. Each stage is a discrete processing unit with inputs from the previous stage and outputs to the next.</p>
+
+  <div class="zbar">
+    <button onclick="zm('d2',0.15)">＋ Zoom In</button>
+    <button onclick="zm('d2',-0.15)">－ Zoom Out</button>
+    <button onclick="zr('d2')">↺ Reset</button>
+  </div>
+
+  <div class="canvas">
+    <div class="stage" id="d2" style="min-width:1100px">
+
+      <div class="layer l-users" style="text-align:center;padding:20px">
+        <div class="layer-title">📥 Input</div>
+        <div class="card actor" style="display:inline-block;margin-top:6px"><div class="ttl">Raw User Query</div><div class="sub">Example: "find rice exporters in Pakistan"</div></div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- STAGE 1 -->
+      <div class="stage-box s1">
+        <div class="stage-num">STAGE 1</div>
+        <div class="stage-title">NLU Engine — nlu_engine.py</div>
+        <div class="stage-content">
+          <div class="card svc"><div class="ttl">SetFit Intent Classifier</div><div class="sub">BAAI/bge-small-en-v1.5 backbone</div></div>
+          <div class="card svc"><div class="ttl">GLiNER Zero-Shot NER</div><div class="sub">Product · Country · Quantity spans</div></div>
+          <div class="card svc"><div class="ttl">KeyBERT Keyword Extractor</div><div class="sub">Stop-word stripping</div></div>
+          <div class="card svc"><div class="ttl">Intent Branch</div><div class="sub">BUY · SELL · 9 query families</div></div>
+          <div class="card db"><div class="ttl">Redis 24hr Cache</div><div class="sub">NLU result memoization</div></div>
+          <div class="card cloud"><div class="ttl">OpenAI GPT-4o-mini</div><div class="sub">Fallback when low confidence</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- STAGE 2 -->
+      <div class="stage-box s2">
+        <div class="stage-num">STAGE 2</div>
+        <div class="stage-title">Query Matcher — search_service.py</div>
+        <div class="stage-content">
+          <div class="card svc"><div class="ttl">OpenSearch BM25</div><div class="sub">Fast path under 100ms</div></div>
+          <div class="card svc"><div class="ttl">SentenceTransformer</div><div class="sub">Semantic similarity</div></div>
+          <div class="card svc"><div class="ttl">Fuzzy Matching</div><div class="sub">Typo tolerance</div></div>
+          <div class="card svc"><div class="ttl">SubCategory Resolution</div><div class="sub">DB lookup → ProductSubCategory IDs</div></div>
+          <div class="card svc"><div class="ttl">Disambiguation Picker</div><div class="sub">If more than 20 variants → ask user</div></div>
+          <div class="card svc"><div class="ttl">ORM Fallback</div><div class="sub">If OpenSearch unavailable</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- STAGE 3 -->
+      <div class="stage-box s3">
+        <div class="stage-num">STAGE 3</div>
+        <div class="stage-title">Supplier Aggregator — aggregation.py</div>
+        <div class="stage-content">
+          <div class="card svc"><div class="ttl">Trade Type Branch</div><div class="sub">BUY → sellers · SELL → buyers</div></div>
+          <div class="card svc"><div class="ttl">Scope Filter</div><div class="sub">Pakistan vs Worldwide</div></div>
+          <div class="card svc"><div class="ttl">Geographic Filter</div><div class="sub">Origin · Destination · Date · HS Code</div></div>
+          <div class="card db"><div class="ttl">ORM GROUP BY</div><div class="sub">seller or buyer name</div></div>
+          <div class="card svc"><div class="ttl">Compute Metrics</div><div class="sub">Volume · Avg Price · Shipments · Last Date</div></div>
+          <div class="card svc"><div class="ttl">Volume Compatibility</div><div class="sub">Post-aggregation scoring</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- STAGE 4 -->
+      <div class="stage-box s4">
+        <div class="stage-num">STAGE 4</div>
+        <div class="stage-title">Ranking Ensemble</div>
+        <div class="stage-content">
+          <div class="card ml"><div class="ttl">Heuristic Score · 70%</div><div class="sub">volume × relevance × recency</div></div>
+          <div class="card ml"><div class="ttl">LightGBM LambdaRank · 30%</div><div class="sub">lgbm_ltr.txt model</div></div>
+          <div class="card svc"><div class="ttl">Combine + Sort</div><div class="sub">Weighted aggregation</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"></div>
+
+      <div class="layer l-data" style="text-align:center;padding:20px">
+        <div class="layer-title">📤 Output</div>
+        <div class="card svc" style="display:inline-block;margin-top:6px;text-align:left">
+          <div class="ttl">Final JSON Response</div>
+          <div class="sub">name · country · total_volume · avg_price · shipment_count · last_shipment_date</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     3 · FRONTEND ROUTES
+════════════════════════════════════════════════════ -->
+<div id="s3" class="section">
+  <h2>Frontend Application Structure — All Routes &amp; Hooks</h2>
+  <p class="desc">React SPA tree organized by module. <span class="badge pub">Public</span> = no auth required, <span class="badge prot">Protected</span> = requires login.</p>
+
+  <div class="zbar">
+    <button onclick="zm('d3',0.15)">＋ Zoom In</button>
+    <button onclick="zm('d3',-0.15)">－ Zoom Out</button>
+    <button onclick="zr('d3')">↺ Reset</button>
+  </div>
+
+  <div class="canvas">
+    <div class="stage" id="d3" style="min-width:1100px">
+
+      <div class="tree-center"><div class="tree-root">📱 App.js — AuthContext + ThemeContext + ToastProvider</div></div>
+
+      <div class="tree-modules">
+        <div class="tree-mod">
+          <h4>🔓 Public Routes <span class="badge pub">Public</span></h4>
+          <ul>
+            <li><span class="pth">/</span> → Login</li>
+            <li><span class="pth">/signup</span> → Signup</li>
+            <li><span class="pth">/forgot-password</span> → ForgotPassword</li>
+            <li><span class="pth">/email-verification</span> → EmailVerification</li>
+            <li><span class="pth">/reset-password/:token</span> → ResetPassword</li>
+            <li><span class="pth">/verify-email/:token</span> → VerifyEmailSuccess</li>
+          </ul>
+        </div>
+
+        <div class="tree-mod">
+          <h4>🔍 Search Module <span class="badge prot">Protected</span></h4>
+          <ul>
+            <li><span class="pth">/search</span> → SearchHome</li>
+            <li><span class="pth">/search/results</span> → SearchResults</li>
+            <li><span class="pth">/search/deal-detail</span> → DealDetail</li>
+            <li><span class="pth">/search/compare</span> → ComparePage</li>
+          </ul>
+        </div>
+
+        <div class="tree-mod">
+          <h4>🏢 Trade Directory <span class="badge prot">Protected</span></h4>
+          <ul>
+            <li><span class="pth">/trade-directory/find-suppliers</span> → FindSuppliers</li>
+            <li><span class="pth">/trade-directory/find-buyers</span> → FindBuyers</li>
+            <li><span class="pth">/trade-directory/company/:id</span> → CompanyProfile</li>
+          </ul>
+        </div>
+
+        <div class="tree-mod">
+          <h4>📊 Trade Intelligence <span class="badge prot">Protected</span></h4>
+          <ul>
+            <li><span class="pth">/trade-intelligence/ledger</span> → TradeLedger</li>
+            <li><span class="pth">/trade-intelligence/pulse</span> → TradePulse</li>
+            <li><span class="pth">/trade-intelligence/lens</span> → TradeLens</li>
+            <li><span class="pth">/trade-intelligence/lens/:id/overview</span></li>
+            <li><span class="pth">/trade-intelligence/lens/:id/summary</span></li>
+            <li><span class="pth">/trade-intelligence/lens/:id/comparison</span></li>
+            <li><span class="pth">/trade-intelligence/lens/:id/details</span></li>
+            <li><span class="pth">/trade-intelligence/lens/global</span></li>
+            <li><span class="pth">/trade-intelligence/link-prediction</span></li>
+          </ul>
+        </div>
+
+        <div class="tree-mod">
+          <h4>🏭 Company Analytics <span class="badge prot">Protected</span></h4>
+          <ul>
+            <li><span class="pth">/company-overview/:name</span> → CompanyOverview</li>
+            <li><span class="pth">/company-products/:name</span> → CompanyProducts</li>
+            <li><span class="pth">/company-partners/:name</span> → CompanyPartners</li>
+            <li><span class="pth">/compare</span> → CompareCompanies</li>
+          </ul>
+        </div>
+
+        <div class="tree-mod">
+          <h4>⭐ Other Routes <span class="badge prot">Protected</span></h4>
+          <ul>
+            <li><span class="pth">/dashboard</span> → Dashboard</li>
+            <li><span class="pth">/watchlist</span> → Watchlist</li>
+            <li><span class="pth">/subscriptions</span> → Subscriptions</li>
+          </ul>
+        </div>
+
+        <div class="tree-mod" style="border-color:#bf8700">
+          <h4 style="color:#e3b341;border-color:#bf8700">🧠 Context &amp; State</h4>
+          <ul>
+            <li><span class="pth">AuthContext</span> — user, login(), logout(), isAuthenticated, tokenBalance, refreshUser()</li>
+            <li><span class="pth">ThemeContext</span> — light / dark mode</li>
+            <li><span class="pth">ToastProvider</span> — global notifications</li>
+          </ul>
+        </div>
+
+        <div class="tree-mod" style="border-color:#db61a2">
+          <h4 style="color:#ffa7c4;border-color:#db61a2">🪝 Custom Hooks</h4>
+          <ul>
+            <li><span class="pth">useWatchlist()</span></li>
+            <li><span class="pth">useActivityHistory()</span></li>
+            <li><span class="pth">useOnboardingTour()</span></li>
+            <li><span class="pth">useCompanyNotes()</span></li>
+            <li><span class="pth">useFilterPersistence()</span></li>
+            <li><span class="pth">useDebounce()</span></li>
+            <li><span class="pth">useOffline()</span></li>
+            <li><span class="pth">useToast()</span></li>
+          </ul>
+        </div>
+
+        <div class="tree-mod" style="border-color:#39c5cf">
+          <h4 style="color:#7ce0e8;border-color:#39c5cf">🌐 API Services</h4>
+          <ul>
+            <li><span class="pth">api.js</span> — Axios instance, baseURL from env, credentials, JSON headers</li>
+            <li><span class="pth">searchService.js</span> — search(), getSupplierDetails(), compareSuppliers()</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     4 · DATA MODELS (ER)
+════════════════════════════════════════════════════ -->
+<div id="s4" class="section">
+  <h2>Database Schema — All 30+ Models in PostgreSQL</h2>
+  <p class="desc">Entity-Relationship diagram. <span class="badge" style="background:#bf8700;color:#fff">PK</span> = Primary Key, <span class="badge" style="background:#a371f7;color:#fff">FK</span> = Foreign Key, <span class="badge" style="background:#2ea043;color:#fff">UK</span> = Unique.</p>
+
+  <div class="zbar">
+    <button onclick="zm('d4',0.15)">＋ Zoom In</button>
+    <button onclick="zm('d4',-0.15)">－ Zoom Out</button>
+    <button onclick="zr('d4')">↺ Reset</button>
+  </div>
+
+  <div class="canvas">
+    <div class="stage" id="d4" style="min-width:1200px">
+
+      <div class="er-grid">
+
+        <div class="entity">
+          <div class="entity-name">User · accounts</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>email</span><span><span class="ft">string</span> <span class="uk">UK</span></span></div>
+          <div class="entity-field"><span>first_name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>last_name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>phone_number</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>job_title</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>country</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>email_verified</span><span class="ft">bool</span></div>
+          <div class="entity-field"><span>verification_token</span><span><span class="ft">uuid</span> <span class="uk">UK</span></span></div>
+          <div class="entity-field"><span>token_balance</span><span class="ft">int</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">UserAlertPreference</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>user_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>followed_products</span><span class="ft">json</span></div>
+          <div class="entity-field"><span>followed_countries</span><span class="ft">json</span></div>
+          <div class="entity-field"><span>categories</span><span class="ft">json</span></div>
+          <div class="entity-field"><span>notify_email</span><span class="ft">bool</span></div>
+          <div class="entity-field"><span>notify_in_app</span><span class="ft">bool</span></div>
+          <div class="entity-field"><span>frequency</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">SubscriptionPlan</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>plan_name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>price</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>currency</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>tokens_included</span><span class="ft">int</span></div>
+          <div class="entity-field"><span>features</span><span class="ft">json</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">UserSubscription</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>user_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>plan_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>status</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>start_date</span><span class="ft">date</span></div>
+          <div class="entity-field"><span>end_date</span><span class="ft">date</span></div>
+          <div class="entity-field"><span>billing_cycle</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">TokenPurchase</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>user_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>plan_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>tokens_purchased</span><span class="ft">int</span></div>
+          <div class="entity-field"><span>price</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>payment_provider</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>payment_reference</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">RedeemCode</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>code</span><span><span class="ft">string</span> <span class="uk">UK</span></span></div>
+          <div class="entity-field"><span>plan_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>status</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>redeemed_by</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>redeemed_at</span><span class="ft">datetime</span></div>
+          <div class="entity-field"><span>expires_at</span><span class="ft">datetime</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">Product</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>hs_code</span><span><span class="ft">string</span> <span class="uk">UK</span></span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">ProductCategory</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>product_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>hs_code</span><span><span class="ft">string</span> <span class="uk">UK</span></span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">ProductSubCategory</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>category_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>hs_code</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">ProductItem</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>sub_category_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">HsToProductMap</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>hs_code</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>product_name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>notes</span><span class="ft">text</span></div>
+        </div>
+
+        <div class="entity" style="border-color:#bf8700">
+          <div class="entity-name" style="background:rgba(191,135,0,.18);color:#e3b341;border-color:#bf8700">Transaction · core data</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">bigint</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>source_file</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>tx_reference</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>reporting_date</span><span class="ft">date</span></div>
+          <div class="entity-field"><span>trade_type</span><span class="ft">choice</span></div>
+          <div class="entity-field"><span>hs_code</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>product_item_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>buyer</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>seller</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>shipping_agent</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>origin_country</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>destination_country</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>qty_kg</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>qty_mt</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>usd_per_kg</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>usd_per_mt</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>pkr</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>usd</span><span class="ft">decimal</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">CompanyEmbedding</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>company_name</span><span><span class="ft">string</span> <span class="uk">UK</span></span></div>
+          <div class="entity-field"><span>embedding</span><span class="ft">json</span></div>
+          <div class="entity-field"><span>cluster_tag</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>pagerank</span><span class="ft">float</span></div>
+          <div class="entity-field"><span>degree</span><span class="ft">int</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">ProductEmbedding</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>product_item_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>embedding</span><span class="ft">json</span></div>
+          <div class="entity-field"><span>cluster_tag</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">Sector</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>description</span><span class="ft">text</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">CompanyRole</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">CompanyType</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity" style="border-color:#bf8700">
+          <div class="entity-name" style="background:rgba(191,135,0,.18);color:#e3b341;border-color:#bf8700">Company · directory core</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>legal_name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>country</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>province</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>district</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>verification_status</span><span class="ft">choice</span></div>
+          <div class="entity-field"><span>ntn_number</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>trade_license_number</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>sector_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>company_role_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>company_type_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>has_trade_data</span><span class="ft">bool</span></div>
+          <div class="entity-field"><span>is_directory_profile</span><span class="ft">bool</span></div>
+          <div class="entity-field"><span>market_sentiment</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">CompanyProduct</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>company_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>variety</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>value_added</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>hsn_code</span><span class="ft">string</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">KeyContact</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>company_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>designation</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>phone</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>whatsapp</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>email</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>is_public</span><span class="ft">bool</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">KeyContactUnlock</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>user_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>key_contact_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>unlocked_at</span><span class="ft">datetime</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">CompanyMetricsCache</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>company_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>metric_date</span><span class="ft">date</span></div>
+          <div class="entity-field"><span>metric_key</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>metric_value</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>meta</span><span class="ft">json</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">IngestionLog</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>source_file</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>rows_processed</span><span class="ft">int</span></div>
+          <div class="entity-field"><span>rows_inserted</span><span class="ft">int</span></div>
+          <div class="entity-field"><span>errors</span><span class="ft">int</span></div>
+          <div class="entity-field"><span>started_at</span><span class="ft">datetime</span></div>
+          <div class="entity-field"><span>finished_at</span><span class="ft">datetime</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">AdminAnnouncement</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>title</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>content</span><span class="ft">text</span></div>
+          <div class="entity-field"><span>start_date</span><span class="ft">date</span></div>
+          <div class="entity-field"><span>end_date</span><span class="ft">date</span></div>
+          <div class="entity-field"><span>is_active</span><span class="ft">bool</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">Alert</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>headline</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>summary</span><span class="ft">text</span></div>
+          <div class="entity-field"><span>category</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>product_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>country</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>severity</span><span class="ft">choice</span></div>
+          <div class="entity-field"><span>detected_at</span><span class="ft">datetime</span></div>
+          <div class="entity-field"><span>source</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>meta</span><span class="ft">json</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">NewsArticle</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>alert_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>source</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>url</span><span class="ft">url</span></div>
+          <div class="entity-field"><span>title</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>full_text</span><span class="ft">text</span></div>
+          <div class="entity-field"><span>published_at</span><span class="ft">datetime</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">SavedAnalysis</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>user_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>alert_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>title</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>notes</span><span class="ft">text</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">UserInteraction</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>user_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>company_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>action</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>timestamp</span><span class="ft">datetime</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">TradeLensProduct</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>hs_code</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>category</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>image_url</span><span class="ft">url</span></div>
+          <div class="entity-field"><span>description</span><span class="ft">text</span></div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-name">TradeLensTransaction</div>
+          <div class="entity-field"><span>id</span><span><span class="ft">int</span> <span class="pk">PK</span></span></div>
+          <div class="entity-field"><span>product_id</span><span><span class="ft">int</span> <span class="fk">FK</span></span></div>
+          <div class="entity-field"><span>trade_date</span><span class="ft">date</span></div>
+          <div class="entity-field"><span>price_usd</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>quantity_mt</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>total_value_usd</span><span class="ft">decimal</span></div>
+          <div class="entity-field"><span>buyer_name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>seller_name</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>buyer_country</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>seller_country</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>port</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>province</span><span class="ft">string</span></div>
+          <div class="entity-field"><span>trade_type</span><span class="ft">choice</span></div>
+          <div class="entity-field"><span>hs_code</span><span class="ft">string</span></div>
+        </div>
+
+      </div>
+
+      <!-- RELATIONSHIPS -->
+      <div class="relationships">
+        <h3>📐 Relationships (1 → N unless noted)</h3>
+        <div class="rel-list">
+          <div><span class="ent">User</span> <span class="typ">1—1</span> UserAlertPreference</div>
+          <div><span class="ent">User</span> <span class="typ">1—N</span> UserSubscription</div>
+          <div><span class="ent">User</span> <span class="typ">1—N</span> TokenPurchase</div>
+          <div><span class="ent">User</span> <span class="typ">1—N</span> KeyContactUnlock</div>
+          <div><span class="ent">User</span> <span class="typ">1—N</span> SavedAnalysis</div>
+          <div><span class="ent">User</span> <span class="typ">1—N</span> UserInteraction</div>
+          <div><span class="ent">SubscriptionPlan</span> <span class="typ">1—N</span> UserSubscription</div>
+          <div><span class="ent">SubscriptionPlan</span> <span class="typ">1—N</span> TokenPurchase</div>
+          <div><span class="ent">SubscriptionPlan</span> <span class="typ">1—N</span> RedeemCode</div>
+          <div><span class="ent">Product</span> <span class="typ">1—N</span> ProductCategory</div>
+          <div><span class="ent">ProductCategory</span> <span class="typ">1—N</span> ProductSubCategory</div>
+          <div><span class="ent">ProductSubCategory</span> <span class="typ">1—N</span> ProductItem</div>
+          <div><span class="ent">ProductItem</span> <span class="typ">1—N</span> Transaction</div>
+          <div><span class="ent">ProductItem</span> <span class="typ">1—1</span> ProductEmbedding</div>
+          <div><span class="ent">Sector</span> <span class="typ">1—N</span> Company</div>
+          <div><span class="ent">CompanyRole</span> <span class="typ">1—N</span> Company</div>
+          <div><span class="ent">CompanyType</span> <span class="typ">1—N</span> Company</div>
+          <div><span class="ent">Company</span> <span class="typ">1—N</span> CompanyProduct</div>
+          <div><span class="ent">Company</span> <span class="typ">1—N</span> KeyContact</div>
+          <div><span class="ent">Company</span> <span class="typ">1—N</span> CompanyMetricsCache</div>
+          <div><span class="ent">Company</span> <span class="typ">1—N</span> UserInteraction</div>
+          <div><span class="ent">KeyContact</span> <span class="typ">1—N</span> KeyContactUnlock</div>
+          <div><span class="ent">Alert</span> <span class="typ">1—N</span> NewsArticle</div>
+          <div><span class="ent">Alert</span> <span class="typ">1—N</span> SavedAnalysis</div>
+          <div><span class="ent">TradeLensProduct</span> <span class="typ">1—N</span> TradeLensTransaction</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     5 · ML / AI LAYER
+════════════════════════════════════════════════════ -->
+<div id="s5" class="section">
+  <h2>ML / AI Layer — Training, Artifacts &amp; Inference</h2>
+  <p class="desc">Three-stage ML pipeline: Offline training → Saved artifacts → Runtime inference. External AI services (OpenAI, Vertex) and Redis vector store on the right.</p>
+
+  <div class="zbar">
+    <button onclick="zm('d5',0.15)">＋ Zoom In</button>
+    <button onclick="zm('d5',-0.15)">－ Zoom Out</button>
+    <button onclick="zr('d5')">↺ Reset</button>
+  </div>
+
+  <div class="canvas">
+    <div class="stage" id="d5" style="min-width:1100px">
+
+      <div class="grid-3">
+        <div class="layer l-front">
+          <div class="layer-title">🏋 Offline Training</div>
+          <div class="card svc"><div class="ttl">Transaction Data</div><div class="sub">PostgreSQL → CSV export</div></div>
+          <div class="card svc"><div class="ttl">Node2Vec Training</div><div class="sub">Random walks on 4 GraphML graphs</div></div>
+          <div class="card svc"><div class="ttl">HDBSCAN Clustering</div><div class="sub">on Company Embeddings</div></div>
+          <div class="card svc"><div class="ttl">LightGBM Training</div><div class="sub">LambdaRank on transactions</div></div>
+          <div class="card svc"><div class="ttl">SentenceTransformer</div><div class="sub">Product name embeddings</div></div>
+        </div>
+
+        <div class="layer l-svc">
+          <div class="layer-title">📦 Saved Artifacts</div>
+          <div class="card db"><div class="ttl">lgbm_ltr.txt</div><div class="sub">LightGBM LTR model</div></div>
+          <div class="card db"><div class="ttl">search_index.pkl</div><div class="sub">Product embeddings index</div></div>
+          <div class="card db"><div class="ttl">buyer_seller_graph.graphml</div></div>
+          <div class="card db"><div class="ttl">company_product_graph.graphml</div></div>
+          <div class="card db"><div class="ttl">product_co_trade_graph.graphml</div></div>
+          <div class="card db"><div class="ttl">seller_product_graph.graphml</div></div>
+          <div class="card db"><div class="ttl">CompanyEmbedding Table</div><div class="sub">PostgreSQL · embedding · pagerank · cluster</div></div>
+          <div class="card db"><div class="ttl">ProductEmbedding Table</div><div class="sub">PostgreSQL</div></div>
+        </div>
+
+        <div class="layer l-ml">
+          <div class="layer-title">⚡ Runtime Inference</div>
+          <div class="card ml"><div class="ttl">SetFit Predict</div><div class="sub">9 intents · BUY · SELL · COMPARE · TREND · PRICE · COUNTRY · RISK · PARTNER · VOLUME</div></div>
+          <div class="card ml"><div class="ttl">GLiNER NER</div><div class="sub">Zero-shot Product · Country · Quantity</div></div>
+          <div class="card ml"><div class="ttl">SentenceTransformer Encode</div><div class="sub">Query → 768-dim vector</div></div>
+          <div class="card ml"><div class="ttl">LightGBM Predict</div><div class="sub">30% of final ranking</div></div>
+          <div class="card ml"><div class="ttl">Node2Vec + PageRank</div><div class="sub">Top-K similar companies</div></div>
+          <div class="card ml"><div class="ttl">HDBSCAN Predict</div><div class="sub">Assign cluster to new company</div></div>
+          <div class="card ml"><div class="ttl">KeyBERT Extract</div><div class="sub">Keywords from raw query</div></div>
+        </div>
+      </div>
+
+      <div class="arrow-down"></div>
+
+      <div class="grid-2">
+        <div class="layer l-ext">
+          <div class="layer-title">☁️ External AI Services</div>
+          <div class="card cloud"><div class="ttl">OpenAI GPT-4o-mini</div><div class="sub">NLU fallback · smart company search · sentiment analysis</div></div>
+          <div class="card cloud"><div class="ttl">OpenAI text-embedding-3-small</div><div class="sub">1536-dim vectors stored in Redis HNSW</div></div>
+          <div class="card cloud"><div class="ttl">Google Vertex AI</div><div class="sub">Optional LLM backend via service account</div></div>
+        </div>
+        <div class="layer l-data">
+          <div class="layer-title">🔴 Redis Vector Store</div>
+          <div class="card db"><div class="ttl">HNSW Index — idx:companies</div><div class="sub">1536-dim cosine similarity · name + description + embedding fields</div></div>
+          <div class="card db"><div class="ttl">In-Memory Fallback</div><div class="sub">Pure Python cosine similarity when Redis is unavailable</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     6 · AUTH SEQUENCE
+════════════════════════════════════════════════════ -->
+<div id="s6" class="section">
+  <h2>Auth, Token Economy &amp; Subscription Sequence Flows</h2>
+  <p class="desc">Standard sequence diagram with 5 lifelines. Read top-to-bottom. Each colored band is a separate flow.</p>
+
+  <div class="zbar">
+    <button onclick="zm('d6',0.15)">＋ Zoom In</button>
+    <button onclick="zm('d6',-0.15)">－ Zoom Out</button>
+    <button onclick="zr('d6')">↺ Reset</button>
+  </div>
+
+  <div class="canvas">
+    <div class="stage" id="d6" style="min-width:1000px">
+
+      <div class="seq">
+        <div class="seq-head" style="grid-column:1/2"></div>
+        <div class="seq-head" style="background:rgba(191,135,0,.18);color:#e3b341">👤 User</div>
+        <div class="seq-head" style="background:rgba(31,111,235,.18);color:#79c0ff">⚛️ React FE</div>
+        <div class="seq-head" style="background:rgba(46,160,67,.18);color:#7ee787">🔧 Django API</div>
+        <div class="seq-head" style="background:rgba(57,197,207,.18);color:#7ce0e8">🗄 PostgreSQL</div>
+        <div class="seq-head" style="background:rgba(249,117,131,.18);color:#ffa198">📧 Gmail · Redis</div>
+
+        <!-- SIGNUP -->
+        <div class="seq-section">📋 Flow A — Signup &amp; Email Verification</div>
+        <div class="seq-row"><div class="seq-num">1</div><div class="seq-msg"><span class="seq-from-to">User → React FE</span><span class="seq-arrow">→</span> Fill signup form (email, password, name)</div></div>
+        <div class="seq-row"><div class="seq-num">2</div><div class="seq-msg"><span class="seq-from-to">React FE → Django API</span><span class="seq-arrow">→</span> POST /accounts/api/signup/</div></div>
+        <div class="seq-row"><div class="seq-num">3</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> INSERT User (email_verified=False, generate UUID token)</div></div>
+        <div class="seq-row"><div class="seq-num">4</div><div class="seq-msg"><span class="seq-from-to">Django API → Gmail</span><span class="seq-arrow">→</span> Send verification email with 24-hour token link</div></div>
+        <div class="seq-row"><div class="seq-num">5</div><div class="seq-msg"><span class="seq-from-to">Django API → React FE</span><span class="seq-arrow">←</span> 200 OK · "Check your email"</div></div>
+        <div class="seq-row"><div class="seq-num">6</div><div class="seq-msg"><span class="seq-from-to">User → React FE</span><span class="seq-arrow">→</span> Click verification link in email</div></div>
+        <div class="seq-row"><div class="seq-num">7</div><div class="seq-msg"><span class="seq-from-to">React FE → Django API</span><span class="seq-arrow">→</span> GET /accounts/api/verify-email/{uuid}</div></div>
+        <div class="seq-row"><div class="seq-num">8</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> UPDATE User SET email_verified=True</div></div>
+        <div class="seq-row"><div class="seq-num">9</div><div class="seq-msg"><span class="seq-from-to">Django API → React FE</span><span class="seq-arrow">←</span> Redirect to login page</div></div>
+
+        <!-- LOGIN -->
+        <div class="seq-section" style="background:rgba(31,111,235,.08);border-left-color:#1f6feb;color:#79c0ff">🔑 Flow B — Login &amp; Session</div>
+        <div class="seq-row"><div class="seq-num">10</div><div class="seq-msg"><span class="seq-from-to">User → React FE</span><span class="seq-arrow">→</span> Enter email + password</div></div>
+        <div class="seq-row"><div class="seq-num">11</div><div class="seq-msg"><span class="seq-from-to">React FE → Django API</span><span class="seq-arrow">→</span> POST /accounts/api/login/</div></div>
+        <div class="seq-row"><div class="seq-num">12</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> SELECT User WHERE email=? · validate password hash</div></div>
+        <div class="seq-row"><div class="seq-num">13</div><div class="seq-msg"><span class="seq-from-to">Django API → Redis</span><span class="seq-arrow">→</span> Create session record</div></div>
+        <div class="seq-row"><div class="seq-num">14</div><div class="seq-msg"><span class="seq-from-to">Django API → React FE</span><span class="seq-arrow">←</span> Set-Cookie: sessionid=...</div></div>
+        <div class="seq-row"><div class="seq-num">15</div><div class="seq-msg"><span class="seq-from-to">React FE → User</span><span class="seq-arrow">←</span> Authenticated · redirect to dashboard</div></div>
+
+        <!-- REDEEM -->
+        <div class="seq-section" style="background:rgba(219,97,162,.08);border-left-color:#db61a2;color:#ffa7c4">🎟 Flow C — Redeem Code · Token + Subscription Allocation</div>
+        <div class="seq-row"><div class="seq-num">16</div><div class="seq-msg"><span class="seq-from-to">User → React FE</span><span class="seq-arrow">→</span> Enter redeem code on subscriptions page</div></div>
+        <div class="seq-row"><div class="seq-num">17</div><div class="seq-msg"><span class="seq-from-to">React FE → Django API</span><span class="seq-arrow">→</span> POST /api/subscriptions/redeem/ {code}</div></div>
+        <div class="seq-row"><div class="seq-num">18</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> SELECT RedeemCode WHERE code=? · check status=active and not expired</div></div>
+        <div class="seq-row"><div class="seq-num">19</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> UPDATE RedeemCode SET status=redeemed, redeemed_by, redeemed_at</div></div>
+        <div class="seq-row"><div class="seq-num">20</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> UPDATE User SET token_balance += plan.tokens_included</div></div>
+        <div class="seq-row"><div class="seq-num">21</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> INSERT UserSubscription (status=active, dates, billing_cycle)</div></div>
+        <div class="seq-row"><div class="seq-num">22</div><div class="seq-msg"><span class="seq-from-to">Django API → React FE</span><span class="seq-arrow">←</span> Success · new token balance · subscription details</div></div>
+
+        <!-- UNLOCK -->
+        <div class="seq-section" style="background:rgba(191,135,0,.08);border-left-color:#bf8700;color:#e3b341">🔒 Flow D — Key Contact Unlock · Costs 1 Token</div>
+        <div class="seq-row"><div class="seq-num">23</div><div class="seq-msg"><span class="seq-from-to">User → React FE</span><span class="seq-arrow">→</span> Click "Unlock Contact" button</div></div>
+        <div class="seq-row"><div class="seq-num">24</div><div class="seq-msg"><span class="seq-from-to">React FE → Django API</span><span class="seq-arrow">→</span> POST /api/key-contacts/{id}/unlock/</div></div>
+        <div class="seq-row"><div class="seq-num">25</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> SELECT User · check token_balance >= 1</div></div>
+        <div class="seq-row"><div class="seq-num">26</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> INSERT KeyContactUnlock (user, key_contact)</div></div>
+        <div class="seq-row"><div class="seq-num">27</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> UPDATE User SET token_balance -= 1</div></div>
+        <div class="seq-row"><div class="seq-num">28</div><div class="seq-msg"><span class="seq-from-to">Django API → React FE</span><span class="seq-arrow">←</span> Return phone, email, whatsapp details</div></div>
+
+        <!-- PASSWORD RESET -->
+        <div class="seq-section" style="background:rgba(110,118,129,.08);border-left-color:#6e7681;color:#8b949e">🔑 Flow E — Password Reset</div>
+        <div class="seq-row"><div class="seq-num">29</div><div class="seq-msg"><span class="seq-from-to">User → React FE</span><span class="seq-arrow">→</span> Enter email on /forgot-password</div></div>
+        <div class="seq-row"><div class="seq-num">30</div><div class="seq-msg"><span class="seq-from-to">React FE → Django API</span><span class="seq-arrow">→</span> POST /accounts/api/forgot-password/</div></div>
+        <div class="seq-row"><div class="seq-num">31</div><div class="seq-msg"><span class="seq-from-to">Django API → Gmail</span><span class="seq-arrow">→</span> Send password reset email with token link</div></div>
+        <div class="seq-row"><div class="seq-num">32</div><div class="seq-msg"><span class="seq-from-to">User → React FE</span><span class="seq-arrow">→</span> Click link · enter new password on /reset-password/{token}</div></div>
+        <div class="seq-row"><div class="seq-num">33</div><div class="seq-msg"><span class="seq-from-to">React FE → Django API</span><span class="seq-arrow">→</span> POST with new password</div></div>
+        <div class="seq-row"><div class="seq-num">34</div><div class="seq-msg"><span class="seq-from-to">Django API → DB</span><span class="seq-arrow">→</span> UPDATE User SET password_hash</div></div>
+        <div class="seq-row"><div class="seq-num">35</div><div class="seq-msg"><span class="seq-from-to">Django API → React FE</span><span class="seq-arrow">←</span> Password updated · redirect to login</div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     7 · TRADE INTELLIGENCE
+════════════════════════════════════════════════════ -->
+<div id="s7" class="section">
+  <h2>Trade Intelligence — Ledger, Lens &amp; Market Intel</h2>
+  <p class="desc">All analytics services and their data sources. GNN graph inference at the bottom feeds Trade Ledger.</p>
+
+  <div class="zbar">
+    <button onclick="zm('d7',0.15)">＋ Zoom In</button>
+    <button onclick="zm('d7',-0.15)">－ Zoom Out</button>
+    <button onclick="zr('d7')">↺ Reset</button>
+  </div>
+
+  <div class="canvas">
+    <div class="stage" id="d7" style="min-width:1100px">
+
+      <div class="grid-3">
+
+        <div class="layer l-svc">
+          <div class="layer-title">📒 Trade Ledger Service</div>
+          <div class="card svc"><div class="ttl">explorer.py</div><div class="sub">Filter companies by direction, date, country, product</div></div>
+          <div class="card svc"><div class="ttl">company.py</div><div class="sub">Overview: volume, partners, products, geography</div></div>
+          <div class="card svc"><div class="ttl">products.py</div><div class="sub">Product performance, pricing trends, partner matrix</div></div>
+          <div class="card svc"><div class="ttl">partners.py</div><div class="sub">Top partners, trade volume by country</div></div>
+          <div class="card svc"><div class="ttl">trends.py</div><div class="sub">Monthly volume + price, YoY growth, seasonal</div></div>
+          <div class="card svc"><div class="ttl">compare.py</div><div class="sub">Multi-company side-by-side metrics</div></div>
+          <div class="card svc"><div class="ttl">gnn.py</div><div class="sub">Similar companies via Node2Vec + HDBSCAN + PageRank</div></div>
+          <div class="card svc"><div class="ttl">link_prediction</div><div class="sub">Predict buyers for sellers · sellers for buyers</div></div>
+          <div class="card svc"><div class="ttl">PDF Export</div><div class="sub">Comparison report generation</div></div>
+        </div>
+
+        <div class="layer l-front">
+          <div class="layer-title">🔭 Trade Lens Service</div>
+          <div class="card frontend"><div class="ttl">Product Catalogue</div><div class="sub">TradeLensProduct with analytics</div></div>
+          <div class="card frontend"><div class="ttl">Product Overview</div><div class="sub">Volume + price + trade type breakdown</div></div>
+          <div class="card frontend"><div class="ttl">Summary Stats</div><div class="sub">Aggregated metrics per product</div></div>
+          <div class="card frontend"><div class="ttl">Comparison Stats</div><div class="sub">Side-by-side product comparison</div></div>
+          <div class="card frontend"><div class="ttl">Global View</div><div class="sub">All products worldwide aggregation</div></div>
+          <div class="card db"><div class="ttl">TradeLensTransaction</div><div class="sub">Isolated dataset · port + province + country + price + quantity</div></div>
+        </div>
+
+        <div class="layer l-ext">
+          <div class="layer-title">📡 Market Intel Service</div>
+          <div class="card ext"><div class="ttl">Alert</div><div class="sub">headline · summary · category · severity (low → critical)</div></div>
+          <div class="card ext"><div class="ttl">NewsArticle</div><div class="sub">Linked sources: Dawn, Reuters, etc.</div></div>
+          <div class="card ext"><div class="ttl">SavedAnalysis</div><div class="sub">User bookmarks with personal notes</div></div>
+          <div class="card ext"><div class="ttl">AI Recommendations</div><div class="sub">GPT-4o-mini · based on UserInteraction history</div></div>
+          <div class="card ext"><div class="ttl">UserInteraction Tracker</div><div class="sub">Logs company views to feed recommendations</div></div>
+          <div class="card db"><div class="ttl">Redis HNSW Index</div><div class="sub">1536-dim cosine similarity for company recs</div></div>
+        </div>
+
+      </div>
+
+      <div class="arrow-down"></div>
+
+      <div class="layer l-ml">
+        <div class="layer-title">🕸 GNN Graph Inference</div>
+        <div class="row">
+          <div class="card db"><div class="ttl">buyer_seller_graph.graphml</div><div class="sub">Buyer ↔ Seller trade edges</div></div>
+          <div class="card db"><div class="ttl">company_product_graph.graphml</div><div class="sub">Company ↔ Product edges</div></div>
+          <div class="card db"><div class="ttl">product_co_trade_graph.graphml</div><div class="sub">Products traded together</div></div>
+          <div class="card db"><div class="ttl">seller_product_graph.graphml</div><div class="sub">Seller ↔ Product edges</div></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="card ml"><div class="ttl">Node2Vec Random Walks</div><div class="sub">on graph edges</div></div>
+          <div class="card ml"><div class="ttl">PageRank</div><div class="sub">per company node</div></div>
+          <div class="card ml"><div class="ttl">HDBSCAN Cluster</div><div class="sub">Group similar companies</div></div>
+          <div class="card ml"><div class="ttl">Cosine Similarity</div><div class="sub">Top-K similar companies</div></div>
+        </div>
+      </div>
+
+      <div class="arrow-down"></div>
+
+      <div class="layer l-data">
+        <div class="layer-title">🗄 Transaction Table — PostgreSQL · core data source</div>
+        <div class="row">
+          <div class="card db" style="min-width:600px">
+            <div class="ttl">Transaction</div>
+            <div class="sub" style="margin-top:6px;line-height:1.6">
+              trade_type (IMPORT / EXPORT) · buyer · seller · shipping_agent<br>
+              origin_country · destination_country · hs_code · product_item_id<br>
+              qty_kg · qty_mt · usd_per_kg · usd_per_mt · pkr · usd · reporting_date<br>
+              <strong style="color:#7ee787">Composite indexes:</strong> trade_type+product · product+type+seller · product+type+buyer
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>Zarailink System Architecture · Built from full source code analysis · 30+ models · 35+ API endpoints · 25+ frontend routes · 4-stage ML search pipeline · Pure HTML+CSS · No parser dependencies</footer>
+
+<script>
+  const sc = {};
+  function zm(id, d) {
+    sc[id] = Math.max(0.4, Math.min(3, (sc[id] || 1) + d));
+    document.getElementById(id).style.transform = 'scale(' + sc[id] + ')';
+  }
+  function zr(id) {
+    sc[id] = 1;
+    document.getElementById(id).style.transform = 'scale(1)';
+  }
+  function show(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>
