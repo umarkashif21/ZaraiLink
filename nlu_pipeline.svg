@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 650" width="800" height="650">
+    <defs>
+        <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#1a5c38" />
+        </marker>
+        <marker id="arrowHeadGold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#c8932a" />
+        </marker>
+        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="2" dy="4" stdDeviation="4" flood-opacity="0.15" />
+        </filter>
+    </defs>
+
+    <style>
+        .step-box { fill: white; stroke: #1a5c38; stroke-width: 2; rx: 12; filter: url(#shadow); }
+        .step-cond-box { fill: #fffcf5; stroke: #c8932a; stroke-width: 2; stroke-dasharray: 6 4; rx: 12; filter: url(#shadow); }
+        .step-title { font-family: sans-serif; font-size: 18px; font-weight: bold; fill: #1a5c38; }
+        .step-desc { font-family: sans-serif; font-size: 14px; fill: #555; }
+        .step-output { font-family: sans-serif; font-size: 14px; font-weight: bold; fill: #c8932a; }
+        .badge { fill: #e2f0e8; rx: 10; }
+        .badge-text { font-family: sans-serif; font-size: 12px; font-weight: bold; fill: #1a5c38; }
+        .circle { fill: #c8932a; }
+        .circle-text { font-family: sans-serif; font-size: 18px; font-weight: bold; fill: white; text-anchor: middle; dominant-baseline: central; }
+        .conn-line { stroke: #1a5c38; stroke-width: 3; fill: none; }
+        .conn-line-gold { stroke: #c8932a; stroke-width: 3; stroke-dasharray: 5 5; fill: none; }
+        .label-bg { fill: white; opacity: 0.9; }
+        .label-text { font-family: sans-serif; font-size: 12px; font-weight: bold; fill: #c8932a; text-anchor: middle; }
+    </style>
+
+    <!-- Step 1 -->
+    <rect x="150" y="30" width="500" height="70" class="step-box" />
+    <circle cx="150" cy="65" r="20" class="circle" />
+    <text x="150" y="65" class="circle-text">1</text>
+    <text x="190" y="55" class="step-title">Query Input</text>
+    <text x="190" y="75" class="step-desc">"I want to buy rice from India under $500"</text>
+    <rect x="500" y="45" width="130" height="24" class="badge" />
+    <text x="520" y="62" class="badge-text">✨ AI Query Mode</text>
+
+    <!-- Arrow -->
+    <path d="M 400 100 L 400 130" class="conn-line" marker-end="url(#arrowHead)" />
+
+    <!-- Step 2 -->
+    <rect x="150" y="130" width="500" height="80" class="step-box" />
+    <circle cx="150" cy="170" r="20" class="circle" />
+    <text x="150" y="170" class="circle-text">2</text>
+    <text x="190" y="160" class="step-title">Intent Classification — SetFit</text>
+    <text x="190" y="180" class="step-desc">89.4% accuracy, 354 training samples</text>
+    <text x="190" y="200" class="step-output">Output: BUY / SELL</text>
+
+    <!-- Arrow -->
+    <path d="M 400 210 L 400 240" class="conn-line" marker-end="url(#arrowHead)" />
+
+    <!-- Step 3 -->
+    <rect x="150" y="240" width="500" height="70" class="step-box" />
+    <circle cx="150" cy="275" r="20" class="circle" />
+    <text x="150" y="275" class="circle-text">3</text>
+    <text x="190" y="270" class="step-title">Product Extraction — KeyBERT</text>
+    <text x="190" y="295" class="step-output">Output: "rice"</text>
+
+    <!-- Arrow -->
+    <path d="M 400 310 L 400 340" class="conn-line" marker-end="url(#arrowHead)" />
+
+    <!-- Step 4 -->
+    <rect x="150" y="340" width="500" height="80" class="step-box" />
+    <circle cx="150" cy="380" r="20" class="circle" />
+    <text x="150" y="380" class="circle-text">4</text>
+    <text x="190" y="370" class="step-title">Country Resolution — RapidFuzz</text>
+    <text x="190" y="390" class="step-desc">Fuzzy matching handles typos</text>
+    <text x="190" y="410" class="step-output">Output: "India" → ISO code</text>
+
+    <!-- Arrow -->
+    <path d="M 400 420 L 400 450" class="conn-line" marker-end="url(#arrowHead)" />
+
+    <!-- Step 5 -->
+    <rect x="150" y="450" width="500" height="80" class="step-cond-box" />
+    <circle cx="150" cy="490" r="20" class="circle" />
+    <text x="150" y="490" class="circle-text">5</text>
+    <text x="190" y="475" class="step-title" style="fill:#c8932a;">Price &amp; Quantity Extraction — DeepSeek</text>
+    <text x="190" y="495" class="step-desc">CONDITIONAL — triggered on price/qty signals</text>
+    <text x="190" y="515" class="step-output">Output: price &lt; $500</text>
+
+    <!-- Arrow -->
+    <path d="M 400 530 L 400 560" class="conn-line" marker-end="url(#arrowHead)" />
+
+    <!-- Step 6 -->
+    <rect x="150" y="560" width="500" height="70" class="step-box" />
+    <circle cx="150" cy="595" r="20" class="circle" />
+    <text x="150" y="595" class="circle-text">6</text>
+    <text x="190" y="590" class="step-title">Composite Ranking</text>
+    <text x="190" y="615" class="step-output">Output: Ranked supplier/buyer results</text>
+
+    <!-- Bypass Arrow -->
+    <!-- Start at Step 4 (y=380, right edge x=650) to Step 6 (y=595, right edge x=650) -->
+    <path d="M 650 380 L 720 380 L 720 595 L 650 595" class="conn-line-gold" marker-end="url(#arrowHeadGold)" />
+    
+    <rect x="655" y="465" width="130" height="24" class="label-bg" rx="4" />
+    <text x="720" y="480" class="label-text">No price signal</text>
+    <rect x="655" y="485" width="130" height="24" class="label-bg" rx="4" />
+    <text x="720" y="500" class="label-text">detected (Skip 5)</text>
+
+</svg>

@@ -25,8 +25,8 @@ const DataDashboard = () => {
     const hsCodeParam   = qp.get('hs_code') || '';
     const displayTarget = hsCodeParam || rawQuery;
 
-    // Active pill — read directly from URL
-    const activePill = qp.get('dashboard_intent') || 'FOREIGN_SUPPLIERS';
+    // Active pill — null when nothing selected yet (don't default to IMPORT blindly)
+    const activePill = qp.get('dashboard_intent') || null;
 
     // Selected refinements — derived from URL
     const selectedRefinements = useMemo(() => {
@@ -40,13 +40,17 @@ const DataDashboard = () => {
     // ── Local UI state ───────────────────────────────────
     const [hsDescription, setHsDescription]   = useState('');
     const [totalShipments, setTotalShipments] = useState(0);
-    const [sidebarCounts, setSidebarCounts]   = useState([]);
+    const [sidebarCounts, setSidebarCounts]           = useState([]); // combined
+    const [sidebarImportCounts, setSidebarImportCounts] = useState([]); // IMPORT-only
+    const [sidebarExportCounts, setSidebarExportCounts] = useState([]); // EXPORT-only
+    const [sidebarSearch, setSidebarSearch]   = useState('');    // sidebar filter input
+    const [tradeDirection, setTradeDirection] = useState(null);  // 'IMPORT' | 'EXPORT'
     const [profiles, setProfiles]             = useState([]);
     const [loading, setLoading]               = useState(true);
     const [error, setError]                   = useState(null);
     const [selectedEntities, setSelectedEntities] = useState([]);
     const [totalProfilesCount, setTotalProfilesCount] = useState(0);
-    const [refreshKey, setRefreshKey]         = useState(0); // For handling post-purchase refetch
+    const [refreshKey, setRefreshKey]         = useState(0);
     
     // Paywall State
     const [accessState, setAccessState]       = useState('NO_ACCESS');
@@ -61,8 +65,9 @@ const DataDashboard = () => {
     const switchPill = (pillId) => {
         const p = new URLSearchParams(location.search);
         p.set('dashboard_intent', pillId);
-        p.delete('refines');       // Clear product filter on pill switch
-        p.delete('variant_name');  // Clear variant too
+        // ⚠️  Do NOT delete refines or variant_name here.
+        // The product filter (e.g. "Yazee") must survive pill switches so the
+        // user can check which trade direction the product actually exists in.
         navigate(`/search/results?${p.toString()}`, { replace: true });
         setSelectedEntities([]);
     };
@@ -89,12 +94,11 @@ const DataDashboard = () => {
     useEffect(() => {
         if (!displayTarget) return;
 
-        // Ensure dashboard_intent is in the URL on first visit (no re-render cascade)
-        if (!qp.get('dashboard_intent')) {
-            const p = new URLSearchParams(location.search);
-            p.set('dashboard_intent', activePill);
-            navigate(`/search/results?${p.toString()}`, { replace: true });
-            // Don't return — still fetch with current values
+        // If no pill has been selected yet, don't fetch — show "select a tab" prompt.
+        // This prevents blindly querying IMPORT data when the product may be EXPORT-only.
+        if (!activePill) {
+            setLoading(false);
+            return;
         }
 
         const controller = new AbortController();
@@ -114,7 +118,7 @@ const DataDashboard = () => {
                     `${API_BASE}/api/search/hs-dashboard/?${params.toString()}`,
                     { 
                         signal: controller.signal,
-                        credentials: 'include' // EXTREMELY IMPORTANT: Includes Django Session!
+                        credentials: 'include'
                     }
                 );
                 if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -122,23 +126,26 @@ const DataDashboard = () => {
                 
                 setHsDescription(data.hs_description || rawQuery);
                 setTotalShipments(data.total_shipments || 0);
-                let counts = data.sidebar_counts || [];
-                // If a variant was pre-selected from autocomplete but isn't grouped as a subcategory, inject it so the checkbox renders
-                selectedRefinements.forEach(ref => {
-                    if (!counts.some(c => c.name === ref)) {
-                        counts.unshift({ name: ref, count: data.total_shipments || 'exact' });
-                    }
-                });
-                setSidebarCounts(counts);
+                setTradeDirection(data.trade_direction || null);
+                setSidebarCounts(data.sidebar_counts || []);
+                setSidebarImportCounts(data.sidebar_import_counts || []);
+                setSidebarExportCounts(data.sidebar_export_counts || []);
                 setProfiles(data.visible_profiles || []); 
                 setTotalProfilesCount(data.total_profiles_count || (data.visible_profiles ? data.visible_profiles.length : 0));
                 setAccessState(data.access_state || 'NO_ACCESS');
+
+                // If the backend ignored the variant_name (it was a category label, not a
+                // real subcategory), clear it from the URL so we don't show a stale filter.
+                if (data.subcat_filter_ignored) {
+                    const p = new URLSearchParams(location.search);
+                    p.delete('variant_name');
+                    p.delete('refines');
+                    navigate(`/search/results?${p.toString()}`, { replace: true });
+                }
             } catch (err) {
-                // Ignore AbortError
                 if (err.name === 'AbortError') return;
                 setError(err.message);
             } finally {
-                // Only clear loading if this request wasn't aborted
                 if (!controller.signal.aborted) setLoading(false);
             }
         };
@@ -146,7 +153,7 @@ const DataDashboard = () => {
         fetchData();
 
         return () => controller.abort();
-    }, [displayTarget, activePill, selectedRefinements.join(','), refreshKey]); // Added refreshKey
+    }, [displayTarget, activePill, selectedRefinements.join(','), refreshKey]);
 
     // ── Paywall Logic ───────────────────────────────────────────────────────
     const handlePurchase = async () => {
@@ -190,8 +197,16 @@ const DataDashboard = () => {
     };
 
     // ── Derived metadata ──────────────────────────────────────────────────
-    const pill        = PILLS.find(p => p.id === activePill) || PILLS[0];
-    const entityLabel = activePill.includes('SUPPLIER') ? 'Suppliers' : 'Buyers';
+    const pill        = PILLS.find(p => p.id === activePill) || null;
+    const entityLabel = activePill?.includes('SUPPLIER') ? 'Suppliers' : 'Buyers';
+
+    // Pick the correct sidebar counts based on the active pill's trade direction.
+    // No pill selected → show combined totals so user can see all product volumes.
+    const isImportPill = activePill === 'FOREIGN_SUPPLIERS' || activePill === 'PAKISTANI_BUYERS';
+    const isExportPill = activePill === 'FOREIGN_BUYERS'    || activePill === 'PAKISTANI_SUPPLIERS';
+    const activeSidebarCounts = isImportPill ? sidebarImportCounts
+                              : isExportPill ? sidebarExportCounts
+                              : sidebarCounts;
 
     // Build deal detail URL
     const dealUrl = (name) => {
@@ -245,8 +260,12 @@ const DataDashboard = () => {
                         </div>
                         <p className="text-sm font-medium ml-9">
                             <span className="text-slate-300">{hsDescription}</span>
-                            <span className="text-slate-600 mx-2">•</span>
-                            <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded text-xs">{totalShipments.toLocaleString()} Shipments</span>
+                            {activePill && (
+                                <>
+                                    <span className="text-slate-600 mx-2">•</span>
+                                    <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded text-xs">{totalShipments.toLocaleString()} Shipments</span>
+                                </>
+                            )}
                             {selectedRefinements.length > 0 && (
                                 <span className="ml-2 text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded text-xs font-bold">
                                     Filtered: {selectedRefinements.join(', ')}
@@ -277,8 +296,21 @@ const DataDashboard = () => {
                             <p className="text-xs text-slate-400">No subcategories found.</p>
                         )}
 
+                        {/* Sidebar search input — shown when > 6 products */}
+                        {activeSidebarCounts.length > 6 && (
+                            <input
+                                type="text"
+                                value={sidebarSearch}
+                                onChange={e => setSidebarSearch(e.target.value)}
+                                placeholder="Filter products..."
+                                className="w-full mb-3 px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-400 bg-slate-50 text-slate-700 placeholder-slate-400"
+                            />
+                        )}
+
                         <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
-                            {sidebarCounts.map((sc, idx) => (
+                            {activeSidebarCounts
+                                .filter(sc => !sidebarSearch || sc.name.toLowerCase().includes(sidebarSearch.toLowerCase()))
+                                .map((sc, idx) => (
                                 <label key={idx} className="flex items-start gap-2 cursor-pointer group">
                                     <input
                                         type="checkbox"
@@ -287,11 +319,22 @@ const DataDashboard = () => {
                                         className="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                                     />
                                     <div className="flex-1 flex justify-between items-start text-xs">
-                                        <span className="text-slate-700 group-hover:text-emerald-700 leading-tight">{sc.name}</span>
-                                        <span className="ml-2 font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{sc.count}</span>
+                                        <span className={`leading-tight ${
+                                            sc.count === 0
+                                                ? 'text-slate-400 line-through'
+                                                : 'text-slate-700 group-hover:text-emerald-700'
+                                        }`}>{sc.name}</span>
+                                        <span className={`ml-2 font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                                            sc.count === 0
+                                                ? 'text-slate-300 bg-slate-50'
+                                                : 'text-slate-400 bg-slate-100'
+                                        }`}>{sc.count}</span>
                                     </div>
                                 </label>
                             ))}
+                            {sidebarSearch && activeSidebarCounts.filter(sc => sc.name.toLowerCase().includes(sidebarSearch.toLowerCase())).length === 0 && (
+                                <p className="text-xs text-slate-400 text-center py-2">No match for "{sidebarSearch}"</p>
+                            )}
                         </div>
 
                         {selectedRefinements.length > 0 && (
@@ -327,7 +370,7 @@ const DataDashboard = () => {
                     </div>
 
                     {/* Results header */}
-                    {!loading && !error && (
+                    {!loading && !error && activePill && (
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-xl font-bold text-slate-800">
                                 {totalProfilesCount} {entityLabel} found for HS {displayTarget}
@@ -355,12 +398,41 @@ const DataDashboard = () => {
                         </div>
                     )}
 
-                    {/* Empty */}
-                    {!loading && !error && profiles.length === 0 && (
+                    {/* No pill selected yet — prompt the user */}
+                    {!activePill && !loading && (
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 py-16 text-center">
+                            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👆</div>
+                            <h3 className="text-slate-700 font-bold text-lg mb-2">Select a trade perspective above</h3>
+                            <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                                {selectedRefinements.length > 0
+                                    ? `"${selectedRefinements.join(', ')}" is filtered. Click a tab to see which direction this product trades in.`
+                                    : 'Click Foreign Suppliers, Foreign Buyers, Pakistani Buyers, or Pakistani Suppliers to load results.'}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Empty — direction-aware message when a filter is active */}
+                    {activePill && !loading && !error && profiles.length === 0 && (
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 py-16 text-center px-6">
                             <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📭</div>
-                            <h3 className="text-slate-600 font-bold mb-1">No {entityLabel} Found</h3>
-                            <p className="text-slate-400 text-sm">Try switching pills or clearing your refinements.</p>
+                            {selectedRefinements.length > 0 ? (
+                                <>
+                                    <h3 className="text-slate-700 font-bold text-base mb-2">
+                                        No {entityLabel} for "{selectedRefinements.join(', ')}"
+                                    </h3>
+                                    <p className="text-slate-400 text-sm max-w-xs mx-auto">
+                                        {tradeDirection === 'IMPORT'
+                                            ? `"${selectedRefinements.join(', ')}" has no import records in our current dataset. Try the Foreign Buyers or Pakistani Suppliers tabs — it may only appear in export data.`
+                                            : `"${selectedRefinements.join(', ')}" has no export records in our current dataset. Try the Foreign Suppliers or Pakistani Buyers tabs — it may only appear in import data.`
+                                        }
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <h3 className="text-slate-600 font-bold mb-1">No {entityLabel} Found</h3>
+                                    <p className="text-slate-400 text-sm">Try switching to a different tab.</p>
+                                </>
+                            )}
                         </div>
                     )}
 

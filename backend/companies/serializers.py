@@ -77,12 +77,15 @@ class CompanyListSerializer(serializers.ModelSerializer):
     sector_name = serializers.CharField(source='sector.name', read_only=True)
     role_name = serializers.CharField(source='company_role.name', read_only=True)
     type_name = serializers.CharField(source='company_type.name', read_only=True)
+    has_key_contacts = serializers.SerializerMethodField()
     
     class Meta:
         model = Company
         fields = ['id', 'name', 'country', 'province', 'district', 
-                  'sector_name', 'role_name', 'type_name', 'verification_status']
+                  'sector_name', 'role_name', 'type_name', 'verification_status', 'has_key_contacts']
 
+    def get_has_key_contacts(self, obj):
+        return obj.key_contacts.exists()
 
 class CompanyDetailSerializer(serializers.ModelSerializer):
     """Full company details with products and contacts"""

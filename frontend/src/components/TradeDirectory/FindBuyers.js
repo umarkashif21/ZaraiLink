@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, X, Building2, MapPin, Tag } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Building2, MapPin, Tag, ShieldCheck } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
 import WatchlistButton from '../Common/WatchlistButton';
 import Pagination from '../Common/Pagination';
@@ -18,6 +18,7 @@ const FindBuyers = () => {
   const [search, setSearch] = useState('');
   const [country, setCountry] = useState('');
   const [sector, setSector] = useState('');
+  const [contactStatus, setContactStatus] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,14 +84,16 @@ const FindBuyers = () => {
 
   useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
 
-  const reset = () => { setSearch(''); setCountry(''); setSector(''); };
-  const activeFilterCount = [search, country, sector].filter(Boolean).length;
+  const reset = () => { setSearch(''); setCountry(''); setSector(''); setContactStatus('all'); };
+  const activeFilterCount = [search, country, sector, contactStatus !== 'all'].filter(Boolean).length;
 
   const sorted = useMemo(() => {
-    const arr = [...companies];
+    let arr = [...companies];
+    if (contactStatus === 'verified') arr = arr.filter(c => c.has_key_contacts);
+    if (contactStatus === 'non_verified') arr = arr.filter(c => !c.has_key_contacts);
     const dir = sortBy.endsWith('asc') ? 1 : -1;
     return arr.sort((a, b) => (a.name || '').localeCompare(b.name || '') * dir);
-  }, [companies, sortBy]);
+  }, [companies, sortBy, contactStatus]);
 
   const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const paginated = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -170,6 +173,16 @@ const FindBuyers = () => {
                   className="h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-blue-500">
                   <option value="name_asc">Name A–Z</option>
                   <option value="name_desc">Name Z–A</option>
+                </select>
+              </div>
+              {/* Contact Status */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Status</label>
+                <select value={contactStatus} onChange={e => setContactStatus(e.target.value)}
+                  className="h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-blue-500 min-w-[160px]">
+                  <option value="all">All Statuses</option>
+                  <option value="verified">Verified</option>
+                  <option value="non_verified">Non-Verified</option>
                 </select>
               </div>
               {activeFilterCount > 0 && (
@@ -255,6 +268,12 @@ const FindBuyers = () => {
                       {company.type_name && (
                         <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
                           <Building2 size={10} />{company.type_name}
+                        </span>
+                      )}
+                      {/* Verified contacts badge */}
+                      {company.has_key_contacts && (
+                        <span className="inline-flex items-center gap-1 text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full font-semibold">
+                          <ShieldCheck size={10} /> Verified Contacts
                         </span>
                       )}
                     </div>

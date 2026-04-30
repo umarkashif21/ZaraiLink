@@ -1,144 +1,87 @@
-# ZaraiLink Search Engine: End-to-End Architecture Deep Dive
+# ZaraiLink: Comprehensive Search Engine Architecture
 
-This document provides a comprehensive technical breakdown of the ZaraiLink Search Engine, detailing the multi-stage pipeline from raw natural language input to final ranked supplier/buyer intelligence.
+The ZaraiLink search engine is designed to be highly flexible, catering to both industry veterans who know exact HS codes, and new users who prefer searching with natural language. 
 
----
-
-## 1. High-Level Pipeline Overview
-
-The search engine operates as a **6-stage pipeline**, moving from high-level intent to granular trade intelligence.
-
-1.  **NLU Layer**: Query parsing, intent classification, and entity extraction.
-2.  **Product Resolution**: Mapping natural language to hard HS codes and DB categories.
-3.  **Perspective Filtering**: Mapping (Intent + UI Context) to trade directions (Import/Export).
-4.  **Aggregation**: Rolling up millions of transaction rows into counterparty profiles.
-5.  **Multi-Factor Ranking**: Intent-aware scoring using Volume, Count, Price, and Recency.
-6.  **Intelligence Metrics**: Calculating behavioral labels (Momentum, Loyalty, Pricing Power).
+This document breaks down the entire lifecycle of a search, how the different query modes work, and how data is ultimately presented to the user.
 
 ---
 
-## 2. Phase 1: NLU Engine (The Modern Stack)
+## 1. The Four Ways to Query (Frontend Modes)
 
-The system uses a state-of-the-art **ModernNLUEngine** (found in `nlu_engine.py`) that combines four distinct ML models to avoid generic keyword matching.
+The frontend search bar dynamically detects what the user is typing and adapts its behavior in real-time. There are four distinct ways a user can query the system:
 
-### A. Intent Classification (SetFit)
-- **Model**: Fine-tuned **SetFit** model (based on `BAAI/bge-small-en-v1.5`).
-- **Function**: Classifies the user's role as a **BUYER** or **SELLER**.
-- **Logic**: Handles complex phrasing like *"I'm looking to source rice"* (BUY) vs *"I have dextrose to offer"* (SELL).
-- **Fallback**: Robust Regex-based intent detection if the ML model is unavailable.
+### A. HS Code Mode (Numeric Search)
+*   **How it works:** If the user types only numbers and periods (e.g., `1702.3000`), the frontend detects this and displays a blue **"HS Code Mode"** badge.
+*   **Action:** It hits a specialized backend endpoint (`/api/search/hs-code-tree/`) to fetch hierarchical HS code suggestions.
+*   **Result:** Clicking a suggestion routes the user to the Data Dashboard filtered exactly to that global HS code.
 
-### B. Entity Extraction (GLiNER)
-- **Model**: **GLiNER** (Generalist Model for Information Extraction).
-- **Function**: Zero-shot extraction of `product`, `country`, `quantity`, and `price`.
-- **Logic**: Unlike traditional NER, it can find "Basmati Rice" or "China" without being explicitly trained on those specific words.
+### B. Product Name Search (Variant Search)
+*   **How it works:** The user types a specific product like `"dextrose monohydrate"`. The frontend displays a green **"Product Search"** badge.
+*   **Action:** The autocomplete engine fetches matching products from the database. 
+*   **Result:** Clicking the suggestion routes the user to the dashboard, pinning that exact product name (`variant_name=...`) as an active filter.
 
-### C. Keyword Processing (KeyBERT + Stopword Stripping)
-- **Model**: **KeyBERT**.
-- **Function**: Extracts the "Semantic Core" of the product name.
-- **Logic**: Strips trade noise (*"i want to buy"*, *"please find me suppliers of"*) to isolate the search term (*"dextrose anhydrous"*).
+### C. Category Search (Broad Search)
+*   **How it works:** The user types a broad category like `"Cane Molasses"`. 
+*   **Action:** The autocomplete suggests the category. 
+*   **Result:** The backend is smart enough to know this is a category, not a specific transaction variant. It safely drops the exact variant filter and loads the dashboard for the entire HS code category to prevent frustrating "0 results" errors.
 
-### D. Advanced Price Extraction (LLM + Regex)
-- **Stack**: **OpenRouter (DeepSeek/Mistral)** for complex natural language, with a **Fast Regex Fallback**.
-- **Function**: Converts phrases like *"under 500 usd"* into machine-readable filters: `{"range": {"usd_per_mt": {"lte": 500}}}`.
-- **Signals**: Detects "ranking hints" (e.g., "cheap" → `price_asc`).
-
----
-
-## 3. Phase 2: Product Resolution & Disambiguation
-
-Once a product keyword (e.g., "Rice") is extracted, the `SearchService` maps it to the database hierarchy.
-
-- **HS Code Extraction**: If the user typed an HS code (*"170230"*), the system maps it directly to the subcategory.
-- **Fuzzy Matching (Trigram Similarity)**: Uses Postgres `pg_trgm` to handle typos (*"dextos"* → *"Dextrose"*).
-- **Prefix Matching**: Fast path for partial matches (*"dex"* → *"Dextrose"*).
-- **Disambiguation Flow**: 
-    - If "Dextrose" matches both "Dextrose Monohydrate" and "Dextrose Anhydrous", the engine triggers a **Variant Picker** in the UI.
-    - **Scope-Aware Availability**: It only shows variants that actually have data for the current intent (e.g., if no one exports "Dextrose Ball" from Pakistan, that variant is hidden).
+### D. AI Query Mode (Natural Language)
+*   **How it works:** The user selects a trade scope (Imports/Exports) and types a full sentence like *"I want to buy dextrose from China under $500"*. A purple **"AI Query Mode"** badge appears.
+*   **Action:** The user hits "Search" without clicking an autocomplete suggestion.
+*   **Result:** The raw sentence is sent to the backend, where it enters the **NLU Pipeline** to extract intent, product, country, and price constraints.
 
 ---
 
-## 4. Phase 3: Candidate Retrieval & Aggregation
+## 2. The Backend Routing: Fast Path vs. NLU Path
 
-The engine retrieves "Company Candidates" by performing a massive roll-up of transaction data.
+When the Django backend receives a search request at the `/api/search/` endpoint, it makes a critical decision on how to process it to save time and compute power.
 
-### The Aggregator Logic (`SupplierAggregator`)
-The system does **NOT** just search for company names. It aggregates real trade data:
-- **Filters**: Applies row-level filters for `trade_type` (IMPORT vs EXPORT), `origin_country`, and `destination_country`.
-- **Perspective Resolution**:
-    - **BUY Worldwide** → Filters for `IMPORT` transactions (finding foreign sellers).
-    - **SELL Pakistan** → Filters for `IMPORT` transactions where destination is Pakistan (finding local buyers).
-- **Metric Roll-up**:
-    - `total_volume`: Sum of `qty_mt`.
-    - `shipment_count`: Count of unique references.
-    - `avg_price`: Weighted average (Sum of Price * Volume / Total Volume).
-    - `last_shipped`: Max of `reporting_date`.
+### The Fast Path (Exact DB Match)
+If the user clicked an item from the frontend autocomplete dropdown, the request arrives with explicit parameters (e.g., `hs_code=1701.9910` or `variant_name=Refined Sugar`). 
+*   The backend **bypasses the AI/NLU pipeline entirely**.
+*   It immediately queries the PostgreSQL database using these exact parameters.
+*   This results in blazing-fast load times (milliseconds) for standard product searches.
 
----
-
-## 5. Phase 4: Multi-Factor Ranking (Composite Score)
-
-ZaraiLink does not simply sort by volume. It uses a **Normalized Composite Score** to find the "Best Fit."
-
-### The Scoring Equation
-The score is a weighted sum of normalized factors:
-`Score = (w1 * Volume) + (w2 * Frequency) + (w3 * NormalizedPrice) + (w4 * Recency)`
-
-### Intent-Aware Weighting
-The weights shift dynamically based on the NLU "ranking hint":
-- **Default (Balanced)**: Vol 0.4, Freq 0.3, Price 0.2, Recency 0.1.
-- **"Cheap" Intent**: Price weight jumps to **0.5**, decreasing Volume weight.
-- **"Bulk/Premium" Intent**: Volume weight jumps to **0.5**, prioritizing the biggest established players.
+### The NLU Path (AI Processing)
+If the user submits a raw sentence, the backend routes the text through the 4-stage AI pipeline:
+1.  **SetFit:** Decides if the user wants to BUY or SELL.
+2.  **KeyBERT:** Extracts the product name.
+3.  **RapidFuzz:** Matches geographic names to ISO country codes.
+4.  **DeepSeek LLM:** Conditionally triggers if it detects price/volume numbers, extracting structural constraints.
 
 ---
 
-## 6. Phase 5: Intelligence & Behavior Metrics
+## 3. The Data Dashboard & Trade Perspectives
 
-The final search result includes "Intelligence Labels" computed on the fly by the `SupplierAggregator`.
+Once the backend has the data (either via Fast Path or NLU), the user lands on the **Data Dashboard**. The core philosophy of the dashboard is **Direction-Aware Discovery**.
 
-| Metric | logic | Interpretation |
-| :--- | :--- | :--- |
-| **Repeat Ratio** | % of transactions with returning customers | **Loyalty**: >70% = "Strong" market trust. |
-| **Concentration** | % of volume going to Top 3 buyers | **Risk**: >60% = "High" dependency on few clients. |
-| **Momentum** | Growth over last 90 days vs previous 90 | **Trend**: "Growing" vs "Declining". |
-| **Pricing Power** | Price change vs repeat behavior | **Position**: "Premium" if prices rise and customers stay. |
+Because all trade on ZaraiLink is cross-border, a single product (like "Rice") means very different things depending on which side of the border you are on. The dashboard presents **4 Trade Perspectives (Pills)**:
 
----
+1.  **Foreign Suppliers** (Who outside Pakistan is selling this?)
+2.  **Foreign Buyers** (Who outside Pakistan is buying this?)
+3.  **Pakistani Buyers** (Who inside Pakistan is importing this?)
+4.  **Pakistani Suppliers** (Who inside Pakistan is exporting this?)
 
-## 7. Phase 6: Learn to Rank (LTR) — The Supervised Layer
-
-For advanced relevance, the system includes an **LTR Pipeline** (found in `ranking_ltr.py`).
-
-- **Algorithm**: **LambdaMART** (via LightGBM).
-- **Training**: Uses **Pseudo-Labeling**. Since it lacks user click data, it uses "Expert Rules" to create a silver-standard dataset to teach the model what a "Good" supplier looks like.
-- **Inference**: Predicts a `relevance_score` (0-1) that acts as a tie-breaker or secondary ranker in the ensemble.
+Clicking these pills instantly toggles the underlying dataset without requiring a page reload.
 
 ---
 
-## 7. Search Infrastructure & Data Sync
+## 4. The Smart Sidebar & Aggregation
 
-To maintain performance, the search engine utilizes several specialized infrastructure components:
+To help users refine their search, a sidebar sits on the left side of the dashboard displaying all product variants under the searched HS code.
 
-### A. Semantic Indexing (`build_search_index.py`)
-- **Process**: A periodic management command that iterates over all `ProductSubCategory` and `ProductItem` entries.
-- **Embeddings**: Uses `sentence-transformers` to generate **384-dimensional vectors** for each product.
-- **Storage**: Currently stored as a high-performance `.pkl` index for fast local retrieval, or pushed to **OpenSearch** for distributed KNN search.
-
-### B. OpenSearch Vector Store (`vector_store.py`)
-- **Indexing**: Transactions and products are indexed into OpenSearch with a `combined_vector` field.
-- **Search Method**: Supports **Hybrid Search** (BM25 Keyword + KNN Semantic). 
-- **Resilience**: The `SearchService` includes a heartbeat check; if OpenSearch is unreachable, it silently falls back to the **Postgres/ORM Aggregator** to ensure zero downtime.
-
-### C. The LTR Trainer (`train_ltr.py` / `ltr_dataset_builder.py`)
-- **Dataset Builder**: Generates synthetic query-document pairs.
-- **Pseudo-Labeling**: Assigns relevance grades (0-4) based on historical trade success.
-- **Versioning**: Models are saved as `lgbm_ltr.txt` and loaded at runtime by the ranker.
+**Decoupled Aggregation Logic:**
+A major feature of the ZaraiLink search engine is its decoupled sidebar. 
+*   The sidebar counts are calculated independently from the main results grid. 
+*   If a user is looking at *Foreign Suppliers* (Import Data), the sidebar dynamically shows how many **Import** shipments exist for each product.
+*   If they click *Foreign Buyers* (Export Data), the sidebar instantly updates to show the **Export** shipment counts.
+*   If a product is heavily imported but never exported, its count drops to `0` and it visually fades out when switching to the Export pill, immediately informing the user of the market reality.
 
 ---
 
-## 8. Summary of Technologies Used
+## 5. Paywall Integration
 
-- **Backend**: Django (Python), Postgres (Trigram Search), OpenSearch (Vector/BM25).
-- **ML Classifiers**: SetFit (Intent), GLiNER (NER), KeyBERT (Keywords), Sentence-Transformers (Embeddings).
-- **Ranking**: LightGBM (LambdaMART), NumPy/Pandas (Composite scoring logic).
-- **External Intelligence**: OpenRouter API (DeepSeek/Mistral for natural language price/query parsing).
-- **Performance**: Django Cache (NLU result caching), pg_trgm (Postgres Fuzzy Search).
+The search engine is deeply integrated with the Token Wallet.
+*   When the search engine returns companies, it checks the user's access state.
+*   If the user has not unlocked that specific HS code category, the search engine forcefully scrubs the data, returning only the top 2 "Preview" profiles with blurred contact details.
+*   The user must spend Tokens to unlock the category, at which point the search engine releases the full paginated dataset.

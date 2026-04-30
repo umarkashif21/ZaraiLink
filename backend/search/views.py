@@ -449,35 +449,63 @@ class SearchViewSet(viewsets.ViewSet):
         
         cat = ProductCategory.objects.filter(hs_code__startswith=q).values('hs_code', 'name').order_by('hs_code').first()
         hs_description = cat['name'] if cat else q
-        total_count = qs.count()
-        
-        if intent in ('FOREIGN_SUPPLIERS', 'PAKISTANI_BUYERS'):
-            qs = qs.filter(trade_type='IMPORT')
-        else:
-            qs = qs.filter(trade_type='EXPORT')
 
-        qs_base = qs
+        # ── Sidebar: ALL subcategories for this HS code, across ALL directions ────
+        # Built from a completely unfiltered qs so it never shrinks when the user
+        # selects a subcat filter or switches pills. This is the full product universe.
+        sidebar_qs = Transaction.objects.filter(hs_code__startswith=q).select_related(
+            'product_item', 'product_item__sub_category'
+        )
 
+        def _build_sidebar(qs_src):
+            rows = list(
+                qs_src.values('product_item__sub_category__name')
+                      .annotate(count=Count('id'))
+                      .order_by('-count')
+            )
+            return {r['product_item__sub_category__name']: r['count']
+                    for r in rows if r['product_item__sub_category__name']}
+
+        combined_map = _build_sidebar(sidebar_qs)
+        import_map   = _build_sidebar(sidebar_qs.filter(trade_type='IMPORT'))
+        export_map   = _build_sidebar(sidebar_qs.filter(trade_type='EXPORT'))
+
+        # Order by combined count; include every subcategory that exists in any direction
+        all_names = sorted(combined_map.keys(), key=lambda n: combined_map[n], reverse=True)
+        sidebar_counts        = [{"name": n, "count": combined_map[n]}             for n in all_names]
+        sidebar_import_counts = [{"name": n, "count": import_map.get(n, 0)}        for n in all_names]
+        sidebar_export_counts = [{"name": n, "count": export_map.get(n, 0)}        for n in all_names]
+
+
+        # ── Apply variant/subcat filter to profile qs (not to sidebar) ─────────
         subcat_names = []
+        filter_was_ignored = False
         if subcat_filter:
             subcat_names = [s.strip() for s in subcat_filter.split(',') if s.strip()]
             if subcat_names:
                 from django.db.models import Q
-                qs = qs.filter(
-                    Q(product_item__sub_category__name__in=subcat_names) | 
+                filtered_qs = qs.filter(
+                    Q(product_item__sub_category__name__in=subcat_names) |
                     Q(product_item__name__in=subcat_names)
                 )
+                if filtered_qs.exists():
+                    # Valid leaf-level filter — apply it
+                    qs = filtered_qs
+                else:
+                    # The name is a category label, not a subcategory/item name.
+                    # Silently ignore so we don't show a false 0-results page.
+                    subcat_names = []
+                    filter_was_ignored = True
 
-        # Sidebar: use ProductSubCategory names (clean tariff names, not raw invoice text)
-        refinements = list(
-            qs_base.values('product_item__sub_category__name')
-              .annotate(count=Count('id'))
-              .order_by('-count')
-        )
-        sidebar_counts = [
-            {"name": r['product_item__sub_category__name'] or "Other", "count": r['count']}
-            for r in refinements
-        ]
+        # ── total_count: filtered count for the header badge ──────────────────
+        total_count = qs.count()
+
+        # ── Apply intent → trade_type filter for profiles only ───────────────
+        is_import_tab = intent in ('FOREIGN_SUPPLIERS', 'PAKISTANI_BUYERS')
+        if is_import_tab:
+            qs = qs.filter(trade_type='IMPORT')
+        else:
+            qs = qs.filter(trade_type='EXPORT')
 
         # Determine which entity field to aggregate by
         if intent in ('FOREIGN_SUPPLIERS', 'PAKISTANI_SUPPLIERS'):
@@ -544,16 +572,20 @@ class SearchViewSet(viewsets.ViewSet):
         print(f"[HS DASHBOARD DEBUG] q={q} intent={intent} count={total_count} qs.count()={qs.count()} len(raw_profiles)={len(raw_profiles)} len(profiles)={len(profiles)} len(visible_profiles)={len(visible_profiles)} subcat_names={subcat_names}")
 
         return Response({
-            "hs_code":          q,
-            "hs_description":   hs_description,
-            "total_shipments":  total_count,
-            "sidebar_counts":   sidebar_counts,
-            # Output security parameters directly to frontend config
-            "access_state":     access_state,
-            "paywall_price":    paywall_price,
-            "visible_profiles": visible_profiles,
-            "full_profiles":    full_profiles,
-            "total_profiles_count": len(profiles),
+            "hs_code":               q,
+            "hs_description":        hs_description,
+            "total_shipments":       total_count,
+            "sidebar_counts":        sidebar_counts,
+            "sidebar_import_counts": sidebar_import_counts,
+            "sidebar_export_counts": sidebar_export_counts,
+            "trade_direction":       "IMPORT" if is_import_tab else "EXPORT",
+            "subcat_filter_ignored": filter_was_ignored,
+            # Access / paywall
+            "access_state":          access_state,
+            "paywall_price":         paywall_price,
+            "visible_profiles":      visible_profiles,
+            "full_profiles":         full_profiles,
+            "total_profiles_count":  len(profiles),
         })
 
 

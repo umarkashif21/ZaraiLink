@@ -123,9 +123,17 @@ class SearchService:
         # Step 1: NLU  (SetFit + KeyBERT + OpenRouter)
         # ------------------------------------------------------------------
         t0 = time.perf_counter()
-        
+
+        # Safe default — overwritten by every branch below.
+        # Prevents UnboundLocalError when the 'multiple same-name subcats' branch
+        # hits `pass` and falls through to the intent/country extraction below.
+        nlu_result = {
+            "intent":          explicit_intent or "UNKNOWN",
+            "product_keyword": raw_query,
+        }
+
         is_numeric = all(c.isdigit() or c == '.' for c in raw_query.strip())
-        
+
         if is_numeric:
             logger.warning(f"[NLU] Bypassing LLM NLU for numeric HS Code query: '{raw_query}'")
             hs_code_candidate = raw_query.strip()
@@ -135,6 +143,7 @@ class SearchService:
             }
             if not hs_code:
                 hs_code = hs_code_candidate
+
         else:
             rq = raw_query.strip()
             # ------- FAST PATH: Exact DB match — skip NLU entirely -------
@@ -153,6 +162,8 @@ class SearchService:
                     subcat_id = subcats[0].id if subcats and not cats else None
                     variant_name = subcats[0].name if subcats and not cats else None
                     
+                    t_total_ms = (time.perf_counter() - t_total) * 1000
+                    logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
                     return {
                         "is_category_bridge": True,
                         "hs_code": hs_codes[0],
@@ -162,6 +173,8 @@ class SearchService:
                 elif cats:
                     # Only fallback to broad SummaryView if there's a broad category match involved.
                     logger.warning(f"[NLU] Bypassing NLU for exact DB broad/multiple Category: '{rq}'. Sending to SummaryView.")
+                    t_total_ms = (time.perf_counter() - t_total) * 1000
+                    logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
                     return {
                         "is_category_bridge": True,
                         "hs_code": rq, # SummaryView expects the name to query
@@ -256,7 +269,11 @@ class SearchService:
                 needs_disambig = True
 
         if needs_disambig:
-            logger.warning(f"[TIMING] Total (disambig early-exit): {time.perf_counter() - t_total:.3f}s")
+            t_total_ms = (time.perf_counter() - t_total) * 1000
+            if hs_code or variant_name or subcat_id or is_numeric:
+                logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
+            else:
+                logger.info(f"[LATENCY] Total request time: {t_total_ms:.0f}ms")
             return {
                 "nlu":                  nlu_result,
                 "profiles":             [],
@@ -303,7 +320,11 @@ class SearchService:
         # Ranking is embedded inside _orm_search; estimate remainder as < 30 ms
         logger.warning(f"[TIMING] Ranking: (included in DB aggregation above)")
 
-        logger.warning(f"[TIMING] Total: {time.perf_counter() - t_total:.3f}s")
+        t_total_ms = (time.perf_counter() - t_total) * 1000
+        if hs_code or variant_name or subcat_id or is_numeric:
+            logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
+        else:
+            logger.info(f"[LATENCY] Total request time: {t_total_ms:.0f}ms")
 
         is_broad = False
         if not hs_code and not subcat_ids and len(product_keyword) > 1:

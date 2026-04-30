@@ -51,13 +51,7 @@ const Dashboard = () => {
   const [selectedProductName, setSelectedProductName] = useState(null);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
-  const [cardDismissed, setCardDismissed] = useState(
-    () => localStorage.getItem('zarailink_search_guide_dismissed') === 'true'
-  );
-  const dismissCard = () => {
-    localStorage.setItem('zarailink_search_guide_dismissed', 'true');
-    setCardDismissed(true);
-  };
+
 
   const searchMode = (() => {
     if (!query.trim()) return null;
@@ -122,7 +116,14 @@ const Dashboard = () => {
       setSelectedHsCode(suggestion.hs_code);
       setSelectedProductName(suggestion.name);
       setShowSuggestions(false);
-      const params = new URLSearchParams({ q: suggestion.name, hs_code: suggestion.hs_code, variant_name: suggestion.name, scope: scope || 'IMPORT' });
+      // Always route to DataDashboard — the 4-pill UI handles import/export direction.
+      // mode=dashboard is the key that tells the router to render DataDashboard, not SearchResults.
+      const params = new URLSearchParams({
+        q:            suggestion.name,
+        hs_code:      suggestion.hs_code,
+        variant_name: suggestion.name,
+        mode:         'dashboard',
+      });
       navigate(`/search/results?${params.toString()}`);
       return;
     }
@@ -130,7 +131,15 @@ const Dashboard = () => {
     setSelectedHsCode(suggestion.hs_code);
     setSelectedProductName(suggestion.name);
     setShowSuggestions(false);
-    navigate(`/search/results?q=${encodeURIComponent(suggestion.name)}&hs_code=${encodeURIComponent(suggestion.hs_code)}`);
+    // Always route to DataDashboard — the 4-pill UI handles import/export direction.
+    // mode=dashboard is the key that tells the router to render DataDashboard, not SearchResults.
+    const params = new URLSearchParams({
+      q:            suggestion.name,
+      hs_code:      suggestion.hs_code,
+      variant_name: suggestion.name,
+      mode:         'dashboard',
+    });
+    navigate(`/search/results?${params.toString()}`);
   };
 
   const clearQuery = () => {
@@ -222,22 +231,12 @@ const Dashboard = () => {
         <main className="max-w-4xl mx-auto px-6 py-20 md:py-28 relative z-10">
 
           {/* ── How to Search Card ─────────────────────────────────────── */}
-          <AnimatePresence>
-            {!cardDismissed && (
               <motion.div
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12, height: 0 }}
                 transition={{ duration: 0.3 }}
                 className="mb-10 bg-white/80 backdrop-blur border border-slate-200 rounded-2xl shadow-lg shadow-slate-200/50 p-5 text-left relative"
               >
-                <button
-                  onClick={dismissCard}
-                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
-                  aria-label="Dismiss"
-                >
-                  <X size={18} />
-                </button>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
                     <Info size={15} className="text-emerald-600" />
@@ -264,8 +263,6 @@ const Dashboard = () => {
                   ))}
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
 
           {/* ── Headline ──────────────────────────────────────────────── */}
           <motion.div
@@ -392,7 +389,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.98 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute z-50 top-full mt-3 w-full bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden text-left"
+                    className="absolute z-50 top-full mt-3 w-full bg-white rounded-2xl shadow-2xl border border-slate-100 max-h-96 overflow-y-auto overflow-x-hidden text-left"
                   >
                     <div className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50 bg-slate-50/50">
                       Product Matches
@@ -409,9 +406,6 @@ const Dashboard = () => {
                           <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{s.category} • HS {s.hs_code}</span>
                         </div>
                         <div className="flex items-center gap-4">
-                          {s.total_volume > 0 && (
-                            <span className="text-xs font-bold text-slate-600 bg-slate-100 rounded-lg px-3 py-1">{s.total_volume.toLocaleString()} MT</span>
-                          )}
                           {s.is_final === false && (
                             <span className="text-xs font-bold text-emerald-700 bg-emerald-100 rounded-lg px-3 py-1">Drill Down</span>
                           )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, SlidersHorizontal, X, Building2, MapPin, Tag, Users } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Building2, MapPin, Tag, ShieldCheck } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
 import WatchlistButton from '../Common/WatchlistButton';
 import Pagination from '../Common/Pagination';
@@ -19,6 +19,7 @@ const FindSuppliers = () => {
   const [search, setSearch] = useState('');
   const [country, setCountry] = useState('');
   const [sector, setSector] = useState('');
+  const [contactStatus, setContactStatus] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -87,16 +88,18 @@ const FindSuppliers = () => {
 
   useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
 
-  const reset = () => { setSearch(''); setCountry(''); setSector(''); };
+  const reset = () => { setSearch(''); setCountry(''); setSector(''); setContactStatus('all'); };
 
-  const activeFilterCount = [search, country, sector].filter(Boolean).length;
+  const activeFilterCount = [search, country, sector, contactStatus !== 'all'].filter(Boolean).length;
 
   // ── Sort + paginate ──────────────────────────────────────────────────
   const sorted = useMemo(() => {
-    const arr = [...companies];
+    let arr = [...companies];
+    if (contactStatus === 'verified') arr = arr.filter(c => c.has_key_contacts);
+    if (contactStatus === 'non_verified') arr = arr.filter(c => !c.has_key_contacts);
     const dir = sortBy.endsWith('asc') ? 1 : -1;
     return arr.sort((a, b) => (a.name || '').localeCompare(b.name || '') * dir);
-  }, [companies, sortBy]);
+  }, [companies, sortBy, contactStatus]);
 
   const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const paginated = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -179,6 +182,16 @@ const FindSuppliers = () => {
                   className="h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500">
                   <option value="name_asc">Name A–Z</option>
                   <option value="name_desc">Name Z–A</option>
+                </select>
+              </div>
+              {/* Contact Status */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Status</label>
+                <select value={contactStatus} onChange={e => setContactStatus(e.target.value)}
+                  className="h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 min-w-[160px]">
+                  <option value="all">All Statuses</option>
+                  <option value="verified">Verified Contacts</option>
+                  <option value="non_verified">Non-Verified Contacts</option>
                 </select>
               </div>
               {activeFilterCount > 0 && (
@@ -286,7 +299,13 @@ const FindSuppliers = () => {
                           {company.type_name}
                         </span>
                       )}
-                    </div>
+                      {/* Verified contacts badge */}
+                    {company.has_key_contacts && (
+                      <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
+                        <ShieldCheck size={10} /> Verified Contacts
+                      </span>
+                    )}
+                  </div>
                   </div>
 
                   {/* CTA */}

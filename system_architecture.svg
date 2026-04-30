@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+    <defs>
+        <!-- Arrowhead markers -->
+        <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#1a5c38" />
+        </marker>
+        <marker id="arrowHeadGold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#c8932a" />
+        </marker>
+        <marker id="arrowHeadRev" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 10 0 L 0 5 L 10 10 z" fill="#1a5c38" />
+        </marker>
+        <!-- Drop shadow -->
+        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="2" dy="4" stdDeviation="4" flood-opacity="0.15" />
+        </filter>
+    </defs>
+
+    <style>
+        .layer-bg { fill: #f8faf9; rx: 15; stroke: #e2e8f0; stroke-width: 2; }
+        .layer-title { font-family: sans-serif; font-size: 18px; font-weight: bold; fill: #1a5c38; }
+        .main-box { fill: white; stroke: #1a5c38; stroke-width: 2; rx: 8; filter: url(#shadow); }
+        .main-title { font-family: sans-serif; font-size: 16px; font-weight: bold; fill: #1a5c38; text-anchor: middle; }
+        .sub-box { fill: #f0f4f2; rx: 5; }
+        .sub-text { font-family: sans-serif; font-size: 12px; fill: #333; text-anchor: middle; }
+        
+        .nlu-box { fill: #fffcf5; stroke: #c8932a; stroke-width: 3; rx: 8; filter: url(#shadow); }
+        .nlu-title { font-family: sans-serif; font-size: 16px; font-weight: bold; fill: #c8932a; text-anchor: middle; }
+        
+        .db-box { fill: white; stroke: #1a5c38; stroke-width: 2; rx: 8; filter: url(#shadow); }
+        
+        .conn-line { stroke: #1a5c38; stroke-width: 3; fill: none; }
+        .conn-line-gold { stroke: #c8932a; stroke-width: 3; fill: none; }
+        .conn-text { font-family: sans-serif; font-size: 12px; font-weight: bold; fill: #555; text-anchor: middle; }
+        .conn-bg { fill: white; opacity: 0.9; }
+    </style>
+
+    <!-- Layer Backgrounds -->
+    <!-- Frontend -->
+    <rect x="20" y="40" width="220" height="440" class="layer-bg" />
+    <text x="130" y="70" class="layer-title" text-anchor="middle">Layer 1: Frontend</text>
+    
+    <!-- Backend -->
+    <rect x="290" y="40" width="220" height="440" class="layer-bg" />
+    <text x="400" y="70" class="layer-title" text-anchor="middle">Layer 2: Backend</text>
+    
+    <!-- Data & AI -->
+    <rect x="560" y="40" width="220" height="440" class="layer-bg" />
+    <text x="670" y="70" class="layer-title" text-anchor="middle">Layer 3: Data &amp; AI</text>
+
+
+    <!-- Frontend Components -->
+    <rect x="40" y="90" width="180" height="370" class="main-box" />
+    <rect x="40" y="90" width="180" height="40" fill="#1a5c38" rx="8" />
+    <rect x="40" y="110" width="180" height="20" fill="#1a5c38" />
+    <text x="130" y="115" class="main-title" fill="white">React (UI)</text>
+    
+    <rect x="55" y="145" width="150" height="30" class="sub-box" />
+    <text x="130" y="164" class="sub-text">Search Bar</text>
+    
+    <rect x="55" y="190" width="150" height="30" class="sub-box" />
+    <text x="130" y="209" class="sub-text">Results Page</text>
+
+    <rect x="55" y="235" width="150" height="30" class="sub-box" />
+    <text x="130" y="254" class="sub-text">Deal Detail</text>
+
+    <rect x="55" y="280" width="150" height="30" class="sub-box" />
+    <text x="130" y="299" class="sub-text">Comparison View</text>
+
+    <rect x="55" y="325" width="150" height="30" class="sub-box" />
+    <text x="130" y="344" class="sub-text">Trade Directory</text>
+
+    <rect x="55" y="370" width="150" height="30" class="sub-box" />
+    <text x="130" y="389" class="sub-text">Token Wallet</text>
+
+    <!-- Backend Components -->
+    <rect x="310" y="90" width="180" height="370" class="main-box" />
+    <rect x="310" y="90" width="180" height="40" fill="#1a5c38" rx="8" />
+    <rect x="310" y="110" width="180" height="20" fill="#1a5c38" />
+    <text x="400" y="115" class="main-title" fill="white">Django REST API</text>
+    
+    <rect x="325" y="160" width="150" height="40" class="sub-box" />
+    <text x="400" y="184" class="sub-text">Auth Service</text>
+
+    <rect x="325" y="220" width="150" height="40" class="sub-box" />
+    <text x="400" y="244" class="sub-text">Search Service</text>
+
+    <rect x="325" y="280" width="150" height="40" class="sub-box" />
+    <text x="400" y="304" class="sub-text">Trade Data API</text>
+
+    <rect x="325" y="340" width="150" height="40" class="sub-box" />
+    <text x="400" y="364" class="sub-text">Token/Paywall Service</text>
+
+
+    <!-- Data & AI Components -->
+    <!-- NLU Pipeline -->
+    <rect x="580" y="120" width="180" height="120" class="nlu-box" />
+    <rect x="580" y="120" width="180" height="40" fill="#c8932a" rx="8" />
+    <rect x="580" y="140" width="180" height="20" fill="#c8932a" />
+    <text x="670" y="145" class="nlu-title" fill="white">NLU Pipeline</text>
+    <rect x="595" y="175" width="150" height="25" class="sub-box" style="fill:#fff5e6;" />
+    <text x="670" y="192" class="sub-text">Intent, Products, Loc.</text>
+    <rect x="595" y="205" width="150" height="25" class="sub-box" style="fill:#fff5e6;" />
+    <text x="670" y="222" class="sub-text">DeepSeek (Price/Qty)</text>
+
+
+    <!-- DB -->
+    <rect x="580" y="280" width="180" height="140" class="db-box" />
+    <rect x="580" y="280" width="180" height="40" fill="#1a5c38" rx="8" />
+    <rect x="580" y="300" width="180" height="20" fill="#1a5c38" />
+    <text x="670" y="305" class="main-title" fill="white">PostgreSQL DB</text>
+    
+    <path d="M 640 330 Q 670 320 700 330 L 700 370 Q 670 380 640 370 Z" fill="#f0f4f2" stroke="#1a5c38" stroke-width="2" />
+    <path d="M 640 330 Q 670 340 700 330" fill="none" stroke="#1a5c38" stroke-width="2" />
+    <text x="670" y="395" class="sub-text" style="font-weight:bold;">Trade Records</text>
+    <text x="670" y="410" class="sub-text" style="fill:#777;">(9,500+ transactions)</text>
+
+
+    <!-- Connections -->
+    <!-- React <-> Django -->
+    <path d="M 220 275 L 310 275" class="conn-line" marker-start="url(#arrowHeadRev)" marker-end="url(#arrowHead)" />
+    <rect x="235" y="265" width="60" height="20" class="conn-bg" rx="4" />
+    <text x="265" y="279" class="conn-text">HTTP/REST</text>
+
+    <!-- Django -> NLU -->
+    <path d="M 490 160 L 580 160" class="conn-line" marker-end="url(#arrowHead)" />
+    <rect x="500" y="140" width="70" height="20" class="conn-bg" rx="4" />
+    <text x="535" y="154" class="conn-text" style="fill:#1a5c38;">query text</text>
+
+    <!-- NLU -> Django -->
+    <path d="M 580 200 L 490 200" class="conn-line-gold" marker-end="url(#arrowHeadGold)" />
+    <rect x="495" y="205" width="80" height="20" class="conn-bg" rx="4" />
+    <text x="535" y="219" class="conn-text" style="fill:#c8932a; font-size:10px;">structured intent</text>
+    <rect x="495" y="222" width="80" height="15" class="conn-bg" rx="4" />
+    <text x="535" y="233" class="conn-text" style="fill:#c8932a; font-size:10px;">&amp; entities</text>
+
+    <!-- Django <-> Postgres -->
+    <path d="M 490 350 L 580 350" class="conn-line" marker-start="url(#arrowHeadRev)" marker-end="url(#arrowHead)" />
+    <rect x="500" y="340" width="70" height="20" class="conn-bg" rx="4" />
+    <text x="535" y="354" class="conn-text">ORM queries</text>
+
+</svg>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ZaraiLink FYP Poster</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a5c38;
+      --secondary: #c8932a;
+      --bg-light: #f8faf9;
+      --text-main: #333;
+      --border: #e2e8f0;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #555;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    .poster {
+      width: 841mm;
+      height: 1189mm;
+      background-color: white;
+      padding: 30mm;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Header */
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 15mm;
+      border-radius: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 10px solid var(--secondary);
+      margin-bottom: 15mm;
+    }
+    
+    .header-content h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    
+    .header-content h2 {
+      font-size: 2rem;
+      font-weight: 400;
+      color: #e0e0e0;
+      margin-bottom: 1rem;
+    }
+    
+    .header-meta {
+      font-size: 1.3rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+      text-align: right;
+    }
+    
+    .header-meta strong {
+      color: var(--secondary);
+    }
+    
+    /* Main Grid */
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15mm;
+      flex-grow: 1;
+    }
+    
+    /* Sections */
+    .section {
+      background: var(--bg-light);
+      border-radius: 15px;
+      padding: 12mm;
+      border: 2px solid var(--border);
+      margin-bottom: 15mm;
+    }
+    
+    .section-title {
+      color: var(--primary);
+      font-size: 2rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      border-bottom: 5px solid var(--secondary);
+      padding-bottom: 5px;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+    
+    p, li {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      color: var(--text-main);
+      margin-bottom: 15px;
+    }
+    
+    ul {
+      padding-left: 25px;
+      margin-bottom: 20px;
+    }
+    
+    li::marker {
+      color: var(--secondary);
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    
+    /* Feature Grid */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+    
+    .feature-card {
+      background: white;
+      border-left: 8px solid var(--secondary);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .feature-card h4 {
+      color: var(--primary);
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+    }
+    
+    .feature-card p {
+      font-size: 1.15rem;
+      margin-bottom: 0;
+    }
+    
+    /* Metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .metric-box {
+      background: var(--primary);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      border-bottom: 8px solid var(--secondary);
+    }
+    
+    .metric-value {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--secondary);
+      margin-bottom: 5px;
+    }
+    
+    .metric-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    
+    /* Screenshots */
+    .screenshot {
+      background: #e2e8f0;
+      border: 4px dashed #94a3b8;
+      height: 350px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 25px;
+    }
+    
+    /* Tech Stack */
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    .tech-badge {
+      background: white;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+  
+    /* SVGs */
+    svg {
+      width: 100%;
+      height: auto;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 10px;
+    }
+  
+    .box-primary { fill: var(--primary); rx: 8; }
+    .box-secondary { fill: var(--secondary); rx: 8; }
+    .box-white { fill: white; stroke: var(--primary); stroke-width: 3; rx: 8; }
+    .text-white { fill: white; font-weight: 700; font-size: 16px; text-anchor: middle; dominant-baseline: middle; }
+    .text-dark { fill: var(--text-main); font-weight: 700; font-size: 16px; text-anchor: middle; dominant-baseline: middle; }
+    .arrow { stroke: var(--secondary); stroke-width: 4; fill: none; marker-end: url(#arrowhead); }
+    
+    @media print {
+      body { padding: 0; background: white; }
+      .poster { box-shadow: none; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="poster">
+    
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-content">
+        <h1>ZaraiLink</h1>
+        <h2>Pakistan's Cross-Border Trade Intelligence Platform</h2>
+      </div>
+      <div class="header-meta">
+        <strong>[YOUR UNIVERSITY NAME HERE]</strong><br>
+        Department of Computer Science<br><br>
+        <strong>Team:</strong> [TEAM MEMBER 1], [TEAM MEMBER 2]<br>
+        <strong>Supervisor:</strong> [SUPERVISOR NAME]
+      </div>
+    </header>
+
+    <!-- MAIN GRID -->
+    <div class="main-content">
+      
+      <!-- COLUMN 1 -->
+      <div class="column">
+        
+        <div class="section">
+          <h3 class="section-title">Introduction</h3>
+          <p>Global trade data is highly fragmented. Pakistani traders currently lack access to structured, actionable global trade intelligence, forcing them to rely on manual, opaque processes for deal discovery and competitive benchmarking.</p>
+          <p><strong>ZaraiLink</strong> solves this by providing a unified cross-border trade intelligence platform that connects Pakistani traders with global buyers and suppliers, and helps international traders discover Pakistani counterparts across all trade sectors.</p>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">Objectives</h3>
+          <ul>
+            <li><strong>AI Trade Search Engine:</strong> Accept natural language queries, plain product names, or HS codes to instantly locate trade counterparts.</li>
+            <li><strong>NLU Pipeline:</strong> Build a custom Natural Language Understanding pipeline to extract intent (buy/sell), products, prices, and locations.</li>
+            <li><strong>Deal Intelligence:</strong> Provide deep analytics on market pricing, shipment volumes, and competitive positioning.</li>
+            <li><strong>Supplier Comparison:</strong> Side-by-side benchmarking of up to 4 entities with visual metrics and export capabilities.</li>
+            <li><strong>Trade Directory:</strong> A searchable, verified directory of Pakistani trading companies.</li>
+            <li><strong>Token Paywall:</strong> Implement a sustainable token-based access control system for premium data unlocking.</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">System Architecture</h3>
+          <svg viewBox="0 0 500 400">
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="var(--secondary)" />
+              </marker>
+            </defs>
+            
+            <!-- React Frontend -->
+            <rect x="50" y="20" width="400" height="60" class="box-primary" />
+            <text x="250" y="50" class="text-white">React Frontend (UI/UX)</text>
+            <path d="M250 80 L250 120" class="arrow" />
+
+            <!-- Django API -->
+            <rect x="50" y="120" width="400" height="60" class="box-secondary" />
+            <text x="250" y="150" class="text-white">Django REST API (Backend)</text>
+            
+            <!-- Branches -->
+            <path d="M250 180 L250 200 L120 200 L120 220" class="arrow" />
+            <path d="M250 180 L250 200 L380 200 L380 220" class="arrow" />
+            <path d="M250 180 L250 220" class="arrow" />
+
+            <!-- Subsystems -->
+            <rect x="20" y="220" width="140" height="60" class="box-white" />
+            <text x="90" y="250" class="text-dark">NLU Pipeline</text>
+
+            <rect x="180" y="220" width="140" height="60" class="box-white" />
+            <text x="250" y="250" class="text-dark">PostgreSQL DB</text>
+
+            <rect x="340" y="220" width="140" height="60" class="box-white" />
+            <text x="410" y="250" class="text-dark">Token Wallet</text>
+
+            <!-- Bottom Data -->
+            <path d="M90 280 L90 320" class="arrow" />
+            <path d="M250 280 L250 320" class="arrow" />
+            <path d="M410 280 L410 320" class="arrow" />
+            
+            <rect x="50" y="320" width="400" height="60" class="box-primary" />
+            <text x="250" y="350" class="text-white">Global Trade Data Records</text>
+          </svg>
+        </div>
+
+      </div>
+
+      <!-- COLUMN 2 -->
+      <div class="column">
+        
+        <div class="section">
+          <h3 class="section-title">NLU Pipeline Detail</h3>
+          <svg viewBox="0 0 500 550">
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="var(--secondary)" />
+              </marker>
+            </defs>
+            
+            <rect x="100" y="10" width="300" height="50" class="box-white" />
+            <text x="250" y="35" class="text-dark">Natural Language Query Input</text>
+            <path d="M250 60 L250 90" class="arrow" />
+
+            <rect x="100" y="90" width="300" height="60" class="box-primary" />
+            <text x="250" y="115" class="text-white">Intent Detection (SetFit)</text>
+            <text x="250" y="135" class="text-white" style="font-size: 12px; font-weight: 400;">Classifies BUY vs SELL intention</text>
+            <path d="M250 150 L250 180" class="arrow" />
+
+            <rect x="100" y="180" width="300" height="60" class="box-primary" />
+            <text x="250" y="205" class="text-white">Product Extraction (KeyBERT)</text>
+            <text x="250" y="225" class="text-white" style="font-size: 12px; font-weight: 400;">Extracts specific product keywords</text>
+            <path d="M250 240 L250 270" class="arrow" />
+
+            <rect x="100" y="270" width="300" height="60" class="box-primary" />
+            <text x="250" y="295" class="text-white">Country Resolution (RapidFuzz)</text>
+            <text x="250" y="315" class="text-white" style="font-size: 12px; font-weight: 400;">Fuzzy matching for origin/destination</text>
+            <path d="M250 330 L250 360" class="arrow" />
+
+            <rect x="100" y="360" width="300" height="70" class="box-secondary" />
+            <text x="250" y="385" class="text-white">Price/Qty Extraction (DeepSeek)</text>
+            <text x="250" y="410" class="text-white" style="font-size: 12px; font-weight: 400;">Triggered conditionally on price signals</text>
+            <path d="M250 430 L250 460" class="arrow" />
+
+            <rect x="100" y="460" width="300" height="50" class="box-white" />
+            <text x="250" y="485" class="text-dark">Ranked Trade Results</text>
+          </svg>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">Key Features</h3>
+          <div class="feature-grid">
+            <div class="feature-card">
+              <h4>Trade Search Engine</h4>
+              <p>Unified search with auto-detection for AI queries, product matches, or HS code lookups, mapped to 4 trade perspectives.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Deal Intelligence</h4>
+              <p>4 comprehensive tabs: Overview, Market & Pricing, Company profiles, and paginated Transactions history.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Supplier Comparison</h4>
+              <p>Side-by-side benchmarking of up to 4 companies with sparklines, metric highlights, and PDF export functionality.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Trade Directory & Wallet</h4>
+              <p>Verified directory of Pakistani entities secured by a token-based subscription wallet to unlock contacts & categories.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">Results & Metrics</h3>
+          <div class="metrics-grid">
+            <div class="metric-box">
+              <div class="metric-value">89.4%</div>
+              <div class="metric-label">SetFit Intent Accuracy</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-value">&lt; 3s</div>
+              <div class="metric-label">Search Latency</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-value">4</div>
+              <div class="metric-label">NLP Components</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-value">354</div>
+              <div class="metric-label">Training Queries</div>
+            </div>
+            <div class="metric-box" style="grid-column: 1 / -1;">
+              <div class="metric-value">100+</div>
+              <div class="metric-label">Supported Concurrent Users</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMN 3 -->
+      <div class="column">
+        
+        <div class="section">
+          <h3 class="section-title">User Interface</h3>
+          <p>Platform interfaces showing the Deal Details, NLU Search Results, and Trade Directory with active filters.</p>
+          <div class="screenshot">
+            [PLACEHOLDER: Insert Deal Details Screenshot]
+          </div>
+          <div class="screenshot">
+            [PLACEHOLDER: Insert Search Results Screenshot]
+          </div>
+          <div class="screenshot">
+            [PLACEHOLDER: Insert Trade Directory Screenshot]
+          </div>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">Tech Stack</h3>
+          <div class="tech-stack">
+            <div class="tech-badge">React JS</div>
+            <div class="tech-badge">Django REST</div>
+            <div class="tech-badge">PostgreSQL</div>
+            <div class="tech-badge">SetFit</div>
+            <div class="tech-badge">KeyBERT</div>
+            <div class="tech-badge">RapidFuzz</div>
+            <div class="tech-badge">OpenRouter API</div>
+            <div class="tech-badge">DeepSeek LLM</div>
+            <div class="tech-badge">ngrok</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">Conclusion & Future Work</h3>
+          <p>ZaraiLink successfully bridges the gap in cross-border trade intelligence for Pakistan by utilizing a specialized 4-stage NLU pipeline to extract actionable parameters from natural language. By mitigating latency through conditional LLM triggering, the platform delivers near real-time insights.</p>
+          <p><strong>Future Work:</strong></p>
+          <ul>
+            <li>Expansion of the SetFit training dataset to cover multilingual queries (e.g., Urdu/Roman Urdu).</li>
+            <li>Integration of predictive pricing models using historical shipment data.</li>
+            <li>Automated matching engine to proactively suggest trade partners based on user profiles.</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

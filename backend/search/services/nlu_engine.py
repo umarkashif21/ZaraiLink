@@ -603,7 +603,8 @@ class ModernNLUEngine:
         # ==================================================================
         t0 = time.perf_counter()
         intent = self.predict_intent(query)
-        logger.warning(f"[TIMING NLU] SetFit intent: {time.perf_counter() - t0:.3f}s")
+        t_setfit = (time.perf_counter() - t0) * 1000
+        logger.info(f"[LATENCY] SetFit: {t_setfit:.0f}ms")
         logger.debug(f"[NLU] Step1 intent={intent!r} query={query!r}")
 
         # ==================================================================
@@ -621,9 +622,12 @@ class ModernNLUEngine:
         # ==================================================================
         # STEP 3 — Country Resolution (RapidFuzz — DO NOT TOUCH)
         # ==================================================================
+        t0 = time.perf_counter()
         resolved_country = self._detect_country_fallback(query)
         if not resolved_country and gliner_country:
             resolved_country = self._resolve_country(gliner_country)
+        t_rapidfuzz = (time.perf_counter() - t0) * 1000
+        logger.info(f"[LATENCY] RapidFuzz: {t_rapidfuzz:.0f}ms")
         logger.debug(f"[NLU] Step3 resolved_country={resolved_country!r}")
 
         # ==================================================================
@@ -669,7 +673,8 @@ class ModernNLUEngine:
             except Exception as e:
                 logger.warning(f"[NLU] KeyBERT extraction failed: {e}")
 
-        logger.warning(f"[TIMING NLU] KeyBERT extraction: {time.perf_counter() - t0:.3f}s")
+        t_keybert = (time.perf_counter() - t0) * 1000
+        logger.info(f"[LATENCY] KeyBERT: {t_keybert:.0f}ms")
         logger.debug(f"[NLU] Step4(keybert) product={product_keyword!r}")
 
         # ==================================================================
@@ -699,6 +704,7 @@ class ModernNLUEngine:
             needs_llm = False
 
         price_filter = None
+        t_deepseek = 0.0
         
         if not needs_llm:
             logger.warning(
@@ -710,7 +716,8 @@ class ModernNLUEngine:
             price_filter = regex_price # Use the fully built regex price filter
         else:
             llm_result = _call_llm_unified(query)
-            logger.warning(f"[TIMING NLU] OpenRouter API call: {time.perf_counter() - t0:.3f}s")
+            t_deepseek = (time.perf_counter() - t0) * 1000
+            logger.info(f"[LATENCY] DeepSeek: {t_deepseek:.0f}ms")
             price_filter = _price_filter_from_llm(llm_result)
 
         quantity     = llm_result.get("quantity")
@@ -757,7 +764,9 @@ class ModernNLUEngine:
             f"country={resolved_country!r} | price={llm_result.get('price')} | "
             f"quantity={quantity!r} | product_method={product_method}"
         )
-        logger.warning(f"[TIMING NLU] Total NLU: {time.perf_counter() - t_nlu_total:.3f}s")
+        t_total_nlu = (time.perf_counter() - t_nlu_total) * 1000
+        logger.info(f"[LATENCY] NLU Total: {t_total_nlu:.0f}ms")
+        logger.info(f"[LATENCY] NLU Total (no DeepSeek): {t_total_nlu - t_deepseek:.0f}ms")
         return result
 
     # Alias used by some views
