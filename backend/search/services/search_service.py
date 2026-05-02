@@ -18,8 +18,12 @@ When it's NOT running (ConnectionError), falls back to ORM silently.
 
 import logging
 import hashlib
+import re
 from typing import Optional
 from django.core.cache import cache
+
+# Regex that recognises bare HS code entries like "17", "170", "1702", "1702.4", "170230"
+HS_CODE_RE = re.compile(r'^\d{2,}(\.\d*)?$')
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +107,6 @@ class SearchService:
         hs_code: str = None,
         subcat_id: int = None,       # Exact DB subcategory id (from disambiguation click)
         variant_name: str = None,   # Exact product name user clicked (e.g., "Dextrose Anhydrous")
-        explicit_intent: str = None, # Bypass NLU intent
     ) -> dict:
         """
         Execute search. Returns:
@@ -123,81 +126,20 @@ class SearchService:
         # Step 1: NLU  (SetFit + KeyBERT + OpenRouter)
         # ------------------------------------------------------------------
         t0 = time.perf_counter()
-
-        # Safe default — overwritten by every branch below.
-        # Prevents UnboundLocalError when the 'multiple same-name subcats' branch
-        # hits `pass` and falls through to the intent/country extraction below.
-        nlu_result = {
-            "intent":          explicit_intent or "UNKNOWN",
-            "product_keyword": raw_query,
-        }
-
-        is_numeric = all(c.isdigit() or c == '.' for c in raw_query.strip())
-
-        if is_numeric:
-            logger.warning(f"[NLU] Bypassing LLM NLU for numeric HS Code query: '{raw_query}'")
-            hs_code_candidate = raw_query.strip()
-            nlu_result = {
-                "intent": explicit_intent or "UNKNOWN",
-                "product_keyword": hs_code_candidate
-            }
-            if not hs_code:
-                hs_code = hs_code_candidate
-
+        # ------- NLU CACHE -------
+        # Build a stable cache key from (query, context) — 24h TTL
+        _cache_raw = f"nlu:{raw_query.lower().strip()}:{ui_context.lower()}"
+        _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
+        nlu_result = cache.get(_cache_key)
+        if nlu_result is not None:
+            logger.warning(f"[CACHE] NLU cache HIT for query='{raw_query[:40]}' — skipping LLM call")
         else:
-            rq = raw_query.strip()
-            # ------- FAST PATH: Exact DB match — skip NLU entirely -------
-            # Check BEFORE cache so stale cached NLU results can't interfere.
-            from trade_data.models import ProductCategory, ProductSubCategory
-            cats = list(ProductCategory.objects.filter(name__iexact=rq))
-            subcats = list(ProductSubCategory.objects.filter(name__iexact=rq))
-            all_matches = cats + subcats
-            
-            if all_matches:
-                hs_codes = list(set(m.hs_code for m in all_matches))
-                if len(hs_codes) == 1 and len(hs_codes[0].replace('.', '')) >= 7:
-                    logger.warning(f"[NLU] Bypassing NLU for exact DB matched Category: '{rq}', directing to leaf HS {hs_codes[0]}")
-                    
-                    # If the match was purely a subcategory, pass the variant info so the dashboard filters correctly
-                    subcat_id = subcats[0].id if subcats and not cats else None
-                    variant_name = subcats[0].name if subcats and not cats else None
-                    
-                    t_total_ms = (time.perf_counter() - t_total) * 1000
-                    logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
-                    return {
-                        "is_category_bridge": True,
-                        "hs_code": hs_codes[0],
-                        "subcat_id": subcat_id,
-                        "variant_name": variant_name
-                    }
-                elif cats:
-                    # Only fallback to broad SummaryView if there's a broad category match involved.
-                    logger.warning(f"[NLU] Bypassing NLU for exact DB broad/multiple Category: '{rq}'. Sending to SummaryView.")
-                    t_total_ms = (time.perf_counter() - t_total) * 1000
-                    logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
-                    return {
-                        "is_category_bridge": True,
-                        "hs_code": rq, # SummaryView expects the name to query
-                    }
-                else:
-                    # If multiple subcategories matched (e.g., same name under different HS codes),
-                    # do NOT send to SummaryView. Let them fall through to NLU / Disambig logic
-                    # so they can pick the exact variant from the DisambiguationPicker!
-                    pass
-            else:
-                # ------- NLU CACHE -------
-                _cache_raw = f"nlu:{raw_query.lower().strip()}:{ui_context.lower()}"
-                _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
-                nlu_result = cache.get(_cache_key)
-                if nlu_result is not None:
-                    logger.warning(f"[CACHE] NLU cache HIT for query='{raw_query[:40]}'")
-                else:
-                    logger.warning(f"[CACHE] NLU cache MISS — running full NLU for '{raw_query[:40]}'")
-                    nlu_result = self._nlu_engine.parse(raw_query, ui_context=ui_context)
-                    cache.set(_cache_key, nlu_result, timeout=86400)  # 24 hours
-            logger.warning(f"[TIMING] NLU parse: {time.perf_counter() - t0:.3f}s")
+            logger.warning(f"[CACHE] NLU cache MISS for query='{raw_query[:40]}' — running full NLU")
+            nlu_result = self._nlu_engine.parse(raw_query, ui_context=ui_context)
+            cache.set(_cache_key, nlu_result, timeout=86400)  # 24 hours
+        logger.warning(f"[TIMING] NLU parse: {time.perf_counter() - t0:.3f}s")
 
-        intent  = explicit_intent or nlu_result.get("intent", "UNKNOWN")
+        intent  = nlu_result.get("intent", "BUY")
         country = nlu_result.get("country")
 
         product_keyword = (
@@ -222,58 +164,20 @@ class SearchService:
         )
         logger.warning(f"[TIMING] Subcategory resolve: {time.perf_counter() - t0:.3f}s")
 
-        # ------------------------------------------------------------------
-        # Step 3b: Scope mismatch early exit
-        # If the product exists in the opposite trade direction but NOT the
-        # selected one, tell the user immediately instead of showing an
-        # empty disambiguation picker or 0-result page.
-        # ------------------------------------------------------------------
-        scope_info = getattr(self, '_scope_mismatch', None)
-
-        if scope_info:
-            logger.warning(f"[SCOPE MISMATCH] Product '{scope_info['product']}' not found in {scope_info['current_scope']}, but exists in {scope_info['alt_scope']}")
-            return {
-                "nlu":                  nlu_result,
-                "profiles":             [],
-                "total_raw_hits":       0,
-                "needs_disambiguation": False,
-                "is_broad_search":      False,
-                "variants":             [],
-                "search_engine":        "none",
-                "scope_mismatch":       scope_info,
-            }
-
-        # If multiple subcategories matched → disambiguate.
-        # NOTE: Skip disambiguation when intent is UNKNOWN — we want to show all
-        # companies across all matching subcats, and the pill tabs act as filters.
-        # Disambiguation only makes sense when the user has a clear BUY/SELL intent.
-        #
-        # Smart same-name rule: if ALL matched subcategories share the exact same
-        # name as the query (e.g. 4× "Refined Sugar" under different HS codes),
-        # DON'T disambiguate — aggregate them all.  Only show a picker when the
-        # variants have genuinely different names (e.g. "Dextrose Anhydrous" vs
-        # "Dextrose Ball").
+        # If multiple subcategories matched OR item-level choices exist → disambiguate
         needs_disambig = False
-        import re
-        def _clean(name):
-            # Remove content in parenthesis e.g. " (Sample)"
-            return re.sub(r'\(.*?\)', '', name).lower().strip()
-            
-        pk_clean = _clean(product_keyword)
-        all_same_name = bool(variant_list) and all(
-            _clean(v.get('name', '')) == pk_clean
-            for v in variant_list
-        )
-        if not all_same_name:
-            if len(subcat_ids) > DISAMBIGUATION_THRESHOLD:
+        if len(subcat_ids) > DISAMBIGUATION_THRESHOLD:
+            needs_disambig = True
+        elif len(subcat_ids) == 1 and variant_list:
+            first_level = variant_list[0].get('match_level', 'subcategory')
+            if first_level == 'item':
+                # Single subcat but multiple product items under it
+                needs_disambig = True
+            elif not hs_code and variant_list[0]['name'].lower().strip() != product_keyword.lower().strip():
                 needs_disambig = True
 
         if needs_disambig:
-            t_total_ms = (time.perf_counter() - t_total) * 1000
-            if hs_code or variant_name or subcat_id or is_numeric:
-                logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
-            else:
-                logger.info(f"[LATENCY] Total request time: {t_total_ms:.0f}ms")
+            logger.warning(f"[TIMING] Total (disambig early-exit): {time.perf_counter() - t_total:.3f}s")
             return {
                 "nlu":                  nlu_result,
                 "profiles":             [],
@@ -320,18 +224,11 @@ class SearchService:
         # Ranking is embedded inside _orm_search; estimate remainder as < 30 ms
         logger.warning(f"[TIMING] Ranking: (included in DB aggregation above)")
 
-        t_total_ms = (time.perf_counter() - t_total) * 1000
-        if hs_code or variant_name or subcat_id or is_numeric:
-            logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
-        else:
-            logger.info(f"[LATENCY] Total request time: {t_total_ms:.0f}ms")
+        logger.warning(f"[TIMING] Total: {time.perf_counter() - t_total:.3f}s")
 
         is_broad = False
         if not hs_code and not subcat_ids and len(product_keyword) > 1:
             is_broad = True
-
-        active_subcat_id = subcat_ids[0] if len(subcat_ids) == 1 else None
-        active_hs_code_resolved = variant_list[0].get("hs_code") if len(variant_list) == 1 and isinstance(variant_list[0], dict) else None
 
         return {
             "nlu":                  nlu_result,
@@ -341,8 +238,6 @@ class SearchService:
             "is_broad_search":      is_broad,
             "variants":             [],
             "search_engine":        "orm",
-            "active_subcat_id":     active_subcat_id,
-            "active_hs_code":       active_hs_code_resolved,
         }
 
     # =========================================================================
@@ -368,212 +263,210 @@ class SearchService:
             - variant_list: metadata for disambiguation display (country-filtered if country given)
             - product_item_ids: non-empty only when user picked an exact product item (via hs_code)
         """
-        from trade_data.models import ProductSubCategory, ProductItem, Transaction, ProductCategory
+        from trade_data.models import ProductSubCategory, ProductItem, Transaction
         from django.db.models import Q
-
-        def _get_display_name(obj, is_item=False):
-            name = obj.name
-            if name.lower().strip() in ['other', 'others']:
-                if is_item:
-                    sc = obj.sub_category if hasattr(obj, 'sub_category') else None
-                    cat = sc.category if sc and hasattr(sc, 'category') else None
-                    hs = sc.hs_code if sc else ''
-                else:
-                    cat = obj.category if hasattr(obj, 'category') else None
-                    hs = obj.hs_code
-                cat_name = cat.name if cat else ''
-                name = f"Other (HS {hs}) - {cat_name}" if cat_name else f"Other (HS {hs})"
-            return name
 
         # ------------------------------------------------------------------
         # FAST PATH: subcat_id provided — user clicked an exact product
         # Return immediately, no fuzzy matching needed
-        # ------------------------------------------------------------------
         if subcat_id:
             return [subcat_id], [], []
 
-        if hs_code:
-            # Multiple subcategories can share the same hs_code prefix.
-            # First, determine how many match this prefix.
-            scs = list(ProductSubCategory.objects.filter(hs_code__startswith=hs_code)
-                        .select_related('category').order_by('hs_code', 'name'))
+        bypassed_nlu = False
+        sc_qs = []
+        item_qs = []
 
+        if hs_code:
+            # ------------------------------------------------------------------
+            # SHORT HS CODE PATH (2-3 digits = chapter/heading level)
+            # e.g., "17" → all chapter 17 subcategories grouped by HS prefix
+            # ------------------------------------------------------------------
+            clean_hs = hs_code.replace('.', '')
+            if len(clean_hs) < 4:
+                # Use ProductCategory which holds chapter/heading level data
+                from trade_data.models import ProductCategory
+                cats = list(ProductCategory.objects.filter(
+                    hs_code__startswith=hs_code
+                ).select_related().order_by('hs_code'))
+                
+                # Also try subcategories that start with this prefix
+                scs_short = list(ProductSubCategory.objects.filter(
+                    hs_code__startswith=hs_code
+                ).select_related('category').order_by('hs_code'))
+                
+                if scs_short:
+                    # Group subcategories, deduplicate by 4-digit prefix (heading level)
+                    seen_headings = {}
+                    for sc in scs_short:
+                        # Use first 6 chars of hs_code as heading key (e.g. "1702.4")
+                        prefix = sc.hs_code[:6] if len(sc.hs_code) >= 4 else sc.hs_code
+                        if prefix not in seen_headings:
+                            seen_headings[prefix] = sc
+                    
+                    # Build category-level variant list for disambiguation
+                    heading_variants = []
+                    for prefix_key in sorted(seen_headings.keys()):
+                        sc = seen_headings[prefix_key]
+                        # Determine display name: use category name if available
+                        display_name = sc.category.name if sc.category else sc.name
+                        heading_hs = sc.hs_code[:len(hs_code)+3] if len(sc.hs_code) > len(hs_code) else sc.hs_code
+                        heading_variants.append({
+                            'id':          sc.id,
+                            'name':        display_name,
+                            'hs_code':     heading_hs,
+                            'category':    sc.category.name if sc.category else '',
+                            'match_level': 'subcategory',
+                        })
+                    
+                    if len(heading_variants) == 1:
+                        # Single match — go directly to it
+                        return [scs_short[0].id], [], []
+                    
+                    return [sc.id for sc in scs_short], heading_variants, []
+                return [], [], []
+
+            # Multiple subcategories can share the same hs_code (e.g., 1702.3 is shared by
+            # Dextrose Ball, Dextrose Anhydrous, Dextrose Monohydrate, etc.)
+            # Priority: variant_name (exact) > product_keyword (fuzzy) > first alphabetical
+            scs = list(ProductSubCategory.objects.filter(hs_code=hs_code).order_by('name'))
+            
+            # Fallback to prefix match if no exact match is found (e.g., user typed "1702")
             if not scs:
+                scs = list(ProductSubCategory.objects.filter(hs_code__startswith=hs_code).order_by('name'))
+            
+            if len(scs) == 1:
+                sc = scs[0]
+                # Check if user has already selected a specific item by name
+                if variant_name:
+                    vn_lower = variant_name.lower().strip()
+                    # First try subcategory name match
+                    if sc.name.lower().strip() == vn_lower:
+                        return [sc.id], [], []
+                    # Then try ProductItem name match
+                    matched_items = list(ProductItem.objects.filter(
+                        sub_category=sc, name__iexact=vn_lower
+                    ))
+                    if matched_items:
+                        return [sc.id], [], [matched_items[0].id]
+                    # Fallback: any item in this subcategory
+                    return [sc.id], [], []
+                
+                # Check for product items under this single subcategory
+                items = list(ProductItem.objects.filter(
+                    sub_category=sc
+                ).select_related('sub_category__category').order_by('name'))
+                
+                if len(items) > 1:
+                    # Item-level disambiguation: let user pick the exact product
+                    item_variants = [{
+                        'id':          sc.id,
+                        'name':        item.name,
+                        'hs_code':     sc.hs_code,
+                        'category':    sc.category.name,
+                        'item_id':     item.id,
+                        'match_level': 'item',
+                    } for item in items]
+                    return [sc.id], item_variants, []
+                elif len(items) == 1:
+                    return [sc.id], [], [items[0].id]
+                else:
+                    return [sc.id], [], []
+            
+            if scs:
+                # 1. Exact match on variant_name (most reliable — comes from frontend click)
+                if variant_name:
+                    vn_lower = variant_name.lower().strip()
+                    for sc in scs:
+                        if sc.name.lower().strip() == vn_lower:
+                            return [sc.id], [], []
+                    # Try ProductItem name match across all matching subcategories
+                    matched_items = list(ProductItem.objects.filter(
+                        sub_category__in=scs, name__iexact=vn_lower
+                    ).select_related('sub_category'))
+                    if matched_items:
+                        item = matched_items[0]
+                        return [item.sub_category_id], [], [item.id]
+                
+                # 2. Unique-word match — ONLY when keyword is specific enough (>= 5 chars)
+                if product_keyword and len(product_keyword) >= 5:
+                    kw_lower = product_keyword.lower()
+                    all_name_words = []
+                    for sc in scs:
+                        all_name_words.extend(sc.name.lower().split())
+                    word_counts = {}
+                    for w in all_name_words:
+                        word_counts[w] = word_counts.get(w, 0) + 1
+                    unique_words = {w for w, c in word_counts.items() if c == 1 and len(w) > 3}
+
+                    for sc in scs:
+                        for word in sc.name.lower().split():
+                            if word in unique_words and word in kw_lower:
+                                return [sc.id], [], []
+            
+                # 3. SAFE FALLBACK: multiple subcategories → subcategory-level disambiguation
+                for sc in scs:
+                    if not hasattr(sc, 'category'):
+                        sc = ProductSubCategory.objects.select_related('category').get(id=sc.id)
+                # Mark as subcategory-level disambiguation
+                sc_qs = [ProductSubCategory.objects.select_related('category').get(id=sc.id)
+                         if not hasattr(sc, '_category_cache') else sc for sc in scs]
+                sc_qs = scs
+                bypassed_nlu = True
+            
+            else:
                 # hs_code refers to a ProductItem — unpack to subcategory
                 items = list(ProductItem.objects.filter(
                     sub_category__hs_code=hs_code
-                ).select_related('sub_category'))
+                ).select_related("sub_category"))
                 if items:
                     sc_id = items[0].sub_category.id
                     item_ids = [i.id for i in items]
                     return [sc_id], [], item_ids
                 return [], [], []
 
-            if subcat_id:
-                return [subcat_id], [], []
+        if not bypassed_nlu:
+            if not product_keyword or len(product_keyword) < 2:
+                return [], [], []
 
-            if len(scs) == 1:
-                return [scs[0].id], [], []
-
-            # Exact match on variant_name (most reliable — comes from frontend click)
-            if variant_name:
-                vn_lower = variant_name.lower().strip()
-                for sc in scs:
-                    if sc.name.lower().strip() == vn_lower:
-                        return [sc.id], [], []
-
-            # ----------------------------------------------------------------
-            # HIERARCHICAL GROUPING — The key fix.
-            # Instead of showing all 892 items for '17', group by the next
-            # meaningful HS code prefix level:
-            #   '17'     (2 chars) → group by 4-char prefix → 1701, 1702, 1703, 1704
-            #   '1702'   (4 chars) → group by 7-char prefix → 1702.111, 1702.191...
-            #   '1702.1' (6 chars) → show individual items   (few, direct results)
-            # ----------------------------------------------------------------
-            clean_q = hs_code.replace('.', '')
-
-            if len(clean_q) <= 4:
-                # Short prefix: group into next-level buckets
-                # Determine next prefix length to group by:
-                #   2 chars → 4 chars (chapter → heading)
-                #   3 chars → 4 chars
-                #   4 chars → 7 chars (heading → subheading)
-                if len(clean_q) <= 3:
-                    # Group by the first 4 digits of hs_code (before the dot)
-                    groups = {}
-                    for sc in scs:
-                        raw = sc.hs_code or ''
-                        parts = raw.split('.')
-                        bucket = parts[0][:4] if parts else raw[:4]
-                        if len(bucket) >= 4 and bucket not in groups:
-                            # Use ProductCategory name if available for a clean label
-                            cat_name = sc.category.name if hasattr(sc, 'category') and sc.category else bucket
-                            groups[bucket] = {
-                                'id': None,            # Not a single subcat — user must drill further
-                                'hs_code': bucket,
-                                'name': cat_name,
-                                'category': '',
-                                'is_drill_down': True, # Signal frontend to treat as tree node
-                            }
-                    variant_list = list(groups.values())
-                else:
-                    # 4-digit prefix: group into 7-char subheading buckets
-                    groups = {}
-                    for sc in scs:
-                        raw = sc.hs_code or ''
-                        # e.g. '1702.111' → bucket = '1702.111' (keep up to 8 chars)
-                        bucket = raw[:7] if len(raw) >= 7 else raw
-                        if bucket not in groups:
-                            groups[bucket] = {
-                                'id': None,
-                                'hs_code': bucket,
-                                'name': sc.category.name if hasattr(sc, 'category') and sc.category else sc.name,
-                                'category': '',
-                                'is_drill_down': len(ProductSubCategory.objects.filter(hs_code__startswith=bucket)) > 1,
-                            }
-                    variant_list = list(groups.values())
-
-                if len(variant_list) == 1 and variant_list[0].get('is_drill_down'):
-                    # Only one bucket — collapse and pass all ids to aggregator
-                    return [sc.id for sc in scs], [], []
-
-                # Return all sub-IDs so the aggregator has data, but variant_list
-                # shows the grouped tree for the user to pick from.
-                return [sc.id for sc in scs], variant_list, []
-
-            # Long prefix (>= 5 clean chars): close enough — show individual subcategories
-            if len(scs) > 10:
-                # Still many — group by unique product names to avoid hiding distinct items with same hs_code
-                seen = {}
-                for sc in scs:
-                    key = sc.name.lower().strip()
-                    if key not in seen:
-                        seen[key] = {
-                            'id': sc.id,
-                            'hs_code': sc.hs_code,
-                            'name': sc.name,
-                            'category': sc.category.name if hasattr(sc, 'category') and sc.category else '',
-                            'is_drill_down': False,
-                        }
-                variant_list = list(seen.values())
-                return [sc.id for sc in scs], variant_list, []
-
-            # Few items — show them all directly (best UX for specific searches)
-            variant_list = [
-                {
-                    'id': sc.id,
-                    'hs_code': sc.hs_code,
-                    'name': sc.name,
-                    'category': sc.category.name if hasattr(sc, 'category') and sc.category else '',
-                    'is_drill_down': False,
-                }
-                for sc in scs
-            ]
-            return [sc.id for sc in scs], variant_list, []
-
-        if not product_keyword or len(product_keyword) < 2:
-            return [], [], []
-
-        # ------------------------------------------------------------------
-        # PASS 0: Category Match — use icontains so multi-word names match even
-        # if the user typed only part of the category name or with different case.
-        # ------------------------------------------------------------------
-        cat_qs = list(ProductCategory.objects.filter(
-            name__icontains=product_keyword
-        ))
-        cat_sc_ids = set()
-        if cat_qs:
-            cat_sc_qs = list(ProductSubCategory.objects.filter(
-                category__in=cat_qs
+            # ------------------------------------------------------------------
+            # PASS 1: Prefix match on subcategory names
+            # ------------------------------------------------------------------
+            sc_qs = list(ProductSubCategory.objects.filter(
+                name__istartswith=product_keyword
             ).select_related("category"))
-            cat_sc_ids = {sc.id for sc in cat_sc_qs}
-        else:
-            cat_sc_qs = []
 
-        # ------------------------------------------------------------------
-        # PASS 1: Prefix match on subcategory names
-        # ------------------------------------------------------------------
-        pass1 = list(ProductSubCategory.objects.filter(
-            name__istartswith=product_keyword
-        ).select_related("category"))
-        # Merge, deduplicate by id
-        sc_map_pre = {sc.id: sc for sc in cat_sc_qs}
-        for sc in pass1:
-            sc_map_pre.setdefault(sc.id, sc)
-        sc_qs = list(sc_map_pre.values())
+            # PASS 2: Prefix match on product item names
+            item_qs = list(ProductItem.objects.filter(
+                name__istartswith=product_keyword
+            ).select_related("sub_category__category"))
 
-        # PASS 2: Prefix match on product item names
-        item_qs = list(ProductItem.objects.filter(
-            name__istartswith=product_keyword
-        ).select_related("sub_category__category"))
-
-        # PASS 3: Fuzzy fallback via pg_trgm
-        if not sc_qs and not item_qs:
-            from django.contrib.postgres.search import TrigramSimilarity
-            sc_qs = list(ProductSubCategory.objects.annotate(
-                similarity=TrigramSimilarity('name', product_keyword)
-            ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("category"))
-            item_qs = list(ProductItem.objects.annotate(
-                similarity=TrigramSimilarity('name', product_keyword)
-            ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("sub_category__category"))
-
-        # PASS 4: Needle-in-haystack — word-by-word search for garbled queries
-        if not sc_qs and not item_qs and " " in product_keyword:
-            words = sorted([w for w in product_keyword.split() if len(w) > 2], key=len, reverse=True)
-            for word in words:
-                sc_qs = list(ProductSubCategory.objects.filter(name__istartswith=word).select_related("category"))
-                item_qs = list(ProductItem.objects.filter(name__istartswith=word).select_related("sub_category__category"))
-                if sc_qs or item_qs:
-                    break
+            # PASS 3: Fuzzy fallback via pg_trgm
+            if not sc_qs and not item_qs:
                 from django.contrib.postgres.search import TrigramSimilarity
                 sc_qs = list(ProductSubCategory.objects.annotate(
-                    similarity=TrigramSimilarity('name', word)
+                    similarity=TrigramSimilarity('name', product_keyword)
                 ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("category"))
                 item_qs = list(ProductItem.objects.annotate(
-                    similarity=TrigramSimilarity('name', word)
+                    similarity=TrigramSimilarity('name', product_keyword)
                 ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("sub_category__category"))
-                if sc_qs or item_qs:
-                    break
+
+            # PASS 4: Needle-in-haystack — word-by-word search for garbled queries
+            if not sc_qs and not item_qs and " " in product_keyword:
+                words = sorted([w for w in product_keyword.split() if len(w) > 2], key=len, reverse=True)
+                for word in words:
+                    sc_qs = list(ProductSubCategory.objects.filter(name__istartswith=word).select_related("category"))
+                    item_qs = list(ProductItem.objects.filter(name__istartswith=word).select_related("sub_category__category"))
+                    if sc_qs or item_qs:
+                        break
+                    from django.contrib.postgres.search import TrigramSimilarity
+                    sc_qs = list(ProductSubCategory.objects.annotate(
+                        similarity=TrigramSimilarity('name', word)
+                    ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("category"))
+                    item_qs = list(ProductItem.objects.annotate(
+                        similarity=TrigramSimilarity('name', word)
+                    ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("sub_category__category"))
+                    if sc_qs or item_qs:
+                        break
 
         # Build a unified map: subcat_id → metadata
         sc_map = {}
@@ -581,8 +474,8 @@ class SearchService:
             sc_map[sc.id] = {
                 "id":       sc.id,
                 "hs_code":  sc.hs_code,
-                "name":     _get_display_name(sc),
-                "category": sc.category.name if hasattr(sc, 'category') and sc.category else ''
+                "name":     sc.name,
+                "category": sc.category.name,
             }
         for item in item_qs:
             sc = item.sub_category
@@ -590,8 +483,8 @@ class SearchService:
                 sc_map[sc.id] = {
                     "id":       sc.id,
                     "hs_code":  sc.hs_code,
-                    "name":     _get_display_name(sc),
-                    "category": sc.category.name if hasattr(sc, 'category') and sc.category else ''
+                    "name":     sc.name,
+                    "category": sc.category.name,
                 }
 
         variant_list = list(sc_map.values())
@@ -599,14 +492,26 @@ class SearchService:
 
         # ------------------------------------------------------------------
         # SCOPE-AWARE AVAILABILITY FILTER
-        # Skip entirely for HS code searches — the 4-tab pill UI on the
-        # frontend lets the user pick direction (import/export) themselves.
-        # Applying a scope filter here would incorrectly kill half the results.
+        # Map (Intent, Scope) → the trade_type that has real data for the
+        # current user context. This prevents showing product variants that
+        # will return 0 results when clicked.
+        #
+        # Intent | Scope     | Trade Type | Reasoning
+        # -------|-----------|------------|------------------------------
+        # BUY    | PAKISTAN  | EXPORT     | User wants a Pak seller
+        # SELL   | PAKISTAN  | IMPORT     | User wants a Pak buyer
+        # BUY    | WORLDWIDE | IMPORT     | User wants a foreign seller
+        # SELL   | WORLDWIDE | EXPORT     | User wants a foreign buyer
         # ------------------------------------------------------------------
-        self._scope_mismatch = None  # Reset on every call
-
-        if subcat_ids and not hs_code:
-            target_trade_type = scope
+        if subcat_ids:
+            if intent == "BUY" and scope == "PAKISTAN":
+                target_trade_type = "EXPORT"
+            elif intent == "SELL" and scope == "PAKISTAN":
+                target_trade_type = "IMPORT"
+            elif intent == "BUY" and scope == "WORLDWIDE":
+                target_trade_type = "IMPORT"
+            else:  # SELL + WORLDWIDE
+                target_trade_type = "EXPORT"
 
             availability_qs = Transaction.objects.filter(
                 trade_type=target_trade_type,
@@ -630,43 +535,9 @@ class SearchService:
                 # Only keep variants that have real transactions
                 variant_list = [v for v in variant_list if v["id"] in active_ids]
                 subcat_ids   = [sid for sid in subcat_ids if sid in active_ids]
-            else:
-                # Zero data in selected scope — check the OPPOSITE scope
-                opposite_type = "EXPORT" if target_trade_type == "IMPORT" else "IMPORT"
-                from django.db.models import Min, Max
-                opposite_qs = Transaction.objects.filter(
-                    trade_type=opposite_type,
-                    product_item__sub_category_id__in=subcat_ids,
-                )
-                opposite_count = opposite_qs.count()
-
-                if opposite_count > 0:
-                    # Data exists in the other scope — build mismatch metadata
-                    date_range = opposite_qs.aggregate(
-                        min_date=Min("reporting_date"),
-                        max_date=Max("reporting_date"),
-                    )
-                    product_display = product_keyword or "this product"
-                    current_label = "exported" if target_trade_type == "EXPORT" else "imported"
-                    alt_label     = "imported" if target_trade_type == "EXPORT" else "exported"
-                    alt_scope     = "import" if target_trade_type == "EXPORT" else "export"
-
-                    min_year = date_range["min_date"].year if date_range["min_date"] else "?"
-                    max_year = date_range["max_date"].year if date_range["max_date"] else "?"
-
-                    self._scope_mismatch = {
-                        "product": product_display,
-                        "current_scope": target_trade_type.lower(),
-                        "alt_scope": alt_scope,
-                        "current_label": current_label,
-                        "alt_label": alt_label,
-                        "alt_records": opposite_count,
-                        "year_min": min_year,
-                        "year_max": max_year,
-                    }
-                    # Clear variants so disambiguation picker does NOT show
-                    variant_list = []
-                    subcat_ids = []
+            # If active_ids is empty (genuinely no data), leave list intact so
+            # the aggregator can return a proper "0 results" response instead
+            # of silently dropping all variants.
 
         return subcat_ids, variant_list, []
 
@@ -916,8 +787,8 @@ class SearchService:
 
     @staticmethod
     def _map_scope(ui_context: str) -> str:
-        """Map 'import' / 'export' to aggregator scope strings."""
-        return "EXPORT" if ui_context.lower() == "export" else "IMPORT"
+        """Map 'worldwide' / 'pakistan' to aggregator scope strings."""
+        return "PAKISTAN" if ui_context.lower() == "pakistan" else "WORLDWIDE"
 
     # =========================================================================
     # AUTOCOMPLETE
@@ -927,85 +798,103 @@ class SearchService:
         """
         Returns ranked product subcategory matches for the autocomplete dropdown.
 
-        Key fix: strips intent stop-words from the query BEFORE the DB lookup,
-        so "i want to buy dex" correctly matches "Dextrose", "Dextrose Anhydrous", etc.
+        Supports BOTH natural language and bare HS code input:
+          - Natural language ("dex", "glucose") → icontains on name/item name
+          - HS code prefix ("1702", "1702.4")  → hs_code startswith lookup
 
-        Ranked by total transaction volume (most traded first).
+        Each result carries a match_type field ("name" | "hs_code") so the
+        frontend can render an appropriate visual indicator.
+
+        Ranked by total transaction volume (most-traded first).
         """
         from django.db.models import Sum, Count
-        from trade_data.models import ProductCategory, ProductSubCategory, ProductItem, Transaction
+        from trade_data.models import ProductSubCategory, ProductItem, Transaction
         from search.services.nlu_engine import extract_product_keyword
 
         if not partial_query or len(partial_query) < 2:
             return []
 
-        # ── HS code fast path ─────────────────────────────────────────────
-        raw = partial_query.strip()
-        is_numeric = bool(raw) and all(c.isdigit() or c == '.' for c in raw)
+        # Strip intent noise → get the actual product keyword
+        keyword = extract_product_keyword(partial_query)
 
-        print(f"[AUTOCOMPLETE DEBUG] raw='{raw}' is_numeric={is_numeric}", flush=True)
+        # Edge case: if keyword is shorter than 2 chars after stripping, use original
+        if len(keyword) < 2:
+            keyword = partial_query.strip()
 
-        if is_numeric:
-            keyword = raw
-        else:
-            keyword = extract_product_keyword(raw)
-            if len(keyword) < 2:
-                keyword = raw
-            if len(keyword) < 2:
-                return []
-
-        print(f"[AUTOCOMPLETE DEBUG] keyword='{keyword}'", flush=True)
-
-        if is_numeric:
-            sc_matches = ProductSubCategory.objects.filter(
-                hs_code__startswith=keyword
-            ).select_related("category")
-            cat_matches = ProductCategory.objects.filter(
-                hs_code__startswith=keyword
-            )
-        else:
-            sc_matches = ProductSubCategory.objects.filter(
-                name__icontains=keyword
-            ).select_related("category")
-            cat_matches = ProductCategory.objects.filter(
-                name__icontains=keyword
-            )
-
-        print(f"[AUTOCOMPLETE DEBUG] sc_matches={sc_matches.count()} cat_matches={cat_matches.count()}", flush=True)
-
-        seen_names = set()
-        suggestions = []
-
-        for sc in sc_matches[:30]:
-            name_lower = sc.name.lower().strip()
-            if name_lower not in seen_names:
-                seen_names.add(name_lower)
-                suggestions.append({
-                    "hs_code":  sc.hs_code,
-                    "name":     sc.name,
-                    "category": sc.category.name if getattr(sc, 'category', None) else "Category",
-                    "is_leaf":  True,
-                })
-
-        for cat in cat_matches[:30]:
-            name_lower = cat.name.lower().strip()
-            if name_lower not in seen_names:
-                seen_names.add(name_lower)
-                suggestions.append({
-                    "hs_code":  cat.hs_code,
-                    "name":     cat.name,
-                    "category": "Broad Category",
-                    "is_leaf":  False,
-                })
-
-        if not suggestions:
+        if len(keyword) < 2:
             return []
 
-        # Get total volume per autocomplete suggestion
+        # ------------------------------------------------------------------
+        # Detect whether the cleaned keyword looks like an HS code entry
+        # e.g. "1702", "1702.4", "170230"
+        # ------------------------------------------------------------------
+        is_hs_query = bool(HS_CODE_RE.match(keyword.strip()))
+
+        # Build unified map: subcat_id → metadata
+        sc_map = {}  # id → {hs_code, name, category, match_type}
+
+        if is_hs_query:
+            # ── HS code path: prefix-match on hs_code field ──────────────
+            hs_prefix = keyword.strip()
+            hs_matches = ProductSubCategory.objects.filter(
+                hs_code__startswith=hs_prefix
+            ).select_related("category")[:30]
+
+            for sc in hs_matches:
+                sc_map[sc.id] = {
+                    "hs_code":    sc.hs_code,
+                    "name":       sc.name,
+                    "category":   sc.category.name,
+                    "match_type": "hs_code",
+                }
+
+            # Also include any name hits in case there's an overlap
+            name_matches = ProductSubCategory.objects.filter(
+                name__icontains=hs_prefix
+            ).select_related("category")[:10]
+            for sc in name_matches:
+                if sc.id not in sc_map:
+                    sc_map[sc.id] = {
+                        "hs_code":    sc.hs_code,
+                        "name":       sc.name,
+                        "category":   sc.category.name,
+                        "match_type": "name",
+                    }
+        else:
+            # ── Natural language path: icontains on name / item name ──────
+            sc_matches = ProductSubCategory.objects.filter(
+                name__icontains=keyword
+            ).select_related("category")
+
+            item_matches = ProductItem.objects.filter(
+                name__icontains=keyword
+            ).select_related("sub_category__category")
+
+            for sc in sc_matches[:30]:
+                sc_map[sc.id] = {
+                    "hs_code":    sc.hs_code,
+                    "name":       sc.name,
+                    "category":   sc.category.name,
+                    "match_type": "name",
+                }
+            for item in item_matches[:30]:
+                sc = item.sub_category
+                if sc.id not in sc_map:
+                    sc_map[sc.id] = {
+                        "hs_code":    sc.hs_code,
+                        "name":       sc.name,
+                        "category":   sc.category.name,
+                        "match_type": "name",
+                    }
+
+        if not sc_map:
+            return []
+
+        # Get total volume per subcategory
         results = []
-        for meta in suggestions:
+        for sc_id, meta in sc_map.items():
             vol = Transaction.objects.filter(
-                hs_code__startswith=meta["hs_code"]
+                product_item__sub_category_id=sc_id
             ).aggregate(total=Sum("qty_mt"), count=Count("id"))
 
             results.append({
@@ -1014,10 +903,11 @@ class SearchService:
                 "category":     meta["category"],
                 "total_volume": float(vol["total"] or 0),
                 "tx_count":     vol["count"] or 0,
-                "is_final":     meta["is_leaf"],
+                "match_type":   meta["match_type"],
             })
 
-        results.sort(key=lambda x: x["total_volume"], reverse=True)
+        # HS code matches surface first, then sort by volume within each group
+        results.sort(key=lambda x: (0 if x["match_type"] == "hs_code" else 1, -x["total_volume"]))
         return results[:limit]
 
     # =========================================================================

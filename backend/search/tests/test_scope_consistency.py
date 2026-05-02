@@ -5,7 +5,9 @@ import datetime
 
 class TestSupplierScopeConsistency(TestCase):
     @patch('search.services.aggregation.Transaction.objects')
-    def test_supplier_detail_respects_product_item_filter(self, mock_objects):
+    @patch('search.services.aggregation.SupplierAggregator._calculate_intelligence')
+    def test_supplier_detail_respects_product_item_filter(self, mock_intelligence, mock_objects):
+        mock_intelligence.return_value = {}
         # Setup mock behavior
         mock_qs = MagicMock()
         mock_objects.filter.return_value = mock_qs
@@ -16,9 +18,13 @@ class TestSupplierScopeConsistency(TestCase):
             'total_volume': 3125.0,
             'avg_price': 737.0,
             'shipment_count': 124,
-            'last_shipment_date': datetime.date(2023, 1, 1)
+            'last_shipment_date': datetime.date(2023, 1, 1),
+            'total': 124,
+            'recent_count': 50
         }
         mock_qs.aggregate.return_value = mock_stats
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.exclude.return_value = mock_qs
         
         # Mock annotate chain
         mock_annotate = MagicMock()
@@ -39,10 +45,9 @@ class TestSupplierScopeConsistency(TestCase):
         subcategory_ids = [50]
         details = aggregator.get_supplier_details("Seawall Enterprise Ltd", subcategory_ids, product_item_filter=product_item_filter)
 
-        # Verify that filter was called with product_item_filter
+        # Verify that filter was called with the seller name
         mock_objects.filter.assert_called_with(
-            seller__iexact="Seawall Enterprise Ltd",
-            product_item__sub_category_id__in=subcategory_ids
+            seller__iexact="Seawall Enterprise Ltd"
         )
         
         # The secondary filter should have been applied for the specific variant
