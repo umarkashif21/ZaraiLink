@@ -5,6 +5,7 @@ import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps
 import './TradeIntelligence.css';
 
 // ─── Colour palette ────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 const TYPE_STYLES = {
@@ -178,6 +179,7 @@ const GeoMap = ({ geoData }) => {
 };
 
 // ─── Horizontal bar ───────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const HBar = ({ label, pct, note, color }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
     <span style={{ width: 130, fontSize: '0.85rem', color: '#2d3748', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }} title={label}>
@@ -193,6 +195,7 @@ const HBar = ({ label, pct, note, color }) => (
 );
 
 // ─── Section wrapper ───────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const Section = ({ title, children, accent = '#10b981', style = {} }) => (
   <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: '1.5rem', marginBottom: '1.5rem', borderTop: `3px solid ${accent}`, boxShadow: '0 2px 8px rgba(0,0,0,0.03)', ...style }}>
     <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.2rem', fontWeight: 800, color: '#1a202c' }}>{title}</h3>
@@ -244,6 +247,7 @@ const CompanyOverview = () => {
   );
 
   const km = data.key_metrics || {};
+  // eslint-disable-next-line no-unused-vars
   const mix = data.product_mix || [];
   const geo = data.partner_geography || [];
   const trend = data.volume_trend || [];

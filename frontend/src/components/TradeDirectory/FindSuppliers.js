@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Search, SlidersHorizontal, X, Building2, MapPin, Tag, ShieldCheck } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
 import WatchlistButton from '../Common/WatchlistButton';
@@ -10,7 +10,6 @@ import useDebounce from '../../hooks/useDebounce';
 const API = process.env.REACT_APP_API_BASE_URL;
 
 const FindSuppliers = () => {
-  const navigate = useNavigate();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,7 +44,7 @@ const FindSuppliers = () => {
         }
         if (rolesRes.ok) {
           const roles = await rolesRes.json();
-          const r = roles.find(r => r.name.toLowerCase() === 'supplier') || roles.find(r => r.name.toLowerCase() === 'suppliers');
+          const r = roles.find(r => r.name.toLowerCase() === 'suppliers') || roles.find(r => r.name.toLowerCase() === 'supplier');
           if (r) {
             setSupplierRoleId(r.id);
             resolvedRoleId = r.id;

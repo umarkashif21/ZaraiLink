@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
 import './TradeIntelligence.css';
 
 const LinkPrediction = () => {
-  const navigate = useNavigate();
   const [companyName, setCompanyName] = useState('');
   const [predictionType, setPredictionType] = useState('sellers'); 
   const [method, setMethod] = useState('combined');
@@ -63,17 +61,6 @@ const LinkPrediction = () => {
     }
   };
 
-  const getScorePercentage = (score) => {
-    if (typeof score === 'number') {
-      
-      
-      const normalizedScore = Math.min(1, Math.max(0, score));
-      return normalizedScore * 100;
-    }
-    return 0;
-  };
-
-  
   const getConfidenceTier = (score) => {
     if (score >= 0.7) return { label: 'High', color: '#22c55e', bgColor: '#dcfce7' };
     if (score >= 0.4) return { label: 'Medium', color: '#f59e0b', bgColor: '#fef3c7' };

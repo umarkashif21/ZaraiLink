@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, TrendingUp, Package, Globe, Download } from 'lucide-react';
+import { ArrowLeft, CheckCircle, TrendingUp, Download } from 'lucide-react';
 import searchService from '../../services/searchService';
 import Navbar from '../Layout/Navbar';
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
@@ -42,7 +42,7 @@ const ComparePage = () => {
             }
         };
         fetchCompare();
-    }, [suppliersParam, query, scopeParam, subcatIdParam, variantNameParam]);
+    }, [suppliersParam, query, scopeParam, subcatIdParam, variantNameParam, intentParam]);
 
     // ── Winner Logic ──────────────────────────────────────────────
     const getWinners = () => {
@@ -112,10 +112,12 @@ const ComparePage = () => {
         };
 
         // --- 2. Comparison Table ---
+        // eslint-disable-next-line no-control-regex
         const cleanName = (name) => name ? name.replace(/[^\x00-\x7F]/g, "") : 'Unknown';
 
         const tableColumn = ["Metrics", ...suppliers.map(s => cleanName(s.name))];
         const tableRows = [
+            // eslint-disable-next-line no-control-regex
             ["Country", ...suppliers.map(s => s.country ? s.country.replace(/[^\x00-\x7F]/g, "") : 'N/A')],
             ["Avg Price ($/MT)", ...suppliers.map(s => {
                 const val = parseFloat(s.avg_price);
@@ -139,6 +141,7 @@ const ComparePage = () => {
                 const maxStr = formatCurrency(s.price_max);
                 return `${minStr} - ${maxStr}`;
             })],
+            // eslint-disable-next-line no-control-regex
             [isBuyerMode ? "Buys From" : "Ships To", ...suppliers.map(s => s.ships_to && s.ships_to.length > 0 ? s.ships_to.join(', ').replace(/[^\x00-\x7F]/g, "") : 'N/A')]
         ];
 

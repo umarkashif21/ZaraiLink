@@ -38,6 +38,7 @@ const SummaryView = () => {
             }
         };
         fetchSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [clean_q]);
 
     if (isNumeric && clean_q.length >= 7) {

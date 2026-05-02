@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import Navbar from '../Layout/Navbar';
 import './TradeIntelligence.css';
@@ -9,17 +9,10 @@ const fmtN = (v) => {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(v);
 };
 
-const fmtM = (v) => {
-  if (!v) return '$0';
-  if (v >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
-  if (v >= 1e3) return '$' + (v / 1e3).toFixed(0) + 'K';
-  return '$' + new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(v);
-};
 
 const CompanyPartners = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const loc = useLocation();
   const companyName = decodeURIComponent(id);
   const _tab = 'partners';
 
@@ -66,9 +59,9 @@ const CompanyPartners = () => {
   const COLORS = ['#2563eb', '#3b82f6', '#60a5fa', '#f59e0b', '#10b981', '#6366f1'];
 
   // Data processing
-  const top_partners = data?.top_partners || [];
+  const top_partners = useMemo(() => data?.top_partners || [], [data]);
   const volume_by_country = data?.volume_by_country || [];
-  const monthly_partner_trends = data?.monthly_partner_trends || [];
+  const monthly_partner_trends = useMemo(() => data?.monthly_partner_trends || [], [data]);
   const product_mix_per_partner = data?.product_mix_per_partner || [];
   const summary = data?.summary || { total_volume: 0 };
 
@@ -128,8 +121,6 @@ const CompanyPartners = () => {
     if (sortConfig.key !== columnKey) return <span style={{ opacity: 0.3, marginLeft: 4 }}>↕</span>;
     return <span style={{ marginLeft: 4 }}>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
   };
-
-  const partnerLabel = direction === 'import' ? 'Supplier' : 'Buyer';
 
   return (
     <><Navbar />

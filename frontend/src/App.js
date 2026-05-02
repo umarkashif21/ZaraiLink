@@ -24,7 +24,6 @@ const CompanyOverview = React.lazy(() => import("./components/TradeIntelligence/
 const CompanyProducts = React.lazy(() => import("./components/TradeIntelligence/CompanyProducts"));
 const CompanyPartners = React.lazy(() => import("./components/TradeIntelligence/CompanyPartners"));
 
-const SearchHome = React.lazy(() => import("./components/Search/SearchHome"));
 const SearchResults = React.lazy(() => import("./components/Search/SearchResults"));
 const DealDetail = React.lazy(() => import("./components/Search/DealDetail"));
 const ComparePage = React.lazy(() => import("./components/Search/ComparePage"));

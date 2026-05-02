@@ -202,6 +202,7 @@ const SearchResults = () => {
         } finally {
             setLoading(false);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query, scope, hsCode, subcatId, variantName, selectedCountry, overrideIntent]);
 
     useEffect(() => {
@@ -403,7 +404,7 @@ const SearchResults = () => {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex flex-col md:flex-row gap-8" className="max-w-7xl mx-auto px-6 py-8 flex items-start gap-8">
+            <div className="max-w-7xl mx-auto px-6 py-8 flex items-start gap-8">
 
                 {/* Left Sidebar: Filters (hidden during disambiguation) */}
                 {!needsDisambig && (

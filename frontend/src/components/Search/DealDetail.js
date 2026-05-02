@@ -5,7 +5,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Navbar from '../Layout/Navbar';
 import searchService from '../../services/searchService';
-import { LineChart, Line, BarChart, Bar, ScatterChart, Scatter, PieChart, Pie, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Design tokens (matches the rest of the site)
@@ -658,6 +658,7 @@ const CompanyTab = ({ supplier, isBuyer }) => {
     const cp = supplier.company_intel;
     if (!cp) return <PlaceholderTab label="Company Data Loading..." />;
 
+    // eslint-disable-next-line no-unused-vars
     const L = getLabels(isBuyer);
     const card = {
         background: C.gradientCard,
@@ -1009,10 +1010,12 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
     const intentParam = searchParams.get('intent') || '';
     const subcatIdParam = searchParams.get('subcat_id') || null;
 
+    // eslint-disable-next-line no-unused-vars
     const L = getLabels(isBuyer);
     const card = { background: C.card, border: `1px solid ${C.border}`, borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '1.5rem' };
     const sec = { fontSize: '0.9rem', fontWeight: 800, color: C.textPrimary, margin: '0 0 1.25rem', letterSpacing: '-0.01em' };
     const lbl = { fontSize: '0.65rem', color: C.textSecondary, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.2rem' };
+    // eslint-disable-next-line no-unused-vars
     const val = { fontSize: '1.25rem', fontWeight: 800, color: C.textPrimary, margin: 0 };
     const fmtMoney = n => n ? `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : '—';
 
@@ -1394,6 +1397,7 @@ const DealDetail = () => {
         const pageH = doc.internal.pageSize.height;
         const green = [16, 185, 129], dark = [26, 26, 26], gray = [107, 114, 128], light = [236, 253, 245];
         const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        // eslint-disable-next-line no-control-regex
         const clean = v => (v == null ? 'N/A' : String(v).replace(/[^\x00-\x7F]/g, ''));
         const fmtNum = (n, d = 0) => { const f = parseFloat(n); return isNaN(f) ? 'N/A' : f.toFixed(d); };
         const fmtMoney = n => { const f = parseFloat(n); return isNaN(f) ? 'N/A' : `$${f.toFixed(2)}`; };
@@ -1518,6 +1522,7 @@ const DealDetail = () => {
         ? supplier.supplier_insights?.total_relationships
         : supplier.buyer_insights?.total_relationships;
 
+    // eslint-disable-next-line no-unused-vars
     const isTopEntity = (supplier.stats?.shipment_count >= 15) || (supplier.stats?.total_volume >= 3000);
 
     const TABS = [

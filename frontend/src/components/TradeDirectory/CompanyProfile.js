@@ -186,6 +186,7 @@ const CompanyProfile = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [unlockedContactData, setUnlockedContactData] = useState(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadCompanyData(); }, [id]);
 
   const loadCompanyData = async () => {

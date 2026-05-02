@@ -43,7 +43,7 @@ const FindBuyers = () => {
         }
         if (rolesRes.ok) {
           const roles = await rolesRes.json();
-          const r = roles.find(r => r.name.toLowerCase() === 'buyer') || roles.find(r => r.name.toLowerCase() === 'buyers');
+          const r = roles.find(r => r.name.toLowerCase() === 'buyers') || roles.find(r => r.name.toLowerCase() === 'buyer');
           if (r) {
             setBuyerRoleId(r.id);
             resolvedRoleId = r.id;

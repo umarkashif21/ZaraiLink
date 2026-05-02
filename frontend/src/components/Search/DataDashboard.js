@@ -153,6 +153,7 @@ const DataDashboard = () => {
         fetchData();
 
         return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [displayTarget, activePill, selectedRefinements.join(','), refreshKey]);
 
     // ── Paywall Logic ───────────────────────────────────────────────────────
