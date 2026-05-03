@@ -164,26 +164,43 @@ class SearchService:
         t0 = time.perf_counter()
         subcat_ids, variant_list, product_item_ids = self._resolve_subcategories(
             product_keyword, hs_code, country=country, intent=intent,
-            subcat_id=subcat_id, variant_name=variant_name, scope=orm_scope
+            subcat_id=subcat_id, variant_name=variant_name, scope=orm_scope,
+            price_filter=nlu_result.get("price_filter"),
         )
         logger.debug(f"[TIMING] Subcategory resolve: {time.perf_counter() - t0:.3f}s")
 
         # Disambiguation policy:
         #   1. If any variant name exactly matches the keyword (case-insensitive),
         #      pick that one and run the search — no picker.
-        #   2. Else if the number of matches is small (≤ DISAMBIGUATION_THRESHOLD),
+        #   2. If price_filter or country filter is set, skip disambiguation and show
+        #      results — user has explicit constraints, merging all variants is correct.
+        #   3. Else if the number of matches is small (≤ DISAMBIGUATION_THRESHOLD),
         #      merge results across all matching variants. User sees real data.
-        #   3. Only force the variant picker when the keyword is truly ambiguous
-        #      (>DISAMBIGUATION_THRESHOLD variants). At small catalogs this
-        #      almost never triggers.
+        #   4. Only force the variant picker when the keyword is truly ambiguous
+        #      (>DISAMBIGUATION_THRESHOLD variants) AND no specific filters are set.
+        has_specific_filters = bool(
+            nlu_result.get("price_filter") or nlu_result.get("country")
+        )
+        # SELL intent: user wants buyers — show all matching products, never ask them to disambiguate.
+        # Disambiguation for BUY makes sense ("which dextrose variant?") but for SELL it's noise.
+        _is_sell = (intent == "SELL")
         needs_disambig = False
         if not hs_code and variant_list:
             kw_lower = (product_keyword or "").lower().strip()
             exact = [v for v in variant_list if v['name'].lower().strip() == kw_lower]
-            if exact:
-                # Exact match wins — lock in that variant
+            # Exact match shortcut: only activate when there is NO more-specific variant.
+            # Example: "dextrose" matches both "Dextrose" (exact) and "Dextrose Anhydrous"
+            # (more specific). In that case keep all variants so users see Anhydrous results too.
+            # If keyword is multi-word and exact, it IS specific — use it alone.
+            more_specific = [v for v in variant_list if v['name'].lower().strip() != kw_lower
+                             and v['name'].lower().startswith(kw_lower)]
+            if exact and not more_specific:
+                # Exact match wins and no more-specific variants exist — lock in that variant
                 subcat_ids   = [exact[0]['id']]
                 variant_list = exact
+            elif has_specific_filters or _is_sell:
+                # Filters or SELL intent: merge all matching subcategories, never show picker
+                pass
             elif len(subcat_ids) > DISAMBIGUATION_THRESHOLD:
                 needs_disambig = True
             # else: keep all matches, let aggregation merge them
@@ -280,9 +297,10 @@ class SearchService:
         hs_code: str = None,
         country: str = None,
         intent: str = "BUY",
-        subcat_id: int = None,      # Direct DB subcategory id — bypasses all name matching
-        variant_name: str = None,  # Exact product name (e.g., "Dextrose Ball") — disambiguates shared hs_codes
-        scope: str = "WORLDWIDE",  # "PAKISTAN" | "WORLDWIDE"
+        subcat_id: int = None,
+        variant_name: str = None,
+        scope: str = "WORLDWIDE",
+        price_filter: dict = None,  # if set, expands icontains search to find more variants
     ):
         """
         Find matching ProductSubCategory IDs for the keyword.
@@ -308,6 +326,27 @@ class SearchService:
             # Dextrose Ball, Dextrose Anhydrous, Dextrose Monohydrate, etc.)
             # Priority: variant_name (exact) > product_keyword (fuzzy) > first alphabetical
             scs = list(ProductSubCategory.objects.filter(hs_code=hs_code).order_by('name'))
+
+            # Fallback 1: input is a prefix of stored hs_codes (e.g. "1702" → "1702.3", "1702.111")
+            if not scs:
+                scs = list(ProductSubCategory.objects.filter(
+                    hs_code__startswith=hs_code + "."
+                ).order_by('name'))
+                if not scs:
+                    # Also try without dot (e.g. "1702" → startswith "1702")
+                    scs = list(ProductSubCategory.objects.filter(
+                        hs_code__startswith=hs_code
+                    ).order_by('name'))
+
+            # Fallback 2: stored hs_code (normalized) is a prefix of input (normalized)
+            # e.g. "17023090" should match hs_code "1702.3" (norm "17023") or "1702.30" (norm "170230")
+            if not scs:
+                import re as _re
+                _hs_norm = _re.sub(r'[\.\s\-]', '', hs_code)
+                _all_scs = list(ProductSubCategory.objects.exclude(hs_code__isnull=True).exclude(hs_code='').only('id', 'name', 'hs_code'))
+                scs = [sc for sc in _all_scs
+                       if _hs_norm.startswith(_re.sub(r'[\.\s\-]', '', sc.hs_code))]
+                scs = sorted(scs, key=lambda x: x.name)
             
             if len(scs) == 1:
                 return [scs[0].id], [], []
@@ -370,7 +409,12 @@ class SearchService:
             name__istartswith=product_keyword
         ).select_related("sub_category__category"))
 
-        # PASS 2.5: Contains match (catches "palm oil" → "Crude Palm Oil")
+        # PASS 2.5: Contains match (catches "palm oil" → "Crude Palm Oil").
+        # Default behavior: fallback-only (runs when PASS 1 finds nothing).
+        # Extended behavior: when specific filters are present (price or country),
+        # MERGE with PASS 1 results so "sugar under $500" searches ALL sugar variants
+        # (e.g. "Refined Sugar", "Invert Sugar") not just subcategories starting with "sugar".
+        _has_specific_filters = bool(country or price_filter)
         if not sc_qs and not item_qs:
             sc_qs = list(ProductSubCategory.objects.filter(
                 name__icontains=product_keyword
@@ -378,6 +422,18 @@ class SearchService:
             item_qs = list(ProductItem.objects.filter(
                 name__icontains=product_keyword
             ).select_related("sub_category__category"))
+        elif _has_specific_filters:
+            # Merge icontains results with PASS 1 results (union by ID)
+            sc_qs_contains = list(ProductSubCategory.objects.filter(
+                name__icontains=product_keyword
+            ).select_related("category"))
+            item_qs_contains = list(ProductItem.objects.filter(
+                name__icontains=product_keyword
+            ).select_related("sub_category__category"))
+            sc_seen = {s.id for s in sc_qs}
+            sc_qs = list(sc_qs) + [s for s in sc_qs_contains if s.id not in sc_seen]
+            item_seen = {i.id for i in item_qs}
+            item_qs = list(item_qs) + [i for i in item_qs_contains if i.id not in item_seen]
 
         # PASS 3: Fuzzy fallback via pg_trgm
         if not sc_qs and not item_qs:
@@ -453,8 +509,8 @@ class SearchService:
                 target_trade_type = "IMPORT"
             elif intent == "BUY" and scope == "WORLDWIDE":
                 target_trade_type = "IMPORT"
-            else:  # SELL + WORLDWIDE
-                target_trade_type = "EXPORT"
+            else:  # SELL + WORLDWIDE — dataset has only IMPORT, buyers are in IMPORT records
+                target_trade_type = "IMPORT"
 
             # Cache the availability check — product availability changes
             # only when new transactions are ingested, not between searches.
@@ -775,7 +831,8 @@ class SearchService:
             if intent == 'BUY':
                 qs = qs.filter(trade_type='IMPORT').exclude(origin_country='Pakistan')
             else:
-                qs = qs.filter(trade_type='EXPORT').exclude(destination_country='Pakistan')
+                # SELL+WORLDWIDE: dataset only has IMPORT records; buyers are in those records
+                qs = qs.filter(trade_type='IMPORT')
 
         results = qs.values(company_field, country_field).annotate(
             total_volume=Sum('qty_mt'),

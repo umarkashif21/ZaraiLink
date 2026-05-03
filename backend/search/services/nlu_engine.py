@@ -235,8 +235,34 @@ _KB_STOP = [
     "factory", "plant", "office",
     # Currency / units (may appear after price strip misses something)
     "usd", "pkr", "eur", "gbp", "percent", "pct",
+    "dollar", "dollars", "euro", "euros", "pound", "pounds",
+    "rupee", "rupees", "yen", "yuan", "riyal", "riyals",
     "ton", "tons", "tonne", "tonnes", "kg", "kilogram",
     "mt", "metric", "per", "unit", "units",
+    # Written number words that survive normalize_written_numbers
+    "hundred", "thousand", "million", "billion",
+    "zero", "one", "two", "three", "four", "five",
+    "six", "seven", "eight", "nine", "ten",
+    "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+    "sixteen", "seventeen", "eighteen", "nineteen", "twenty",
+    "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
+    # Nationality adjectives (country adjective forms should not become product keywords)
+    "chinese", "indian", "pakistani", "russian", "malaysian", "american",
+    "german", "dutch", "french", "ukrainian", "brazilian", "turkish",
+    "thai", "indonesian", "argentinian", "australian", "canadian",
+    "european", "asian", "african", "middle", "eastern",
+    # Country abbreviations
+    "usa", "uk", "uae", "gcc", "eu",
+    # Pakistani city names (appear when user mentions local city)
+    "karachi", "lahore", "islamabad", "faisalabad", "rawalpindi",
+    "multan", "peshawar", "quetta", "sialkot", "gujranwala",
+    # Filler/qualifier adjectives that should not pollute product keywords
+    "local", "domestic", "foreign", "international", "global",
+    "top", "biggest", "largest", "major", "leading", "reputed",
+    "new", "latest", "modern", "advanced", "specialized",
+    # Procurement document noise
+    "quotation", "quotations", "invite", "invitation", "tender",
+    "rfq", "rfi", "po", "pq",
 ]
 
 
@@ -897,12 +923,27 @@ class ModernNLUEngine:
 
         if re.search(rf'\b{_want_verb}\s+{_sell_noun}\b', q):
             return "BUY"
+        # Extended: "find sugar exporters" / "find top suppliers" — words between verb and noun
+        if re.search(rf'\b(?:find|need|want|seeking|searching)\b.{{0,50}}\b{_sell_noun}\b', q):
+            return "BUY"
         if re.search(rf'\b{_want_verb}\s+{_buy_noun}\b', q):
             return "SELL"
         if re.search(r'\bwho\s+(?:is\s+)?sell(?:s|ing)?\b', q):
             return "BUY"
         if re.search(r'\bwho\s+(?:is\s+)?buy(?:s|ing)?\b', q):
             return "SELL"
+        # "who are the biggest/top/largest exporters/suppliers from X" → BUY (looking to buy from them)
+        if re.search(r'\bwho\s+(?:are|is)\b', q) and re.search(rf'\b{_sell_noun}\b', q):
+            return "BUY"
+        # "find someone/people/companies who/that wants to buy our X" → SELL
+        if re.search(r'\b(?:buy|buying|purchase|purchasing)\s+our\b', q):
+            return "SELL"
+        # "i am a buyer / i am a new buyer" → BUY (user identifies as buyer, not as someone finding buyers)
+        if re.search(r"\bi\s+(?:am|'?m)\s+(?:a\s+)?(?:new\s+)?buyer\b", q):
+            return "BUY"
+        # "find me a cotton seller" / "cotton seller find me" → BUY (looking for a seller = wanting to buy)
+        if re.search(rf'\b{_sell_noun}\s+find\s+me\b', q) or re.search(rf'\bfind\s+me\s+(?:a\s+)?{_sell_noun}\b', q):
+            return "BUY"
 
         # BUY signals: "our company requires/needs X" — unambiguous procurement intent
         if re.search(r'\b(?:our\s+(?:company|firm|organization|factory)\s+)?(?:requires?|needs?|requirement\s+for)\b', q):
@@ -997,6 +1038,32 @@ class ModernNLUEngine:
         # ==================================================================
         # HS code detection: normalize spaced/dashed formats before matching.
         # Handles: "1702.3090", "17021990", "1702 30 90", "17-02-30-90", "1702.30.90"
+        # Also handles: "HS code 1702", "heading 1701", "chapter 17", "tariff code 1001"
+        # ==================================================================
+
+        # First: check for "HS code X", "heading X", "chapter X", "tariff code X" prefix patterns
+        _hs_prefix_match = re.match(
+            r'^(?:hs\s+code|hs|heading|chapter|tariff\s+(?:code|number)?)\s+([\d\.\s\-]+)\s*$',
+            query.strip(), re.IGNORECASE
+        )
+        if _hs_prefix_match:
+            _hs_code_raw = _hs_prefix_match.group(1).strip()
+            _hs_normalised = re.sub(r'[\s\-]', '', _hs_code_raw)
+            logger.info(f"[NLU] HS prefix query: {query.strip()!r} → hs_code: {_hs_normalised!r}")
+            return {
+                "intent":          "BUY",
+                "product":         _hs_normalised,
+                "product_keyword": _hs_normalised,
+                "country":         None,
+                "quantity":        None,
+                "price_filter":    None,
+                "os_filter":       _build_perspective_filter("BUY", ui_context, None),
+                "entities":        [],
+                "ui_context":      ui_context,
+                "is_hs_query":     True,
+            }
+
+        # Then: check for a bare HS code (digits, dots, spaces, dashes only)
         _hs_candidate = re.sub(r'[\s\-]', '', query.strip())
         _hs_candidate = re.sub(r'\.', '', _hs_candidate)  # strip dots for length check
         _is_hs = (
@@ -1106,8 +1173,43 @@ class ModernNLUEngine:
         if not product_keyword and self._keyword_model is not None:
             t0 = time.perf_counter()
             try:
+                # Strip price clauses, written numbers, and bare digits before KeyBERT.
+                # Without this, "sugar under $500" → bigram "sugar 500" (wrong),
+                # and "sugar under five hundred" → bigram "sugar five" (wrong).
+                kb_query = _normalize_written_numbers(cleaned_query)  # "five hundred" → "500"
+                # Strip digits with optional currency suffix
+                kb_query = re.sub(
+                    r'\$?\b\d+(\.\d+)?\b\s*(usd|pkr|eur|gbp|dollars?|euros?|pounds?|rupees?|per\s*mt)?',
+                    ' ', kb_query, flags=re.IGNORECASE
+                )
+                # Strip price operator words
+                kb_query = re.sub(
+                    r'\b(under|below|above|over|min|max|at\s+most|at\s+least|'
+                    r'ceiling|floor|around|approximately|roughly|less\s+than|'
+                    r'more\s+than|cheaper\s+than|not\s+exceeding|starting\s+from|'
+                    r'not\s+more\s+than|no\s+more\s+than)\b',
+                    ' ', kb_query, flags=re.IGNORECASE
+                )
+                # Strip standalone currency words that survive (e.g. "dollars" after digit removal)
+                kb_query = re.sub(
+                    r'\b(dollars?|euros?|pounds?|rupees?|usd|pkr|eur|gbp|yen|yuan|riyals?)\b',
+                    ' ', kb_query, flags=re.IGNORECASE
+                )
+                # Strip nationality adjectives so "Chinese sugar" → "sugar"
+                kb_query = re.sub(
+                    r'\b(chinese|indian|pakistani|russian|malaysian|american|german|dutch|french|'
+                    r'ukrainian|brazilian|turkish|thai|indonesian|european|asian|african)\b',
+                    ' ', kb_query, flags=re.IGNORECASE
+                )
+                # Strip Pakistani city names and country abbreviations
+                kb_query = re.sub(
+                    r'\b(karachi|lahore|islamabad|faisalabad|rawalpindi|multan|peshawar|'
+                    r'quetta|sialkot|gujranwala|usa|uk|uae)\b',
+                    ' ', kb_query, flags=re.IGNORECASE
+                )
+                kb_query = re.sub(r'\s+', ' ', kb_query).strip()
                 kw_results = self._keyword_model.extract_keywords(
-                    cleaned_query,
+                    kb_query or cleaned_query,
                     keyphrase_ngram_range=(1, 2),
                     stop_words=_KB_STOP,
                     top_n=1,

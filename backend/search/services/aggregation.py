@@ -33,17 +33,21 @@ class SupplierAggregator:
         
         # Intent & Scope Logic
         if intent == 'SELL':
-            # User wants to SELL
+            # User wants to SELL — find buyers for their product.
+            # The dataset contains only IMPORT transactions (Pakistan importing from abroad).
+            # Pakistani companies (the 'buyer' field) are the only buyers visible in this data.
+            # Both PAKISTAN and WORLDWIDE scope therefore query IMPORT records and expose buyers.
             if scope == 'PAKISTAN':
                 target_field = 'buyer'
                 country_field = 'destination_country'
                 queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
             else:
-                # WORLDWIDE: Pakistani seller exporting to world
+                # WORLDWIDE: show all buyers from IMPORT data (Pakistani importers).
+                # Previously filtered trade_type='EXPORT' which returned 0 results since
+                # the dataset contains zero EXPORT records.
                 target_field = 'buyer'
                 country_field = 'destination_country'
-                # Exclude domestic transactions that misreport as export
-                queryset = queryset.filter(trade_type='EXPORT').exclude(destination_country='Pakistan')
+                queryset = queryset.filter(trade_type='IMPORT')
                 
         else:
             # User wants to BUY
@@ -59,7 +63,10 @@ class SupplierAggregator:
                 queryset = queryset.filter(trade_type='IMPORT').exclude(origin_country='Pakistan')
 
         # Apply Filters
-        if country_filter and len(country_filter) > 0:
+        # For SELL+WORLDWIDE using IMPORT data, destination_country is always Pakistan.
+        # Filtering by a foreign country on destination_country returns 0. Skip it.
+        _skip_country = (intent == 'SELL' and scope != 'PAKISTAN')
+        if country_filter and len(country_filter) > 0 and not _skip_country:
             filter_kwargs = {f"{country_field}__in": country_filter}
             queryset = queryset.filter(**filter_kwargs)
 
