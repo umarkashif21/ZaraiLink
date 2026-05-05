@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 import logging
 from .services.search_service import SearchService
@@ -183,6 +183,7 @@ class SearchViewSet(viewsets.ViewSet):
             "access_state":        access_state,
             "paywall_price":       paywall_price,
             "total_profiles_count": total_profiles_count,
+            "ranking_applied":     search_result.get("ranking_applied"),
         })
 
     # ----------------------------------------------------------------
@@ -459,22 +460,30 @@ class SearchViewSet(viewsets.ViewSet):
 
         def _build_sidebar(qs_src):
             rows = list(
-                qs_src.values('product_item__sub_category__name')
+                qs_src.values('product_item__sub_category__name', 'product_item__sub_category__id')
                       .annotate(count=Count('id'))
                       .order_by('-count')
             )
-            return {r['product_item__sub_category__name']: r['count']
-                    for r in rows if r['product_item__sub_category__name']}
+            # Deduplicate by name — keep the first (highest-count) occurrence
+            seen = {}
+            for r in rows:
+                name = r['product_item__sub_category__name']
+                if name and name not in seen:
+                    seen[name] = {
+                        'count': r['count'],
+                        'subcat_id': r['product_item__sub_category__id'],
+                    }
+            return seen
 
         combined_map = _build_sidebar(sidebar_qs)
         import_map   = _build_sidebar(sidebar_qs.filter(trade_type='IMPORT'))
         export_map   = _build_sidebar(sidebar_qs.filter(trade_type='EXPORT'))
 
         # Order by combined count; include every subcategory that exists in any direction
-        all_names = sorted(combined_map.keys(), key=lambda n: combined_map[n], reverse=True)
-        sidebar_counts        = [{"name": n, "count": combined_map[n]}             for n in all_names]
-        sidebar_import_counts = [{"name": n, "count": import_map.get(n, 0)}        for n in all_names]
-        sidebar_export_counts = [{"name": n, "count": export_map.get(n, 0)}        for n in all_names]
+        all_names = sorted(combined_map.keys(), key=lambda n: combined_map[n]['count'], reverse=True)
+        sidebar_counts        = [{"name": n, "count": combined_map[n]['count'], "subcat_id": combined_map[n]['subcat_id']}  for n in all_names]
+        sidebar_import_counts = [{"name": n, "count": import_map.get(n, {}).get('count', 0), "subcat_id": combined_map[n]['subcat_id']} for n in all_names]
+        sidebar_export_counts = [{"name": n, "count": export_map.get(n, {}).get('count', 0), "subcat_id": combined_map[n]['subcat_id']} for n in all_names]
 
 
         # ── Apply variant/subcat filter to profile qs (not to sidebar) ─────────
@@ -569,8 +578,6 @@ class SearchViewSet(viewsets.ViewSet):
 
         paywall_price = PRODUCT_PRICE if active_subcat_id else HS_CODE_PRICE
 
-        print(f"[HS DASHBOARD DEBUG] q={q} intent={intent} count={total_count} qs.count()={qs.count()} len(raw_profiles)={len(raw_profiles)} len(profiles)={len(profiles)} len(visible_profiles)={len(visible_profiles)} subcat_names={subcat_names}")
-
         return Response({
             "hs_code":               q,
             "hs_description":        hs_description,
@@ -592,7 +599,7 @@ class SearchViewSet(viewsets.ViewSet):
     # ----------------------------------------------------------------
     # SUPPLIER DETAIL — GET /api/search/supplier-detail/?name=...&query=...
     # ----------------------------------------------------------------
-    @action(detail=False, methods=['get'], url_path='supplier-detail')
+    @action(detail=False, methods=['get'], url_path='supplier-detail', permission_classes=[IsAuthenticated])
     def supplier_detail(self, request):
         seller_name  = request.query_params.get('name')
         query        = request.query_params.get('query')
@@ -638,6 +645,25 @@ class SearchViewSet(viewsets.ViewSet):
             scope=orm_scope
         )
 
+        # --- Layer 2: Entitlement Check ---
+        from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS
+        
+        active_hs_code = parsed_query.get("hs_code", "")
+        if not active_hs_code and hs_code_hint:
+            active_hs_code = hs_code_hint
+            
+        active_subcat_id = int(subcat_id) if subcat_id else (subcat_ids[0] if subcat_ids else None)
+        
+        if not active_hs_code and active_subcat_id:
+            from trade_data.models import ProductSubCategory
+            sub = ProductSubCategory.objects.filter(id=active_subcat_id).first()
+            if sub:
+                active_hs_code = sub.hs_code
+                
+        access_state = get_access_state(request.user, active_hs_code, active_subcat_id)
+        if access_state not in (FULL_ACCESS, PRODUCT_ACCESS):
+            return Response({"error": "Access denied. Please unlock this category or product first."}, status=status.HTTP_403_FORBIDDEN)
+
         # Route to the correct aggregator
         if intent == 'SELL':
             details = self.aggregator.get_buyer_details(
@@ -662,7 +688,7 @@ class SearchViewSet(viewsets.ViewSet):
     # ----------------------------------------------------------------
     # SUPPLIER COMPARE — GET /api/search/compare/?suppliers=A,B,C&query=...
     # ----------------------------------------------------------------
-    @action(detail=False, methods=['get'], url_path='compare')
+    @action(detail=False, methods=['get'], url_path='compare', permission_classes=[IsAuthenticated])
     def supplier_compare(self, request):
         suppliers_param = request.query_params.get('suppliers')
         query = request.query_params.get('query')
@@ -697,6 +723,22 @@ class SearchViewSet(viewsets.ViewSet):
             scope=orm_scope
         )
 
+        # --- Layer 2: Entitlement Check ---
+        from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS
+        
+        active_hs_code = parsed_query.get("hs_code", "")
+        active_subcat_id = int(subcat_id) if subcat_id else (subcat_ids[0] if subcat_ids else None)
+        
+        if not active_hs_code and active_subcat_id:
+            from trade_data.models import ProductSubCategory
+            sub = ProductSubCategory.objects.filter(id=active_subcat_id).first()
+            if sub:
+                active_hs_code = sub.hs_code
+                
+        access_state = get_access_state(request.user, active_hs_code, active_subcat_id)
+        if access_state not in (FULL_ACCESS, PRODUCT_ACCESS):
+            return Response({"error": "Access denied. Please unlock this category or product first."}, status=status.HTTP_403_FORBIDDEN)
+
         comparison_data = self.aggregator.get_supplier_comparison(
             seller_names,
             subcat_ids,
@@ -714,7 +756,7 @@ class SearchViewSet(viewsets.ViewSet):
     # ----------------------------------------------------------------
     # SUPPLIER TRANSACTIONS — GET /api/search/supplier-transactions/
     # ----------------------------------------------------------------
-    @action(detail=False, methods=['get'], url_path='supplier-transactions')
+    @action(detail=False, methods=['get'], url_path='supplier-transactions', permission_classes=[IsAuthenticated])
     def supplier_transactions(self, request):
         seller_name = request.query_params.get('name')
         query = request.query_params.get('query')
@@ -785,6 +827,23 @@ class SearchViewSet(viewsets.ViewSet):
                     # If subcategory resolution fails just load all transactions for entity
                     subcat_ids = None
                     product_item_ids = None
+
+            # --- Layer 2: Entitlement Check ---
+            from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS
+            
+            # Use query as hs_code hint if it looks like one, or fall back to parsed NLU hs_code
+            active_hs_code = query if all(c.isdigit() or c == '.' for c in query.strip()) else parsed_query.get("hs_code", "") if 'parsed_query' in locals() else ""
+            active_subcat_id = int(subcat_id) if subcat_id else (subcat_ids[0] if subcat_ids else None)
+            
+            if not active_hs_code and active_subcat_id:
+                from trade_data.models import ProductSubCategory
+                sub = ProductSubCategory.objects.filter(id=active_subcat_id).first()
+                if sub:
+                    active_hs_code = sub.hs_code
+                    
+            access_state = get_access_state(request.user, active_hs_code, active_subcat_id)
+            if access_state not in (FULL_ACCESS, PRODUCT_ACCESS):
+                return Response({"error": "Access denied. Please unlock this category or product first."}, status=status.HTTP_403_FORBIDDEN)
 
             # Filters
             filters = {}

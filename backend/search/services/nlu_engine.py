@@ -46,6 +46,53 @@ _LTE_PHRASES = {"under", "below", "max", "less than", "cheaper than", "at most"}
 _GTE_PHRASES = {"above", "over", "min", "more than", "at least", "minimum"}
 
 # ---------------------------------------------------------------------------
+# Ranking hint signals — ordered lists so multi-word phrases are checked FIRST
+# to prevent ambiguous single words (e.g. "top") from matching too early.
+# ---------------------------------------------------------------------------
+# Each entry: (hint_value, [phrase, ...])  — phrases are case-insensitive substrings.
+_RANKING_HINT_SIGNALS: list[tuple[str, list[str]]] = [
+    # ── price_desc multi-word first (before bare "top" matches volume_desc) ──
+    ("price_desc",  ["best quality", "top quality", "high value", "highest price", "premium quality"]),
+    # ── reliability multi-word ────────────────────────────────────────────────
+    ("reliability", ["serious buyers only", "serious sellers only", "verified only"]),
+    # ── volume_desc multi-word ────────────────────────────────────────────────
+    ("volume_desc", ["most active", "highest volume", "large quantities", "large scale",
+                     "bulk buyers", "bulk sellers", "top importers", "top exporters",
+                     "top suppliers", "top buyers", "biggest buyers", "biggest suppliers"]),
+    # ── price_asc multi-word ─────────────────────────────────────────────────
+    ("price_asc",   ["low price", "lowest price", "best price", "cheapest possible"]),
+    # ── single-word signals (checked last) ───────────────────────────────────
+    ("price_asc",   ["cheap", "cheapest", "affordable", "inexpensive", "budget"]),
+    ("price_desc",  ["expensive", "premium"]),
+    ("volume_desc", ["biggest", "largest", "leading", "major", "bulk", "top"]),
+    ("reliability", ["reliable", "trusted", "established", "verified", "reputable", "serious"]),
+]
+
+
+def _detect_ranking_hint(raw_query: str) -> Optional[str]:
+    """
+    Scan the raw query for ranking preference signals and return the most
+    specific match, or None if no signal is found.
+
+    Priority: price_desc multi-word > reliability > volume_desc multi-word >
+              price_asc multi-word > price_asc single > price_desc single >
+              volume_desc single > reliability single
+
+    Examples:
+        "need cheap sugar"               → "price_asc"
+        "premium dextrose from germany"  → "price_desc"
+        "biggest buyers of sugar"        → "volume_desc"
+        "serious buyers only"            → "reliability"
+        "buy sugar from brazil"          → None
+    """
+    q = raw_query.lower()
+    for hint, phrases in _RANKING_HINT_SIGNALS:
+        for phrase in phrases:
+            if phrase in q:
+                return hint
+    return None
+
+# ---------------------------------------------------------------------------
 # Stop words for product keyword extraction
 # These are stripped from the raw query before searching product names.
 # Order matters — multi-word phrases first before single words.
@@ -94,14 +141,16 @@ def extract_product_keyword(raw_query: str) -> str:
     """
     q = raw_query.lower().strip()
 
-    # Dynamic Stripping of garbled intent verbs (buyyy, gettsds, importttt, etc.)
-    # \w* catches ANY junk characters appended to the base word
-    q = re.sub(r'\b(buy\w*|sell\w*|get\w*|import\w*|export\w*|purchas\w*|wanna|want\w*)\b', ' ', q)
-
-    # Strip each stop phrase (longest first already, since list is ordered)
+    # 1. Strip each stop phrase (longest first already, since list is ordered).
+    # This must be done BEFORE the dynamic single-word verb stripping, 
+    # otherwise phrases like "i wanna buy" get broken into "i     " and fail to match.
     for phrase in _INTENT_STOP_PHRASES:
         # Word-boundary aware replacement
         q = re.sub(r'\b' + re.escape(phrase) + r'\b', ' ', q)
+
+    # 2. Dynamic Stripping of garbled intent verbs (buyyy, gettsds, importttt, etc.)
+    # \w* catches ANY junk characters appended to the base word
+    q = re.sub(r'\b(buy\w*|sell\w*|get\w*|import\w*|export\w*|purchas\w*|wanna|want\w*)\b', ' ', q)
 
     # Strip price clauses like "under $700", "above 500 usd", "below 300"
     q = re.sub(r'\b(under|below|above|over|min|max|less than|more than|at most|at least)\s*\$?\d+(\s*(usd|pkr|per\s+mt))?\b', '', q)
@@ -453,7 +502,10 @@ class ModernNLUEngine:
     _ner_model     = None   # GLiNER
 
     GLINER_LABELS = [
-        "product", "country", "quantity", "unit",
+        # Product spans — multiple labels improve recall across query styles
+        "product", "commodity", "agricultural product", "trade good",
+        # Trade context
+        "country", "quantity", "unit",
         "price", "currency", "price_operator",
     ]
 
@@ -603,37 +655,137 @@ class ModernNLUEngine:
         # ==================================================================
         t0 = time.perf_counter()
         intent = self.predict_intent(query)
-        t_setfit = (time.perf_counter() - t0) * 1000
-        logger.info(f"[LATENCY] SetFit: {t_setfit:.0f}ms")
-        logger.debug(f"[NLU] Step1 intent={intent!r} query={query!r}")
+        t_setfit = time.perf_counter() - t0
+
+        # ==================================================================
+        # STEP 1.5 — Pattern-Based Intent Override
+        #
+        # SetFit is accurate for most queries but misclassifies two specific
+        # "who [seller-verb]s X" forms because it sees the verb alone and
+        # ignores that the "who" subject means the user is FINDING that
+        # counterparty, not being one.
+        #
+        # BUY overrides run FIRST so they cannot be overwritten by SELL overrides.
+        # Placed AFTER SetFit so the model still runs (for telemetry) but
+        # before any step that consumes `intent`.
+        # ==================================================================
+        _q_lower_intent = query.lower()
+
+        # BUY overrides — "who [sells/exports/supplies]" = user wants to FIND sellers
+        # SetFit sees the sell-verb and tags SELL; these patterns correct that.
+        _BUY_OVERRIDE_PATTERNS = [
+            r'\bwho\s+(?:sells?|sell)\b',                         # "who sells X"
+            r'\bwho\s+(?:exports?|export)\b',                     # "who exports X"
+            r'\bwho\s+(?:supplies?|supply)\b',                    # "who supplies X"
+            r'\bwho\s+(?:is\s+)?(?:the\s+)?(?:exporter|seller|supplier)s?\b',  # "who is the exporter"
+            r'\bwho\s+(?:are\s+)?(?:the\s+)?(?:exporters?|sellers?|suppliers?)\b',
+        ]
+        for _buy_pat in _BUY_OVERRIDE_PATTERNS:
+            if re.search(_buy_pat, _q_lower_intent):
+                logger.debug(f"[NLU] BUY override via pattern {_buy_pat!r} (was {intent!r})")
+                intent = 'BUY'
+                break
+        else:
+            # SELL overrides — only reached when no BUY pattern matched
+            _SELL_OVERRIDE_PATTERNS = [
+                r'\bwho\s+buys?\b',
+                r'\bwho\s+(?:is\s+)?buying\b',
+                r'\bwho\s+(?:are\s+)?(?:the\s+)?buyers?\b',
+                r'\bwho\s+(?:is\s+)?(?:importing|imports?)\b',
+                r'\blooking\s+to\s+(?:sell|export)\b',
+                r'\bwant(?:ing)?\s+to\s+(?:sell|export)\b',
+                r'\bwants?\s+to\s+(?:sell|export)\b',
+                r'\bi\s+(?:want\s+to\s+)?(?:sell|export)\b',
+            ]
+            for _sell_pat in _SELL_OVERRIDE_PATTERNS:
+                if re.search(_sell_pat, _q_lower_intent):
+                    logger.debug(f"[NLU] SELL override via pattern {_sell_pat!r} (was {intent!r})")
+                    intent = 'SELL'
+                    break
 
         # ==================================================================
         # STEP 2 — GLiNER Entity Extraction
-        # Extracts country and raw entities. Product from GLiNER is used only
-        # as a cross-check, not the primary product keyword.
+        # Runs once on the raw query. Extracts country (used in Step 3)
+        # AND product spans (used in Step 4). Running on the raw query
+        # (before country stripping) gives GLiNER full sentence context,
+        # which improves span boundary detection.
         # ==================================================================
+        t0 = time.perf_counter()
         entities = self.extract_entities(query)
         gliner_country = (
             _extract_entity(entities, "country")
             or _extract_entity(entities, "location")
         )
-        logger.debug(f"[NLU] Step2 gliner_entities={len(entities)} gliner_country={gliner_country!r}")
+        t_gliner = time.perf_counter() - t0
 
         # ==================================================================
-        # STEP 3 — Country Resolution (RapidFuzz — DO NOT TOUCH)
+        # STEP 3 — Country Resolution
+        # Layer 1: GLiNER (primary)
+        # Layer 2: RapidFuzz preposition capture (fallback)
+        # Layer 3: Abbreviations (last resort)
         # ==================================================================
         t0 = time.perf_counter()
-        resolved_country = self._detect_country_fallback(query)
-        if not resolved_country and gliner_country:
+        resolved_country = None
+        if gliner_country:
             resolved_country = self._resolve_country(gliner_country)
-        t_rapidfuzz = (time.perf_counter() - t0) * 1000
-        logger.info(f"[LATENCY] RapidFuzz: {t_rapidfuzz:.0f}ms")
-        logger.debug(f"[NLU] Step3 resolved_country={resolved_country!r}")
+        
+        if not resolved_country:
+            resolved_country = self._detect_country_fallback(query)
+        t_rapidfuzz = time.perf_counter() - t0
 
         # ==================================================================
-        # STEP 4 — Product Keyword Extraction
-        # Strip the resolved country so it doesn't pollute keyword scoring.
-        # Priority: KeyBERT > LLM cross-check > stop-word strip
+        # STEP 3.5 — Country Role Post-Processing
+        #
+        # Problem: the country extracted from "from [country]" in a SELL query
+        # is the USER'S OWN origin, not a buyer/counterparty filter.
+        # Applying it as a counterparty filter produces zero results because
+        # the aggregator looks for buyers in that country, but the user's own
+        # origin has nothing to do with where their buyers are.
+        #
+        # Examples of the problem:
+        #   "who buys sugar from pakistan"      → Pakistan = Pakistan's own origin
+        #   "looking to export dextrose from china" → China = supplier origin,
+        #                                              not a buyer country
+        #
+        # Rule: if intent=SELL AND the resolved country appears after the
+        # preposition "from" in the raw query → reclassify it as origin_country
+        # (stored in the NLU result for informational use) and clear the DB filter.
+        #
+        # "in [country]" with SELL is intentionally kept as a filter, because
+        # "who buys dextrose in Pakistan" legitimately means filter by
+        # Pakistani buyers.
+        # ==================================================================
+        origin_country = None  # user's own country; never used as DB filter
+        if intent == 'SELL' and resolved_country:
+            _from_role_pat = re.compile(
+                r'\bfrom\s+' + re.escape(resolved_country.lower()) + r'\b',
+                re.IGNORECASE,
+            )
+            if _from_role_pat.search(query):
+                origin_country   = resolved_country
+                resolved_country = None
+                logger.debug(
+                    f"[NLU] Country role: {origin_country!r} reclassified as "
+                    f"origin_country (SELL+from), cleared from DB filter."
+                )
+
+        # ==================================================================
+        # STEP 4 — Product Keyword Extraction (GLiNER primary)
+        #
+        # GLiNER already ran on the raw query in Step 2 — we reuse those
+        # entities here. No second model call needed.
+        #
+        # Why GLiNER instead of KeyBERT:
+        #   KeyBERT uses CountVectorizer n-gram scoring. It sees "wanna sugar"
+        #   as a high-scoring bigram because "wanna" is not a standard English
+        #   stop-word and CountVectorizer generates bigrams before filtering.
+        #   GLiNER does zero-shot span extraction using the full sentence
+        #   context, so it correctly isolates "sugar" from
+        #   "i wanna buy sugar from brazil".
+        #
+        # Priority: GLiNER span → extract_product_keyword() regex fallback
+        # KeyBERT (_keyword_model) is intentionally not used for product
+        # extraction but remains loaded for potential future use.
         # ==================================================================
         cleaned_query = query
         if resolved_country:
@@ -642,40 +794,35 @@ class ModernNLUEngine:
                 cleaned_query, flags=re.IGNORECASE,
             )
 
-        _KB_STOP = [
-            "buy", "sell", "purchase", "import", "export",
-            "need", "want", "get", "find", "search", "source",
-            "supplier", "suppliers", "buyer", "buyers",
-            "looking", "require", "required", "seeking",
-            "under", "above", "below", "over", "cheap", "cheaper",
-            "affordable", "expensive", "price", "rate", "cost",
-            "bulk", "urgent", "urgently", "asap", "immediate",
-            "ton", "tons", "kg", "mt", "per",
-        ]
-
         product_keyword = None
         product_method  = "none"
-        keybert_confidence = 0.0
+        keybert_confidence = 0.0  # kept for telemetry schema compatibility
 
         t0 = time.perf_counter()
-        if self._keyword_model is not None:
-            try:
-                kw_results = self._keyword_model.extract_keywords(
-                    cleaned_query,
-                    keyphrase_ngram_range=(1, 2),
-                    stop_words=_KB_STOP,
-                    top_n=1,
-                )
-                if kw_results:
-                    product_keyword = kw_results[0][0]
-                    keybert_confidence = kw_results[0][1]
-                    product_method  = "keybert"
-            except Exception as e:
-                logger.warning(f"[NLU] KeyBERT extraction failed: {e}")
 
-        t_keybert = (time.perf_counter() - t0) * 1000
-        logger.info(f"[LATENCY] KeyBERT: {t_keybert:.0f}ms")
-        logger.debug(f"[NLU] Step4(keybert) product={product_keyword!r}")
+        # --- GLiNER product extraction (entities already computed in Step 2) ---
+        gliner_product = (
+            _extract_entity(entities, "product")
+            or _extract_entity(entities, "commodity")
+            or _extract_entity(entities, "agricultural product")
+            or _extract_entity(entities, "trade good")
+        )
+        if gliner_product:
+            raw_product = gliner_product.strip().lower()
+            # Safety net: Reject GLiNER extraction if it's literally an action verb,
+            # or if it starts with one (e.g. "export dextrose"), because the 
+            # fallback extract_product_keyword() handles stripping these perfectly.
+            _action_verbs = ("import", "export", "buy", "sell", "buying", "selling", "importing", "exporting")
+            
+            if raw_product in _action_verbs or raw_product.startswith(tuple(f"{v} " for v in _action_verbs)):
+                logger.debug(f"[NLU] Rejected GLiNER product span {raw_product!r} (contains action verb)")
+                product_keyword = None
+            else:
+                product_keyword = raw_product
+                product_method  = "gliner"
+                logger.debug(f"[NLU] GLiNER product span: {product_keyword!r}")
+
+        t_keybert = time.perf_counter() - t0  # slot kept; now measures GLiNER product step
 
         # ==================================================================
         # STEP 5 — Unified LLM Call (price + quantity + product fallback)
@@ -704,29 +851,17 @@ class ModernNLUEngine:
             needs_llm = False
 
         price_filter = None
-        t_deepseek = 0.0
         
         if not needs_llm:
-            logger.warning(
-                f"[NLU] Skipping LLM — price handled by regex or not present "
-                f"(kb_conf={keybert_confidence:.2f})"
-            )
             import copy
             llm_result  = copy.deepcopy(_LLM_UNIFIED_EMPTY)
             price_filter = regex_price # Use the fully built regex price filter
         else:
             llm_result = _call_llm_unified(query)
-            t_deepseek = (time.perf_counter() - t0) * 1000
-            logger.info(f"[LATENCY] DeepSeek: {t_deepseek:.0f}ms")
             price_filter = _price_filter_from_llm(llm_result)
 
         quantity     = llm_result.get("quantity")
         llm_product  = llm_result.get("product")
-
-        logger.debug(
-            f"[NLU] Step5(llm) product={llm_product!r} "
-            f"price_filter={price_filter} quantity={quantity!r}"
-        )
 
         # If KeyBERT returned nothing, use the LLM product
         if not product_keyword and llm_product:
@@ -738,8 +873,6 @@ class ModernNLUEngine:
             product_keyword = extract_product_keyword(cleaned_query)
             product_method  = "stopword"
 
-        logger.debug(f"[NLU] Step4 final product={product_keyword!r} via={product_method}")
-
         # ==================================================================
         # Build OS/ORM filters
         # ==================================================================
@@ -747,26 +880,40 @@ class ModernNLUEngine:
         if price_filter:
             os_filter.setdefault("bool", {}).setdefault("must", []).append(price_filter)
 
+        # ==================================================================
+        # STEP 6 — Ranking Hint Detection
+        # Runs on the raw query (before any stripping) to catch all signals.
+        # The hint from price_filter (LLM/regex) is kept as a secondary source;
+        # the direct scan here is the primary source for non-price signals.
+        # ==================================================================
+        ranking_hint = _detect_ranking_hint(query)
+        # Merge: if price_filter already carries a hint (e.g. from LLM), prefer
+        # the explicit price_filter hint for price signals only, otherwise use ours.
+        price_filter_hint = (price_filter or {}).get("ranking_hint")
+        if price_filter_hint and not ranking_hint:
+            ranking_hint = price_filter_hint
+
         result = {
             "intent":          intent,
             "product":         product_keyword,
             "product_keyword": product_keyword,
-            "country":         resolved_country,
+            "country":         resolved_country,   # counterparty country for DB filter
+            "origin_country":  origin_country,      # user's own origin (SELL queries); no DB filter
             "quantity":        quantity,
             "price_filter":    price_filter,
+            "ranking_hint":    ranking_hint,        # top-level signal for _orm_search
             "os_filter":       os_filter,
             "entities":        entities,
             "ui_context":      ui_context,
+            "timings": {
+                "setfit": t_setfit,
+                "gliner": t_gliner,
+                "rapidfuzz": t_rapidfuzz,
+                "keybert": t_keybert,
+                "total": time.perf_counter() - t_nlu_total,
+            }
         }
 
-        logger.info(
-            f"[NLU] Final parse | intent={intent} | product={product_keyword!r} | "
-            f"country={resolved_country!r} | price={llm_result.get('price')} | "
-            f"quantity={quantity!r} | product_method={product_method}"
-        )
-        t_total_nlu = (time.perf_counter() - t_nlu_total) * 1000
-        logger.info(f"[LATENCY] NLU Total: {t_total_nlu:.0f}ms")
-        logger.info(f"[LATENCY] NLU Total (no DeepSeek): {t_total_nlu - t_deepseek:.0f}ms")
         return result
 
     # Alias used by some views
@@ -777,7 +924,7 @@ class ModernNLUEngine:
     # Country Resolver (RapidFuzz)
     # ------------------------------------------------------------------
     
-    def _resolve_country(self, raw_country: str) -> Optional[str]:
+    def _resolve_country(self, raw_country: str, cutoff: float = 75.0) -> Optional[str]:
         """
         Uses RapidFuzz to map an extracted messy location ("chinaaa", "pak")
         to standard list.
@@ -793,7 +940,7 @@ class ModernNLUEngine:
         try:
             import rapidfuzz
         except ImportError:
-            return raw_country.capitalize()
+            return None
             
         STANDARD_COUNTRIES = [
             "Pakistan", "China", "United States", "India", "Afghanistan",
@@ -807,11 +954,12 @@ class ModernNLUEngine:
             raw_country.lower(), 
             STANDARD_COUNTRIES, 
             scorer=rapidfuzz.fuzz.WRatio, 
-            score_cutoff=60.0 # Lowered slightly for "turk" -> "Turkey"
+            processor=rapidfuzz.utils.default_process,
+            score_cutoff=cutoff
         )
         if match:
             return match[0] # The matched string (e.g., "China")
-        return raw_country.capitalize() # fallback
+        return None
 
     def _detect_country_fallback(self, query: str) -> Optional[str]:
         """
@@ -819,58 +967,71 @@ class ModernNLUEngine:
         or if we want to bypass fuzzy matching for strict abbreviations (ira -> Iran).
         """
         q = query.lower()
-        
-        FALLBACK_COUNTRIES = {
-            "china": "China", "chinaaa": "China", "chin": "China", "chi": "China",
-            "pakistan": "Pakistan", "pak": "Pakistan", "pk": "Pakistan",
-            "india": "India", "ind": "India",
-            "turkey": "Turkey", "turk": "Turkey", "turkiye": "Turkey", "turekyy": "Turkey", "turky": "Turkey", "turke": "Turkey", "turkeyy": "Turkey",
-            "usa": "United States", "us": "United States", "america": "United States",
-            "uk": "United Kingdom", "britain": "United Kingdom", "england": "United Kingdom",
-            "germany": "Germany", "france": "France", "italy": "Italy", "span": "Spain",
-            "uae": "United Arab Emirates", "dubai": "United Arab Emirates",
-            "saudi": "Saudi Arabia", "ksa": "Saudi Arabia",
-            "iran": "Iran", "ira": "Iran",
-            "egypt": "Egypt", "egyp": "Egypt",
-            "korea": "South Korea", "kore": "South Korea", "south": "South Korea", "korean": "South Korea",
-            "japan": "Japan", "jap": "Japan",
-            "malaysia": "Malaysia", "malay": "Malaysia",
-            "vietnam": "Vietnam", "viet": "Vietnam",
+
+        # ------------------------------------------------------------------
+        # PREPOSITION-ANCHORED PASS
+        # Match "from X", "in X", "based in X", "located in X", "within X"
+        # and validate the captured text through _resolve_country (RapidFuzz).
+        # Multi-word prepositions must come before single-word ones so that
+        # "based in brazil" matches the longer pattern first.
+        # False-positive guard: _resolve_country uses score_cutoff=60, so
+        # non-country words like "food", "industry", "market" won't match.
+        # ------------------------------------------------------------------
+        _PREP_PATTERNS = [
+            r'\b(?:based\s+in|located\s+in)\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
+            r'\bwithin\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
+            r'\b(?:from|in)\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
+        ]
+        _PREP_STANDARD_COUNTRIES = {
+            "pakistan", "china", "united states", "india", "afghanistan",
+            "united arab emirates", "saudi arabia", "germany", "united kingdom",
+            "australia", "canada", "singapore", "malaysia", "indonesia",
+            "turkey", "brazil", "france", "italy", "spain", "japan", "south korea",
+            "vietnam", "thailand", "egypt", "south africa", "nigeria", "kenya",
+        }
+        _FORBIDDEN_PREFIXES = (
+            # Question words
+            "where", "who", "what", "which", "how",
+            # Uncertainty
+            "anywhere", "somewhere", "wherever", "any country", "anyplace", "any",
+            # Hedge words
+            "maybe", "perhaps", "possibly", "idk", "not sure"
+        )
+
+        for pattern in _PREP_PATTERNS:
+            m = re.search(pattern, q)
+            if m:
+                candidate = m.group(1).strip()
+                
+                if candidate.startswith(_FORBIDDEN_PREFIXES):
+                    continue
+                
+                # Run captured preposition text through RapidFuzz at 85% threshold
+                resolved = self._resolve_country(candidate, cutoff=85.0)
+                if resolved:
+                    return resolved
+
+        # ------------------------------------------------------------------
+        # LAYER 3 — Abbreviation Mapping (last resort)
+        # ------------------------------------------------------------------
+        ABBREVIATIONS = {
+            "uae": "United Arab Emirates",
+            "uk": "United Kingdom", 
+            "usa": "United States",
+            "us": "United States",
+            "prc": "China",
+            "ksa": "Saudi Arabia",
+            "pak": "Pakistan",
+            "chn": "China",
+            "ger": "Germany",
+            "fra": "France",
         }
         
-        # Check explicit isolated words
         words = re.findall(r'\b\w+\b', q)
         for w in words:
-            if w in FALLBACK_COUNTRIES:
-                return FALLBACK_COUNTRIES[w]
+            if w in ABBREVIATIONS:
+                return ABBREVIATIONS[w]
                 
-        # Words that look geography-related but are NOT country names — never feed to RapidFuzz
-        blacklisted_words = {
-            "from", "for", "the", "and", "with", "in", "to",
-            "buy", "sell", "get", "import", "export", "need", "want", "looking",
-            # Geographic meta-words that confuse RapidFuzz
-            "country", "countries", "international", "global", "worldwide", "abroad",
-        }
-        
-        try:
-            import rapidfuzz
-            STANDARD_COUNTRIES = [
-                "Pakistan", "China", "United States", "India", "Afghanistan",
-                "United Arab Emirates", "Saudi Arabia", "Germany", "United Kingdom",
-                "Australia", "Canada", "Singapore", "Malaysia", "Indonesia",
-                "Turkey", "Brazil", "France", "Italy", "Spain", "Japan", "South Korea",
-                "Vietnam", "Thailand", "Egypt", "South Africa", "Nigeria", "Kenya"
-            ]
-            for w in words:
-                if len(w) >= 4 and w not in blacklisted_words:
-                    match = rapidfuzz.process.extractOne(
-                        w, STANDARD_COUNTRIES, scorer=rapidfuzz.fuzz.WRatio, score_cutoff=85.0
-                    )
-                    if match:
-                        return match[0]
-        except ImportError:
-            pass
-            
         return None
 
 

@@ -117,7 +117,7 @@ class SupplierAggregator:
         # if even ONE of their shipments was above the ceiling, even if their average
         # price is well within the limit.  The correct semantic is supplier-level.
 
-        import logging; logging.getLogger(__name__).warning(f"[Aggregator] after country filter count={queryset.count()} | SQL={str(queryset.query)}")
+
 
         # Aggregate — NO hard volume filter at DB level
         results = queryset.values(target_field, country_field).annotate(
@@ -203,8 +203,6 @@ class SupplierAggregator:
         if volume_filter and volume_filter > 0:
             counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
             
-        import logging; logging.getLogger(__name__).warning(f"[Aggregator] after price filter supplier_count={len(results)}")
-        import logging; logging.getLogger(__name__).warning(f"[Aggregator] returning {len(counterparties)} suppliers")
         return counterparties
 
 
@@ -314,10 +312,8 @@ class SupplierAggregator:
                 })
 
         # 6. Buyer Insights
-        # Unique buyers total — across ALL transactions for this seller (not scoped to product)
-        total_unique_buyers = Transaction.objects.filter(
-            seller__iexact=seller_name.strip()
-        ).values('buyer').distinct().count()
+        # Unique buyers scoped to the filtered product queryset (same scope as stats above)
+        total_unique_buyers = queryset.values('buyer').distinct().count()
         
         # Unique buyers last 30d (approx, since reporting_date is date)
         last_month_start = datetime.date.today() - datetime.timedelta(days=30)
@@ -454,10 +450,8 @@ class SupplierAggregator:
                 })
 
         # 6. Supplier Insights from Buyer perspective — "Who are they buying from?"
-        # Total unique sellers across ALL transactions for this buyer (lifetime)
-        total_unique_sellers = Transaction.objects.filter(
-            buyer__iexact=buyer_name.strip()
-        ).values('seller').distinct().count()
+        # Unique sellers scoped to the filtered product queryset (same scope as stats above)
+        total_unique_sellers = queryset.values('seller').distinct().count()
         
         last_month_start = datetime.date.today() - datetime.timedelta(days=30)
         recent_suppliers = queryset.filter(reporting_date__gte=last_month_start).values('seller').distinct().count()

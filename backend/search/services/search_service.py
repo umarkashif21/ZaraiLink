@@ -91,9 +91,21 @@ class SearchService:
     def __init__(self):
         self._init_clients()
 
-    # =========================================================================
-    # PUBLIC API — MAIN SEARCH
-    # =========================================================================
+    def _log_perf(self, query, cache_status, timings, nlu_result=None):
+        print(f'\n[QUERY] "{query}"')
+        print(f"[CACHE] {cache_status}")
+        print(f"[TIMING] NLU: {timings.get('nlu', 0.0):.2f}s")
+
+        if nlu_result and "timings" in nlu_result:
+            nt = nlu_result["timings"]
+            print("\n[NLU]")
+            print(f"  intent={nlu_result.get('intent')} product={nlu_result.get('product')}")
+            print(f"  SetFit={int(nt.get('setfit', 0)*1000)}ms | GLiNER(prod)={int(nt.get('keybert', 0)*1000)}ms | RapidFuzz={int(nt.get('rapidfuzz', 0)*1000)}ms | GLiNER(ent)={int(nt.get('gliner', 0)*1000)}ms")
+            print(f"  TOTAL={int(nt.get('total', 0)*1000)}ms\n")
+
+        print(f"[TIMING] Subcategory: {timings.get('subcat', 0.0):.2f}s")
+        print(f"[TIMING] DB: {timings.get('db', 0.0):.2f}s")
+        print(f"[TIMING] TOTAL: {timings.get('total', 0.0):.2f}s\n")
 
     def execute_search(
         self,
@@ -118,6 +130,11 @@ class SearchService:
         """
         import time
         t_total = time.perf_counter()
+        
+        t_nlu = 0.0
+        t_subcat = 0.0
+        t_db = 0.0
+        cache_status = "MISS"
 
         # ------------------------------------------------------------------
         # Step 1: NLU  (SetFit + KeyBERT + OpenRouter)
@@ -144,6 +161,8 @@ class SearchService:
             if not hs_code:
                 hs_code = hs_code_candidate
 
+            t_nlu = time.perf_counter() - t0
+
         else:
             rq = raw_query.strip()
             # ------- FAST PATH: Exact DB match — skip NLU entirely -------
@@ -162,8 +181,8 @@ class SearchService:
                     subcat_id = subcats[0].id if subcats and not cats else None
                     variant_name = subcats[0].name if subcats and not cats else None
                     
-                    t_total_ms = (time.perf_counter() - t_total) * 1000
-                    logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
+                    t_total_s = time.perf_counter() - t_total
+                    self._log_perf(raw_query, "BYPASS", {"nlu": time.perf_counter() - t0, "total": t_total_s}, nlu_result)
                     return {
                         "is_category_bridge": True,
                         "hs_code": hs_codes[0],
@@ -172,9 +191,8 @@ class SearchService:
                     }
                 elif cats:
                     # Only fallback to broad SummaryView if there's a broad category match involved.
-                    logger.warning(f"[NLU] Bypassing NLU for exact DB broad/multiple Category: '{rq}'. Sending to SummaryView.")
-                    t_total_ms = (time.perf_counter() - t_total) * 1000
-                    logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
+                    t_total_s = time.perf_counter() - t_total
+                    self._log_perf(raw_query, "BYPASS", {"nlu": time.perf_counter() - t0, "total": t_total_s}, nlu_result)
                     return {
                         "is_category_bridge": True,
                         "hs_code": rq, # SummaryView expects the name to query
@@ -190,12 +208,12 @@ class SearchService:
                 _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
                 nlu_result = cache.get(_cache_key)
                 if nlu_result is not None:
-                    logger.warning(f"[CACHE] NLU cache HIT for query='{raw_query[:40]}'")
+                    cache_status = "HIT"
                 else:
-                    logger.warning(f"[CACHE] NLU cache MISS — running full NLU for '{raw_query[:40]}'")
+                    cache_status = "MISS"
                     nlu_result = self._nlu_engine.parse(raw_query, ui_context=ui_context)
                     cache.set(_cache_key, nlu_result, timeout=86400)  # 24 hours
-            logger.warning(f"[TIMING] NLU parse: {time.perf_counter() - t0:.3f}s")
+            t_nlu = time.perf_counter() - t0
 
         intent  = explicit_intent or nlu_result.get("intent", "UNKNOWN")
         country = nlu_result.get("country")
@@ -215,12 +233,20 @@ class SearchService:
         # ------------------------------------------------------------------
         # Step 3: Resolve product subcategories from DB
         # ------------------------------------------------------------------
+        # Reset per-request state on the singleton BEFORE any resolution.
+        # _scope_mismatch is set inside _resolve_subcategories but the subcat_id
+        # fast-path returns early before reaching that reset — so without this
+        # line a scope_mismatch from a previous request would persist and poison
+        # the disambiguation-click call, returning 0 results instead of suppliers.
+        self._scope_mismatch = None
+
         t0 = time.perf_counter()
         subcat_ids, variant_list, product_item_ids = self._resolve_subcategories(
             product_keyword, hs_code, country=country, intent=intent,
             subcat_id=subcat_id, variant_name=variant_name, scope=orm_scope
         )
-        logger.warning(f"[TIMING] Subcategory resolve: {time.perf_counter() - t0:.3f}s")
+        t_subcat = time.perf_counter() - t0
+
 
         # ------------------------------------------------------------------
         # Step 3b: Scope mismatch early exit
@@ -231,7 +257,8 @@ class SearchService:
         scope_info = getattr(self, '_scope_mismatch', None)
 
         if scope_info:
-            logger.warning(f"[SCOPE MISMATCH] Product '{scope_info['product']}' not found in {scope_info['current_scope']}, but exists in {scope_info['alt_scope']}")
+            t_total_s = time.perf_counter() - t_total
+            self._log_perf(raw_query, cache_status, {"nlu": t_nlu, "subcat": t_subcat, "total": t_total_s}, nlu_result)
             return {
                 "nlu":                  nlu_result,
                 "profiles":             [],
@@ -269,11 +296,8 @@ class SearchService:
                 needs_disambig = True
 
         if needs_disambig:
-            t_total_ms = (time.perf_counter() - t_total) * 1000
-            if hs_code or variant_name or subcat_id or is_numeric:
-                logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
-            else:
-                logger.info(f"[LATENCY] Total request time: {t_total_ms:.0f}ms")
+            t_total_s = time.perf_counter() - t_total
+            self._log_perf(raw_query, cache_status, {"nlu": t_nlu, "subcat": t_subcat, "total": t_total_s}, nlu_result)
             return {
                 "nlu":                  nlu_result,
                 "profiles":             [],
@@ -315,16 +339,10 @@ class SearchService:
             product_item_ids=product_item_ids,
             raw_query=raw_query,
         )
-        db_elapsed = time.perf_counter() - t0
-        logger.warning(f"[TIMING] DB aggregation: {db_elapsed:.3f}s")
-        # Ranking is embedded inside _orm_search; estimate remainder as < 30 ms
-        logger.warning(f"[TIMING] Ranking: (included in DB aggregation above)")
+        t_db = time.perf_counter() - t0
 
-        t_total_ms = (time.perf_counter() - t_total) * 1000
-        if hs_code or variant_name or subcat_id or is_numeric:
-            logger.info(f"[LATENCY] Fast Path: {t_total_ms:.0f}ms")
-        else:
-            logger.info(f"[LATENCY] Total request time: {t_total_ms:.0f}ms")
+        t_total_s = time.perf_counter() - t_total
+        self._log_perf(raw_query, cache_status, {"nlu": t_nlu, "subcat": t_subcat, "db": t_db, "total": t_total_s}, nlu_result)
 
         is_broad = False
         if not hs_code and not subcat_ids and len(product_keyword) > 1:
@@ -332,6 +350,15 @@ class SearchService:
 
         active_subcat_id = subcat_ids[0] if len(subcat_ids) == 1 else None
         active_hs_code_resolved = variant_list[0].get("hs_code") if len(variant_list) == 1 and isinstance(variant_list[0], dict) else None
+
+        _RANKING_LABELS = {
+            "price_asc":   "Sorted by: Lowest Price",
+            "price_desc":  "Sorted by: Highest Quality / Price",
+            "volume_desc": "Sorted by: Highest Volume",
+            "reliability": "Sorted by: Most Shipments (Reliability)",
+        }
+        _rh = nlu_result.get("ranking_hint") or ""
+        ranking_applied = _RANKING_LABELS.get(_rh) or None
 
         return {
             "nlu":                  nlu_result,
@@ -343,6 +370,7 @@ class SearchService:
             "search_engine":        "orm",
             "active_subcat_id":     active_subcat_id,
             "active_hs_code":       active_hs_code_resolved,
+            "ranking_applied":      ranking_applied,
         }
 
     # =========================================================================
@@ -387,10 +415,17 @@ class SearchService:
 
         # ------------------------------------------------------------------
         # FAST PATH: subcat_id provided — user clicked an exact product
-        # Return immediately, no fuzzy matching needed
+        # Return immediately, no fuzzy matching needed.
+        # Also resolve the exact ProductItem IDs for this subcategory so the
+        # aggregator can filter to the specific variant (not all variants
+        # that share the same HS code prefix).
         # ------------------------------------------------------------------
         if subcat_id:
-            return [subcat_id], [], []
+            item_ids = list(
+                ProductItem.objects.filter(sub_category_id=subcat_id)
+                .values_list('id', flat=True)
+            )
+            return [subcat_id], [], item_ids
 
         if hs_code:
             # Multiple subcategories can share the same hs_code prefix.
@@ -608,17 +643,22 @@ class SearchService:
         if subcat_ids and not hs_code:
             target_trade_type = scope
 
-            availability_qs = Transaction.objects.filter(
-                trade_type=target_trade_type,
-                product_item__sub_category_id__in=subcat_ids,
-            )
+            filters = {
+                "trade_type": target_trade_type,
+                "product_item__sub_category_id__in": subcat_ids,
+            }
 
-            # Also apply country filter if NLU extracted a specific country
             if country:
-                country_field = "origin_country" if target_trade_type == "IMPORT" else "destination_country"
-                availability_qs = availability_qs.filter(
-                    **{country_field + "__icontains": country}
-                )
+                country_field = None
+                if target_trade_type == 'IMPORT':
+                    country_field = 'origin_country' if intent == 'BUY' else 'destination_country'
+                elif target_trade_type == 'EXPORT':
+                    country_field = 'destination_country' if intent == 'SELL' else 'origin_country'
+                
+                if country_field:
+                    filters[country_field] = country
+
+            availability_qs = Transaction.objects.filter(**filters)
 
             active_ids = set(
                 availability_qs.values_list(
@@ -641,32 +681,52 @@ class SearchService:
                 opposite_count = opposite_qs.count()
 
                 if opposite_count > 0:
-                    # Data exists in the other scope — build mismatch metadata
-                    date_range = opposite_qs.aggregate(
-                        min_date=Min("reporting_date"),
-                        max_date=Max("reporting_date"),
-                    )
-                    product_display = product_keyword or "this product"
-                    current_label = "exported" if target_trade_type == "EXPORT" else "imported"
-                    alt_label     = "imported" if target_trade_type == "EXPORT" else "exported"
-                    alt_scope     = "import" if target_trade_type == "EXPORT" else "export"
-
-                    min_year = date_range["min_date"].year if date_range["min_date"] else "?"
-                    max_year = date_range["max_date"].year if date_range["max_date"] else "?"
-
-                    self._scope_mismatch = {
-                        "product": product_display,
-                        "current_scope": target_trade_type.lower(),
-                        "alt_scope": alt_scope,
-                        "current_label": current_label,
-                        "alt_label": alt_label,
-                        "alt_records": opposite_count,
-                        "year_min": min_year,
-                        "year_max": max_year,
+                    # Now double-check if the opposite scope actually has data FOR THIS COUNTRY.
+                    # If the user asked for Brazil, we shouldn't show a scope mismatch saying
+                    # "we found export data" if all the export data is for China.
+                    opposite_filters = {
+                        "trade_type": opposite_type,
+                        "product_item__sub_category_id__in": subcat_ids,
                     }
-                    # Clear variants so disambiguation picker does NOT show
-                    variant_list = []
-                    subcat_ids = []
+                    if country:
+                        opp_country_field = None
+                        if opposite_type == 'IMPORT':
+                            opp_country_field = 'origin_country' if intent == 'BUY' else 'destination_country'
+                        elif opposite_type == 'EXPORT':
+                            opp_country_field = 'destination_country' if intent == 'SELL' else 'origin_country'
+                        if opp_country_field:
+                            opposite_filters[opp_country_field] = country
+                    
+                    opposite_qs = Transaction.objects.filter(**opposite_filters)
+                    opposite_count = opposite_qs.count()
+                    
+                    if opposite_count > 0:
+                        # Data exists in the other scope — build mismatch metadata
+                        date_range = opposite_qs.aggregate(
+                            min_date=Min("reporting_date"),
+                            max_date=Max("reporting_date"),
+                        )
+                        product_display = product_keyword or "this product"
+                        current_label = "exported" if target_trade_type == "EXPORT" else "imported"
+                        alt_label     = "imported" if target_trade_type == "EXPORT" else "exported"
+                        alt_scope     = "import" if target_trade_type == "EXPORT" else "export"
+
+                        min_year = date_range["min_date"].year if date_range["min_date"] else "?"
+                        max_year = date_range["max_date"].year if date_range["max_date"] else "?"
+
+                        self._scope_mismatch = {
+                            "product": product_display,
+                            "current_scope": target_trade_type.lower(),
+                            "alt_scope": alt_scope,
+                            "current_label": current_label,
+                            "alt_label": alt_label,
+                            "alt_records": opposite_count,
+                            "year_min": min_year,
+                            "year_max": max_year,
+                        }
+                        # Clear variants so disambiguation picker does NOT show
+                        variant_list = []
+                        subcat_ids = []
 
         return subcat_ids, variant_list, []
 
@@ -799,97 +859,128 @@ class SearchService:
         )
 
         # ------------------------------------------------------------------
-        # INTENT-AWARE COMPOSITE RANKING
-        # ------------------------------------------------------------------
         # Replaces raw total_volume sorting with a multi-factor score.
         #
         # Signal detection priority:
         #   1. ranking_hint from LLM price extractor (most explicit)
         #   2. product_keyword scan (catches residual words after stopword stripping)
         #
-        # NOTE: 'cheap', 'affordable' etc. are stop-words and get stripped from
-        # product_keyword before it reaches here. Therefore we must check
-        # ranking_hint (from the LLM price call) as the primary signal for
-        # price-preference intents.
-        #
-        # Weight presets (tune here):
-        #   "price_asc" (cheap)  → w3 (1/price) = 0.5, w1 (volume) = 0.2
-        #   "bulk"               → w1 (volume)  = 0.5, w2 (count)  = 0.3
-        #   default              → balanced (w1=0.4, w2=0.3, w3=0.2, w4=0.1)
+        # EXPLICIT HINT → direct sort on the relevant single field so that
+        # "cheapest dextrose" means ORDER BY avg_price ASC, not a composite.
+        # DEFAULT (no hint) → balanced composite (volume + shipments + price + recency).
         if raw_results:
-            ranking_hint  = (nlu_result.get("price_filter") or {}).get("ranking_hint") or ""
+            # Primary: top-level ranking_hint set by _detect_ranking_hint() in NLU
+            # Secondary: hint embedded inside price_filter (legacy regex/LLM path)
+            ranking_hint  = nlu_result.get("ranking_hint") or (nlu_result.get("price_filter") or {}).get("ranking_hint") or ""
             signal_text   = nlu_result.get("product_keyword", "").lower() + " " + raw_query.lower()
 
-            # Determine weight preset
+            # Map hint → preset name
             if ranking_hint == "price_asc" or any(
-                w in signal_text for w in ["cheap", "affordable", "low price", "best price", "cheapest", "under", "inexpensive", "bargain"]
+                w in signal_text for w in ["cheap", "affordable", "low price", "best price",
+                                            "cheapest", "under", "inexpensive", "bargain"]
             ):
-                w1, w2, w3, w4 = 0.2, 0.2, 0.5, 0.1
                 preset_name = "price_asc"
-            elif ranking_hint == "price_desc" or any(
-                w in signal_text for w in ["bulk", "large quantity", "reliable", "established", "premium", "top supplier", "biggest"]
+            elif ranking_hint == "price_desc":
+                preset_name = "price_desc"
+            elif ranking_hint == "volume_desc" or any(
+                w in signal_text for w in ["biggest", "largest", "bulk", "leading",
+                                            "most active", "highest volume", "large scale"]
             ):
-                w1, w2, w3, w4 = 0.5, 0.3, 0.1, 0.1
-                preset_name = "bulk/premium"
+                preset_name = "volume_desc"
+            elif ranking_hint == "reliability" or any(
+                w in signal_text for w in ["reliable", "trusted", "established", "serious", "verified"]
+            ):
+                preset_name = "reliability"
             else:
-                w1, w2, w3, w4 = 0.4, 0.3, 0.2, 0.1
                 preset_name = "default"
 
             logger.info(
-                f"[Ranking] Preset='{preset_name}' ranking_hint={ranking_hint!r} "
-                f"signal_text={signal_text!r} "
-                f"weights=(vol={w1}, cnt={w2}, price={w3}, rec={w4})"
+                f"[Ranking] Preset='{preset_name}' ranking_hint={ranking_hint!r}"
             )
 
+            # ------------------------------------------------------------------
+            # EXPLICIT HINT → Direct sort on the relevant field.
+            # When the user says "cheapest" they expect ORDER BY price ASC,
+            # not a composite blend where volume/recency can override price.
+            # ------------------------------------------------------------------
+            if preset_name == "price_asc":
+                # Suppliers with no price data sink to the bottom
+                raw_results.sort(key=lambda r: r.get("avg_price") or float("inf"))
+                for r in raw_results:
+                    r["composite_score"] = 0.0
+                    r["ranking_preset"]  = preset_name
 
-            vols = [r["total_volume"] for r in raw_results]
-            counts = [r["shipment_count"] for r in raw_results]
-            
-            # Convert dates to ordinals for normalized recency
-            from datetime import datetime, date
-            recencies = []
-            for r in raw_results:
-                lsd = r["last_shipment_date"]
-                if isinstance(lsd, (datetime, date)):
-                    recencies.append(lsd.toordinal())
-                elif isinstance(lsd, str):
-                    try:
-                        recencies.append(datetime.strptime(lsd[:10], "%Y-%m-%d").toordinal())
-                    except ValueError:
-                        recencies.append(0)
-                else:
-                    recencies.append(0)
-                    
-            valid_prices = [r["avg_price"] for r in raw_results if r.get("avg_price")]
-            
-            min_vol, max_vol = min(vols), max(vols)
-            min_cnt, max_cnt = min(counts), max(counts)
-            min_rec, max_rec = min(recencies), max(recencies)
-            
-            if valid_prices:
-                inv_prices = [1.0 / p for p in valid_prices]
-                min_inv_p, max_inv_p = min(inv_prices), max(inv_prices)
+            elif preset_name == "price_desc":
+                # Highest price first; no-price data sinks to the bottom
+                raw_results.sort(key=lambda r: r.get("avg_price") or 0.0, reverse=True)
+                for r in raw_results:
+                    r["composite_score"] = 0.0
+                    r["ranking_preset"]  = preset_name
+
+            elif preset_name == "volume_desc":
+                raw_results.sort(key=lambda r: r.get("total_volume") or 0.0, reverse=True)
+                for r in raw_results:
+                    r["composite_score"] = 0.0
+                    r["ranking_preset"]  = preset_name
+
+            elif preset_name == "reliability":
+                # Most shipments first (track record = reliability proxy)
+                raw_results.sort(key=lambda r: r.get("shipment_count") or 0, reverse=True)
+                for r in raw_results:
+                    r["composite_score"] = 0.0
+                    r["ranking_preset"]  = preset_name
+
             else:
-                min_inv_p, max_inv_p = 0.0, 0.0
+                # ------------------------------------------------------------------
+                # DEFAULT → Multi-factor composite score (balanced blend)
+                # ------------------------------------------------------------------
+                w1, w2, w3, w4 = 0.4, 0.3, 0.2, 0.1
 
-            def minmax(val, mi, ma):
-                return (val - mi) / (ma - mi) if ma > mi else 0.0
+                vols   = [r["total_volume"] for r in raw_results]
+                counts = [r["shipment_count"] for r in raw_results]
 
-            for i, r in enumerate(raw_results):
-                vol_norm = minmax(r["total_volume"], min_vol, max_vol)
-                cnt_norm = minmax(r["shipment_count"], min_cnt, max_cnt)
-                rec_norm = minmax(recencies[i], min_rec, max_rec)
-                
-                # Exclude price component if avg_price is 0/null to prevent div-by-zero
-                score = w1 * vol_norm + w2 * cnt_norm + w4 * rec_norm
-                if r.get("avg_price"):
-                    p_norm = minmax(1.0 / r["avg_price"], min_inv_p, max_inv_p)
-                    score += w3 * p_norm
-                    
-                r["composite_score"] = score
+                from datetime import datetime, date
+                recencies = []
+                for r in raw_results:
+                    lsd = r["last_shipment_date"]
+                    if isinstance(lsd, (datetime, date)):
+                        recencies.append(lsd.toordinal())
+                    elif isinstance(lsd, str):
+                        try:
+                            recencies.append(datetime.strptime(lsd[:10], "%Y-%m-%d").toordinal())
+                        except ValueError:
+                            recencies.append(0)
+                    else:
+                        recencies.append(0)
+                valid_prices = [r["avg_price"] for r in raw_results if r.get("avg_price")]
 
-            # Sort by the new intent-aware composite score
-            raw_results.sort(key=lambda x: x.get("composite_score", 0), reverse=True)
+                min_vol, max_vol = min(vols), max(vols)
+                min_cnt, max_cnt = min(counts), max(counts)
+                min_rec, max_rec = min(recencies), max(recencies)
+
+                if valid_prices:
+                    inv_prices = [1.0 / p for p in valid_prices]
+                    min_inv_p, max_inv_p = min(inv_prices), max(inv_prices)
+                else:
+                    min_inv_p, max_inv_p = 0.0, 0.0
+
+                def minmax(val, mi, ma):
+                    return (val - mi) / (ma - mi) if ma > mi else 0.0
+
+                for i, r in enumerate(raw_results):
+                    vol_norm = minmax(r["total_volume"], min_vol, max_vol)
+                    cnt_norm = minmax(r["shipment_count"], min_cnt, max_cnt)
+                    rec_norm = minmax(recencies[i], min_rec, max_rec)
+
+                    score = w1 * vol_norm + w2 * cnt_norm + w4 * rec_norm
+                    if r.get("avg_price"):
+                        p_norm = minmax(1.0 / r["avg_price"], min_inv_p, max_inv_p)
+                        score += w3 * p_norm
+
+                    r["composite_score"] = score
+                    r["ranking_preset"]  = preset_name
+
+                raw_results.sort(key=lambda x: x.get("composite_score", 0), reverse=True)
 
         # Normalise to the same shape the rest of the code expects
         profiles = []
@@ -943,8 +1034,6 @@ class SearchService:
         raw = partial_query.strip()
         is_numeric = bool(raw) and all(c.isdigit() or c == '.' for c in raw)
 
-        print(f"[AUTOCOMPLETE DEBUG] raw='{raw}' is_numeric={is_numeric}", flush=True)
-
         if is_numeric:
             keyword = raw
         else:
@@ -954,8 +1043,6 @@ class SearchService:
             if len(keyword) < 2:
                 return []
 
-        print(f"[AUTOCOMPLETE DEBUG] keyword='{keyword}'", flush=True)
-
         if is_numeric:
             sc_matches = ProductSubCategory.objects.filter(
                 hs_code__startswith=keyword
@@ -970,8 +1057,6 @@ class SearchService:
             cat_matches = ProductCategory.objects.filter(
                 name__icontains=keyword
             )
-
-        print(f"[AUTOCOMPLETE DEBUG] sc_matches={sc_matches.count()} cat_matches={cat_matches.count()}", flush=True)
 
         seen_names = set()
         suggestions = []

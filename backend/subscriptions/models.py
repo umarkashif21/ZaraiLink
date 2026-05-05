@@ -222,7 +222,7 @@ class UserAccess(models.Model):
     )
     access_type = models.CharField(max_length=10, choices=ACCESS_TYPE_CHOICES)
     hscode = models.CharField(
-        max_length=20,
+        max_length=50,
         db_index=True,
         help_text="The HS code this access applies to, e.g. '1702.3000'"
     )
