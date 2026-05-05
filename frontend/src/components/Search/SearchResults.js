@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Filter, BarChart2, Package, ChevronRight, ChevronLeft, AlertCircle } from 'lucide-react';
+import Navbar from '../Layout/Navbar';
+import searchService from '../../services/searchService';
 
 const CAROUSEL_PAGE_SIZE = 3;
-import Navbar from '../Layout/Navbar';
-import '../Dashboard/Dashboard.css';
-import searchService from '../../services/searchService';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
