@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../Layout/Navbar';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
+import Shepherd from 'shepherd.js';
+import 'shepherd.js/dist/css/shepherd.css';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
@@ -44,6 +46,123 @@ const Dashboard = () => {
 
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState(null);
+
+  // Shepherd.js Tour Logic
+  useEffect(() => {
+    // Check if tour has already been shown
+    if (localStorage.getItem('zarailink_tour_done')) return;
+
+    // Delay to ensure the DOM elements are fully mounted
+    const tourTimer = setTimeout(() => {
+      const tour = new Shepherd.Tour({
+        useModalOverlay: true,
+        defaultStepOptions: {
+          classes: 'custom-shepherd-theme',
+          scrollTo: { behavior: 'smooth', block: 'center' },
+          cancelIcon: { enabled: true }
+        }
+      });
+
+      const getElement = (selector) => document.querySelector(selector);
+
+      if (getElement('#tour-search-bar')) {
+        tour.addStep({
+          id: 'step-search',
+          text: 'Start here. Search by product name, HS code, or plain English.',
+          attachTo: { element: '#tour-search-bar', on: 'bottom' },
+          buttons: [
+            { text: 'Skip', action: tour.cancel, classes: 'shepherd-button-secondary' },
+            { text: 'Next', action: tour.next }
+          ]
+        });
+      }
+
+      if (getElement('#tour-search-methods')) {
+        tour.addStep({
+          id: 'step-search-methods',
+          text: 'You can directly search by HS Code, Category, or Product Name without clicking the Import/Export scope button.',
+          attachTo: { element: '#tour-search-methods', on: 'bottom' },
+          buttons: [
+            { text: 'Next', action: tour.next }
+          ]
+        });
+      }
+
+      if (getElement('#tour-scope-toggle')) {
+        tour.addStep({
+          id: 'step-scope',
+          text: 'Or switch between finding buyers or suppliers if using an AI Query.',
+          attachTo: { element: '#tour-scope-toggle', on: 'bottom' },
+          buttons: [
+            { text: 'Next', action: tour.next }
+          ]
+        });
+      }
+
+      if (getElement('#tour-ai-query')) {
+        tour.addStep({
+          id: 'step-ai',
+          text: "Try natural language like 'buy sugar from Brazil'.",
+          attachTo: { element: '#tour-ai-query', on: 'bottom' },
+          buttons: [
+            { text: 'Next', action: tour.next }
+          ]
+        });
+      }
+
+      if (getElement('#tour-example-queries')) {
+        tour.addStep({
+          id: 'step-examples',
+          text: 'Not sure where to start? Try one of these example queries.',
+          attachTo: { element: '#tour-example-queries', on: 'top' },
+          buttons: [
+            { text: 'Next', action: tour.next }
+          ]
+        });
+      }
+
+      if (getElement('#tour-nav-intelligence')) {
+        tour.addStep({
+          id: 'step-nav-intelligence',
+          text: 'Click Intelligence on the nav bar to see the supplier directory by clicking "Find Suppliers", or find buyers by clicking "Find Buyers".',
+          attachTo: { element: '#tour-nav-intelligence', on: 'bottom' },
+          buttons: [
+            { text: 'Next', action: tour.next }
+          ]
+        });
+      }
+
+      if (getElement('#tour-nav-subscription')) {
+        tour.addStep({
+          id: 'step-nav-subscription',
+          text: 'Need more searches? Click Subscription to buy tokens.',
+          attachTo: { element: '#tour-nav-subscription', on: 'bottom' },
+          buttons: [
+            { text: 'Done', action: tour.complete }
+          ]
+        });
+      }
+
+      const finishTour = () => {
+        localStorage.setItem('zarailink_tour_done', 'true');
+      };
+
+      tour.on('complete', finishTour);
+      tour.on('cancel', finishTour);
+
+      if (tour.steps.length > 0) {
+        tour.start();
+      }
+    }, 1000); // 1s delay to let animations settle
+
+    return () => {
+      clearTimeout(tourTimer);
+      // Ensure we don't leave lingering Shepherd modals
+      if (Shepherd.activeTour) {
+        Shepherd.activeTour.cancel();
+      }
+    };
+  }, []);
 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -243,14 +362,14 @@ const Dashboard = () => {
                   </div>
                   <span className="font-bold text-slate-700 text-sm">4 Ways to Search ZaraiLink</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div id="tour-search-methods" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
                     { color: 'blue', Icon: Hash, title: 'HS Code', sub: 'Type a numeric code', example: '1702.3000' },
                     { color: 'orange', Icon: Layers, title: 'Category', sub: 'Broad product class', example: 'glucose syrup' },
                     { color: 'emerald', Icon: Package, title: 'Product Name', sub: 'Specific variant', example: 'dextrose ball' },
-                    { color: 'violet', Icon: Zap, title: 'AI Query', sub: 'Select Import/Export first', example: 'buy urea from india' },
-                  ].map(({ color, Icon, title, sub, example }) => (
-                    <div key={title} className={`flex items-start gap-3 p-3 bg-${color}-50 border border-${color}-100 rounded-xl`}>
+                    { color: 'violet', Icon: Zap, title: 'AI Query', sub: 'Select Import/Export first', example: 'buy urea from india', id: 'tour-ai-query' },
+                  ].map(({ color, Icon, title, sub, example, id }) => (
+                    <div key={title} id={id} className={`flex items-start gap-3 p-3 bg-${color}-50 border border-${color}-100 rounded-xl`}>
                       <div className={`w-8 h-8 rounded-lg bg-${color}-500 flex items-center justify-center flex-shrink-0 mt-0.5`}>
                         <Icon size={15} className="text-white" />
                       </div>
@@ -299,7 +418,7 @@ const Dashboard = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <form onSubmit={handleSearch} className="relative w-full mx-auto mb-6">
+            <form id="tour-search-bar" onSubmit={handleSearch} className="relative w-full mx-auto mb-6">
               <div className="relative group shadow-2xl shadow-emerald-500/10 rounded-2xl">
                 <input
                   ref={inputRef}
@@ -424,6 +543,7 @@ const Dashboard = () => {
 
           {/* ── Scope Toggle ───────────────────────────────────────────── */}
           <motion.div
+            id="tour-scope-toggle"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -467,6 +587,7 @@ const Dashboard = () => {
 
           {/* ── Example Queries ────────────────────────────────────────── */}
           <motion.div
+            id="tour-example-queries"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}

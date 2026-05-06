@@ -147,3 +147,184 @@ body {
 :root.dark ::-webkit-scrollbar-thumb:hover {
   background: var(--border-secondary);
 }
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(-20%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-pulse-opacity {
+  animation: pulse-opacity 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 1.5s infinite;
+}
+
+/* ============================================
+   RADAR LOADER ANIMATION
+   ============================================ */
+
+@keyframes radar-scan {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes radar-pulse {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { opacity: 0.3; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.radar-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem auto;
+  background-color: rgba(16, 185, 129, 0.02);
+}
+
+.radar-sweep {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 70%, rgba(16, 185, 129, 0.4) 100%);
+  animation: radar-scan 2s linear infinite;
+}
+
+.radar-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  animation: radar-pulse 2s cubic-bezier(0.1, 0.7, 1, 0.1) infinite;
+}
+
+.radar-core {
+  width: 12px;
+  height: 12px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+  z-index: 10;
+}
+
+/* ============================================
+   SHEPHERD.JS TOUR STYLES
+   ============================================ */
+
+/* Fade in transition for tour modal */
+.shepherd-element {
+  animation: shepherd-fade-in 0.3s ease-out forwards;
+}
+
+@keyframes shepherd-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom theme overrides */
+.custom-shepherd-theme {
+  background: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border-radius: 1rem !important;
+  border: 1px solid var(--border-primary) !important;
+  box-shadow: var(--shadow-xl) !important;
+  max-width: 350px;
+  font-family: inherit;
+}
+
+.custom-shepherd-theme .shepherd-header {
+  background: transparent !important;
+  border-bottom: 0 !important;
+  padding: 1rem 1rem 0 1rem !important;
+}
+
+.custom-shepherd-theme .shepherd-text {
+  padding: 1rem !important;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-primary) !important;
+}
+
+.custom-shepherd-theme .shepherd-footer {
+  padding: 0 1rem 1rem 1rem !important;
+  background: transparent !important;
+  border-top: 0 !important;
+}
+
+/* Buttons */
+.custom-shepherd-theme .shepherd-button {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  border-radius: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.custom-shepherd-theme .shepherd-button:hover {
+  background: var(--color-primary-hover) !important;
+  transform: translateY(-1px);
+}
+
+.custom-shepherd-theme .shepherd-button-secondary {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-primary) !important;
+}
+
+.custom-shepherd-theme .shepherd-button-secondary:hover {
+  background: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+.custom-shepherd-theme .shepherd-cancel-icon {
+  color: var(--text-secondary) !important;
+  transition: color var(--transition-fast);
+}
+
+.custom-shepherd-theme .shepherd-cancel-icon:hover {
+  color: var(--text-primary) !important;
+}
+
+/* Pulse animation for the target element */
+.shepherd-target {
+  position: relative;
+  animation: target-pulse-ring 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  border-radius: inherit;
+}
+
+@keyframes target-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}

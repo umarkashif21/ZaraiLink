@@ -37,6 +37,13 @@ const DataDashboard = () => {
         return [];
     }, [qp]);
 
+    // Parallel array of DB subcat_ids for the selected refinements
+    const selectedSubcatIds = useMemo(() => {
+        const ids = qp.get('refine_ids');
+        if (ids) return ids.split(',').filter(Boolean).map(Number);
+        return [];
+    }, [qp]);
+
     // ── Local UI state ───────────────────────────────────
     const [hsDescription, setHsDescription]   = useState('');
     const [totalShipments, setTotalShipments] = useState(0);
@@ -72,13 +79,18 @@ const DataDashboard = () => {
         setSelectedEntities([]);
     };
 
-    const toggleRefinement = (name) => {
+    const toggleRefinement = (sc) => {
+        // sc is {name, subcat_id} from the sidebar
+        const name = typeof sc === 'string' ? sc : sc.name;
+        const scId = typeof sc === 'string' ? null : sc.subcat_id;
         const p = new URLSearchParams(location.search);
-        const current = selectedRefinements;
-        const next = current.includes(name)
-            ? current.filter(n => n !== name)
-            : [...current, name];
-        next.length ? p.set('refines', next.join(',')) : p.delete('refines');
+        const currentNames = selectedRefinements;
+        const currentIds   = selectedSubcatIds;
+        const isSelected = currentNames.includes(name);
+        const nextNames = isSelected ? currentNames.filter(n => n !== name) : [...currentNames, name];
+        const nextIds   = isSelected ? currentIds.filter(id => id !== scId) : (scId != null ? [...currentIds, scId] : currentIds);
+        nextNames.length ? p.set('refines', nextNames.join(',')) : p.delete('refines');
+        nextIds.length   ? p.set('refine_ids', nextIds.join(',')) : p.delete('refine_ids');
         p.delete('variant_name'); // Migrate variant_name → refines on first toggle
         navigate(`/search/results?${p.toString()}`, { replace: true });
     };
@@ -86,6 +98,7 @@ const DataDashboard = () => {
     const clearRefinements = () => {
         const p = new URLSearchParams(location.search);
         p.delete('refines');
+        p.delete('refine_ids');
         p.delete('variant_name');
         navigate(`/search/results?${p.toString()}`, { replace: true });
     };
@@ -218,6 +231,10 @@ const DataDashboard = () => {
         if (selectedRefinements.length > 0) {
             params.set('variant_name', selectedRefinements[0]);
         }
+        // Pass the DB subcat_id so the backend fast-path returns exact ProductItem IDs
+        if (selectedSubcatIds.length > 0) {
+            params.set('subcat_id', selectedSubcatIds[0]);
+        }
         return `/search/supplier/${encodeURIComponent(name)}?${params.toString()}`;
     };
 
@@ -231,6 +248,9 @@ const DataDashboard = () => {
         });
         if (selectedRefinements.length > 0) {
             params.set('variant_name', selectedRefinements[0]);
+        }
+        if (selectedSubcatIds.length > 0) {
+            params.set('subcat_id', selectedSubcatIds[0]);
         }
         return `/search/compare?${params.toString()}`;
     };
@@ -315,7 +335,7 @@ const DataDashboard = () => {
                                     <input
                                         type="checkbox"
                                         checked={selectedRefinements.includes(sc.name)}
-                                        onChange={() => toggleRefinement(sc.name)}
+                                        onChange={() => toggleRefinement(sc)}
                                         className="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                                     />
                                     <div className="flex-1 flex justify-between items-start text-xs">

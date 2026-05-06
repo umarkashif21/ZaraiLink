@@ -684,9 +684,14 @@ const SearchResults = () => {
                             </div>
 
                             {loading && (
-                                <div className="text-center py-16 text-slate-400">
-                                    <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔍</div>
-                                    <p className="font-medium">Searching trade records...</p>
+                                <div className="text-center py-20 text-slate-400 flex flex-col items-center justify-center">
+                                    <div className="radar-container">
+                                        <div className="radar-sweep"></div>
+                                        <div className="radar-ring" style={{ animationDelay: '0s' }}></div>
+                                        <div className="radar-ring" style={{ animationDelay: '1s' }}></div>
+                                        <div className="radar-core"></div>
+                                    </div>
+                                    <p className="font-bold text-slate-500 tracking-wide animate-pulse-opacity">Searching trade records...</p>
                                 </div>
                             )}
 

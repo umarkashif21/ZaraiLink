@@ -29,7 +29,57 @@ import re
 from pathlib import Path
 from typing import Optional
 
+import pycountry
+
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# pycountry-based country catalog (built once at module load)
+# Keys: lowercase name, alpha-2, alpha-3, common_name, plus manual aliases.
+# Values: the canonical country name string (e.g. "Brazil").
+# ---------------------------------------------------------------------------
+
+def _build_country_catalog() -> dict:
+    catalog: dict = {}
+    for c in pycountry.countries:
+        catalog[c.name.lower()]        = c.name
+        catalog[c.alpha_2.lower()]     = c.name
+        catalog[c.alpha_3.lower()]     = c.name
+        if hasattr(c, 'common_name'):
+            catalog[c.common_name.lower()] = c.name
+    # Manual aliases that pycountry misses or names differently
+    _MANUAL: dict = {
+        "pak":           "Pakistan",
+        "uae":           "United Arab Emirates",
+        "uk":            "United Kingdom",
+        "usa":           "United States",
+        "prc":           "China",
+        "ksa":           "Saudi Arabia",
+        "brasil":        "Brazil",
+        "england":       "United Kingdom",
+        "america":       "United States",
+        "chn":           "China",
+        "ger":           "Germany",
+        "fra":           "France",
+        "korea":         "South Korea",
+        "s korea":       "South Korea",
+        "south korea":   "South Korea",
+        "n korea":       "North Korea",
+        "north korea":   "North Korea",
+        "korea republic": "South Korea",
+    }
+    catalog.update(_MANUAL)
+    return catalog
+
+_COUNTRY_CATALOG: dict = _build_country_catalog()
+_COUNTRY_CATALOG_KEYS: list = list(_COUNTRY_CATALOG.keys())
+
+# Fuzzy matching corpus — full names only (excludes alpha-2/alpha-3 codes).
+# This prevents short typos like 'chna' from spuriously matching 'che' (Switzerland).
+_COUNTRY_NAMES_ONLY: list = (
+    [c.name.lower() for c in pycountry.countries]
+    + [c.common_name.lower() for c in pycountry.countries if hasattr(c, 'common_name')]
+)
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -92,6 +142,51 @@ def _detect_ranking_hint(raw_query: str) -> Optional[str]:
                 return hint
     return None
 
+
+# ---------------------------------------------------------------------------
+# RapidFuzz noise token stripping
+# Removes garbled trade verbs/adjectives that survive the stop-word regex.
+# Examples: "molases exprt" → "molases",  "sugr cheep" → "sugr"
+# Only strips tokens from MULTI-WORD keywords (single words are left alone).
+# ---------------------------------------------------------------------------
+_KNOWN_NOISE = [
+    "export", "import", "buy", "sell", "cheap", "bulk",
+    "urgent", "fast", "suppliers", "buyers", "from", "find",
+    "need", "want", "get", "source", "looking", "supply",
+    "purchase", "order", "enquiry", "inquiry", "quote",
+]
+
+
+def strip_noise_tokens(keyword: str) -> str:
+    """
+    Remove tokens that fuzzy-match known trade noise words (score >= 80).
+    Only acts on multi-word keywords to avoid stripping real product names.
+
+    Examples:
+        'molases exprt'   → 'molases'
+        'sugr cheep'      → 'sugr'
+        'dextrose'        → 'dextrose'  (unchanged — single word)
+    """
+    tokens = keyword.split()
+    if len(tokens) <= 1:
+        return keyword   # Never strip a single-word product name
+    try:
+        from rapidfuzz import process, fuzz
+        clean = []
+        for token in tokens:
+            match = process.extractOne(
+                token, _KNOWN_NOISE,
+                scorer=fuzz.WRatio,
+                score_cutoff=80,
+            )
+            if not match:
+                clean.append(token)
+        result = " ".join(clean).strip()
+        return result if result else keyword   # Safety: never return empty string
+    except Exception:
+        return keyword   # Graceful fallback if RapidFuzz unavailable
+
+
 # ---------------------------------------------------------------------------
 # Stop words for product keyword extraction
 # These are stripped from the raw query before searching product names.
@@ -119,6 +214,10 @@ _INTENT_STOP_PHRASES = [
     "buy", "sell", "purchase", "import", "export", "get",
     "supplier", "suppliers", "buyer", "buyers",
     "find", "search", "looking", "please", "need",
+    # Prepositions — must be here so extract_product_keyword() strips them
+    # when they survive after the country token is removed from cleaned_query.
+    # e.g. "suggar from brazil" → country stripped → "suggar from " → "suggar"
+    "from", "frm",
     "for", "me", "best",
 ]
 
@@ -793,6 +892,19 @@ class ModernNLUEngine:
                 r'\b' + re.escape(resolved_country) + r'\b', ' ',
                 cleaned_query, flags=re.IGNORECASE,
             )
+        # Also strip the raw misspelled token that resolved to the country
+        # e.g. 'brzail' → Brazil: the re.sub above won't catch 'brzail'
+        _prep_country_match = re.search(
+            r'\b(?:from|frm|fron|form|in|based\s+in|located\s+in|within)\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
+            cleaned_query.lower()
+        )
+        if _prep_country_match:
+            _raw_token = _prep_country_match.group(1).strip()
+            if _raw_token.lower() != (resolved_country or '').lower():
+                cleaned_query = re.sub(
+                    r'\b' + re.escape(_raw_token) + r'\b', ' ',
+                    cleaned_query, flags=re.IGNORECASE,
+                )
 
         product_keyword = None
         product_method  = "none"
@@ -818,9 +930,14 @@ class ModernNLUEngine:
                 logger.debug(f"[NLU] Rejected GLiNER product span {raw_product!r} (contains action verb)")
                 product_keyword = None
             else:
-                product_keyword = raw_product
-                product_method  = "gliner"
-                logger.debug(f"[NLU] GLiNER product span: {product_keyword!r}")
+                _country_check = self._resolve_country(raw_product, cutoff=60.0)
+                if _country_check:
+                    logger.debug(f"[NLU] Rejected GLiNER product span {raw_product!r} — resolves as country {_country_check!r}")
+                    product_keyword = None
+                else:
+                    product_keyword = raw_product
+                    product_method  = "gliner"
+                    logger.debug(f"[NLU] GLiNER product span: {product_keyword!r}")
 
         t_keybert = time.perf_counter() - t0  # slot kept; now measures GLiNER product step
 
@@ -872,6 +989,107 @@ class ModernNLUEngine:
         if not product_keyword:
             product_keyword = extract_product_keyword(cleaned_query)
             product_method  = "stopword"
+
+        # ------------------------------------------------------------------
+        # POST-EXTRACTION PREPOSITION RESIDUAL CLEANUP
+        #
+        # After the country token is stripped from cleaned_query, preposition
+        # words like "from", "in", "frm" can survive if they happened to sit
+        # between the product word and the country:
+        #   "suggar from brazil" → Brazil stripped → "suggar from "
+        #   → extract_product_keyword strips "from" (now in stop phrases)
+        #   → "suggar"  ✓
+        #
+        # This second pass is a safety net for cases where the keyword was
+        # already set by GLiNER or LLM and still contains a residual preposition
+        # (e.g. GLiNER extracted "suggar from" as the product span).
+        # ------------------------------------------------------------------
+        if product_keyword:
+            _PREP_RESIDUAL_RE = re.compile(
+                r'\b(from|frm|fron|form|in|at|within|based|located|can|get|find|show|suppliers?|of)\b',
+                re.IGNORECASE,
+            )
+            _cleaned_kw = _PREP_RESIDUAL_RE.sub(' ', product_keyword)
+            _cleaned_kw = re.sub(r'\s+', ' ', _cleaned_kw).strip()
+            if _cleaned_kw and _cleaned_kw != product_keyword:
+                logger.debug(
+                    f"[NLU] Preposition residual stripped from product_keyword: "
+                    f"{product_keyword!r} → {_cleaned_kw!r}"
+                )
+                product_keyword = _cleaned_kw
+
+        # ------------------------------------------------------------------
+        # STEP 5.5 — Noise token stripping (garbled trade verbs/adjectives)
+        # Runs after all extraction so we don't interfere with GLiNER/LLM.
+        # Only strips multi-word keywords; single-word typos (e.g. 'sugr') are
+        # left for the product resolver's PASS 4/5 to handle.
+        # ------------------------------------------------------------------
+        if product_keyword:
+            _stripped = strip_noise_tokens(product_keyword)
+            if _stripped != product_keyword:
+                logger.debug(
+                    f"[NLU] Noise strip: {product_keyword!r} → {_stripped!r}"
+                )
+                product_keyword = _stripped
+
+        # Strip any residual country-like tokens from multi-word product keywords
+        if product_keyword and len(product_keyword.split()) > 1:
+            _kw_words = product_keyword.split()
+            _kw_cleaned = [
+                w for w in _kw_words
+                if not self._resolve_country(w, cutoff=65.0)
+            ]
+            if _kw_cleaned and _kw_cleaned != _kw_words:
+                product_keyword = ' '.join(_kw_cleaned).strip()
+                logger.debug(f"[NLU] Country token removed from product: {_kw_words} → {product_keyword!r}")
+
+        # Spell correct each word in multi-word product keywords
+        if product_keyword and len(product_keyword.split()) > 1:
+            try:
+                from rapidfuzz import process, fuzz
+                if hasattr(self, '_product_catalog_cache'):
+                    _words = product_keyword.split()
+                    _corrected_words = []
+                    for _w in _words:
+                        _m = process.extractOne(_w, self._product_catalog_cache, scorer=fuzz.ratio, score_cutoff=60)
+                        _corrected_words.append(_m[0] if _m else _w)
+                    product_keyword = ' '.join(_corrected_words).strip()
+            except Exception:
+                pass
+
+        # ------------------------------------------------------------------
+        # STEP 5.6 — RapidFuzz spell correction against product catalog
+        # Only runs on single-word keywords (multi-word already cleaned above).
+        # Corrects typos like 'sugr' → 'Sugar', 'dextrse' → 'Dextrose'.
+        # Uses an instance-level cache so the DB query happens only once
+        # per Django worker process lifetime.
+        # ------------------------------------------------------------------
+        if product_keyword and len(product_keyword.split()) == 1:
+            try:
+                from rapidfuzz import process, fuzz
+                if not hasattr(self, '_product_catalog_cache'):
+                    from trade_data.models import ProductSubCategory, ProductItem
+                    _names = list(ProductSubCategory.objects.values_list('name', flat=True))
+                    _names += list(ProductItem.objects.values_list('name', flat=True))
+                    self._product_catalog_cache = list(set(n for n in _names if n))
+                    logger.info(f"[NLU] SpellCorrect catalog loaded: {len(self._product_catalog_cache)} entries")
+
+                _sc_match = process.extractOne(
+                    product_keyword,
+                    self._product_catalog_cache,
+                    scorer=fuzz.ratio,
+                    score_cutoff=60,
+                )
+                if _sc_match:
+                    _corrected = _sc_match[0]
+                    if _corrected.lower() != product_keyword.lower():
+                        logger.debug(
+                            f"[NLU] SpellCorrect: {product_keyword!r} → {_corrected!r} "
+                            f"(score={_sc_match[1]:.1f})"
+                        )
+                        product_keyword = _corrected
+            except Exception as _sc_err:
+                logger.warning(f"[NLU] SpellCorrect failed: {_sc_err}")
 
         # ==================================================================
         # Build OS/ORM filters
@@ -931,34 +1149,35 @@ class ModernNLUEngine:
         """
         # STOPWORDS block to catch meta-words BEFORE they reach RapidFuzz
         STOPWORDS = {
-            "countries", "country", "international", "global", "worldwide", "abroad", 
-            "all", "any", "some", "which", "what", "where", "who", "how", "the", "for"
+            "countries", "country", "international", "global", "worldwide", "abroad",
+            "all", "any", "some", "which", "what", "where", "who", "how", "the", "for",
+            "can", "get", "want", "wanna", "need", "please", "pls", "yo", "me", "us",
+            "find", "show", "give", "tell", "help", "let", "make", "do", "go",
+            "in", "to", "no",
         }
         if raw_country.lower().strip() in STOPWORDS:
             return None
+
+        # Direct catalog lookup first (exact key hit — handles abbreviations like 'pak', 'uae')
+        _direct = _COUNTRY_CATALOG.get(raw_country.lower().strip())
+        if _direct:
+            return _direct
 
         try:
             import rapidfuzz
         except ImportError:
             return None
-            
-        STANDARD_COUNTRIES = [
-            "Pakistan", "China", "United States", "India", "Afghanistan",
-            "United Arab Emirates", "Saudi Arabia", "Germany", "United Kingdom",
-            "Australia", "Canada", "Singapore", "Malaysia", "Indonesia",
-            "Turkey", "Brazil", "France", "Italy", "Spain", "Japan", "South Korea",
-            "Vietnam", "Thailand", "Egypt", "South Africa", "Nigeria", "Kenya"
-        ]
-        
+
         match = rapidfuzz.process.extractOne(
-            raw_country.lower(), 
-            STANDARD_COUNTRIES, 
-            scorer=rapidfuzz.fuzz.WRatio, 
+            raw_country.lower(),
+            _COUNTRY_NAMES_ONLY,
+            scorer=rapidfuzz.fuzz.WRatio,
             processor=rapidfuzz.utils.default_process,
-            score_cutoff=cutoff
+            score_cutoff=cutoff,
         )
         if match:
-            return match[0] # The matched string (e.g., "China")
+            matched_key = match[0]
+            return _COUNTRY_CATALOG.get(matched_key.lower())
         return None
 
     def _detect_country_fallback(self, query: str) -> Optional[str]:
@@ -980,7 +1199,7 @@ class ModernNLUEngine:
         _PREP_PATTERNS = [
             r'\b(?:based\s+in|located\s+in)\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
             r'\bwithin\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
-            r'\b(?:from|in)\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
+            r'\b(?:from|frm|fron|form|in)\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
         ]
         _PREP_STANDARD_COUNTRIES = {
             "pakistan", "china", "united states", "india", "afghanistan",
@@ -998,40 +1217,46 @@ class ModernNLUEngine:
             "maybe", "perhaps", "possibly", "idk", "not sure"
         )
 
+        has_preposition = re.search(r'\b(?:from|frm|fron|form|in|based\s+in|located\s+in|within)\b', q)
+
         for pattern in _PREP_PATTERNS:
             m = re.search(pattern, q)
             if m:
                 candidate = m.group(1).strip()
-                
+
                 if candidate.startswith(_FORBIDDEN_PREFIXES):
                     continue
-                
-                # Run captured preposition text through RapidFuzz at 85% threshold
-                resolved = self._resolve_country(candidate, cutoff=85.0)
+
+                # Direct catalog hit (handles 'pak', 'usa', exact country names)
+                _direct = _COUNTRY_CATALOG.get(candidate.lower())
+                if _direct:
+                    return _direct
+
+                # RapidFuzz fuzzy match at 65 threshold for preposition-anchored candidates
+                resolved = self._resolve_country(candidate, cutoff=65.0)
                 if resolved:
                     return resolved
+                return None
 
         # ------------------------------------------------------------------
-        # LAYER 3 — Abbreviation Mapping (last resort)
+        # LAYER 3 — Free token scan using catalog (replaces hardcoded ABBREVIATIONS)
+        # Checks every word in the query for a direct catalog hit first,
+        # then RapidFuzz at 85 threshold for typo tolerance.
+        # Skipped entirely when the query contains a preposition — the
+        # anchored pass above already had the best opportunity to resolve
+        # the country, and falling through here causes false positives
+        # (e.g. 'brzail' → 'Anguilla' via a spurious short-key match).
         # ------------------------------------------------------------------
-        ABBREVIATIONS = {
-            "uae": "United Arab Emirates",
-            "uk": "United Kingdom", 
-            "usa": "United States",
-            "us": "United States",
-            "prc": "China",
-            "ksa": "Saudi Arabia",
-            "pak": "Pakistan",
-            "chn": "China",
-            "ger": "Germany",
-            "fra": "France",
-        }
-        
+        if has_preposition:
+            return None
         words = re.findall(r'\b\w+\b', q)
         for w in words:
-            if w in ABBREVIATIONS:
-                return ABBREVIATIONS[w]
-                
+            if len(w) < 4:
+                continue
+            direct = _COUNTRY_CATALOG.get(w)
+            if direct:
+                return direct
+
         return None
 
 

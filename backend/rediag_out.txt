@@ -1,0 +1,399 @@
+﻿python : [NLU] Failed to load SetFit model: No module named 'setfit'. Using regex fallback.
+At line:1 char:1
++ python -X utf8 rediagnose.py 2>&1 | Out-File -Encoding utf8 rediag_ou ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([NLU] Failed to...regex fallback.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[NLU] KeyBERT not available ΓÇö will use stop-word extraction: No module named 'keybert'
+[ZaraiLink] NLU warmup complete ΓÇö system ready.
+[NLU] Failed to load SetFit model: No module named 'setfit'. Using regex fallback.
+[NLU] KeyBERT not available ΓÇö will use stop-word extraction: No module named 'keybert'
+[NLU] Failed to load SetFit model: No module named 'setfit'. Using regex fallback.
+[NLU] KeyBERT not available ΓÇö will use stop-word extraction: No module named 'keybert'
+Could not create OpenSearch client: No module named 'opensearchpy'
+=================================================================
+  RE-DIAGNOSIS after Bug 1 fix
+=================================================================
+
+-----------------------------------------------------------------
+  QUERY: 'buy sugr from brazil'
+-----------------------------------------------------------------
+  NLU: intent='BUY'  keyword='sugr'  country='Brazil'
+
+  PASS-3 trigram on 'sugr':
+    Subcats >0.3  : []
+    Items   >0.3  : [('Sugar', 0.375, '1701.9910')]
+    Best subcat   : ('Suglets', 0.3)
+    Best item     : ('Sugar', 0.375)
+
+  _resolve_subcategories:
+    subcat_ids   : [1191, 724]
+    variant_list : [('Suglets', '1701.9990'), ('Refined Sugar', '1701.9910')]
+
+  Availability filter: trade_type=IMPORT, origin_country='Brazil', subcat_ids=[1191, 724]
+    subcat id=1191 (Suglets HS:1701.9990): 0 txns with Brazil, 1 total IMPORT txns
+    subcat id=724 (Refined Sugar HS:1701.9910): 0 txns with Brazil, 107 total IMPORT txns
+
+  All IMPORT transactions from Brazil (sugar family):
+    Refined Sugar (HS 1701.9920) id=737 : 1 txns
+
+[QUERY] "buy sugr from brazil"
+[CACHE] MISS
+[TIMING] NLU: 0.01s
+
+[NLU]
+  intent=BUY product=sugr
+  SetFit=0ms | GLiNER(prod)=0ms | RapidFuzz=0ms | GLiNER(ent)=0ms
+  TOTAL=1ms
+
+[TIMING] Subcategory: 0.15s
+[TIMING] DB: 0.00s
+[TIMING] TOTAL: 0.16s
+
+
+  execute_search response:
+    needs_disambiguation = True
+    is_broad_search      = False
+    profiles count       = 0
+    scope_mismatch       = None
+    variants             = [('Suglets', '1701.9990'), ('Refined Sugar', '1701.9910')]
+
+-----------------------------------------------------------------
+  QUERY: 'suggar from brazil'
+-----------------------------------------------------------------
+  NLU: intent='UNKNOWN'  keyword='suggar'  country='Brazil'
+
+  PASS-3 trigram on 'suggar':
+    Subcats >0.3  : [('Red Sugar', 0.417, '1701.1400'), ('Farm Sugar', 0.385, '1701.9990'), ('Rock Sugar', 0.385, '1701.1400'), ('Sugar (Sample)', 0.357, '1701.1390'), ('Brown Sugar', 0.357, '1701.9990'), ('Sugar Paste', 0.357, '1704.9090')]
+    Items   >0.3  : [('Sugar', 0.625, '1701.9910'), ('Red sugar', 0.417, '1701.1400'), ('RED SUGAR', 0.417, '1701.1400'), ('ROCK SUGAR', 0.385, '1701.1400'), ('ROCK SUGAR', 0.385, '1701.1400'), ('SUGAR BALLS', 0.357, '1702.1900')]
+    Best subcat   : ('Red Sugar', 0.417)
+    Best item     : ('Sugar', 0.625)
+
+  _resolve_subcategories:
+    subcat_ids   : [727, 903, 871, 840, 736, 724]
+    variant_list : [('Red Sugar', '1701.1400'), ('Rock Sugar', '1701.1400'), ('Farm Sugar', '1701.9990'), ('Brown Sugar', '1701.9990'), ('Sugar (Sample)', '1701.1390'), ('Refined Sugar', '1701.9910')]
+
+  Availability filter: trade_type=IMPORT, destination_country='Brazil', subcat_ids=[727, 903, 871, 840, 736, 724]
+    subcat id=727 (Red Sugar HS:1701.1400): 0 txns with Brazil, 2 total IMPORT txns
+    subcat id=903 (Rock Sugar HS:1701.1400): 0 txns with Brazil, 2 total IMPORT txns
+    subcat id=871 (Farm Sugar HS:1701.9990): 0 txns with Brazil, 1 total IMPORT txns
+    subcat id=840 (Brown Sugar HS:1701.9990): 0 txns with Brazil, 1 total IMPORT txns
+    subcat id=736 (Sugar (Sample) HS:1701.1390): 0 txns with Brazil, 2 total IMPORT txns
+    subcat id=724 (Refined Sugar HS:1701.9910): 0 txns with Brazil, 107 total IMPORT txns
+
+  All IMPORT transactions from Brazil (sugar family):
+    Refined Sugar (HS 1701.9920) id=737 : 1 txns
+
+[QUERY] "suggar from brazil"
+[CACHE] MISS
+[TIMING] NLU: 0.00s
+
+[NLU]
+  intent=UNKNOWN product=suggar
+  SetFit=0ms | GLiNER(prod)=0ms | RapidFuzz=0ms | GLiNER(ent)=0ms
+  TOTAL=0ms
+
+[TIMING] Subcategory: 0.14s
+[TIMING] DB: 0.00s
+[TIMING] TOTAL: 0.14s
+
+
+  execute_search response:
+    needs_disambiguation = True
+    is_broad_search      = False
+    profiles count       = 0
+    scope_mismatch       = None
+    variants             = [('Red Sugar', '1701.1400'), ('Rock Sugar', '1701.1400'), ('Farm Sugar', '1701.9990'), ('Brown Sugar', '1701.9990'), ('Sugar (Sample)', '1701.1390'), ('Refined Sugar', '1701.9910')]
+
+-----------------------------------------------------------------
+  QUERY: 'suggar cheap frm brazl'
+-----------------------------------------------------------------
+[RegexPrice] No-number price signal ΓåÆ ranking_hint=price_asc only
+  NLU: intent='UNKNOWN'  keyword='suggar cheap brazl'  country=None
+
+  PASS-3 trigram on 'suggar cheap brazl':
+    Subcats >0.3  : []
+    Items   >0.3  : []
+    Best subcat   : ('Brown Sugar', 0.292)
+    Best item     : ('Sugar', 0.25)
+
+  _resolve_subcategories:
+    subcat_ids   : [727, 903, 871, 840, 736, 724]
+    variant_list : [('Red Sugar', '1701.1400'), ('Rock Sugar', '1701.1400'), ('Farm Sugar', '1701.9990'), ('Brown Sugar', '1701.9990'), ('Sugar (Sample)', '1701.1390'), ('Refined Sugar', '1701.9910')]
+[RegexPrice] No-number price signal ΓåÆ ranking_hint=price_asc only
+
+[QUERY] "suggar cheap frm brazl"
+[CACHE] MISS
+[TIMING] NLU: 0.00s
+
+[NLU]
+  intent=UNKNOWN product=suggar cheap brazl
+  SetFit=0ms | GLiNER(prod)=0ms | RapidFuzz=0ms | GLiNER(ent)=0ms
+  TOTAL=0ms
+
+[TIMING] Subcategory: 0.26s
+[TIMING] DB: 0.00s
+[TIMING] TOTAL: 0.26s
+
+
+  execute_search response:
+    needs_disambiguation = True
+    is_broad_search      = False
+    profiles count       = 0
+    scope_mismatch       = None
+    variants             = [('Red Sugar', '1701.1400'), ('Rock Sugar', '1701.1400'), ('Farm Sugar', '1701.9990'), ('Brown Sugar', '1701.9990'), ('Sugar (Sample)', '1701.1390'), ('Refined Sugar', '1701.9910')]
+
+-----------------------------------------------------------------
+  QUERY: 'sugr cheep frm UAE'
+-----------------------------------------------------------------
+  NLU: intent='UNKNOWN'  keyword='sugr cheep uae'  country='United Arab Emirates'
+
+  PASS-3 trigram on 'sugr cheep uae':
+    Subcats >0.3  : []
+    Items   >0.3  : []
+    Best subcat   : ('Super Bar Chew', 0.2)
+    Best item     : ('SUGAR COATED CHEW TOFFEE.', 0.182)
+
+  _resolve_subcategories:
+    subcat_ids   : [1306, 1311, 1600, 731, 732]
+    variant_list : [('Chews', '1704.9010'), ('Chews', '1704.9090'), ('Chews', '1704.1000'), ('Coverlux Chocolate Milk Compound Drops', '1704.9010'), ('Sour Punk Candy', '1704.1000')]
+
+  Availability filter: trade_type=IMPORT, destination_country='United Arab Emirates', subcat_ids=[1306, 1311, 1600, 731, 732]
+    subcat id=1306 (Chews HS:1704.9010): 0 txns with United Arab Emirates, 0 total IMPORT txns
+    subcat id=1311 (Chews HS:1704.9090): 0 txns with United Arab Emirates, 0 total IMPORT txns
+    subcat id=1600 (Chews HS:1704.1000): 0 txns with United Arab Emirates, 0 total IMPORT txns
+    subcat id=731 (Coverlux Chocolate Milk Compound Drops HS:1704.9010): 0 txns with United Arab Emirates, 2 total IMPORT txns
+    subcat id=732 (Sour Punk Candy HS:1704.1000): 0 txns with United Arab Emirates, 1 total IMPORT txns
+
+  All IMPORT transactions from UAE (HS 17xx family):
+    Refined Sugar HS 1701.9910 id=724
+    Refined Sugar HS 1701.9910 id=724
+    Refined Sugar HS 1701.9910 id=724
+    Lactose Mono HS 1702.1110 id=719
+    Refined Sugar HS 1701.9910 id=724
+    Refined Sugar HS 1701.9910 id=724
+    Juices, Water, Food Milk HS 1701.9990 id=858
+    Nom Moms Marshmallow HS 1704.9090 id=1241
+    Food Additive (Profina) HS 1704.9090 id=1230
+    Cereal Bars (Sample) HS 1704.9090 id=1229
+    Netulia Chocolate HS 1704.9090 id=1228
+    Chicken Paste HS 1704.9090 id=1226
+    Pasta HS 1704.9090 id=938
+    Pasta / Minoxidil & Tretinoin HS 1704.9090 id=1227
+    Lollies / Lollipops HS 1704.9090 id=1224
+    Candies And Biscuits HS 1704.9090 id=1216
+    Lactose (100 Mesh) HS 1702.1900 id=1222
+    Candies And Biscuits HS 1704.9090 id=1216
+    Juices, Water, Food Milk HS 1701.9990 id=858
+    Food Samples (Probiotics) HS 1704.9090 id=1209
+    Refined Sugar HS 1701.9910 id=724
+    Coffee Samples HS 1704.9090 id=1205
+    Duralac H HS 1702.9090 id=1202
+    Biscuit (Snack) HS 1704.9090 id=1200
+    Candy HS 1704.9090 id=847
+    Lactose Only HS 1702.1110 id=829
+    Kitkat Chocolates HS 1704.9090 id=1193
+    Suglets HS 1701.9990 id=1191
+    Water & Juices HS 1701.9990 id=828
+    Assorted Chocolate HS 1704.9090 id=1187
+    Hard Candy - Butterscotch HS 1704.9090 id=1188
+    Etiopia Bombe Lavado Coffee HS 1704.9090 id=1183
+    Food Starch HS 1704.9090 id=1184
+    Hard Candy - Cherry Flavor HS 1704.9090 id=1185
+    Frozen Specialities (Sample) HS 1704.9090 id=1181
+    Pudding Pulver Aromet HS 1704.9090 id=1175
+    Almond Milk HS 1704.9090 id=1173
+    Lactose Monohydrate HS 1702.1110 id=748
+    Confectionry Gift HS 1704.9090 id=1171
+    Pasta HS 1704.9090 id=938
+    Potato Starch HS 1704.9090 id=1165
+    Orbit Chewing Gum HS 1704.1000 id=1163
+    Pet Food HS 1704.9090 id=1164
+    Gula Melaka Mini HS 1704.9090 id=1153
+    Chips HS 1704.9090 id=1150
+    Kinder Aero Chocolates & Personal Care Set HS 1704.9090 id=1151
+    Food Stuff HS 1704.9090 id=1046
+    Pasta And Supplement HS 1704.9090 id=1148
+    Mango Passionfruit Piece HS 1704.9090 id=1144
+    Pet Food And Urinary Care Paste HS 1704.9090 id=1145
+    Sugar (Sample) HS 1701.1390 id=736
+    Blouse Food Stuff HS 1704.9090 id=1141
+    Pasta HS 1704.9090 id=938
+    Tiffany Deluxe Toffee HS 1704.9090 id=1105
+    Refined Sugar HS 1701.9910 id=724
+    Choclate Frogc Christmas Ornament HS 1704.9090 id=1136
+    Cup Instant Noodle HS 1704.9090 id=1137
+    Lontion Candys Kids Gift HS 1704.9090 id=1130
+    Jelly HS 1704.9090 id=1119
+    Slim Pasta Onion Seeds HS 1704.9090 id=1129
+    Cleanser Chocolate HS 1704.9090 id=1124
+    Coffee Pods HS 1704.9090 id=1125
+    Similac Baby Formula HS 1704.9090 id=1127
+    Refined Sugar HS 1701.9910 id=724
+    Baby Milk HS 1704.9090 id=1116
+    Assorted Hard Candy HS 1704.9090 id=1014
+    Candy Sample HS 1704.9090 id=1109
+    Potato Chips HS 1704.9090 id=1108
+    Tiffany Deluxe Toffee HS 1704.9090 id=1105
+    Pasta HS 1704.9090 id=938
+    Food Stuffs (Gift) HS 1704.9090 id=1098
+    Pasta HS 1704.9090 id=938
+    Tumeric HS 1704.9090 id=1094
+    Cadbury Crunchie Chocolate HS 1704.9090 id=1083
+    Baby Formula Milk HS 1704.9090 id=1074
+    Pakshilajit Shilajit Resin HS 1704.9090 id=1070
+    Vitamin & Cereal HS 1704.9090 id=1067
+    Crisps, Sweets HS 1704.9090 id=1063
+    Instant Noodles HS 1704.9090 id=1064
+    Sweetsbox HS 1704.9090 id=1062
+    Pasta HS 1704.9090 id=938
+    Gummies HS 1704.9090 id=1043
+    Pasta HS 1704.9090 id=938
+    Kids Black Seed + Elderberry Gummie HS 1704.9090 id=1039
+    Chocolate HS 1704.9090 id=854
+    Chocolate Beverage Mix HS 1704.9090 id=1036
+    Chocolate Cereal HS 1704.9090 id=1032
+    Cat'S Food Items HS 1704.9090 id=1016
+    Chocolate HS 1704.9090 id=854
+    Foodstuff Wipes HS 1704.9090 id=1017
+    Lactose HS 1702.1110 id=752
+    Power Baby Milk HS 1704.9090 id=1018
+    Traditional Rolled Peanut Candy / Banana Candy / Crunchy Peanut Brittle HS 1704.9090 id=1020
+    Juices, Water, Food Milk HS 1701.9990 id=858
+    Sugar Confectionery HS 1704.9090 id=1010
+    Optimum Nutrition Serious Mass Protein Powder Chocolate Flavor HS 1704.9090 id=982
+    Hard Confectionary Candy HS 1704.9090 id=964
+    Water & Juices HS 1701.9990 id=828
+    Coffee Beans HS 1704.9090 id=963
+    Pasta HS 1704.9090 id=938
+    Spice Sample HS 1704.9090 id=959
+    Chocolate Candies HS 1704.9090 id=836
+    Mushroom Coffee Powder HS 1704.9090 id=943
+    Tiffany Eclairs Candy HS 1704.9090 id=945
+    Beans Coffee HS 1704.9090 id=937
+    Pasta HS 1704.9090 id=938
+    Chocolate & Candy HS 1704.9090 id=914
+    Honey Bottles HS 1704.9090 id=910
+    Individual Units Of Candy HS 1704.9090 id=911
+    Freeze Dried Candy HS 1704.9090 id=906
+    Vegetable Mama Foodstuff HS 1704.9090 id=904
+    Wheat HS 1704.9090 id=905
+    Caramel Powder HS 1702.9020 id=896
+    Lithuanian Tree Cake Truffles Candy HS 1704.9090 id=875
+    Small Candies HS 1704.9090 id=877
+    Chocolate HS 1704.9090 id=854
+    Foodstuff HS 1704.9090 id=860
+    Sweetener HS 1702.9090 id=862
+    Belt Gloves HS 1704.9090 id=856
+    Mushroom Coffee HS 1704.9090 id=855
+    Candy HS 1704.9090 id=847
+    Luxe Dubai Pistachio Chocolate HS 1704.9090 id=848
+    Cereal Candy HS 1704.9090 id=835
+    Refined Sugar HS 1701.9910 id=724
+    Water & Juices HS 1701.9990 id=828
+    Soft & Mellow Marshmallows HS 1704.9090 id=753
+    Namoul Toffee HS 1704.9090 id=749
+
+[QUERY] "sugr cheep frm UAE"
+[CACHE] MISS
+[TIMING] NLU: 0.00s
+
+[NLU]
+  intent=UNKNOWN product=sugr cheep uae
+  SetFit=0ms | GLiNER(prod)=0ms | RapidFuzz=0ms | GLiNER(ent)=0ms
+  TOTAL=0ms
+
+[TIMING] Subcategory: 0.26s
+[TIMING] DB: 0.00s
+[TIMING] TOTAL: 0.27s
+
+
+  execute_search response:
+    needs_disambiguation = True
+    is_broad_search      = False
+    profiles count       = 0
+    scope_mismatch       = None
+    variants             = [('Chews', '1704.9010'), ('Chews', '1704.9090'), ('Chews', '1704.1000'), ('Coverlux Chocolate Milk Compound Drops', '1704.9010'), ('Sour Punk Candy', '1704.1000')]
+
+-----------------------------------------------------------------
+  QUERY: 'buy sugar from brazil'
+-----------------------------------------------------------------
+  NLU: intent='BUY'  keyword='sugar'  country='Brazil'
+
+  PASS-3 trigram on 'sugar':
+    Subcats >0.3  : [('Red Sugar', 0.6, '1701.1400'), ('Farm Sugar', 0.545, '1701.9990'), ('Rock Sugar', 0.545, '1701.1400'), ('Sugar (Sample)', 0.5, '1701.1390'), ('Brown Sugar', 0.5, '1701.9990'), ('Sugar Paste', 0.5, '1704.9090')]
+    Items   >0.3  : [('Sugar', 1.0, '1701.9910'), ('Red sugar', 0.6, '1701.1400'), ('RED SUGAR', 0.6, '1701.1400'), ('ROCK SUGAR', 0.545, '1701.1400'), ('ROCK SUGAR', 0.545, '1701.1400'), ('WHITE SUGAR', 0.5, '1701.9910')]
+    Best subcat   : ('Red Sugar', 0.6)
+    Best item     : ('Sugar', 1.0)
+
+  _resolve_subcategories:
+    subcat_ids   : [737]
+    variant_list : [('Refined Sugar', '1701.9920')]
+
+  Availability filter: trade_type=IMPORT, origin_country='Brazil', subcat_ids=[737]
+    subcat id=737 (Refined Sugar HS:1701.9920): 1 txns with Brazil, 1 total IMPORT txns
+
+  All IMPORT transactions from Brazil (sugar family):
+    Refined Sugar (HS 1701.9920) id=737 : 1 txns
+
+[QUERY] "buy sugar from brazil"
+[CACHE] MISS
+[TIMING] NLU: 0.00s
+
+[NLU]
+  intent=BUY product=sugar
+  SetFit=0ms | GLiNER(prod)=0ms | RapidFuzz=0ms | GLiNER(ent)=0ms
+  TOTAL=0ms
+
+[TIMING] Subcategory: 0.03s
+[TIMING] DB: 0.36s
+[TIMING] TOTAL: 0.39s
+
+
+  execute_search response:
+    needs_disambiguation = False
+    is_broad_search      = False
+    profiles count       = 1
+    scope_mismatch       = None
+    variants             = []
+
+-----------------------------------------------------------------
+  QUERY: 'suggar'
+-----------------------------------------------------------------
+  NLU: intent='UNKNOWN'  keyword='suggar'  country=None
+
+  PASS-3 trigram on 'suggar':
+    Subcats >0.3  : [('Red Sugar', 0.417, '1701.1400'), ('Farm Sugar', 0.385, '1701.9990'), ('Rock Sugar', 0.385, '1701.1400'), ('Sugar (Sample)', 0.357, '1701.1390'), ('Brown Sugar', 0.357, '1701.9990'), ('Sugar Paste', 0.357, '1704.9090')]
+    Items   >0.3  : [('Sugar', 0.625, '1701.9910'), ('Red sugar', 0.417, '1701.1400'), ('RED SUGAR', 0.417, '1701.1400'), ('ROCK SUGAR', 0.385, '1701.1400'), ('ROCK SUGAR', 0.385, '1701.1400'), ('SUGAR BALLS', 0.357, '1702.1900')]
+    Best subcat   : ('Red Sugar', 0.417)
+    Best item     : ('Sugar', 0.625)
+
+  _resolve_subcategories:
+    subcat_ids   : [727, 903, 871, 840, 736, 724]
+    variant_list : [('Red Sugar', '1701.1400'), ('Rock Sugar', '1701.1400'), ('Farm Sugar', '1701.9990'), ('Brown Sugar', '1701.9990'), ('Sugar (Sample)', '1701.1390'), ('Refined Sugar', '1701.9910')]
+
+[QUERY] "suggar"
+[CACHE] MISS
+[TIMING] NLU: 0.00s
+
+[NLU]
+  intent=UNKNOWN product=suggar
+  SetFit=0ms | GLiNER(prod)=0ms | RapidFuzz=0ms | GLiNER(ent)=0ms
+  TOTAL=0ms
+
+[TIMING] Subcategory: 0.15s
+[TIMING] DB: 0.00s
+[TIMING] TOTAL: 0.15s
+
+
+  execute_search response:
+    needs_disambiguation = True
+    is_broad_search      = False
+    profiles count       = 0
+    scope_mismatch       = None
+    variants             = [('Red Sugar', '1701.1400'), ('Rock Sugar', '1701.1400'), ('Farm Sugar', '1701.9990'), ('Brown Sugar', '1701.9990'), ('Sugar (Sample)', '1701.1390'), ('Refined Sugar', '1701.9910')]
+
+=================================================================
+  Done.
+=================================================================

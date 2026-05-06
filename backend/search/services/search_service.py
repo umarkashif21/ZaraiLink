@@ -36,11 +36,23 @@ class SearchService:
     Revamped Search Service — resilient (OS + ORM fallback).
     """
 
-    _os_client   = None
-    _os_ok       = None   # None = unknown, True = up, False = down
-    _nlu_engine  = None
-    _embed_model = None
-    _reranker    = None
+    _os_client      = None
+    _os_ok          = None   # None = unknown, True = up, False = down
+    _nlu_engine     = None
+    _embed_model    = None
+    _reranker       = None
+    _product_catalog = None  # Lazy-loaded product name list for PASS 5 RapidFuzz
+
+    @classmethod
+    def _get_product_catalog(cls):
+        """Load all product names once into memory for RapidFuzz PASS 5."""
+        if cls._product_catalog is None:
+            from trade_data.models import ProductSubCategory, ProductItem
+            names = list(ProductSubCategory.objects.values_list('name', flat=True))
+            names += list(ProductItem.objects.values_list('name', flat=True))
+            cls._product_catalog = list(set(names))
+            logger.info(f"[PASS5] Product catalog loaded: {len(cls._product_catalog)} entries")
+        return cls._product_catalog
 
     # =========================================================================
     # Init
@@ -116,6 +128,7 @@ class SearchService:
         subcat_id: int = None,       # Exact DB subcategory id (from disambiguation click)
         variant_name: str = None,   # Exact product name user clicked (e.g., "Dextrose Anhydrous")
         explicit_intent: str = None, # Bypass NLU intent
+        already_switched: bool = False,  # Loop-breaker: True when user already clicked scope switch once
     ) -> dict:
         """
         Execute search. Returns:
@@ -259,6 +272,22 @@ class SearchService:
         if scope_info:
             t_total_s = time.perf_counter() - t_total
             self._log_perf(raw_query, cache_status, {"nlu": t_nlu, "subcat": t_subcat, "total": t_total_s}, nlu_result)
+            # If the user already clicked "Switch" once and we're STILL finding a mismatch,
+            # it means data exists in both directions (e.g. Pakistan imports AND exports molasses).
+            # Break the loop: return a no-data-in-either-direction message.
+            if already_switched:
+                logger.warning(f"[LOOP-BREAK] already_switched=True, suppressing second scope_mismatch for '{raw_query}'")
+                return {
+                    "nlu":                  nlu_result,
+                    "profiles":             [],
+                    "total_raw_hits":       0,
+                    "needs_disambiguation": False,
+                    "is_broad_search":      False,
+                    "variants":             [],
+                    "search_engine":        "none",
+                    "scope_mismatch":       None,
+                    "no_data_message":      f"No trade data found for '{scope_info.get('product', raw_query)}' in the selected scope. Try a broader search or remove the country filter.",
+                }
             return {
                 "nlu":                  nlu_result,
                 "profiles":             [],
@@ -345,7 +374,7 @@ class SearchService:
         self._log_perf(raw_query, cache_status, {"nlu": t_nlu, "subcat": t_subcat, "db": t_db, "total": t_total_s}, nlu_result)
 
         is_broad = False
-        if not hs_code and not subcat_ids and len(product_keyword) > 1:
+        if not hs_code and not subcat_ids and (not product_keyword or len(product_keyword) < 2):
             is_broad = True
 
         active_subcat_id = subcat_ids[0] if len(subcat_ids) == 1 else None
@@ -582,19 +611,22 @@ class SearchService:
             name__istartswith=product_keyword
         ).select_related("sub_category__category"))
 
-        # PASS 3: Fuzzy fallback via pg_trgm
+        # PASS 3: Fuzzy fallback via pg_trgm (threshold raised to 0.45 to cut false positives)
         if not sc_qs and not item_qs:
             from django.contrib.postgres.search import TrigramSimilarity
             sc_qs = list(ProductSubCategory.objects.annotate(
                 similarity=TrigramSimilarity('name', product_keyword)
-            ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("category"))
+            ).filter(similarity__gt=0.45).order_by('-similarity')[:5].select_related("category"))
             item_qs = list(ProductItem.objects.annotate(
                 similarity=TrigramSimilarity('name', product_keyword)
-            ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("sub_category__category"))
+            ).filter(similarity__gt=0.45).order_by('-similarity')[:5].select_related("sub_category__category"))
 
         # PASS 4: Needle-in-haystack — word-by-word search for garbled queries
-        if not sc_qs and not item_qs and " " in product_keyword:
+        # Guard removed: now also runs for single-word typos (e.g. "sugr", "dextrse")
+        if not sc_qs and not item_qs:
             words = sorted([w for w in product_keyword.split() if len(w) > 2], key=len, reverse=True)
+            if not words:  # product_keyword itself is short with no spaces
+                words = [product_keyword]
             for word in words:
                 sc_qs = list(ProductSubCategory.objects.filter(name__istartswith=word).select_related("category"))
                 item_qs = list(ProductItem.objects.filter(name__istartswith=word).select_related("sub_category__category"))
@@ -603,12 +635,35 @@ class SearchService:
                 from django.contrib.postgres.search import TrigramSimilarity
                 sc_qs = list(ProductSubCategory.objects.annotate(
                     similarity=TrigramSimilarity('name', word)
-                ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("category"))
+                ).filter(similarity__gt=0.45).order_by('-similarity')[:5].select_related("category"))
                 item_qs = list(ProductItem.objects.annotate(
                     similarity=TrigramSimilarity('name', word)
-                ).filter(similarity__gt=0.3).order_by('-similarity')[:5].select_related("sub_category__category"))
+                ).filter(similarity__gt=0.45).order_by('-similarity')[:5].select_related("sub_category__category"))
                 if sc_qs or item_qs:
                     break
+
+        # PASS 5: RapidFuzz full catalog fuzzy match — last resort for severe typos like "sugr"
+        if not sc_qs and not item_qs:
+            try:
+                from rapidfuzz import process, fuzz
+                catalog = SearchService._get_product_catalog()
+                match = process.extractOne(
+                    product_keyword,
+                    catalog,
+                    scorer=fuzz.WRatio,
+                    score_cutoff=75,
+                )
+                if match:
+                    corrected = match[0]
+                    logger.info(f"[PASS5] RapidFuzz: '{product_keyword}' → '{corrected}' (score={match[1]:.1f})")
+                    sc_qs = list(ProductSubCategory.objects.filter(
+                        name__iexact=corrected
+                    ).select_related("category"))
+                    item_qs = list(ProductItem.objects.filter(
+                        name__iexact=corrected
+                    ).select_related("sub_category__category"))
+            except Exception as _e:
+                logger.warning(f"[PASS5] RapidFuzz fallback failed: {_e}")
 
         # Build a unified map: subcat_id → metadata
         sc_map = {}
@@ -725,6 +780,10 @@ class SearchService:
                             "year_max": max_year,
                         }
                         # Clear variants so disambiguation picker does NOT show
+                        variant_list = []
+                        subcat_ids = []
+                    else:
+                        # No data in either scope for this country — return empty
                         variant_list = []
                         subcat_ids = []
 

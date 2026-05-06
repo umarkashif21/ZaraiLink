@@ -1,0 +1,547 @@
+﻿python : [NLU] Failed to load SetFit model: No module named 'setfit'. Using regex fallback.
+At line:1 char:1
++ python -X utf8 diagnose_typo_queries.py 2>&1 | Out-File -Encoding utf ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([NLU] Failed to...regex fallback.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[NLU] KeyBERT not available ΓÇö will use stop-word extraction: No module named 'keybert'
+[ZaraiLink] NLU warmup complete ΓÇö system ready.
+[NLU] Failed to load SetFit model: No module named 'setfit'. Using regex fallback.
+[NLU] KeyBERT not available ΓÇö will use stop-word extraction: No module named 'keybert'
+======================================================================
+  ZaraiLink Typo Query Diagnosis
+======================================================================
+
+======================================================================
+  FAILING QUERIES
+======================================================================
+
+----------------------------------------------------------------------
+  QUERY: 'buy sugr from brazil'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : BUY
+  product_keyword   : 'sugr from'
+  product (alias)   : 'sugr from'
+  country           : 'Brazil'
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'sugr from brazil'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex captured: 'brazil'
+  [COUNTRY] RapidFuzz @85 cutoff ΓåÆ 'Brazil'
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'sugr from'
+  [SUBCAT] country arg      ΓåÆ 'Brazil'
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ [{'name': 'Invert Sugar From Pmpsa', 'sim': 0.30769232}]
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Invert Sugar From Pmpsa', 'sim': 0.30769232}, {'name': 'Gum (Sugar Free)', 'sim': 0.25}, {'name': 'Farm Sugar', 'sim': 0.23529412}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'Sugar', 'sim': 0.23076923}, {'name': 'Red sugar', 'sim': 0.1764706}, {'name': 'RED SUGAR', 'sim': 0.1764706}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['sugr', 'from']
+    ΓåÆ word='sugr': no istartswith; trigram subcat=[{'name': 'Suglets', 'sim': 0.3}], item=[{'name': 'Sugar', 'sim': 0.375}]
+
+
+----------------------------------------------------------------------
+  QUERY: 'suggar from brazil'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : UNKNOWN
+  product_keyword   : 'suggar from'
+  product (alias)   : 'suggar from'
+  country           : 'Brazil'
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'suggar from brazil'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex captured: 'brazil'
+  [COUNTRY] RapidFuzz @85 cutoff ΓåÆ 'Brazil'
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'suggar from'
+  [SUBCAT] country arg      ΓåÆ 'Brazil'
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ [{'name': 'Invert Sugar From Pmpsa', 'sim': 0.3846154}, {'name': 'Farm Sugar', 'sim': 0.3529412}, {'name': 'Gum (Sugar Free)', 'sim': 0.35}]
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ [{'name': 'Sugar', 'sim': 0.3846154}]
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Invert Sugar From Pmpsa', 'sim': 0.3846154}, {'name': 'Farm Sugar', 'sim': 0.3529412}, {'name': 'Gum (Sugar Free)', 'sim': 0.35}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'Sugar', 'sim': 0.3846154}, {'name': 'Red sugar', 'sim': 0.29411766}, {'name': 'RED SUGAR', 'sim': 0.29411766}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['suggar', 'from']
+    ΓåÆ word='suggar': no istartswith; trigram subcat=[{'name': 'Red Sugar', 'sim': 0.41666666}, {'name': 'Farm Sugar', 'sim': 0.3846154}, {'name': 'Rock Sugar', 'sim': 0.3846154}], item=[{'name': 'Sugar', 'sim': 0.625}, {'name': 'Red sugar', 'sim': 0.41666666}, {'name': 'RED SUGAR', 'sim': 0.41666666}]
+
+
+----------------------------------------------------------------------
+  QUERY: 'sugr cheep frm UAE'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : UNKNOWN
+  product_keyword   : 'sugr cheep frm uae'
+  product (alias)   : 'sugr cheep frm uae'
+  country           : 'United Arab Emirates'
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'sugr cheep frm uae'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex: NO MATCH in query
+  [COUNTRY] Abbreviation lookup: 'uae' ΓåÆ 'United Arab Emirates'
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'sugr cheep frm uae'
+  [SUBCAT] country arg      ΓåÆ 'United Arab Emirates'
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Farm Sugar', 'sim': 0.2}, {'name': 'Chewy Fruit', 'sim': 0.1923077}, {'name': 'Fruity Chew', 'sim': 0.1923077}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'FRUITY CHEW.', 'sim': 0.1923077}, {'name': 'FRUITY CHEW.', 'sim': 0.1923077}, {'name': 'Chewing Gum, Brand: Trident (Sugar Free)', 'sim': 0.16666667}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['cheep', 'sugr', 'frm', 'uae']
+    ΓåÆ word='cheep': no istartswith; trigram subcat=[{'name': 'Chews', 'sim': 0.33333334}, {'name': 'Chews', 'sim': 0.33333334}, {'name': 'Chews', 'sim': 0.33333334}], item=[{'name': 'CHEW', 'sim': 0.375}, {'name': 'CHEW', 'sim': 0.375}, {'name': 'CHEW', 'sim': 0.375}]
+
+
+----------------------------------------------------------------------
+  QUERY: 'suggar cheap frm brazl'
+----------------------------------------------------------------------
+[RegexPrice] No-number price signal ΓåÆ ranking_hint=price_asc only
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : UNKNOWN
+  product_keyword   : 'suggar cheap frm brazl'
+  product (alias)   : 'suggar cheap frm brazl'
+  country           : None
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : {'ranking_hint': 'price_asc'}
+  ranking_hint      : 'price_asc'
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'suggar cheap frm brazl'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex: NO MATCH in query
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'suggar cheap frm brazl'
+  [SUBCAT] country arg      ΓåÆ None
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Farm Sugar', 'sim': 0.25925925}, {'name': 'Brown Sugar', 'sim': 0.25}, {'name': 'Tutti Frutti Sugar Free Chewing Gum', 'sim': 0.22727273}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'Chewing Gum, Brand: Trident (Sugar Free)', 'sim': 0.27659574}, {'name': 'Chewing Gum, Brand: Trident (Sugar Free)', 'sim': 0.27659574}, {'name': 'MIYI BROWN SUGAR', 'sim': 0.21212122}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['suggar', 'cheap', 'brazl', 'frm']
+    ΓåÆ word='suggar': no istartswith; trigram subcat=[{'name': 'Red Sugar', 'sim': 0.41666666}, {'name': 'Farm Sugar', 'sim': 0.3846154}, {'name': 'Rock Sugar', 'sim': 0.3846154}], item=[{'name': 'Sugar', 'sim': 0.625}, {'name': 'Red sugar', 'sim': 0.41666666}, {'name': 'RED SUGAR', 'sim': 0.41666666}]
+
+
+----------------------------------------------------------------------
+  QUERY: 'molases pakistan'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : UNKNOWN
+  product_keyword   : 'molases pakistan'
+  product (alias)   : 'molases pakistan'
+  country           : None
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'molases pakistan'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex: NO MATCH in query
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'molases pakistan'
+  [SUBCAT] country arg      ΓåÆ None
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ [{'name': 'Molasses', 'sim': 0.36842105}, {'name': 'Molasses', 'sim': 0.36842105}]
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ [{'name': 'MOLASSES', 'sim': 0.36842105}, {'name': 'MOLASSES', 'sim': 0.36842105}, {'name': 'MOLASSES.', 'sim': 0.36842105}, {'name': 'MOLASSES', 'sim': 0.36842105}, {'name': 'MOLASSES.', 'sim': 0.36842105}]
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Molasses', 'sim': 0.36842105}, {'name': 'Molasses', 'sim': 0.36842105}, {'name': 'Pakistani Sweet Confectionery / Mouth Freshener', 'sim': 0.1923077}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'MOLASSES', 'sim': 0.36842105}, {'name': 'MOLASSES', 'sim': 0.36842105}, {'name': 'MOLASSES.', 'sim': 0.36842105}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['pakistan', 'molases']
+    ΓåÆ word='pakistan': subcat=['Pakistani Sweet Confectionery / Mouth Freshener'], item=['PAKISTAN WHITE CRYSTAL SUGAR DETAIL AS PER INV AND P LIST UNDER ZERO RATED', 'PAKISTAN WHITE REFINED SUGAR\nIN BAGS OF 50 KGS. EACH \n(ZERO RATED)', 'PAKISTAN WHITE SUGAR\nMEDIUM TO BOLD R1 WITHOUT INNER LINER\n(Zero Rated)\nDETAIL AS PER UPLOADED INVOICE.', 'PAKISTAN WHITE REFINED SUGAR (ZERO RATED)\n(EACH BAG 50 KGS)\nDETAIL AS PER UPLOADED INVOICE', 'PAKISTAN WHITE SUGAR'] ΓåÉ MATCH!
+
+
+----------------------------------------------------------------------
+  QUERY: 'molases suppliers'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : BUY
+  product_keyword   : 'molases'
+  product (alias)   : 'molases'
+  country           : None
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'molases'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex: NO MATCH in query
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'molases'
+  [SUBCAT] country arg      ΓåÆ None
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ [{'name': 'Molasses', 'sim': 0.7}, {'name': 'Molasses', 'sim': 0.7}]
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ [{'name': 'MOLASSES', 'sim': 0.7}, {'name': 'MOLASSES', 'sim': 0.7}, {'name': 'MOLASSES.', 'sim': 0.7}, {'name': 'MOLASSES', 'sim': 0.7}, {'name': 'MOLASSES.', 'sim': 0.7}]
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Molasses', 'sim': 0.7}, {'name': 'Molasses', 'sim': 0.7}, {'name': 'Milk Chocolates', 'sim': 0.14285715}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'MOLASSES', 'sim': 0.7}, {'name': 'MOLASSES', 'sim': 0.7}, {'name': 'MOLASSES.', 'sim': 0.7}]
+
+
+----------------------------------------------------------------------
+  QUERY: 'buy sugr bulk'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : BUY
+  product_keyword   : 'sugr bulk'
+  product (alias)   : 'sugr bulk'
+  country           : None
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : 'volume_desc'
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'sugr bulk'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex: NO MATCH in query
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'sugr bulk'
+  [SUBCAT] country arg      ΓåÆ None
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Sugar Balls', 'sim': 0.22222222}, {'name': 'Brown Sugar', 'sim': 0.22222222}, {'name': 'Suglets', 'sim': 0.2}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'Sugar', 'sim': 0.23076923}, {'name': 'SUGAR BALLS', 'sim': 0.22222222}, {'name': 'SUGAR BALLS', 'sim': 0.22222222}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['sugr', 'bulk']
+    ΓåÆ word='sugr': no istartswith; trigram subcat=[{'name': 'Suglets', 'sim': 0.3}], item=[{'name': 'Sugar', 'sim': 0.375}]
+
+
+----------------------------------------------------------------------
+  QUERY: 'sugr suppliers from brazil'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : BUY
+  product_keyword   : 'sugr from'
+  product (alias)   : 'sugr from'
+  country           : 'Brazil'
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'sugr from brazil'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex captured: 'brazil'
+  [COUNTRY] RapidFuzz @85 cutoff ΓåÆ 'Brazil'
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'sugr from'
+  [SUBCAT] country arg      ΓåÆ 'Brazil'
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ [{'name': 'Invert Sugar From Pmpsa', 'sim': 0.30769232}]
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Invert Sugar From Pmpsa', 'sim': 0.30769232}, {'name': 'Gum (Sugar Free)', 'sim': 0.25}, {'name': 'Farm Sugar', 'sim': 0.23529412}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'Sugar', 'sim': 0.23076923}, {'name': 'Red sugar', 'sim': 0.1764706}, {'name': 'RED SUGAR', 'sim': 0.1764706}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['sugr', 'from']
+    ΓåÆ word='sugr': no istartswith; trigram subcat=[{'name': 'Suglets', 'sim': 0.3}], item=[{'name': 'Sugar', 'sim': 0.375}]
+
+
+======================================================================
+  WORKING QUERIES
+======================================================================
+
+----------------------------------------------------------------------
+  QUERY: 'buy sugar from brazil'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : BUY
+  product_keyword   : 'sugar from'
+  product (alias)   : 'sugar from'
+  country           : 'Brazil'
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'sugar from brazil'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex captured: 'brazil'
+  [COUNTRY] RapidFuzz @85 cutoff ΓåÆ 'Brazil'
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'sugar from'
+  [SUBCAT] country arg      ΓåÆ 'Brazil'
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ [{'name': 'Farm Sugar', 'sim': 0.46666667}, {'name': 'Invert Sugar From Pmpsa', 'sim': 0.45833334}, {'name': 'Gum (Sugar Free)', 'sim': 0.44444445}, {'name': 'Red Sugar', 'sim': 0.4}, {'name': 'Rock Sugar', 'sim': 0.375}]
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ [{'name': 'Sugar', 'sim': 0.54545456}, {'name': 'Red sugar', 'sim': 0.4}, {'name': 'RED SUGAR', 'sim': 0.4}, {'name': 'ROCK SUGAR', 'sim': 0.375}, {'name': 'ROCK SUGAR', 'sim': 0.375}]
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Farm Sugar', 'sim': 0.46666667}, {'name': 'Invert Sugar From Pmpsa', 'sim': 0.45833334}, {'name': 'Gum (Sugar Free)', 'sim': 0.44444445}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'Sugar', 'sim': 0.54545456}, {'name': 'Red sugar', 'sim': 0.4}, {'name': 'RED SUGAR', 'sim': 0.4}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['sugar', 'from']
+    ΓåÆ word='sugar': subcat=['Sugar (Sample)', 'Sugar Pearls White', 'Sugar Paste', 'Sugar (Sample)', 'Sugar Confectionery'], item=['SUGAR (ZERO RATED)', 'SUGAR PASTE (Assorted Colors)\nPACKING IN 1x10/KGS\nQTY:1200/BOX', 'SUGAR ( ZERO RATED)', 'SUGAR MEDIUM TO BOLD GRAIN\nDETAIL AS PER INV AND P LIST\nUNDER ZERO RATED EXPORT', 'SUGAR BALLS'] ΓåÉ MATCH!
+
+
+----------------------------------------------------------------------
+  QUERY: 'sugr cheep'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : UNKNOWN
+  product_keyword   : 'sugr cheep'
+  product (alias)   : 'sugr cheep'
+  country           : None
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'sugr cheep'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex: NO MATCH in query
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'sugr cheep'
+  [SUBCAT] country arg      ΓåÆ None
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ []
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Super Bar Chew', 'sim': 0.23809524}, {'name': 'Sour Chew', 'sim': 0.23529412}, {'name': 'Sour Chew', 'sim': 0.23529412}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'CHEW', 'sim': 0.23076923}, {'name': 'CHEW', 'sim': 0.23076923}, {'name': 'CHEW', 'sim': 0.23076923}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['cheep', 'sugr']
+    ΓåÆ word='cheep': no istartswith; trigram subcat=[{'name': 'Chews', 'sim': 0.33333334}, {'name': 'Chews', 'sim': 0.33333334}, {'name': 'Chews', 'sim': 0.33333334}], item=[{'name': 'CHEW', 'sim': 0.375}, {'name': 'CHEW', 'sim': 0.375}, {'name': 'CHEW', 'sim': 0.375}]
+
+
+----------------------------------------------------------------------
+  QUERY: 'suggar'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : UNKNOWN
+  product_keyword   : 'suggar'
+  product (alias)   : 'suggar'
+  country           : None
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'suggar'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex: NO MATCH in query
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'suggar'
+  [SUBCAT] country arg      ΓåÆ None
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ [{'name': 'Red Sugar', 'sim': 0.41666666}, {'name': 'Rock Sugar', 'sim': 0.3846154}, {'name': 'Farm Sugar', 'sim': 0.3846154}, {'name': 'Brown Sugar', 'sim': 0.35714287}, {'name': 'Sugar (Sample)', 'sim': 0.35714287}]
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ [{'name': 'Sugar', 'sim': 0.625}, {'name': 'Red sugar', 'sim': 0.41666666}, {'name': 'RED SUGAR', 'sim': 0.41666666}, {'name': 'ROCK SUGAR', 'sim': 0.3846154}, {'name': 'ROCK SUGAR', 'sim': 0.3846154}]
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Red Sugar', 'sim': 0.41666666}, {'name': 'Farm Sugar', 'sim': 0.3846154}, {'name': 'Rock Sugar', 'sim': 0.3846154}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'Sugar', 'sim': 0.625}, {'name': 'RED SUGAR', 'sim': 0.41666666}, {'name': 'Red sugar', 'sim': 0.41666666}]
+
+
+----------------------------------------------------------------------
+  QUERY: 'molas suppliers pak'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : BUY
+  product_keyword   : 'molas pak'
+  product (alias)   : 'molas pak'
+  country           : 'Pakistan'
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'molas pak'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex: NO MATCH in query
+  [COUNTRY] Abbreviation lookup: 'pak' ΓåÆ 'Pakistan'
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'molas pak'
+  [SUBCAT] country arg      ΓåÆ 'Pakistan'
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ [{'name': 'Molasses', 'sim': 0.35714287}, {'name': 'Molasses', 'sim': 0.35714287}]
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ [{'name': 'MOLASSES', 'sim': 0.35714287}, {'name': 'MOLASSES', 'sim': 0.35714287}, {'name': 'MOLASSES.', 'sim': 0.35714287}, {'name': 'MOLASSES', 'sim': 0.35714287}, {'name': 'MOLASSES.', 'sim': 0.35714287}]
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Molasses', 'sim': 0.35714287}, {'name': 'Molasses', 'sim': 0.35714287}, {'name': 'Pasta', 'sim': 0.14285715}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'MOLASSES', 'sim': 0.35714287}, {'name': 'MOLASSES', 'sim': 0.35714287}, {'name': 'MOLASSES.', 'sim': 0.35714287}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['molas', 'pak']
+    ΓåÆ word='molas': subcat=['Molasses', 'Molasses'], item=['MOLASSES', 'MOLASSES (ANIMAL FEED GRADE ) (1 FLEXITANK IN EACH CONTAINER & TOTAL 4 FLEXITANK)', 'MOLASSES (ANIMAL FEED GRADE ) (1 FLEXITANK IN EACH CONTAINER & TOTAL 2 FLEXITANK)', 'MOLASSES', 'MOLASSES (ANIMAL FEED GRADE ) (1 FLEXITANK IN CONTAINER)'] ΓåÉ MATCH!
+
+
+----------------------------------------------------------------------
+  QUERY: 'molasses pakistan'
+----------------------------------------------------------------------
+
+  ΓöÇΓöÇ STAGE A: NLU Output ΓöÇΓöÇ
+  intent            : UNKNOWN
+  product_keyword   : 'molasses pakistan'
+  product (alias)   : 'molasses pakistan'
+  country           : None
+  origin_country    : None
+  entities (GLiNER) : []
+  price_filter      : None
+  ranking_hint      : None
+
+  ΓöÇΓöÇ STAGE B: extract_product_keyword() ΓöÇΓöÇ
+  stopword keyword  : 'molasses pakistan'
+
+  ΓöÇΓöÇ STAGE C: GLiNER entities detail ΓöÇΓöÇ
+  GLiNER product span  : None
+  GLiNER country span  : None
+
+  ΓöÇΓöÇ STAGE D: Country resolution trace ΓöÇΓöÇ
+  GLiNER found no country span ΓåÆ running fallback...
+  [COUNTRY] Preposition regex: NO MATCH in query
+  [COUNTRY] Abbreviation lookup: no match
+
+  ΓöÇΓöÇ STAGE E: Subcategory matcher ΓöÇΓöÇ
+  [SUBCAT] product_keyword  ΓåÆ 'molasses pakistan'
+  [SUBCAT] country arg      ΓåÆ None
+  [SUBCAT] PASS-0 cat icontains ΓåÆ []
+  [SUBCAT] PASS-1 subcat istartswith ΓåÆ []
+  [SUBCAT] PASS-2 item istartswith ΓåÆ []
+  [SUBCAT] PASS-3 trigram subcat (>0.3) ΓåÆ [{'name': 'Molasses', 'sim': 0.5}, {'name': 'Molasses', 'sim': 0.5}]
+  [SUBCAT] PASS-3 trigram items  (>0.3) ΓåÆ [{'name': 'MOLASSES', 'sim': 0.5}, {'name': 'MOLASSES', 'sim': 0.5}, {'name': 'MOLASSES', 'sim': 0.5}, {'name': 'MOLASSES.', 'sim': 0.5}, {'name': 'MOLASSES.', 'sim': 0.5}]
+  [SUBCAT] PASS-3 TOP-3 subcat (any score) ΓåÆ [{'name': 'Molasses', 'sim': 0.5}, {'name': 'Molasses', 'sim': 0.5}, {'name': 'Pakistani Sweet Confectionery / Mouth Freshener', 'sim': 0.18867925}]
+  [SUBCAT] PASS-3 TOP-3 items  (any score) ΓåÆ [{'name': 'MOLASSES', 'sim': 0.5}, {'name': 'MOLASSES', 'sim': 0.5}, {'name': 'MOLASSES.', 'sim': 0.5}]
+  [SUBCAT] PASS-4 word-by-word, trying words: ['molasses', 'pakistan']
+    ΓåÆ word='molasses': subcat=['Molasses', 'Molasses'], item=['MOLASSES', 'MOLASSES (ANIMAL FEED GRADE ) (1 FLEXITANK IN EACH CONTAINER & TOTAL 4 FLEXITANK)', 'MOLASSES (ANIMAL FEED GRADE ) (1 FLEXITANK IN EACH CONTAINER & TOTAL 2 FLEXITANK)', 'MOLASSES', 'MOLASSES (ANIMAL FEED GRADE ) (1 FLEXITANK IN CONTAINER)'] ΓåÉ MATCH!
+
+
+======================================================================
+  Done.
+======================================================================

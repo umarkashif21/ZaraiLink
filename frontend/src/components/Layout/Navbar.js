@@ -56,7 +56,7 @@ const Navbar = () => {
             onMouseEnter={() => setActiveDropdown('directory')}
             onMouseLeave={() => setActiveDropdown(null)}
           >
-            <button className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+            <button id="tour-nav-intelligence" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
               isActive('/trade-directory') ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}>
               Intelligence ▼
@@ -82,6 +82,7 @@ const Navbar = () => {
           </div>
 
           <Link 
+            id="tour-nav-subscription"
             to="/subscription" 
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               isActive('/subscription') ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'

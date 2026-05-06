@@ -41,6 +41,7 @@ class SearchViewSet(viewsets.ViewSet):
         subcat_id    = request.query_params.get('subcat_id', None)   # Exact subcategory DB id
         variant_name = request.query_params.get('variant_name', None) # Exact product name user clicked
         intent       = request.query_params.get('intent', None)      # Explicit intent bypass
+        already_switched = request.query_params.get('already_switched', 'false').lower() == 'true'
 
         if not query:
             return Response({"error": "Query parameter 'q' is required"}, status=400)
@@ -56,6 +57,7 @@ class SearchViewSet(viewsets.ViewSet):
             subcat_id=int(subcat_id) if subcat_id else None,
             variant_name=variant_name,
             explicit_intent=intent,
+            already_switched=already_switched,
         )
 
         if search_result.get('is_category_bridge'):
@@ -69,6 +71,20 @@ class SearchViewSet(viewsets.ViewSet):
         parsed_query = search_result.get('nlu', {})
         raw_profiles = search_result.get('profiles', [])
 
+        # ── Loop-break: fired when already_switched=True and STILL mismatched ─
+        if search_result.get('no_data_message'):
+            return Response({
+                "query":                query,
+                "parsed_query":         parsed_query,
+                "needs_disambiguation": False,
+                "scope_mismatch":       None,
+                "no_data_message":      search_result['no_data_message'],
+                "results":              [],
+                "variants":             [],
+                "market_snapshot":      None,
+                "count":                0,
+            })
+
         # ── Scope Mismatch — product exists only in opposite scope ─────
         if search_result.get('scope_mismatch'):
             return Response({
@@ -81,6 +97,7 @@ class SearchViewSet(viewsets.ViewSet):
                 "market_snapshot":      None,
                 "count":                0,
             })
+
 
         # ── Disambiguation — return early with variant picker ──────────
         if search_result.get('needs_disambiguation'):
