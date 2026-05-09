@@ -6,7 +6,7 @@ import Navbar from '../Layout/Navbar';
 import './Subscription.css';
 
 const Subscription = () => {
-  const { tokenBalance, refreshUser } = useAuth();
+  const { tokenBalance, refreshUser, isAuthenticated } = useAuth();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -33,6 +33,10 @@ const Subscription = () => {
   };
 
   const handleRedeemClick = async (plan) => {
+    if (!isAuthenticated) {
+      alert('Please log in to redeem a subscription plan.');
+      return;
+    }
     setRedeeming(true);
     try {
       const csrftoken = getCookie('csrftoken');
@@ -54,7 +58,7 @@ const Subscription = () => {
         alert(`Success! ${data.tokens_added} tokens added. New balance: ${data.new_balance}`);
         await refreshUser(); 
       } else {
-        alert(data.message || 'Failed to redeem plan');
+        alert(data.message || data.detail || 'Failed to redeem plan');
       }
     } catch (error) {
       alert('Network error. Please try again.');
