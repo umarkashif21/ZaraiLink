@@ -112,7 +112,7 @@ class SearchService:
             nt = nlu_result["timings"]
             print("\n[NLU]")
             print(f"  intent={nlu_result.get('intent')} product={nlu_result.get('product')}")
-            print(f"  SetFit={int(nt.get('setfit', 0)*1000)}ms | GLiNER(prod)={int(nt.get('keybert', 0)*1000)}ms | RapidFuzz={int(nt.get('rapidfuzz', 0)*1000)}ms | GLiNER(ent)={int(nt.get('gliner', 0)*1000)}ms")
+            print(f"  SetFit={int(nt.get('setfit', 0)*1000)}ms | GLiNER={int(nt.get('gliner', 0)*1000)}ms | RapidFuzz={int(nt.get('rapidfuzz', 0)*1000)}ms | PickProduct={int(nt.get('pick_product', 0)*1000)}ms")
             print(f"  TOTAL={int(nt.get('total', 0)*1000)}ms\n")
 
         print(f"[TIMING] Subcategory: {timings.get('subcat', 0.0):.2f}s")

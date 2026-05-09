@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Filter, BarChart2, Package, ChevronRight, AlertCircle, Lock, Zap } from 'lucide-react';
+import { Filter, BarChart2, Package, ChevronRight, AlertCircle, Lock, Zap, Search } from 'lucide-react';
 import Navbar from '../Layout/Navbar';
 import searchService from '../../services/searchService';
 import SummaryView from './SummaryView';
@@ -389,16 +389,25 @@ const SearchResults = () => {
 
             {/* Search bar */}
             <div className="bg-white border-b-2 border-slate-100 sticky top-0 z-10 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 md:px-8 w-full" >
+                <div className="max-w-7xl mx-auto px-4 md:px-8 w-full py-3 md:py-4" >
                     <form onSubmit={handleSearch} className="w-full relative">
                         <input
                             type="text"
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-slate-200 focus:border-emerald-500 focus:ring-0 transition-all font-medium text-slate-700 placeholder-slate-400"
+                            className="w-full pl-5 pr-24 sm:pr-28 py-3 rounded-full border-2 border-slate-200 focus:border-emerald-500 focus:ring-0 transition-all font-medium text-slate-700 placeholder-slate-400"
                             placeholder="Search again..."
                             style={{ fontSize: '1rem' }}
+                            aria-label="Search query"
                         />
+                        <button
+                            type="submit"
+                            aria-label="Search"
+                            className="absolute right-1.5 top-1.5 bottom-1.5 inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-full font-bold text-sm shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        >
+                            <Search size={16} aria-hidden="true" />
+                            <span className="hidden sm:inline">Search</span>
+                        </button>
                     </form>
                 </div>
             </div>

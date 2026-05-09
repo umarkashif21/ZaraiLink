@@ -637,23 +637,46 @@ class ModernNLUEngine:
         try:
             from setfit import SetFitModel
             logger.info(f"[NLU] Loading SetFit intent model from {model_path} ...")
-            cls._intent_model = SetFitModel.from_pretrained(model_path)
+            # torch 2.6+ + transformers 4.45+ default to meta-tensor init when
+            # accelerate is installed, then crash on .to('cpu') with "Cannot
+            # copy out of meta tensor". Two layers of defense:
+            #   1. Pass low_cpu_mem_usage=False through SetFit's model_kwargs.
+            #   2. Temporarily lie about accelerate availability so even
+            #      sub-loads inside SetFit (e.g. its sentence-transformers
+            #      body) skip the init_empty_weights path. Without (2) the
+            #      first warmup attempt still races against accelerate state.
+            import transformers.utils.import_utils as _tu
+            _orig_is_accelerate = _tu.is_accelerate_available
+            try:
+                _tu.is_accelerate_available = lambda *a, **kw: False
+                cls._intent_model = SetFitModel.from_pretrained(
+                    model_path,
+                    model_kwargs={"low_cpu_mem_usage": False},
+                )
+            finally:
+                _tu.is_accelerate_available = _orig_is_accelerate
             logger.info("[NLU] SetFit model loaded successfully.")
         except Exception as e:
             logger.error(f"[NLU] Failed to load SetFit model: {e}. Using regex fallback.")
 
     @classmethod
     def _load_keyword_model(cls):
-        """Load KeyBERT using the sentence-transformers backend."""
-        if cls._keyword_model is not None:
-            return
-        try:
-            from keybert import KeyBERT
-            logger.info("[NLU] Loading KeyBERT model ...")
-            cls._keyword_model = KeyBERT(model="paraphrase-MiniLM-L6-v2")
-            logger.info("[NLU] KeyBERT loaded.")
-        except Exception as e:
-            logger.warning(f"[NLU] KeyBERT not available — will use stop-word extraction: {e}")
+        """KeyBERT is intentionally disabled. Product extraction is handled by
+        GLiNER (zero-shot, type-aware) followed by a regex fallback. KeyBERT
+        produced untyped n-grams with informal-token noise (see context at
+        line ~885) and was already unused in the live pipeline. _keyword_model
+        stays None so any leftover read returns None gracefully."""
+        return
+        # ----- previous implementation kept for reference -----
+        # if cls._keyword_model is not None:
+        #     return
+        # try:
+        #     from keybert import KeyBERT
+        #     logger.info("[NLU] Loading KeyBERT model ...")
+        #     cls._keyword_model = KeyBERT(model="paraphrase-MiniLM-L6-v2")
+        #     logger.info("[NLU] KeyBERT loaded.")
+        # except Exception as e:
+        #     logger.warning(f"[NLU] KeyBERT not available — will use stop-word extraction: {e}")
 
     @classmethod
     def _load_ner_model(cls):
@@ -663,10 +686,31 @@ class ModernNLUEngine:
         try:
             from gliner import GLiNER
             logger.info("[NLU] Loading GLiNER model: urchade/gliner_base ...")
-            cls._ner_model = GLiNER.from_pretrained("urchade/gliner_base")
+            # GLiNER's UniEncoderSpanModel does not accept model_kwargs, so we
+            # cannot pass low_cpu_mem_usage=False the way we do for SetFit.
+            # Instead, lie about accelerate availability for the duration of
+            # the load — that forces transformers to skip its init_empty_weights
+            # path entirely and materialize weights on CPU directly.
+            import transformers.utils.import_utils as _tu
+            _orig_is_accelerate = _tu.is_accelerate_available
+            try:
+                _tu.is_accelerate_available = lambda *a, **kw: False
+                cls._ner_model = GLiNER.from_pretrained(
+                    "urchade/gliner_base",
+                    map_location="cpu",
+                )
+            finally:
+                _tu.is_accelerate_available = _orig_is_accelerate
             logger.info("[NLU] GLiNER loaded.")
         except Exception as e:
-            logger.info(f"[NLU] GLiNER not available — will use keyword product extraction: {e}")
+            # Surface load failures at ERROR so they're visible in default Django
+            # log config — silent INFO-level logging hid this for too long and
+            # cascaded into "product=46" type bugs because the regex fallback
+            # then mis-fires on short product names.
+            logger.error(
+                "[NLU] GLiNER failed to load — falling back to regex product "
+                f"extraction. Error: {type(e).__name__}: {e}"
+            )
 
     def __init__(self):
         self._load_intent_model()
@@ -930,7 +974,15 @@ class ModernNLUEngine:
                 logger.debug(f"[NLU] Rejected GLiNER product span {raw_product!r} (contains action verb)")
                 product_keyword = None
             else:
-                _country_check = self._resolve_country(raw_product, cutoff=60.0)
+                # Cross-check: only reject GLiNER's product span if it is *very*
+                # close to a country name, AND the span itself is long enough that
+                # a high fuzz score is meaningful (short tokens like 'urea' fuzzy-
+                # match 'Korea' at ~67 — cutoff was 60, falsely deleting urea).
+                _country_check = (
+                    self._resolve_country(raw_product, cutoff=85.0)
+                    if len(raw_product.replace(" ", "")) >= 6
+                    else None
+                )
                 if _country_check:
                     logger.debug(f"[NLU] Rejected GLiNER product span {raw_product!r} — resolves as country {_country_check!r}")
                     product_keyword = None
@@ -939,7 +991,11 @@ class ModernNLUEngine:
                     product_method  = "gliner"
                     logger.debug(f"[NLU] GLiNER product span: {product_keyword!r}")
 
-        t_keybert = time.perf_counter() - t0  # slot kept; now measures GLiNER product step
+        # Pure-Python post-processing on already-extracted GLiNER entities
+        # (action-verb guard, country cross-check, label fallback chain).
+        # No model inference happens here — the GLiNER forward pass already
+        # ran in Step 2 (timed as t_gliner). Typically <1 ms.
+        t_pick_product = time.perf_counter() - t0
 
         # ==================================================================
         # STEP 5 — Unified LLM Call (price + quantity + product fallback)
@@ -1032,12 +1088,17 @@ class ModernNLUEngine:
                 )
                 product_keyword = _stripped
 
-        # Strip any residual country-like tokens from multi-word product keywords
+        # Strip any residual country-like tokens from multi-word product keywords.
+        # Cutoff raised from 65 → 88 to fix the urea→Korea / iron→Iran false-
+        # positive class. Short, well-known country names ('china', 'uae',
+        # 'japan') still resolve via the direct catalog lookup inside
+        # _resolve_country (which ignores cutoff), so the higher cutoff only
+        # blocks weak fuzzy matches against unrelated short product words.
         if product_keyword and len(product_keyword.split()) > 1:
             _kw_words = product_keyword.split()
             _kw_cleaned = [
                 w for w in _kw_words
-                if not self._resolve_country(w, cutoff=65.0)
+                if not self._resolve_country(w, cutoff=88.0)
             ]
             if _kw_cleaned and _kw_cleaned != _kw_words:
                 product_keyword = ' '.join(_kw_cleaned).strip()
@@ -1125,9 +1186,9 @@ class ModernNLUEngine:
             "ui_context":      ui_context,
             "timings": {
                 "setfit": t_setfit,
-                "gliner": t_gliner,
+                "gliner": t_gliner,                 # GLiNER forward pass (the only model call)
                 "rapidfuzz": t_rapidfuzz,
-                "keybert": t_keybert,
+                "pick_product": t_pick_product,     # post-processing on entities[]; no model run
                 "total": time.perf_counter() - t_nlu_total,
             }
         }
