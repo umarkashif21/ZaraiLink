@@ -82,9 +82,9 @@ for feature, path in endpoints:
     client_no_access = APIClient(SERVER_NAME='localhost')
     client_no_access.force_authenticate(user=no_access_user)
     r_no = client_no_access.get(path)
-    
+
     client_access = APIClient(SERVER_NAME='localhost')
     client_access.force_authenticate(user=access_user)
     r_yes = client_access.get(path)
-    
+
     print(f"{feature:<25} | {r_no.status_code:<25} | {r_yes.status_code:<25}")

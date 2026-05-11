@@ -47,14 +47,6 @@ class CompanyTypeAdmin(admin.ModelAdmin):
 class CompanyAdmin(admin.ModelAdmin):
     form = CompanyAdminForm
     list_display = ('name', 'sector', 'company_role', 'verification_status', 'created_at')
-    
-    
-    
-    
-    
-    
-    
-    
     list_filter = ('verification_status', 'is_directory_profile', 'sector', 'company_role')
     search_fields = ('name', 'legal_name', 'contact_email', 'website')
     readonly_fields = ('created_at', 'updated_at')
@@ -122,9 +114,6 @@ class KeyContactAdmin(admin.ModelAdmin):
 
 @admin.register(KeyContactUnlock)
 class KeyContactUnlockAdmin(admin.ModelAdmin):
-    
-    
-    
     list_display = ('key_contact', 'user', 'unlocked_at')
     list_filter = ('unlocked_at',)
     search_fields = ('key_contact__name', 'user__email')

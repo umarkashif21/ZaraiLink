@@ -7,9 +7,6 @@ import Navbar from '../Layout/Navbar';
 import searchService from '../../services/searchService';
 import { LineChart, Line, BarChart, Bar, ScatterChart, Scatter, PieChart, Pie, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Design tokens (matches the rest of the site)
-// ─────────────────────────────────────────────────────────────────────────────
 const C = {
     primary: '#10b981',
     primaryHover: '#059669',
@@ -23,21 +20,16 @@ const C = {
     borderLight: '#f1f5f9',
     bg: '#f8fafc',
     card: '#ffffff',
-    // Rich accent tiers
     accentBlue: '#3b82f6',
     accentPurple: '#8b5cf6',
     accentAmber: '#f59e0b',
     accentRose: '#f43f5e',
     accentCyan: '#06b6d4',
-    // Gradient helpers
     gradientGreen: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
     gradientCard: 'linear-gradient(145deg, #ffffff 0%, #f8fffc 100%)',
     gradientHero: 'linear-gradient(135deg, #0f172a 0%, #134e4a 100%)',
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Role-aware label map
-// ─────────────────────────────────────────────────────────────────────────────
 const getLabels = (isBuyer) => ({
     volumeCard: isBuyer ? 'Total Volume Purchased' : 'Total Volume Traded',
     shipmentsCard: isBuyer ? 'Number of Orders' : 'Number of Shipments',
@@ -55,7 +47,6 @@ const getLabels = (isBuyer) => ({
     geoSubtitle: isBuyer ? 'Countries Ordered From' : 'Countries Supplied From',
     badgeLabel: isBuyer ? 'TOP BUYER IN CATEGORY' : 'TOP SUPPLIER IN CATEGORY',
     roleLabel: isBuyer ? 'Buyer' : 'Supplier',
-    // Market & Pricing specific
     marketAvgVsEntity: isBuyer ? 'Average Purchase Price' : 'Market Average Price vs Entity Score',
     marketVolumeGeo: isBuyer ? 'Procurement Volume by Origin' : 'Market Volume by Origin Country',
     entityPricePos: isBuyer ? 'Buyer Price Positioning' : 'Supplier Price Positioning',
@@ -66,9 +57,6 @@ const getLabels = (isBuyer) => ({
     compPriceHdr: isBuyer ? 'Average Purchase Price (USD/MT)' : 'Average Price (USD/MT)',
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Mini SVG Price Trend Chart (Overview)
-// ─────────────────────────────────────────────────────────────────────────────
 const PriceMiniChart = ({ sparkline }) => {
     const valid = (sparkline || []).filter(s => s.price > 0).slice(-18);
     if (valid.length < 2) {
@@ -111,9 +99,6 @@ const PriceMiniChart = ({ sparkline }) => {
     );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Overview Tab
-// ─────────────────────────────────────────────────────────────────────────────
 const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
     const ov = supplier.overview || {};
     const spk = supplier.sparkline || [];
@@ -126,7 +111,6 @@ const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* ── Activity Summary ── */}
             <section style={card}>
                 <h3 style={sec}>Activity Summary</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: '1.25rem', columnGap: '3rem' }}>
@@ -143,8 +127,6 @@ const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
                     ))}
                 </div>
             </section>
-
-            {/* ── Price Positioning / Price Sensitivity ── */}
             <section style={card}>
                 <h3 style={sec}>{L.priceSection}</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', alignItems: 'start' }}>
@@ -170,12 +152,9 @@ const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── Trade / Procurement Behavior ── */}
             <section style={card}>
                 <h3 style={sec}>{L.tradeSection}</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', alignItems: 'start' }}>
-                    {/* Size Distribution */}
                     <div>
                         <p style={lbl}>{L.shipmentSize}</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', marginTop: '0.5rem' }}>
@@ -193,8 +172,6 @@ const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
                             )}
                         </div>
                     </div>
-
-                    {/* Frequency + Behavioral */}
                     <div>
                         <p style={lbl}>{L.frequencyPattern}</p>
                         <p style={{ fontSize: '0.9375rem', fontWeight: 800, color: C.textPrimary, margin: '0 0 0.2rem' }}>
@@ -207,8 +184,6 @@ const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── Top Counterparties + Geographic Presence ── */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <section style={card}>
                     <h3 style={sec}>{L.counterpartySection}</h3>
@@ -266,8 +241,6 @@ const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
                     )}
                 </section>
             </div>
-
-            {/* ── CTA Footer ── */}
             <section style={{
                 ...card,
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -301,10 +274,6 @@ const OverviewTab = ({ supplier, isBuyer, navigateTab }) => {
         </div>
     );
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Market & Pricing Tab (Fully implemented from backend data)
-// ─────────────────────────────────────────────────────────────────────────────
 const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
     const mk = supplier.market_pricing;
     if (!mk) return <PlaceholderTab label="Market Data Loading..." />;
@@ -328,8 +297,6 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
 
     const fmtMoney = n => n ? `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : '—';
     const fmtVol = n => n ? `${Math.round(n).toLocaleString()} MT` : '—';
-
-    // Formatting for Tooltips
     const ChartTooltip = ({ active, payload, label, suffix = '' }) => {
         if (active && payload && payload.length) {
             return (
@@ -346,7 +313,6 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* ── 1. Market Overview ── */}
             <section style={{ ...card, background: C.gradientHero, borderTop: 'none', borderColor: 'transparent' }}>
                 <h3 style={{ ...sec, color: 'white', marginBottom: '1.25rem', fontSize: '0.8125rem', opacity: 0.9 }}>
                     🌐 Market Overview — {variantName || query}
@@ -366,8 +332,6 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
                     ))}
                 </div>
             </section>
-
-            {/* ── 2. Price Intelligence ── */}
             <section style={card}>
                 <h3 style={sec}>Price Intelligence</h3>
                 <div style={{ background: 'linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 100%)', borderRadius: '0.625rem', padding: '1.25rem', marginBottom: '1rem', border: `1px solid ${C.primaryBorder}` }}>
@@ -402,8 +366,6 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── 3. Supplier Price Positioning ── */}
             <section style={card}>
                 <h3 style={sec}>{L.entityPricePos}</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', alignItems: 'center', gap: '2rem' }}>
@@ -452,8 +414,6 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── 4. Country-Level Pricing & Sourcing ── */}
             <section style={card}>
                 <h3 style={sec}>Country-Level Pricing & Sourcing</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
@@ -512,8 +472,6 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── 5. Supply Chain Flow ── */}
             <section style={card}>
                 <h3 style={sec}>Supply Chain Flow (Trade Routes)</h3>
                 <div style={{ overflowX: 'auto' }}>
@@ -541,8 +499,6 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
                     </table>
                 </div>
             </section>
-
-            {/* ── 6. Demand & Volume Trends ── */}
             <section style={card}>
                 <h3 style={sec}>Demand & Volume Trends</h3>
                 <div style={{ background: 'linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 100%)', borderRadius: '0.625rem', padding: '1.25rem', marginBottom: '1rem', border: `1px solid ${C.primaryBorder}` }}>
@@ -583,8 +539,6 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── 7. Competitive Comparison ── */}
             <section style={card}>
                 <h3 style={sec}>{L.benchmarkingChart}</h3>
                 <p style={{ fontSize: '0.8rem', color: C.textSecondary, marginTop: '-0.75rem', marginBottom: '1.5rem' }}>
@@ -650,10 +604,6 @@ const MarketPricingTab = ({ supplier, isBuyer, query, variantName }) => {
         </div>
     );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Company Tab (Fully implemented from backend company_intel data)
-// ─────────────────────────────────────────────────────────────────────────────
 const CompanyTab = ({ supplier, isBuyer }) => {
     const cp = supplier.company_intel;
     if (!cp) return <PlaceholderTab label="Company Data Loading..." />;
@@ -678,8 +628,6 @@ const CompanyTab = ({ supplier, isBuyer }) => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-
-            {/* ── 1. Company Overview ── */}
             <section style={{ ...card, padding: '1.25rem 1.5rem', borderTop: `4px solid ${C.primary}` }}>
                 <h3 style={{ ...sec, marginBottom: '1rem', fontSize: '0.8125rem' }}>
                     Company Overview — {supplier.name}
@@ -707,12 +655,9 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── 2. Product Portfolio (Core Capabilities) ── */}
             <section style={card}>
                 <h3 style={sec}>Product Portfolio</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                    {/* Left List */}
                     <div>
                         <p style={{ ...lbl, marginBottom: '1rem' }}>Top Products by Volume</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -730,7 +675,6 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                             ))}
                         </div>
                     </div>
-                    {/* Right Chart */}
                     <div>
                         <p style={{ ...lbl, marginBottom: '0.2rem' }}>Portfolio Distribution</p>
                         <div style={{ background: '#f9fafb', borderRadius: '0.5rem', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -764,12 +708,9 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── 3. Partner Network ── */}
             <section style={card}>
                 <h3 style={sec}>Partner Network</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                    {/* Left List */}
                     <div>
                         <p style={{ ...lbl, marginBottom: '1rem' }}>Top {isBuyer ? 'Suppliers' : 'Buyers'} (All Products)</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -795,7 +736,6 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                             )}
                         </div>
                     </div>
-                    {/* Right Concentration Analysis */}
                     <div>
                         <p style={{ ...lbl, marginBottom: '0.2rem' }}>Relationship Concentration</p>
                         <div style={{ background: '#f9fafb', borderRadius: '0.5rem', height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -822,8 +762,6 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── 4. Geographic Presence ── */}
             <section style={card}>
                 <h3 style={sec}>Geographic Presence</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
@@ -867,8 +805,6 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── 5. Activity & Growth Trends ── */}
             <section style={card}>
                 <h3 style={sec}>Activity & Growth Trends</h3>
                 <div style={{ background: 'linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 100%)', borderRadius: '0.625rem', padding: '1.25rem', marginBottom: '1rem', border: `1px solid ${C.primaryBorder}` }}>
@@ -919,8 +855,6 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                     </div>
                 </div>
             </section>
-
-            {/* ── 6. Buyer/Supplier Behavior (Trust & Reliability Signals) ── */}
             <section style={card}>
                 <h3 style={sec}>{isBuyer ? 'Supplier Behavior' : 'Buyer Behavior'}</h3>
 
@@ -953,8 +887,6 @@ const CompanyTab = ({ supplier, isBuyer }) => {
 
                 </div>
             </section>
-
-            {/* ── 7. Product <-> Partner Mapping ── */}
             <section style={card}>
                 <h3 style={sec}>Product ↔ Partner Mapping</h3>
                 <p style={{ fontSize: '0.75rem', color: C.textSecondary, marginBottom: '1rem' }}>
@@ -979,13 +911,10 @@ const CompanyTab = ({ supplier, isBuyer }) => {
                                     <td style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: C.textPrimary }}>
                                         {row.product}
                                     </td>
-                                    {/* Partner 1 */}
                                     <td style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', color: C.textSecondary }}>{row.partners[0]?.name || '—'}</td>
                                     <td style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', color: C.textPrimary, textAlign: 'right', fontWeight: 600 }}>{row.partners[0]?.volume ? row.partners[0].volume.toLocaleString() + ' MT' : '—'}</td>
-                                    {/* Partner 2 */}
                                     <td style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', color: C.textSecondary }}>{row.partners[1]?.name || '—'}</td>
                                     <td style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', color: C.textPrimary, textAlign: 'right', fontWeight: 600 }}>{row.partners[1]?.volume ? row.partners[1].volume.toLocaleString() + ' MT' : '—'}</td>
-                                    {/* Partner 3 */}
                                     <td style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', color: C.textSecondary }}>{row.partners[2]?.name || '—'}</td>
                                     <td style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', color: C.textPrimary, textAlign: 'right', fontWeight: 600 }}>{row.partners[2]?.volume ? row.partners[2].volume.toLocaleString() + ' MT' : '—'}</td>
                                 </tr>
@@ -999,10 +928,6 @@ const CompanyTab = ({ supplier, isBuyer }) => {
         </div>
     );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Transactions Tab (Fully implemented)
-// ─────────────────────────────────────────────────────────────────────────────
 const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
     const [searchParams] = useSearchParams();
     const scopeParam = searchParams.get('scope') || '';
@@ -1015,8 +940,6 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
     const lbl = { fontSize: '0.65rem', color: C.textSecondary, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.2rem' };
     const val = { fontSize: '1.25rem', fontWeight: 800, color: C.textPrimary, margin: 0 };
     const fmtMoney = n => n ? `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : '—';
-
-    // State for filtering
     const [filters, setFilters] = useState({
         start_date: '',
         end_date: '',
@@ -1040,7 +963,6 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
         try {
             const actualFilters = { ...currentFilters };
             if (actualFilters.country === 'All Countries') delete actualFilters.country;
-            // Clean empty strings
             Object.keys(actualFilters).forEach(key => {
                 if (actualFilters[key] === '') delete actualFilters[key];
             });
@@ -1119,7 +1041,6 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {/* ── Summary ── */}
             <section style={{ ...card, background: C.gradientHero, border: 'none', padding: '1.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                     <h3 style={{ ...sec, margin: 0, color: 'white', opacity: 0.95 }}>Transaction Data Summary</h3>
@@ -1138,8 +1059,6 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
                     ))}
                 </div>
             </section>
-
-            {/* ── Filters ── */}
             <section style={card}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h3 style={{ ...sec, margin: 0 }}>Filters & Search</h3>
@@ -1193,8 +1112,6 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
                     <button onClick={resetFilters} style={{ ...btnBase, background: 'white', color: C.textPrimary, border: `1px solid ${C.border}` }}>Reset</button>
                 </div>
             </section>
-
-            {/* ── Top Lists ── */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ ...card, marginBottom: 0, padding: '1.25rem' }}>
                     <h3 style={{ ...sec, margin: '0 0 1rem' }}>Top {isBuyer ? 'Sellers' : 'Buyers'} by Quantity</h3>
@@ -1235,8 +1152,6 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
                     </div>
                 </div>
             </div>
-
-            {/* ── Records Table ── */}
             <section style={{ ...card, padding: 0, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', borderBottom: `1px solid ${C.border}` }}>
                     <h3 style={{ ...sec, margin: 0 }}>Transaction Records</h3>
@@ -1284,8 +1199,6 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
                         </tbody>
                     </table>
                 </div>
-
-                {/* Pagination */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', background: '#f8fafc', borderTop: `1px solid ${C.border}` }}>
                     <span style={{ fontSize: '0.75rem', color: C.textSecondary }}>
                         Showing {data.total_count ? ((page - 1) * pageSize) + 1 : 0}-{Math.min(page * pageSize, data.total_count)} of {data.total_count} transactions
@@ -1295,8 +1208,6 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
                             disabled={page === 1} onClick={() => setPage(p => p - 1)}
                             style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', background: 'white', border: `1px solid ${C.border}`, borderRadius: '0.25rem', cursor: page === 1 ? 'not-allowed' : 'pointer' }}
                         >Previous</button>
-
-                        {/* Page Numbers mapping (Simplified for UI look) */}
                         {[...Array(Math.ceil(data.total_count / pageSize) || 1).keys()].slice(Math.max(0, page - 3), page + 2).map(n => (
                             <button
                                 key={n + 1}
@@ -1322,10 +1233,6 @@ const TransactionsTab = ({ supplier, isBuyer, query, variantName }) => {
         </div>
     );
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Placeholder for tabs not yet built
-// ─────────────────────────────────────────────────────────────────────────────
 const PlaceholderTab = ({ label }) => (
     <div style={{
         background: C.card, border: `1px solid ${C.border}`, borderRadius: '0.75rem',
@@ -1338,10 +1245,6 @@ const PlaceholderTab = ({ label }) => (
         </p>
     </div>
 );
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Main Component
-// ─────────────────────────────────────────────────────────────────────────────
 const DealDetail = () => {
     const { name } = useParams();
     const [searchParams] = useSearchParams();
@@ -1349,7 +1252,7 @@ const DealDetail = () => {
 
     const query = searchParams.get('q') || '';
     const scopeParam = searchParams.get('scope') || '';
-    const intentParam = searchParams.get('intent') || '';   // BUY | SELL
+    const intentParam = searchParams.get('intent') || '';
     const subcatIdParam = searchParams.get('subcat_id') || null;
     const variantName = searchParams.get('variant_name') || null;
     const activeTab = searchParams.get('tab') || 'overview';
@@ -1382,8 +1285,6 @@ const DealDetail = () => {
         params.set('tab', tab);
         navigate(`?${params.toString()}`, { replace: true });
     };
-
-    // ── PDF Generation ──────────────────────────────────────────────────────
     const generateIntelligenceReport = () => {
         if (!data) return;
         const { supplier } = data;
@@ -1412,8 +1313,6 @@ const DealDetail = () => {
             doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...gray);
             doc.text(`ZaraiLink Intelligence Report  •  ${today}  •  Page ${n}`, pageW / 2, pageH - 6, { align: 'center' });
         };
-
-        // Page 1
         drawHeader(`${L.roleLabel} Intelligence Report`); drawFooter(1);
         doc.setFillColor(...light);
         doc.roundedRect(14, 35, pageW - 28, 68, 4, 4, 'F');
@@ -1463,8 +1362,6 @@ const DealDetail = () => {
                 margin: { left: 14, right: 14 },
             });
         }
-
-        // Page 2 — Transactions
         doc.addPage(); drawHeader(isBuyer ? 'Recent Orders' : 'Recent Transactions'); drawFooter(2);
         const history = supplier.history || [];
         const txRows = history.slice(0, 20).map(tx => {
@@ -1494,8 +1391,6 @@ const DealDetail = () => {
         const safeProduct = clean(variantName || query).replace(/[^a-z0-9]/gi, '_').substring(0, 20);
         doc.save(`ZaraiLink_${safeName}_${safeProduct}_${new Date().toISOString().split('T')[0]}.pdf`);
     };
-
-    // ── Guards ──────────────────────────────────────────────────────────────
     if (loading) return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', color: C.textSecondary, fontWeight: 500 }}>
             Loading details...
@@ -1551,12 +1446,8 @@ const DealDetail = () => {
     return (
         <div style={{ background: C.bg, minHeight: '100vh' }}>
             <Navbar />
-
-            {/* ── Page Header ── */}
             <div style={{ background: 'white', borderBottom: `1px solid ${C.border}` }}>
                 <div style={{ maxWidth: '1140px', margin: '0 auto', padding: '1rem 2rem 1.5rem' }}>
-
-                    {/* Back button + Breadcrumb row */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
                         <button
                             onClick={() => navigate(-1)}
@@ -1587,8 +1478,6 @@ const DealDetail = () => {
                             <span style={{ color: C.textPrimary, fontWeight: 600 }}>{variantName || query}</span>
                         </nav>
                     </div>
-
-                    {/* Name + Badges + Action row */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap', marginBottom: '0.375rem' }}>
@@ -1620,8 +1509,6 @@ const DealDetail = () => {
             </div>
 
             <div style={{ maxWidth: '1140px', margin: '0 auto', padding: '2rem' }}>
-
-                {/* ── 4 KPI Cards ── */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.75rem' }}>
                     {kpiCards.map((card, i) => (
                         <div key={i} style={{
@@ -1642,8 +1529,6 @@ const DealDetail = () => {
                         </div>
                     ))}
                 </div>
-
-                {/* ── Tab Navigation ── Premium Style */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '1.75rem', background: '#f8fafc', borderRadius: '0.625rem', padding: '0.3rem', border: `1px solid ${C.border}` }}>
                     {TABS.map(tab => (
                         <button
@@ -1669,8 +1554,6 @@ const DealDetail = () => {
                         </button>
                     ))}
                 </div>
-
-                {/* ── Tab Content ── */}
                 {activeTab === 'overview' && (
                     <OverviewTab supplier={supplier} isBuyer={isBuyer} navigateTab={navigateTab} />
                 )}

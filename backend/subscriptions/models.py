@@ -146,14 +146,12 @@ class RedeemCode(models.Model):
     
     @staticmethod
     def generate_code(length=12):
-        """Generate a random alphanumeric code"""
-        
+        # Exclude visually ambiguous characters (0/O/1/I).
         chars = string.ascii_uppercase + string.digits
         chars = chars.replace('0', '').replace('O', '').replace('I', '').replace('1', '')
         return ''.join(secrets.choice(chars) for _ in range(length))
-    
+
     def redeem(self, user):
-        """Redeem this code for a user"""
         from django.utils import timezone
         
         if self.status != 'active':

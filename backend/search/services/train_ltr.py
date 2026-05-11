@@ -12,38 +12,34 @@ class LTRTrainer:
         print("Building Dataset...")
         from .ltr_dataset_builder import LTRDatasetBuilder
         builder = LTRDatasetBuilder()
-        X, y, groups = builder.build_dataset(limit_per_product=50) # Use smaller limit for dev speed
-        
+        X, y, groups = builder.build_dataset(limit_per_product=50)
+
         print(f"Dataset Built: {len(X)} samples, {len(groups)} queries.")
-        
+
         if len(groups) < 2:
             print("Not enough data to split. Aborting.")
             return
 
-        # Train/Val Split (Group-aware)
-        # We must split by GROUPS, not samples, so queries stay intact
+        # Group-aware split so queries stay intact.
         n_queries = len(groups)
         n_train = int(n_queries * 0.8)
-        
-        # Helper to slice based on groups
+
         train_groups = groups[:n_train]
         val_groups = groups[n_train:]
-        
+
         n_train_samples = sum(train_groups)
-        
+
         X_train = X[:n_train_samples]
         y_train = y[:n_train_samples]
-        
+
         X_val = X[n_train_samples:]
         y_val = y[n_train_samples:]
-        
+
         print(f"Train Queries: {len(train_groups)}, Val Queries: {len(val_groups)}")
-        
-        # LightGBM Dataset
+
         train_data = lgb.Dataset(X_train, label=y_train, group=train_groups)
         val_data = lgb.Dataset(X_val, label=y_val, group=val_groups, reference=train_data)
-        
-        # Train
+
         params = {
             'objective': 'lambdarank',
             'metric': 'ndcg',
@@ -65,13 +61,11 @@ class LTRTrainer:
             num_boost_round=100,
             callbacks=callbacks
         )
-        
-        # Evaluate
+
         print("Evaluating Model...")
         metrics = evaluate_model(model, X_val, y_val, val_groups)
         print(f"Validation Metrics: {metrics}")
-        
-        # Save
+
         print(f"Saving model to {MODEL_PATH}")
         model.save_model(MODEL_PATH)
         print("Done.")
@@ -79,12 +73,10 @@ class LTRTrainer:
 if __name__ == "__main__":
     import django
     import sys
-    
-    # Setup Django Environment (since we're running as script)
-    # Be careful with paths
+
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     sys.path.append(base_dir)
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zarailink.settings") # adjust 'core.settings' if needed
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zarailink.settings")
     django.setup()
     
     trainer = LTRTrainer()

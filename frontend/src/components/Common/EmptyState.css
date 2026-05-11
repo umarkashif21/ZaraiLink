@@ -1,5 +1,3 @@
-/* Empty State Styles */
-
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -73,7 +71,6 @@
   border-color: var(--border-secondary);
 }
 
-/* Compact variant */
 .empty-state.compact {
   padding: 2rem 1rem;
   min-height: 200px;
@@ -92,7 +89,6 @@
   font-size: 0.875rem;
 }
 
-/* Card variant */
 .empty-state.card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
@@ -100,7 +96,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .empty-state {
     padding: 2rem 1rem;

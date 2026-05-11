@@ -5,9 +5,7 @@ services:
     container_name: opensearch-node
     environment:
       - discovery.type=single-node
-      # Disable security for local development
       - plugins.security.disabled=true
-      # Set JVM heap size to 1GB
       - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
       - OPENSEARCH_INITIAL_ADMIN_PASSWORD=AdminPassword123!
       - "DISABLE_INSTALL_DEMO_CONFIG=true"
@@ -15,7 +13,7 @@ services:
       - "discovery.type=single-node"
     ports:
       - "9200:9200"
-      - "9600:9600" # Performance analyzer
+      - "9600:9600"
     volumes:
       - opensearch-data:/usr/share/opensearch/data
 
@@ -24,7 +22,6 @@ services:
     container_name: opensearch-dashboards
     ports:
       - "5601:5601"
-    # Ensure Dashboards connects to OpenSearch without security
     environment:
       - OPENSEARCH_HOSTS=["http://opensearch-node:9200"]
       - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true

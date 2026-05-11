@@ -1,12 +1,3 @@
-"""
-Integration tests for the companies app API views.
-
-Tests cover:
-- CompanyViewSet (list, filter, search, retrieve)
-- KeyContactViewSet (list, unlock)
-- Lookup endpoints (sectors, company types, company roles)
-"""
-
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -14,8 +5,6 @@ from rest_framework import status
 
 @pytest.mark.django_db
 class TestCompanyViewSet:
-    """Test cases for CompanyViewSet."""
-    
     def test_list_all_companies(self, api_client, create_company):
         """Test listing all companies."""
         
@@ -158,8 +147,6 @@ class TestCompanyViewSet:
 
 @pytest.mark.django_db
 class TestKeyContactViewSet:
-    """Test cases for KeyContactViewSet."""
-    
     def test_list_contacts_for_company(self, authenticated_client, create_company, create_key_contact):
         """Test listing key contacts for a company."""
         company = create_company(name='Contact Test Co')
@@ -233,8 +220,6 @@ class TestKeyContactViewSet:
 
 @pytest.mark.django_db
 class TestLookupEndpoints:
-    """Test cases for lookup endpoints."""
-    
     def test_sectors_list(self, api_client, create_sector):
         """Test listing all sectors."""
         create_sector(name='Agriculture')

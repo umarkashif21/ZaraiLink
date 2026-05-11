@@ -1,12 +1,3 @@
-"""
-Unit tests for the accounts app models.
-
-Tests cover:
-- User model creation and validation
-- Token management methods
-- Email verification token handling
-"""
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -17,8 +8,6 @@ User = get_user_model()
 
 @pytest.mark.django_db
 class TestUserModel:
-    """Test cases for the User model."""
-    
     def test_create_user_with_email(self, create_user):
         """Test creating a user with email as primary identifier."""
         user = create_user(email='test@example.com', password='testpass123')
@@ -96,8 +85,6 @@ class TestUserModel:
 
 @pytest.mark.django_db
 class TestUserTokenManagement:
-    """Test cases for user token balance management."""
-    
     def test_initial_token_balance(self, create_user):
         """Test default token balance is set correctly."""
         user = create_user(token_balance=10)
@@ -152,8 +139,6 @@ class TestUserTokenManagement:
 
 @pytest.mark.django_db
 class TestUserAlertPreference:
-    """Test cases for UserAlertPreference model."""
-    
     def test_create_alert_preference(self, user):
         """Test creating alert preferences for a user."""
         from accounts.models import UserAlertPreference

@@ -196,8 +196,6 @@ function App() {
                   }
                 />
 
-
-                {/* Search Module Routes */}
                 <Route path="/search" element={<Navigate to="/dashboard" replace />} />
                 <Route
                   path="/search/results"

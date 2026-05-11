@@ -1,7 +1,26 @@
 """Django's command-line utility for administrative tasks."""
 import os
+import re
 import sys
 import warnings
+
+# Hush TensorFlow's "this binary is optimized for ..." INFO line. Must be set
+# before any tensorflow import, which means before Django/our apps load.
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+
+# Some C-extension types (Swig-generated) emit DeprecationWarnings during
+# interpreter finalization, after warnings.showwarning has been torn down.
+# The only way to silence those is via PYTHONWARNINGS, which is read at
+# interpreter startup — so we re-exec ourselves once with it set.
+if not os.environ.get("ZL_WARN_FILTER_APPLIED"):
+    # Note: PYTHONWARNINGS message-match is case-sensitive starts-with, and
+    # the three offenders are SwigPyPacked, SwigPyObject, swigvarlink (mixed
+    # case). Match on the common case-stable prefix instead.
+    _extra = "ignore:builtin type:DeprecationWarning"
+    _existing = os.environ.get("PYTHONWARNINGS", "")
+    os.environ["PYTHONWARNINGS"] = f"{_extra},{_existing}".rstrip(",")
+    os.environ["ZL_WARN_FILTER_APPLIED"] = "1"
+    os.execv(sys.executable, [sys.executable, *sys.argv])
 
 warnings.filterwarnings(
     "ignore",
@@ -9,6 +28,58 @@ warnings.filterwarnings(
     category=UserWarning,
     module=r"torch\.nn\.modules\.module",
 )
+# Cosmetic startup warnings from third-party libs we don't control. None
+# affect functionality; they just clutter the runserver banner.
+warnings.filterwarnings(
+    "ignore",
+    message=r"Pandas requires version '1\.3\.6' or newer of 'bottleneck'.*",
+    category=UserWarning,
+)
+warnings.filterwarnings(
+    "ignore",
+    message=r"Unable to import Axes3D.*",
+    category=UserWarning,
+)
+warnings.filterwarnings(
+    "ignore",
+    message=r"`resume_download` is deprecated.*",
+    category=FutureWarning,
+)
+warnings.filterwarnings(
+    "ignore",
+    message=r"The sentencepiece tokenizer that you are converting to a fast tokenizer.*",
+    category=UserWarning,
+)
+warnings.filterwarnings(
+    "ignore",
+    message=r"builtin type Swig(PyPacked|PyObject|varlink) has no __module__ attribute",
+    category=DeprecationWarning,
+)
+
+# TensorFlow and other heavy libs call `warnings.resetwarnings()` during their
+# own import, which wipes the filters above. Wrap `showwarning` so the Swig
+# DeprecationWarnings are dropped at display time regardless of filter state.
+_SUPPRESS_PATTERNS = (
+    re.compile(r"builtin type \w+ has no __module__ attribute", re.IGNORECASE),
+)
+_orig_showwarning = warnings.showwarning
+
+
+def _filtered_showwarning(message, category, filename, lineno, file=None, line=None):
+    text = str(message)
+    for pat in _SUPPRESS_PATTERNS:
+        if pat.search(text):
+            return
+    _orig_showwarning(message, category, filename, lineno, file, line)
+
+
+warnings.showwarning = _filtered_showwarning
+
+# Quiet huggingface_hub's tqdm progress bars during model fetches and silence
+# transformers' "Asking to truncate to max_length" info log. These are
+# library-emitted noise on warmup, not actionable for the developer.
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
 
 
 # Commands that meaningfully use the cache and so should ensure Redis is up.

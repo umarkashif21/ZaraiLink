@@ -22,8 +22,7 @@ with open(CSV_PATH, encoding='utf-8-sig') as f:
         if csv_key in all_companies:
             matched.append((csv_name, all_companies[csv_key].name))
         else:
-            # Try partial/substring match
-            candidates = [db_name for db_name in all_companies 
+            candidates = [db_name for db_name in all_companies
                           if csv_key in db_name or db_name in csv_key]
             if candidates:
                 unmatched.append((csv_name, f'PARTIAL MATCH -> {candidates[:3]}'))

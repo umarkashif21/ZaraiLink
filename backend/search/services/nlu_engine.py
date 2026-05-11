@@ -1,27 +1,6 @@
-"""
-nlu_engine.py - Modern NLU Engine (Phase 2)
-============================================
-SOTA pipeline replacing the legacy DistilBART + BERT-NER + Regex stack.
-
-  Intent   : SetFit  (BAAI/bge-small-en-v1.5 backbone, fine-tuned on trade data)
-             Falls back to keyword detection when model not available.
-  Entities : GLiNER  (urchade/gliner_base, zero-shot span extraction)
-             Falls back gracefully when model not available.
-  Keyword  : extract_product_keyword() — fast stop-word stripper (no ML needed)
-  Direction: Perspective logic that converts (intent + ui_context) to OpenSearch filters
-
-Public API:
-    engine = ModernNLUEngine()
-    result = engine.parse(query, ui_context='worldwide')
-    # Returns: intent, product, product_keyword, country, price_filter, os_filter
-
-    # Fast keyword extraction (no model needed):
-    keyword = extract_product_keyword("i want to buy dextrose anhydrous")
-    # → "dextrose anhydrous"
-"""
-
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import os
@@ -33,11 +12,68 @@ import pycountry
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# pycountry-based country catalog (built once at module load)
-# Keys: lowercase name, alpha-2, alpha-3, common_name, plus manual aliases.
-# Values: the canonical country name string (e.g. "Brazil").
-# ---------------------------------------------------------------------------
+
+@contextlib.contextmanager
+def _disable_meta_tensor_init():
+    """Force transformers/accelerate to materialize weights on CPU directly.
+
+    Why: torch >= 2.4 + transformers >= 4.45 default to a meta-tensor init
+    path (`init_empty_weights()` then `_load_state_dict_into_meta_model`).
+    For SetFit and GLiNER sub-loads this races with sentence-transformers'
+    subsequent `.to('cpu')`, raising "Cannot copy out of meta tensor".
+
+    How: rebind `is_accelerate_available` on the *call sites* that actually
+    use it (transformers.modeling_utils caches the import at module load,
+    so patching transformers.utils.import_utils alone is not enough), and
+    swap `accelerate.init_empty_weights` for a no-op context manager so any
+    code path that still goes through it just builds real CPU tensors.
+    """
+    patches: list[tuple[object, str, object]] = []
+
+    def _patch(module, attr, value):
+        if hasattr(module, attr):
+            patches.append((module, attr, getattr(module, attr)))
+            setattr(module, attr, value)
+
+    try:
+        import transformers.modeling_utils as _mu
+        _patch(_mu, "is_accelerate_available", lambda *a, **k: False)
+    except Exception:
+        pass
+    try:
+        import transformers.utils.import_utils as _tu
+        _patch(_tu, "is_accelerate_available", lambda *a, **k: False)
+    except Exception:
+        pass
+
+    @contextlib.contextmanager
+    def _noop_init_empty_weights(*args, **kwargs):
+        yield
+
+    try:
+        import accelerate
+        _patch(accelerate, "init_empty_weights", _noop_init_empty_weights)
+        try:
+            import accelerate.big_modeling as _bm
+            _patch(_bm, "init_empty_weights", _noop_init_empty_weights)
+        except Exception:
+            pass
+        try:
+            import transformers.modeling_utils as _mu
+            _patch(_mu, "init_empty_weights", _noop_init_empty_weights)
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+    try:
+        yield
+    finally:
+        for module, attr, original in patches:
+            setattr(module, attr, original)
+
+# Country catalog: lowercase name/alpha-2/alpha-3/common_name + manual aliases
+# -> canonical country name. Built once at module load.
 
 def _build_country_catalog() -> dict:
     catalog: dict = {}
@@ -47,7 +83,6 @@ def _build_country_catalog() -> dict:
         catalog[c.alpha_3.lower()]     = c.name
         if hasattr(c, 'common_name'):
             catalog[c.common_name.lower()] = c.name
-    # Manual aliases that pycountry misses or names differently
     _MANUAL: dict = {
         "pak":           "Pakistan",
         "uae":           "United Arab Emirates",
@@ -74,44 +109,28 @@ def _build_country_catalog() -> dict:
 _COUNTRY_CATALOG: dict = _build_country_catalog()
 _COUNTRY_CATALOG_KEYS: list = list(_COUNTRY_CATALOG.keys())
 
-# Fuzzy matching corpus — full names only (excludes alpha-2/alpha-3 codes).
-# This prevents short typos like 'chna' from spuriously matching 'che' (Switzerland).
+# Fuzzy matching corpus is full names only — excluding alpha-2/3 codes prevents
+# short typos like 'chna' from spuriously matching 'che' (Switzerland).
 _COUNTRY_NAMES_ONLY: list = (
     [c.name.lower() for c in pycountry.countries]
     + [c.common_name.lower() for c in pycountry.countries if hasattr(c, 'common_name')]
 )
 
-# ---------------------------------------------------------------------------
-# Paths
-# ---------------------------------------------------------------------------
-# BASE_DIR is the backend/ directory (same as Django's settings.BASE_DIR).
-# Resolved at import time so it works regardless of how the module is loaded.
-_BACKEND_DIR       = Path(__file__).resolve().parent.parent.parent  # backend/
+_BACKEND_DIR       = Path(__file__).resolve().parent.parent.parent
 _INTENT_MODEL_PATH = _BACKEND_DIR / "models" / "zarai_intent_model"
 
-# ---------------------------------------------------------------------------
-# Price operator keywords → OpenSearch range keys
-# ---------------------------------------------------------------------------
 _LTE_PHRASES = {"under", "below", "max", "less than", "cheaper than", "at most"}
 _GTE_PHRASES = {"above", "over", "min", "more than", "at least", "minimum"}
 
-# ---------------------------------------------------------------------------
-# Ranking hint signals — ordered lists so multi-word phrases are checked FIRST
-# to prevent ambiguous single words (e.g. "top") from matching too early.
-# ---------------------------------------------------------------------------
-# Each entry: (hint_value, [phrase, ...])  — phrases are case-insensitive substrings.
+# Ranking-hint phrases — multi-word phrases come FIRST so ambiguous single words
+# (e.g. "top") don't match before more specific phrases.
 _RANKING_HINT_SIGNALS: list[tuple[str, list[str]]] = [
-    # ── price_desc multi-word first (before bare "top" matches volume_desc) ──
     ("price_desc",  ["best quality", "top quality", "high value", "highest price", "premium quality"]),
-    # ── reliability multi-word ────────────────────────────────────────────────
     ("reliability", ["serious buyers only", "serious sellers only", "verified only"]),
-    # ── volume_desc multi-word ────────────────────────────────────────────────
     ("volume_desc", ["most active", "highest volume", "large quantities", "large scale",
                      "bulk buyers", "bulk sellers", "top importers", "top exporters",
                      "top suppliers", "top buyers", "biggest buyers", "biggest suppliers"]),
-    # ── price_asc multi-word ─────────────────────────────────────────────────
     ("price_asc",   ["low price", "lowest price", "best price", "cheapest possible"]),
-    # ── single-word signals (checked last) ───────────────────────────────────
     ("price_asc",   ["cheap", "cheapest", "affordable", "inexpensive", "budget"]),
     ("price_desc",  ["expensive", "premium"]),
     ("volume_desc", ["biggest", "largest", "leading", "major", "bulk", "top"]),
@@ -120,21 +139,6 @@ _RANKING_HINT_SIGNALS: list[tuple[str, list[str]]] = [
 
 
 def _detect_ranking_hint(raw_query: str) -> Optional[str]:
-    """
-    Scan the raw query for ranking preference signals and return the most
-    specific match, or None if no signal is found.
-
-    Priority: price_desc multi-word > reliability > volume_desc multi-word >
-              price_asc multi-word > price_asc single > price_desc single >
-              volume_desc single > reliability single
-
-    Examples:
-        "need cheap sugar"               → "price_asc"
-        "premium dextrose from germany"  → "price_desc"
-        "biggest buyers of sugar"        → "volume_desc"
-        "serious buyers only"            → "reliability"
-        "buy sugar from brazil"          → None
-    """
     q = raw_query.lower()
     for hint, phrases in _RANKING_HINT_SIGNALS:
         for phrase in phrases:
@@ -143,12 +147,8 @@ def _detect_ranking_hint(raw_query: str) -> Optional[str]:
     return None
 
 
-# ---------------------------------------------------------------------------
-# RapidFuzz noise token stripping
-# Removes garbled trade verbs/adjectives that survive the stop-word regex.
-# Examples: "molases exprt" → "molases",  "sugr cheep" → "sugr"
-# Only strips tokens from MULTI-WORD keywords (single words are left alone).
-# ---------------------------------------------------------------------------
+# Garbled trade verbs that survive the stop-word regex (e.g. "exprt", "cheep").
+# Only stripped from multi-word keywords.
 _KNOWN_NOISE = [
     "export", "import", "buy", "sell", "cheap", "bulk",
     "urgent", "fast", "suppliers", "buyers", "from", "find",
@@ -158,18 +158,9 @@ _KNOWN_NOISE = [
 
 
 def strip_noise_tokens(keyword: str) -> str:
-    """
-    Remove tokens that fuzzy-match known trade noise words (score >= 80).
-    Only acts on multi-word keywords to avoid stripping real product names.
-
-    Examples:
-        'molases exprt'   → 'molases'
-        'sugr cheep'      → 'sugr'
-        'dextrose'        → 'dextrose'  (unchanged — single word)
-    """
     tokens = keyword.split()
     if len(tokens) <= 1:
-        return keyword   # Never strip a single-word product name
+        return keyword
     try:
         from rapidfuzz import process, fuzz
         clean = []
@@ -182,19 +173,15 @@ def strip_noise_tokens(keyword: str) -> str:
             if not match:
                 clean.append(token)
         result = " ".join(clean).strip()
-        return result if result else keyword   # Safety: never return empty string
+        return result if result else keyword
     except Exception:
-        return keyword   # Graceful fallback if RapidFuzz unavailable
+        return keyword
 
 
-# ---------------------------------------------------------------------------
-# Stop words for product keyword extraction
-# These are stripped from the raw query before searching product names.
-# Order matters — multi-word phrases first before single words.
-# ---------------------------------------------------------------------------
+# Stop phrases stripped from the raw query before product name search.
+# Order matters: multi-word phrases must come before single words.
 _INTENT_STOP_PHRASES = [
-    # Multi-word first
-    "i wanna buy", "i wanna sell", "i want to buy", "i want to sell", 
+    "i wanna buy", "i wanna sell", "i want to buy", "i want to sell",
     "i am looking to buy", "i am looking to sell",
     "looking to buy", "looking to sell", "looking for buyers of", "looking for sellers of",
     "looking for suppliers of", "find buyers for", "find sellers for", "find suppliers for",
@@ -209,65 +196,39 @@ _INTENT_STOP_PHRASES = [
     "suppliers of", "buyers of", "looking for",
     "import of", "export of",
     "i want", "i need", "wanna buy", "wanna sell",
-    # Single words last
     "where", "how", "what", "which",
     "buy", "sell", "purchase", "import", "export", "get",
     "supplier", "suppliers", "buyer", "buyers",
     "find", "search", "looking", "please", "need",
-    # Prepositions — must be here so extract_product_keyword() strips them
-    # when they survive after the country token is removed from cleaned_query.
-    # e.g. "suggar from brazil" → country stripped → "suggar from " → "suggar"
+    # Prepositions: must be stripped here because they survive after the country
+    # token is removed (e.g. "suggar from brazil" -> "suggar from " -> "suggar").
     "from", "frm",
     "for", "me", "best",
 ]
 
 
-# ===========================================================================
-# Public helper — product keyword extraction (no ML, very fast)
-# ===========================================================================
-
 def extract_product_keyword(raw_query: str) -> str:
-    """
-    Strip intent/trade stop-words from a natural-language query and return
-    the remaining product-related terms.
-
-    Examples:
-        "i want to buy dextrose anhydrous"  → "dextrose anhydrous"
-        "find buyers for basmati rice"       → "basmati rice"
-        "I WANT TO SELL fruc"               → "fruc"
-        "dex"                               → "dex"
-        "sugar under $500"                  → "sugar"   (price clause also stripped)
-    """
     q = raw_query.lower().strip()
 
-    # 1. Strip each stop phrase (longest first already, since list is ordered).
-    # This must be done BEFORE the dynamic single-word verb stripping, 
-    # otherwise phrases like "i wanna buy" get broken into "i     " and fail to match.
+    # Stop-phrase pass must run BEFORE dynamic verb stripping, otherwise phrases
+    # like "i wanna buy" get split into "i     " and fail to match.
     for phrase in _INTENT_STOP_PHRASES:
-        # Word-boundary aware replacement
         q = re.sub(r'\b' + re.escape(phrase) + r'\b', ' ', q)
 
-    # 2. Dynamic Stripping of garbled intent verbs (buyyy, gettsds, importttt, etc.)
-    # \w* catches ANY junk characters appended to the base word
+    # \w* catches junk suffixes on intent verbs (buyyy, importttt, etc.)
     q = re.sub(r'\b(buy\w*|sell\w*|get\w*|import\w*|export\w*|purchas\w*|wanna|want\w*)\b', ' ', q)
 
-    # Strip price clauses like "under $700", "above 500 usd", "below 300"
     q = re.sub(r'\b(under|below|above|over|min|max|less than|more than|at most|at least)\s*\$?\d+(\s*(usd|pkr|per\s+mt))?\b', '', q)
-    q = re.sub(r'\$\d+(\.\d+)?', '', q)   # bare "$500"
+    q = re.sub(r'\$\d+(\.\d+)?', '', q)
 
-    # Strip leftover punctuation / excess whitespace
     q = re.sub(r'[^\w\s]', ' ', q)
     q = re.sub(r'\s+', ' ', q).strip()
 
-    # Pass 4 Tokenization Fallback:
-    # If the remaining string is suspiciously long (e.g. > 4 words), user typed a messy unhandled sentence.
     words = q.split()
     if len(words) > 4:
-        # OLD LOGIC: Simple heuristic: filter out short generic words, take the longest remaining word.
-        # WHY REPLACED: In a query like "unga bunga dex", it picked "unga" purely due to character length,
-        # completely ignoring the actual valid product abbreviation "dex".
-        # NEW LOGIC: Score each candidate against our known product catalog using TrigramSimilarity.
-        # The word with the highest similarity to any known product wins.
+        # Score candidates against the product catalog (TrigramSimilarity) instead
+        # of picking the longest word. Length-only picked "unga" over "dex" in
+        # "unga bunga dex".
         generic_words = {"the", "a", "an", "is", "of", "and", "or", "to", "in", "from", "on", "with"}
         filtered = [w for w in words if w not in generic_words and len(w) > 2]
         if filtered:
@@ -304,22 +265,12 @@ def extract_product_keyword(raw_query: str) -> str:
                 else:
                     q = max(filtered, key=len)
             except Exception:
-                # Graceful fallback to legacy logic if DB is not ready or errors occur
                 q = max(filtered, key=len)
 
     return q or raw_query.lower().strip()
 
 
-# ===========================================================================
-# Helpers
-# ===========================================================================
-
 def _detect_price_operator(query: str) -> Optional[str]:
-    """
-    Regex fallback to detect a price direction keyword when GLiNER doesn't
-    extract a price_operator entity.
-    Returns 'lte' or 'gte' or None.
-    """
     q = query.lower()
     for phrase in _GTE_PHRASES:
         if re.search(r'\b' + re.escape(phrase) + r'\b', q):
@@ -347,54 +298,50 @@ def _call_openrouter_llm(system_prompt: str, user_prompt: str) -> Optional[dict]
     }
 
     payload = {
-        "model": "deepseek/deepseek-chat",
+        "model": "google/gemini-2.5-flash-lite",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_prompt}
         ],
         "temperature": 0,
         "max_tokens": 200,
-        "response_format": {"type": "json_object"}
+        "response_format": {"type": "json_object"},
     }
 
-    try:
-        resp = requests.post(url, headers=headers, json=payload, timeout=4)
+    def _post_and_parse(p):
+        resp = requests.post(url, headers=headers, json=p, timeout=8)
         resp.raise_for_status()
-        content = resp.json()["choices"][0]["message"]["content"]
+        content = resp.json()["choices"][0]["message"]["content"].strip()
+        # Gemini via OpenRouter sometimes ignores response_format and wraps JSON
+        # in ```json fences — strip defensively.
+        if content.startswith("```json"):
+            content = content[7:].rsplit("```", 1)[0].strip()
+        elif content.startswith("```"):
+            content = content[3:].rsplit("```", 1)[0].strip()
         return json.loads(content)
+
+    try:
+        return _post_and_parse(payload)
     except Exception as e:
         logger.warning(f"[LLM] Primary model failed: {e}")
-        # Fallback to Mistral Free immediately natively via OpenRouter
-        payload["model"] = "mistralai/mistral-7b-instruct:free"
-        payload.pop("response_format", None)
+        # Retry without response_format in case the provider rejected it.
+        retry = dict(payload)
+        retry.pop("response_format", None)
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=4)
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"].strip()
-            if content.startswith("```json"):
-                content = content[7:-3].strip()
-            elif content.startswith("```"):
-                content = content[3:-3].strip()
-            return json.loads(content)
-        except Exception as fallback_e:
-            logger.warning(f"[LLM] Fallback model failed: {fallback_e}")
+            return _post_and_parse(retry)
+        except Exception as retry_e:
+            logger.warning(f"[LLM] Retry without response_format also failed: {retry_e}")
             return None
 
 def _build_price_filter_regex(raw_query: str) -> Optional[dict]:
-    """
-    Regex-based price extraction — used as fallback when LLM is unavailable.
-    Handles: 'under 800', 'cheaper than 800', 'below $500', 'above 1000 usd', 'cheap' (no number).
-    """
     q = raw_query.lower()
 
-    # Detect ranking-only signals (cheap/affordable with no number)
     price_ranking_words = {"cheap", "affordable", "budget", "cheapest", "low price", "best price", "inexpensive"}
     has_number = bool(re.search(r'\d', q))
     if not has_number and any(w in q for w in price_ranking_words):
         logger.warning("[RegexPrice] No-number price signal → ranking_hint=price_asc only")
         return {"ranking_hint": "price_asc"}
 
-    # Match patterns like "under 800", "cheaper than $700", "below 500 usd", "above 1000"
     lte_pattern = r'\b(?:under|below|less than|cheaper than|no more than|at most|max)\s*\$?([\d,]+(?:\.\d+)?)'
     gte_pattern = r'\b(?:above|over|more than|at least|minimum|min)\s*\$?([\d,]+(?:\.\d+)?)'
     range_pattern = r'\b(?:around|roughly|approximately|about)\s*\$?([\d,]+(?:\.\d+)?)'
@@ -465,19 +412,13 @@ _LLM_UNIFIED_EMPTY: dict = {
 
 
 def _call_llm_unified(raw_query: str) -> dict:
-    """
-    Single OpenRouter call that extracts product, country (cross-check),
-    price constraints, and quantity together.
-
-    Returns a dict matching _LLM_UNIFIED_EMPTY on any failure — never raises.
-    """
+    # Returns _LLM_UNIFIED_EMPTY on any failure — never raises.
     import copy
     try:
         parsed = _call_openrouter_llm(_LLM_UNIFIED_PROMPT, raw_query)
         if not parsed:
             raise ValueError("LLM returned empty result")
 
-        # Ensure the price sub-dict always exists
         result = copy.deepcopy(_LLM_UNIFIED_EMPTY)
         result["product"]  = parsed.get("product") or None
         result["country"]  = parsed.get("country") or None
@@ -498,11 +439,6 @@ def _call_llm_unified(raw_query: str) -> dict:
 
 
 def _price_filter_from_llm(llm_result: dict) -> Optional[dict]:
-    """
-    Convert the price sub-dict from _call_llm_unified into the internal
-    price_filter format expected by search_service and aggregation.
-    Returns None when no price constraint was found.
-    """
     price = llm_result.get("price") or {}
     op    = price.get("operator")
     val   = price.get("value")
@@ -511,7 +447,6 @@ def _price_filter_from_llm(llm_result: dict) -> Optional[dict]:
     if op in ("lte", "gte") and val is not None:
         return {"range": {"usd_per_mt": {op: float(val)}}, "ranking_hint": hint}
 
-    # ranking-only signal (cheap/affordable, no numeric value)
     if hint:
         return {"ranking_hint": hint}
 
@@ -519,7 +454,6 @@ def _price_filter_from_llm(llm_result: dict) -> Optional[dict]:
 
 
 def _extract_entity(entities: list[dict], label: str) -> Optional[str]:
-    """Return the first entity text for a given label, or None."""
     for ent in entities:
         if ent["label"] == label:
             return ent["text"].strip()
@@ -532,17 +466,11 @@ def _build_perspective_filter(
     country: Optional[str],
 ) -> dict:
     """
-    Maps (intent, ui_context) to OpenSearch bool filter clauses.
-
     Perspective table:
-    ------------------------------------------------------------------
-    ui_context  | intent | Meaning
-    ------------------------------------------------------------------
-    import      | BUY    | Foreign Suppliers
-    import      | SELL   | Pakistani Buyers
-    export      | BUY    | Pakistani Suppliers
-    export      | SELL   | Foreign Buyers
-    ------------------------------------------------------------------
+      import + BUY  -> Foreign Suppliers
+      import + SELL -> Pakistani Buyers
+      export + BUY  -> Pakistani Suppliers
+      export + SELL -> Foreign Buyers
     """
     ctx = ui_context.lower()
     must: list[dict] = []
@@ -575,52 +503,25 @@ def _build_perspective_filter(
     return result
 
 
-# ===========================================================================
-# ModernNLUEngine
-# ===========================================================================
-
 class ModernNLUEngine:
-    """
-    Phase-4 NLU Engine — SetFit + KeyBERT + GLiNER + RapidFuzz.
-
-    Intent   : SetFit (zarai_intent_model, fine-tuned on trade data).
-               Falls back to keyword regex when model not found.
-    Keyword  : KeyBERT extracts the best product keyword from the query.
-               Falls back to stop-word strip (extract_product_keyword) when
-               KeyBERT is unavailable.
-    Entities : GLiNER zero-shot NER for country / quantity / price entities.
-               Falls back gracefully when model unavailable.
-    Country  : RapidFuzz fuzzy match (unchanged).
-    Price    : OpenRouter LLM (unchanged).
-
-    All models are loaded lazily at startup and cached as class attributes.
-    """
-
-    _intent_model  = None   # SetFit
-    _keyword_model = None   # KeyBERT
-    _ner_model     = None   # GLiNER
+    _intent_model  = None
+    _keyword_model = None
+    _ner_model     = None
 
     GLINER_LABELS = [
-        # Product spans — multiple labels improve recall across query styles
+        # Multiple product labels improve recall across query styles.
         "product", "commodity", "agricultural product", "trade good",
-        # Trade context
         "country", "quantity", "unit",
         "price", "currency", "price_operator",
     ]
 
-    # ------------------------------------------------------------------
-    # Model loading
-    # ------------------------------------------------------------------
-
     @classmethod
     def _load_intent_model(cls):
-        """Load SetFit model from zarai_intent_model/. Silently skips if absent."""
         if cls._intent_model is not None:
             return
 
         model_path = str(_INTENT_MODEL_PATH.resolve())
 
-        # Accept any of these markers to confirm the model was saved
         markers = ["config_setfit.json", "model_head.pkl", "config.json"]
         model_exists = any(
             os.path.exists(os.path.join(model_path, m)) for m in markers
@@ -637,37 +538,22 @@ class ModernNLUEngine:
         try:
             from setfit import SetFitModel
             logger.info(f"[NLU] Loading SetFit intent model from {model_path} ...")
-            # torch 2.6+ + transformers 4.45+ default to meta-tensor init when
-            # accelerate is installed, then crash on .to('cpu') with "Cannot
-            # copy out of meta tensor". Two layers of defense:
-            #   1. Pass low_cpu_mem_usage=False through SetFit's model_kwargs.
-            #   2. Temporarily lie about accelerate availability so even
-            #      sub-loads inside SetFit (e.g. its sentence-transformers
-            #      body) skip the init_empty_weights path. Without (2) the
-            #      first warmup attempt still races against accelerate state.
-            import transformers.utils.import_utils as _tu
-            _orig_is_accelerate = _tu.is_accelerate_available
-            try:
-                _tu.is_accelerate_available = lambda *a, **kw: False
+            with _disable_meta_tensor_init():
                 cls._intent_model = SetFitModel.from_pretrained(
                     model_path,
                     model_kwargs={"low_cpu_mem_usage": False},
                 )
-            finally:
-                _tu.is_accelerate_available = _orig_is_accelerate
             logger.info("[NLU] SetFit model loaded successfully.")
         except Exception as e:
             logger.error(f"[NLU] Failed to load SetFit model: {e}. Using regex fallback.")
 
     @classmethod
     def _load_keyword_model(cls):
-        """KeyBERT is intentionally disabled. Product extraction is handled by
-        GLiNER (zero-shot, type-aware) followed by a regex fallback. KeyBERT
-        produced untyped n-grams with informal-token noise (see context at
-        line ~885) and was already unused in the live pipeline. _keyword_model
-        stays None so any leftover read returns None gracefully."""
+        """KeyBERT is intentionally disabled — produced untyped n-grams with informal-token
+        noise. GLiNER (zero-shot, type-aware) + regex fallback handle product extraction.
+        _keyword_model stays None so leftover reads return None gracefully."""
         return
-        # ----- previous implementation kept for reference -----
+        # Previous implementation kept for reference:
         # if cls._keyword_model is not None:
         #     return
         # try:
@@ -680,33 +566,20 @@ class ModernNLUEngine:
 
     @classmethod
     def _load_ner_model(cls):
-        """Load GLiNER for entity extraction."""
         if cls._ner_model is not None:
             return
         try:
             from gliner import GLiNER
             logger.info("[NLU] Loading GLiNER model: urchade/gliner_base ...")
-            # GLiNER's UniEncoderSpanModel does not accept model_kwargs, so we
-            # cannot pass low_cpu_mem_usage=False the way we do for SetFit.
-            # Instead, lie about accelerate availability for the duration of
-            # the load — that forces transformers to skip its init_empty_weights
-            # path entirely and materialize weights on CPU directly.
-            import transformers.utils.import_utils as _tu
-            _orig_is_accelerate = _tu.is_accelerate_available
-            try:
-                _tu.is_accelerate_available = lambda *a, **kw: False
+            with _disable_meta_tensor_init():
                 cls._ner_model = GLiNER.from_pretrained(
                     "urchade/gliner_base",
                     map_location="cpu",
                 )
-            finally:
-                _tu.is_accelerate_available = _orig_is_accelerate
             logger.info("[NLU] GLiNER loaded.")
         except Exception as e:
-            # Surface load failures at ERROR so they're visible in default Django
-            # log config — silent INFO-level logging hid this for too long and
-            # cascaded into "product=46" type bugs because the regex fallback
-            # then mis-fires on short product names.
+            # Log at ERROR so default Django log config surfaces it — silent INFO
+            # hid this and cascaded into "product=46" bugs via the regex fallback.
             logger.error(
                 "[NLU] GLiNER failed to load — falling back to regex product "
                 f"extraction. Error: {type(e).__name__}: {e}"
@@ -717,19 +590,7 @@ class ModernNLUEngine:
         self._load_keyword_model()
         self._load_ner_model()
 
-    # ------------------------------------------------------------------
-    # Intent
-    # ------------------------------------------------------------------
-
     def predict_intent(self, query: str) -> str:
-        """Returns 'BUY' or 'SELL'.
-
-        Priority order:
-          1. SetFit ML model  — most accurate, handles ambiguous phrasing
-          2. Keyword regex    — fast fallback when model not loaded
-          3. Default to BUY   — safe default
-        """
-        # 1. SetFit (primary)
         if self._intent_model is not None:
             try:
                 pred = self._intent_model.predict([query])[0]
@@ -739,25 +600,15 @@ class ModernNLUEngine:
             except Exception as e:
                 logger.warning(f"[NLU] SetFit inference failed: {e}. Using regex fallback.")
 
-        # 2. Keyword regex fallback
         q = query.lower()
         if re.search(r'\b(sell\w*|export\w*|supply\w*|distribute\w*|buyer\w*)\b', q):
             return "SELL"
         if re.search(r'\b(buy\w*|import\w*|get\w*|purchas\w*|need\w*|supplier\w*)\b', q):
             return "BUY"
 
-        # 3. Default
         return "UNKNOWN"
 
-    # ------------------------------------------------------------------
-    # Entity Extraction
-    # ------------------------------------------------------------------
-
     def extract_entities(self, query: str) -> list[dict]:
-        """
-        Returns a list of dicts: [{"label": "product", "text": "Refined Sugar"}, ...]
-        Falls back to empty list when GLiNER not available.
-        """
         if self._ner_model is None:
             return []
         try:
@@ -768,59 +619,24 @@ class ModernNLUEngine:
             logger.error(f"GLiNER inference error: {e}")
             return []
 
-    # ------------------------------------------------------------------
-    # Main public API
-    # ------------------------------------------------------------------
-
     def parse(self, query: str, ui_context: str = "import") -> dict:
-        """
-        Full NLU parse — 5-step pipeline.
-
-        Returns:
-            {
-                "intent":          "BUY" | "SELL",
-                "product":         str | None,    # best resolved product keyword
-                "product_keyword": str,           # alias kept for downstream compat
-                "country":         str | None,
-                "quantity":        str | None,
-                "price_filter":    dict | None,
-                "os_filter":       dict,
-                "entities":        list[dict],
-                "ui_context":      str,
-            }
-        """
         import time
         t_nlu_total = time.perf_counter()
 
-        # ==================================================================
-        # STEP 1 — Intent Detection
-        # SetFit model is primary; regex is the fallback.
-        # ==================================================================
         t0 = time.perf_counter()
         intent = self.predict_intent(query)
         t_setfit = time.perf_counter() - t0
 
-        # ==================================================================
-        # STEP 1.5 — Pattern-Based Intent Override
-        #
-        # SetFit is accurate for most queries but misclassifies two specific
-        # "who [seller-verb]s X" forms because it sees the verb alone and
-        # ignores that the "who" subject means the user is FINDING that
-        # counterparty, not being one.
-        #
-        # BUY overrides run FIRST so they cannot be overwritten by SELL overrides.
-        # Placed AFTER SetFit so the model still runs (for telemetry) but
-        # before any step that consumes `intent`.
-        # ==================================================================
+        # SetFit misclassifies "who [sells/exports]" — the verb tags SELL but the
+        # "who" subject means the user wants to FIND sellers, not be one.
+        # BUY overrides run first so SELL overrides can't overwrite them.
         _q_lower_intent = query.lower()
 
-        # BUY overrides — "who [sells/exports/supplies]" = user wants to FIND sellers
-        # SetFit sees the sell-verb and tags SELL; these patterns correct that.
         _BUY_OVERRIDE_PATTERNS = [
-            r'\bwho\s+(?:sells?|sell)\b',                         # "who sells X"
-            r'\bwho\s+(?:exports?|export)\b',                     # "who exports X"
-            r'\bwho\s+(?:supplies?|supply)\b',                    # "who supplies X"
-            r'\bwho\s+(?:is\s+)?(?:the\s+)?(?:exporter|seller|supplier)s?\b',  # "who is the exporter"
+            r'\bwho\s+(?:sells?|sell)\b',
+            r'\bwho\s+(?:exports?|export)\b',
+            r'\bwho\s+(?:supplies?|supply)\b',
+            r'\bwho\s+(?:is\s+)?(?:the\s+)?(?:exporter|seller|supplier)s?\b',
             r'\bwho\s+(?:are\s+)?(?:the\s+)?(?:exporters?|sellers?|suppliers?)\b',
         ]
         for _buy_pat in _BUY_OVERRIDE_PATTERNS:
@@ -829,7 +645,6 @@ class ModernNLUEngine:
                 intent = 'BUY'
                 break
         else:
-            # SELL overrides — only reached when no BUY pattern matched
             _SELL_OVERRIDE_PATTERNS = [
                 r'\bwho\s+buys?\b',
                 r'\bwho\s+(?:is\s+)?buying\b',
@@ -846,13 +661,8 @@ class ModernNLUEngine:
                     intent = 'SELL'
                     break
 
-        # ==================================================================
-        # STEP 2 — GLiNER Entity Extraction
-        # Runs once on the raw query. Extracts country (used in Step 3)
-        # AND product spans (used in Step 4). Running on the raw query
-        # (before country stripping) gives GLiNER full sentence context,
-        # which improves span boundary detection.
-        # ==================================================================
+        # Run GLiNER on the raw query (pre-country-strip) so it has full sentence
+        # context for span detection. Country and product spans both extracted here.
         t0 = time.perf_counter()
         entities = self.extract_entities(query)
         gliner_country = (
@@ -861,44 +671,21 @@ class ModernNLUEngine:
         )
         t_gliner = time.perf_counter() - t0
 
-        # ==================================================================
-        # STEP 3 — Country Resolution
-        # Layer 1: GLiNER (primary)
-        # Layer 2: RapidFuzz preposition capture (fallback)
-        # Layer 3: Abbreviations (last resort)
-        # ==================================================================
+        # Country: GLiNER -> RapidFuzz preposition capture -> abbreviation scan.
         t0 = time.perf_counter()
         resolved_country = None
         if gliner_country:
             resolved_country = self._resolve_country(gliner_country)
-        
+
         if not resolved_country:
             resolved_country = self._detect_country_fallback(query)
         t_rapidfuzz = time.perf_counter() - t0
 
-        # ==================================================================
-        # STEP 3.5 — Country Role Post-Processing
-        #
-        # Problem: the country extracted from "from [country]" in a SELL query
-        # is the USER'S OWN origin, not a buyer/counterparty filter.
-        # Applying it as a counterparty filter produces zero results because
-        # the aggregator looks for buyers in that country, but the user's own
-        # origin has nothing to do with where their buyers are.
-        #
-        # Examples of the problem:
-        #   "who buys sugar from pakistan"      → Pakistan = Pakistan's own origin
-        #   "looking to export dextrose from china" → China = supplier origin,
-        #                                              not a buyer country
-        #
-        # Rule: if intent=SELL AND the resolved country appears after the
-        # preposition "from" in the raw query → reclassify it as origin_country
-        # (stored in the NLU result for informational use) and clear the DB filter.
-        #
-        # "in [country]" with SELL is intentionally kept as a filter, because
-        # "who buys dextrose in Pakistan" legitimately means filter by
-        # Pakistani buyers.
-        # ==================================================================
-        origin_country = None  # user's own country; never used as DB filter
+        # SELL + "from [country]" -> the country is the user's OWN origin, not
+        # a buyer filter. Applying it would force the aggregator to look for
+        # buyers in the user's home country and return zero results.
+        # "in [country]" with SELL is kept as a filter ("who buys X in Pakistan").
+        origin_country = None
         if intent == 'SELL' and resolved_country:
             _from_role_pat = re.compile(
                 r'\bfrom\s+' + re.escape(resolved_country.lower()) + r'\b',
@@ -912,32 +699,17 @@ class ModernNLUEngine:
                     f"origin_country (SELL+from), cleared from DB filter."
                 )
 
-        # ==================================================================
-        # STEP 4 — Product Keyword Extraction (GLiNER primary)
-        #
-        # GLiNER already ran on the raw query in Step 2 — we reuse those
-        # entities here. No second model call needed.
-        #
-        # Why GLiNER instead of KeyBERT:
-        #   KeyBERT uses CountVectorizer n-gram scoring. It sees "wanna sugar"
-        #   as a high-scoring bigram because "wanna" is not a standard English
-        #   stop-word and CountVectorizer generates bigrams before filtering.
-        #   GLiNER does zero-shot span extraction using the full sentence
-        #   context, so it correctly isolates "sugar" from
-        #   "i wanna buy sugar from brazil".
-        #
-        # Priority: GLiNER span → extract_product_keyword() regex fallback
-        # KeyBERT (_keyword_model) is intentionally not used for product
-        # extraction but remains loaded for potential future use.
-        # ==================================================================
+        # Product keyword: reuse GLiNER entities from Step 2 (no second model call).
+        # GLiNER beats KeyBERT here — KeyBERT scored "wanna sugar" as a high bigram
+        # because "wanna" isn't a CountVectorizer stop-word.
         cleaned_query = query
         if resolved_country:
             cleaned_query = re.sub(
                 r'\b' + re.escape(resolved_country) + r'\b', ' ',
                 cleaned_query, flags=re.IGNORECASE,
             )
-        # Also strip the raw misspelled token that resolved to the country
-        # e.g. 'brzail' → Brazil: the re.sub above won't catch 'brzail'
+        # Strip the raw misspelled country token too: re.sub above only matches
+        # the canonical name, not the typo (e.g. 'brzail' -> Brazil).
         _prep_country_match = re.search(
             r'\b(?:from|frm|fron|form|in|based\s+in|located\s+in|within)\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
             cleaned_query.lower()
@@ -956,7 +728,6 @@ class ModernNLUEngine:
 
         t0 = time.perf_counter()
 
-        # --- GLiNER product extraction (entities already computed in Step 2) ---
         gliner_product = (
             _extract_entity(entities, "product")
             or _extract_entity(entities, "commodity")
@@ -965,19 +736,17 @@ class ModernNLUEngine:
         )
         if gliner_product:
             raw_product = gliner_product.strip().lower()
-            # Safety net: Reject GLiNER extraction if it's literally an action verb,
-            # or if it starts with one (e.g. "export dextrose"), because the 
-            # fallback extract_product_keyword() handles stripping these perfectly.
+            # Reject GLiNER spans that are an action verb — extract_product_keyword
+            # strips these correctly.
             _action_verbs = ("import", "export", "buy", "sell", "buying", "selling", "importing", "exporting")
-            
+
             if raw_product in _action_verbs or raw_product.startswith(tuple(f"{v} " for v in _action_verbs)):
                 logger.debug(f"[NLU] Rejected GLiNER product span {raw_product!r} (contains action verb)")
                 product_keyword = None
             else:
-                # Cross-check: only reject GLiNER's product span if it is *very*
-                # close to a country name, AND the span itself is long enough that
-                # a high fuzz score is meaningful (short tokens like 'urea' fuzzy-
-                # match 'Korea' at ~67 — cutoff was 60, falsely deleting urea).
+                # Only reject as a country if the span is long enough that a high
+                # fuzz score is meaningful — short tokens like 'urea' fuzzy-match
+                # 'Korea' at ~67 with the old cutoff and got falsely deleted.
                 _country_check = (
                     self._resolve_country(raw_product, cutoff=85.0)
                     if len(raw_product.replace(" ", "")) >= 6
@@ -991,20 +760,10 @@ class ModernNLUEngine:
                     product_method  = "gliner"
                     logger.debug(f"[NLU] GLiNER product span: {product_keyword!r}")
 
-        # Pure-Python post-processing on already-extracted GLiNER entities
-        # (action-verb guard, country cross-check, label fallback chain).
-        # No model inference happens here — the GLiNER forward pass already
-        # ran in Step 2 (timed as t_gliner). Typically <1 ms.
+        # Pure-Python post-processing on entities, no model inference.
         t_pick_product = time.perf_counter() - t0
 
-        # ==================================================================
-        # STEP 5 — Unified LLM Call (price + quantity + product fallback)
-        # One API call extracts everything at once.
-        #
-        # SKIP LOGIC: We first try to extract prices using our robust regex.
-        # If the regex successfully finds a numeric range (or if there's no
-        # price complexity at all), we completely skip the 4s OpenRouter call.
-        # ==================================================================
+        # Skip the 4s OpenRouter call if regex already extracted a numeric range.
         t0 = time.perf_counter()
 
         has_numbers        = bool(re.search(r'\d', query))
@@ -1016,50 +775,37 @@ class ModernNLUEngine:
         )
         
         needs_llm = (has_numbers and has_price_operator) or (has_numbers and ranking_word_hit)
-        
-        # 1. Try our fast regex first
+
         regex_price = _build_price_filter_regex(query)
         if regex_price and "range" in regex_price:
-            # The regex perfectly extracted the numeric price! No LLM needed.
             needs_llm = False
 
         price_filter = None
-        
+
+        t_llm = 0.0
         if not needs_llm:
             import copy
             llm_result  = copy.deepcopy(_LLM_UNIFIED_EMPTY)
-            price_filter = regex_price # Use the fully built regex price filter
+            price_filter = regex_price
         else:
+            _t0_llm = time.perf_counter()
             llm_result = _call_llm_unified(query)
+            t_llm = time.perf_counter() - _t0_llm
             price_filter = _price_filter_from_llm(llm_result)
 
         quantity     = llm_result.get("quantity")
         llm_product  = llm_result.get("product")
 
-        # If KeyBERT returned nothing, use the LLM product
         if not product_keyword and llm_product:
             product_keyword = llm_product
             product_method  = "llm"
 
-        # Final fallback — stop-word strip
         if not product_keyword:
             product_keyword = extract_product_keyword(cleaned_query)
             product_method  = "stopword"
 
-        # ------------------------------------------------------------------
-        # POST-EXTRACTION PREPOSITION RESIDUAL CLEANUP
-        #
-        # After the country token is stripped from cleaned_query, preposition
-        # words like "from", "in", "frm" can survive if they happened to sit
-        # between the product word and the country:
-        #   "suggar from brazil" → Brazil stripped → "suggar from "
-        #   → extract_product_keyword strips "from" (now in stop phrases)
-        #   → "suggar"  ✓
-        #
-        # This second pass is a safety net for cases where the keyword was
-        # already set by GLiNER or LLM and still contains a residual preposition
-        # (e.g. GLiNER extracted "suggar from" as the product span).
-        # ------------------------------------------------------------------
+        # Residual preposition cleanup: GLiNER/LLM sometimes return "suggar from"
+        # as the product span. Strip the stray preposition.
         if product_keyword:
             _PREP_RESIDUAL_RE = re.compile(
                 r'\b(from|frm|fron|form|in|at|within|based|located|can|get|find|show|suppliers?|of)\b',
@@ -1074,12 +820,8 @@ class ModernNLUEngine:
                 )
                 product_keyword = _cleaned_kw
 
-        # ------------------------------------------------------------------
-        # STEP 5.5 — Noise token stripping (garbled trade verbs/adjectives)
-        # Runs after all extraction so we don't interfere with GLiNER/LLM.
-        # Only strips multi-word keywords; single-word typos (e.g. 'sugr') are
-        # left for the product resolver's PASS 4/5 to handle.
-        # ------------------------------------------------------------------
+        # Strip garbled trade verbs from multi-word keywords. Single-word typos
+        # are left for the product resolver's PASS 4/5.
         if product_keyword:
             _stripped = strip_noise_tokens(product_keyword)
             if _stripped != product_keyword:
@@ -1088,12 +830,9 @@ class ModernNLUEngine:
                 )
                 product_keyword = _stripped
 
-        # Strip any residual country-like tokens from multi-word product keywords.
-        # Cutoff raised from 65 → 88 to fix the urea→Korea / iron→Iran false-
-        # positive class. Short, well-known country names ('china', 'uae',
-        # 'japan') still resolve via the direct catalog lookup inside
-        # _resolve_country (which ignores cutoff), so the higher cutoff only
-        # blocks weak fuzzy matches against unrelated short product words.
+        # Cutoff 88 (raised from 65) blocks urea->Korea / iron->Iran false positives.
+        # Well-known country names still resolve via direct catalog lookup, which
+        # ignores the cutoff.
         if product_keyword and len(product_keyword.split()) > 1:
             _kw_words = product_keyword.split()
             _kw_cleaned = [
@@ -1104,7 +843,6 @@ class ModernNLUEngine:
                 product_keyword = ' '.join(_kw_cleaned).strip()
                 logger.debug(f"[NLU] Country token removed from product: {_kw_words} → {product_keyword!r}")
 
-        # Spell correct each word in multi-word product keywords
         if product_keyword and len(product_keyword.split()) > 1:
             try:
                 from rapidfuzz import process, fuzz
@@ -1118,13 +856,8 @@ class ModernNLUEngine:
             except Exception:
                 pass
 
-        # ------------------------------------------------------------------
-        # STEP 5.6 — RapidFuzz spell correction against product catalog
-        # Only runs on single-word keywords (multi-word already cleaned above).
-        # Corrects typos like 'sugr' → 'Sugar', 'dextrse' → 'Dextrose'.
-        # Uses an instance-level cache so the DB query happens only once
-        # per Django worker process lifetime.
-        # ------------------------------------------------------------------
+        # Single-word spell-correct via RapidFuzz against the product catalog,
+        # cached on the instance so the DB query runs only once per worker.
         if product_keyword and len(product_keyword.split()) == 1:
             try:
                 from rapidfuzz import process, fuzz
@@ -1152,22 +885,12 @@ class ModernNLUEngine:
             except Exception as _sc_err:
                 logger.warning(f"[NLU] SpellCorrect failed: {_sc_err}")
 
-        # ==================================================================
-        # Build OS/ORM filters
-        # ==================================================================
         os_filter = _build_perspective_filter(intent, ui_context, resolved_country)
         if price_filter:
             os_filter.setdefault("bool", {}).setdefault("must", []).append(price_filter)
 
-        # ==================================================================
-        # STEP 6 — Ranking Hint Detection
-        # Runs on the raw query (before any stripping) to catch all signals.
-        # The hint from price_filter (LLM/regex) is kept as a secondary source;
-        # the direct scan here is the primary source for non-price signals.
-        # ==================================================================
+        # Ranking hint runs on the raw query to catch all signals.
         ranking_hint = _detect_ranking_hint(query)
-        # Merge: if price_filter already carries a hint (e.g. from LLM), prefer
-        # the explicit price_filter hint for price signals only, otherwise use ours.
         price_filter_hint = (price_filter or {}).get("ranking_hint")
         if price_filter_hint and not ranking_hint:
             ranking_hint = price_filter_hint
@@ -1176,39 +899,30 @@ class ModernNLUEngine:
             "intent":          intent,
             "product":         product_keyword,
             "product_keyword": product_keyword,
-            "country":         resolved_country,   # counterparty country for DB filter
-            "origin_country":  origin_country,      # user's own origin (SELL queries); no DB filter
+            "country":         resolved_country,
+            "origin_country":  origin_country,  # SELL-from queries; not a DB filter
             "quantity":        quantity,
             "price_filter":    price_filter,
-            "ranking_hint":    ranking_hint,        # top-level signal for _orm_search
+            "ranking_hint":    ranking_hint,
             "os_filter":       os_filter,
             "entities":        entities,
             "ui_context":      ui_context,
             "timings": {
                 "setfit": t_setfit,
-                "gliner": t_gliner,                 # GLiNER forward pass (the only model call)
+                "gliner": t_gliner,
                 "rapidfuzz": t_rapidfuzz,
-                "pick_product": t_pick_product,     # post-processing on entities[]; no model run
+                "pick_product": t_pick_product,
                 "total": time.perf_counter() - t_nlu_total,
             }
         }
 
         return result
 
-    # Alias used by some views
     def get_search_filters(self, query: str, ui_context: str = "import") -> dict:
         return self.parse(query, ui_context=ui_context)
 
-    # ------------------------------------------------------------------
-    # Country Resolver (RapidFuzz)
-    # ------------------------------------------------------------------
-    
     def _resolve_country(self, raw_country: str, cutoff: float = 75.0) -> Optional[str]:
-        """
-        Uses RapidFuzz to map an extracted messy location ("chinaaa", "pak")
-        to standard list.
-        """
-        # STOPWORDS block to catch meta-words BEFORE they reach RapidFuzz
+        # Block meta-words before they reach RapidFuzz.
         STOPWORDS = {
             "countries", "country", "international", "global", "worldwide", "abroad",
             "all", "any", "some", "which", "what", "where", "who", "how", "the", "for",
@@ -1219,7 +933,7 @@ class ModernNLUEngine:
         if raw_country.lower().strip() in STOPWORDS:
             return None
 
-        # Direct catalog lookup first (exact key hit — handles abbreviations like 'pak', 'uae')
+        # Direct lookup handles abbreviations like 'pak', 'uae'.
         _direct = _COUNTRY_CATALOG.get(raw_country.lower().strip())
         if _direct:
             return _direct
@@ -1242,21 +956,10 @@ class ModernNLUEngine:
         return None
 
     def _detect_country_fallback(self, query: str) -> Optional[str]:
-        """
-        Regex fallback to detect common countries if GLiNER misses them
-        or if we want to bypass fuzzy matching for strict abbreviations (ira -> Iran).
-        """
         q = query.lower()
 
-        # ------------------------------------------------------------------
-        # PREPOSITION-ANCHORED PASS
-        # Match "from X", "in X", "based in X", "located in X", "within X"
-        # and validate the captured text through _resolve_country (RapidFuzz).
-        # Multi-word prepositions must come before single-word ones so that
-        # "based in brazil" matches the longer pattern first.
-        # False-positive guard: _resolve_country uses score_cutoff=60, so
-        # non-country words like "food", "industry", "market" won't match.
-        # ------------------------------------------------------------------
+        # Multi-word prepositions must come first so "based in brazil" matches
+        # before the single-word "in brazil" pattern.
         _PREP_PATTERNS = [
             r'\b(?:based\s+in|located\s+in)\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
             r'\bwithin\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
@@ -1270,11 +973,8 @@ class ModernNLUEngine:
             "vietnam", "thailand", "egypt", "south africa", "nigeria", "kenya",
         }
         _FORBIDDEN_PREFIXES = (
-            # Question words
             "where", "who", "what", "which", "how",
-            # Uncertainty
             "anywhere", "somewhere", "wherever", "any country", "anyplace", "any",
-            # Hedge words
             "maybe", "perhaps", "possibly", "idk", "not sure"
         )
 
@@ -1288,26 +988,18 @@ class ModernNLUEngine:
                 if candidate.startswith(_FORBIDDEN_PREFIXES):
                     continue
 
-                # Direct catalog hit (handles 'pak', 'usa', exact country names)
                 _direct = _COUNTRY_CATALOG.get(candidate.lower())
                 if _direct:
                     return _direct
 
-                # RapidFuzz fuzzy match at 65 threshold for preposition-anchored candidates
                 resolved = self._resolve_country(candidate, cutoff=65.0)
                 if resolved:
                     return resolved
                 return None
 
-        # ------------------------------------------------------------------
-        # LAYER 3 — Free token scan using catalog (replaces hardcoded ABBREVIATIONS)
-        # Checks every word in the query for a direct catalog hit first,
-        # then RapidFuzz at 85 threshold for typo tolerance.
-        # Skipped entirely when the query contains a preposition — the
-        # anchored pass above already had the best opportunity to resolve
-        # the country, and falling through here causes false positives
-        # (e.g. 'brzail' → 'Anguilla' via a spurious short-key match).
-        # ------------------------------------------------------------------
+        # Free token scan is skipped when a preposition exists — the anchored pass
+        # had its chance and falling through caused false positives like
+        # 'brzail' -> 'Anguilla' via a spurious short-key match.
         if has_preposition:
             return None
         words = re.findall(r'\b\w+\b', q)
@@ -1321,16 +1013,8 @@ class ModernNLUEngine:
         return None
 
 
-
-# ===========================================================================
-# Diagnostic Verification
-# ===========================================================================
-
 def verify_nlu_performance():
-    """
-    Tests canonical trade scenarios.
-    Run directly: python -m search.services.nlu_engine
-    """
+    """Run directly: python -m search.services.nlu_engine"""
     test_queries = [
         ("i want to buy dextrose anhydrous", "import"),
         ("find buyers for basmati rice",     "import"),

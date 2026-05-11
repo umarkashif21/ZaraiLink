@@ -9,7 +9,6 @@ import 'shepherd.js/dist/css/shepherd.css';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
-// ── Animated counter ──────────────────────────────────────────────────────────
 const AnimatedCounter = ({ end, suffix = '', duration = 2 }) => {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
@@ -21,7 +20,7 @@ const AnimatedCounter = ({ end, suffix = '', duration = 2 }) => {
     const step = (timestamp) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.floor(eased * end));
       if (progress < 1) requestAnimationFrame(step);
     };
@@ -31,7 +30,6 @@ const AnimatedCounter = ({ end, suffix = '', duration = 2 }) => {
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 };
 
-// ── Floating orb background ────────────────────────────────────────────────────
 const FloatingOrb = ({ className }) => (
   <motion.div
     className={`absolute rounded-full blur-3xl opacity-20 pointer-events-none ${className}`}
@@ -47,12 +45,9 @@ const Dashboard = () => {
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState(null);
 
-  // Shepherd.js Tour Logic
   useEffect(() => {
-    // Check if tour has already been shown
     if (localStorage.getItem('zarailink_tour_done')) return;
 
-    // Delay to ensure the DOM elements are fully mounted
     const tourTimer = setTimeout(() => {
       const tour = new Shepherd.Tour({
         useModalOverlay: true,
@@ -153,11 +148,10 @@ const Dashboard = () => {
       if (tour.steps.length > 0) {
         tour.start();
       }
-    }, 1000); // 1s delay to let animations settle
+    }, 1000);
 
     return () => {
       clearTimeout(tourTimer);
-      // Ensure we don't leave lingering Shepherd modals
       if (Shepherd.activeTour) {
         Shepherd.activeTour.cancel();
       }
@@ -235,8 +229,6 @@ const Dashboard = () => {
       setSelectedHsCode(suggestion.hs_code);
       setSelectedProductName(suggestion.name);
       setShowSuggestions(false);
-      // Always route to DataDashboard — the 4-pill UI handles import/export direction.
-      // mode=dashboard is the key that tells the router to render DataDashboard, not SearchResults.
       const params = new URLSearchParams({
         q:            suggestion.name,
         hs_code:      suggestion.hs_code,
@@ -250,8 +242,6 @@ const Dashboard = () => {
     setSelectedHsCode(suggestion.hs_code);
     setSelectedProductName(suggestion.name);
     setShowSuggestions(false);
-    // Always route to DataDashboard — the 4-pill UI handles import/export direction.
-    // mode=dashboard is the key that tells the router to render DataDashboard, not SearchResults.
     const params = new URLSearchParams({
       q:            suggestion.name,
       hs_code:      suggestion.hs_code,
@@ -290,7 +280,6 @@ const Dashboard = () => {
     setSelectedProductName(null);
   };
 
-  // ── Animation variants ────────────────────────────────────────────────────
   const fadeUp = {
     hidden: { opacity: 0, y: 24 },
     visible: { opacity: 1, y: 0 },
@@ -338,9 +327,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-slate-50 font-sans overflow-x-hidden">
       <Navbar />
 
-      {/* ── HERO ────────────────────────────────────────────────────────── */}
       <div className="relative bg-white border-b border-slate-100">
-        {/* Background orbs — clipped independently so they don't bleed out */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <FloatingOrb className="w-96 h-96 bg-emerald-400 -top-20 -left-32" />
           <FloatingOrb className="w-80 h-80 bg-teal-300 top-10 right-0" />
@@ -349,7 +336,6 @@ const Dashboard = () => {
 
         <main className="max-w-4xl mx-auto px-6 py-20 md:py-28 relative z-10">
 
-          {/* ── How to Search Card ─────────────────────────────────────── */}
               <motion.div
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -383,7 +369,6 @@ const Dashboard = () => {
                 </div>
               </motion.div>
 
-          {/* ── Headline ──────────────────────────────────────────────── */}
           <motion.div
             initial="hidden"
             animate="visible"
@@ -412,7 +397,6 @@ const Dashboard = () => {
             </motion.p>
           </motion.div>
 
-          {/* ── Search Bar ────────────────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, y: 32, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -453,7 +437,6 @@ const Dashboard = () => {
                 </button>
               </div>
 
-              {/* Search Mode Badge */}
               <AnimatePresence>
                 {searchMode && (
                   <motion.div
@@ -481,7 +464,6 @@ const Dashboard = () => {
                 )}
               </AnimatePresence>
 
-              {/* Product pin banner */}
               <AnimatePresence>
                 {selectedProductName && (
                   <motion.div
@@ -499,7 +481,6 @@ const Dashboard = () => {
                 )}
               </AnimatePresence>
 
-              {/* Autocomplete Dropdown */}
               <AnimatePresence>
                 {showSuggestions && (
                   <motion.div
@@ -541,7 +522,6 @@ const Dashboard = () => {
             </form>
           </motion.div>
 
-          {/* ── Scope Toggle ───────────────────────────────────────────── */}
           <motion.div
             id="tour-scope-toggle"
             initial={{ opacity: 0 }}
@@ -567,7 +547,6 @@ const Dashboard = () => {
             ))}
           </motion.div>
 
-          {/* ── Intent Pills ───────────────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -585,7 +564,6 @@ const Dashboard = () => {
             ))}
           </motion.div>
 
-          {/* ── Example Queries ────────────────────────────────────────── */}
           <motion.div
             id="tour-example-queries"
             initial={{ opacity: 0 }}
@@ -613,7 +591,6 @@ const Dashboard = () => {
         </main>
       </div>
 
-      {/* ── STATS BAR ─────────────────────────────────────────────────────────── */}
       <div className="bg-slate-900 py-10">
         <div className="max-w-4xl mx-auto px-6">
           <div className="grid grid-cols-3 gap-8 text-center">
@@ -630,7 +607,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── FEATURES ──────────────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-6 py-24">
         <motion.div
           initial="hidden"
@@ -671,7 +647,6 @@ const Dashboard = () => {
         </motion.div>
       </div>
 
-      {/* ── CTA ───────────────────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-6 pb-24">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -680,7 +655,6 @@ const Dashboard = () => {
           transition={{ duration: 0.6 }}
           className="relative bg-slate-900 rounded-[2.5rem] p-12 text-center overflow-hidden shadow-2xl"
         >
-          {/* Animated gradient background */}
           <motion.div
             className="absolute inset-0 opacity-30"
             style={{ background: 'radial-gradient(ellipse at 20% 50%, #10b981 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, #3b82f6 0%, transparent 60%)' }}
@@ -688,7 +662,6 @@ const Dashboard = () => {
             transition={{ duration: 4, repeat: Infinity }}
           />
 
-          {/* Grid overlay */}
           <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
           <div className="relative z-10">

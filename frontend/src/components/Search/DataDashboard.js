@@ -16,19 +16,17 @@ const PILLS = [
 const DataDashboard = () => {
     const location  = useLocation();
     const navigate  = useNavigate();
-    const { isAuthenticated, refreshUser } = useAuth(); // USING NEW AUTH CONTEXT
+    const { isAuthenticated, refreshUser } = useAuth();
 
-    // ── All URL-derived values are computed fresh on every render ──────────
     const qp = useMemo(() => new URLSearchParams(location.search), [location.search]);
 
     const rawQuery      = qp.get('q') || '';
     const hsCodeParam   = qp.get('hs_code') || '';
     const displayTarget = hsCodeParam || rawQuery;
 
-    // Active pill — null when nothing selected yet (don't default to IMPORT blindly)
+    // Don't default to IMPORT blindly — the product may be EXPORT-only.
     const activePill = qp.get('dashboard_intent') || null;
 
-    // Selected refinements — derived from URL
     const selectedRefinements = useMemo(() => {
         const refines = qp.get('refines');
         if (refines) return refines.split(',').filter(Boolean);
@@ -37,38 +35,33 @@ const DataDashboard = () => {
         return [];
     }, [qp]);
 
-    // Parallel array of DB subcat_ids for the selected refinements
     const selectedSubcatIds = useMemo(() => {
         const ids = qp.get('refine_ids');
         if (ids) return ids.split(',').filter(Boolean).map(Number);
         return [];
     }, [qp]);
 
-    // ── Local UI state ───────────────────────────────────
     const [hsDescription, setHsDescription]   = useState('');
     const [totalShipments, setTotalShipments] = useState(0);
-    const [sidebarCounts, setSidebarCounts]           = useState([]); // combined
-    const [sidebarImportCounts, setSidebarImportCounts] = useState([]); // IMPORT-only
-    const [sidebarExportCounts, setSidebarExportCounts] = useState([]); // EXPORT-only
-    const [sidebarSearch, setSidebarSearch]   = useState('');    // sidebar filter input
-    const [tradeDirection, setTradeDirection] = useState(null);  // 'IMPORT' | 'EXPORT'
+    const [sidebarCounts, setSidebarCounts]           = useState([]);
+    const [sidebarImportCounts, setSidebarImportCounts] = useState([]);
+    const [sidebarExportCounts, setSidebarExportCounts] = useState([]);
+    const [sidebarSearch, setSidebarSearch]   = useState('');
+    const [tradeDirection, setTradeDirection] = useState(null);
     const [profiles, setProfiles]             = useState([]);
     const [loading, setLoading]               = useState(true);
     const [error, setError]                   = useState(null);
     const [selectedEntities, setSelectedEntities] = useState([]);
     const [totalProfilesCount, setTotalProfilesCount] = useState(0);
     const [refreshKey, setRefreshKey]         = useState(0);
-    
-    // Paywall State
+
     const [accessState, setAccessState]       = useState('NO_ACCESS');
     const [purchaseLoading, setPurchaseLoading] = useState(false);
 
-    // Calculated pricing based on exact requirements
-    const currentTokenCost = selectedRefinements.length > 0 
-        ? selectedRefinements.length * 500 
+    const currentTokenCost = selectedRefinements.length > 0
+        ? selectedRefinements.length * 500
         : 5000;
 
-    // ── URL mutators (user-driven only, no effects) ────────────────────────
     const switchPill = (pillId) => {
         const p = new URLSearchParams(location.search);
         p.set('dashboard_intent', pillId);
@@ -80,7 +73,6 @@ const DataDashboard = () => {
     };
 
     const toggleRefinement = (sc) => {
-        // sc is {name, subcat_id} from the sidebar
         const name = typeof sc === 'string' ? sc : sc.name;
         const scId = typeof sc === 'string' ? null : sc.subcat_id;
         const p = new URLSearchParams(location.search);
@@ -91,7 +83,7 @@ const DataDashboard = () => {
         const nextIds   = isSelected ? currentIds.filter(id => id !== scId) : (scId != null ? [...currentIds, scId] : currentIds);
         nextNames.length ? p.set('refines', nextNames.join(',')) : p.delete('refines');
         nextIds.length   ? p.set('refine_ids', nextIds.join(',')) : p.delete('refine_ids');
-        p.delete('variant_name'); // Migrate variant_name → refines on first toggle
+        p.delete('variant_name');
         navigate(`/search/results?${p.toString()}`, { replace: true });
     };
 
@@ -103,12 +95,10 @@ const DataDashboard = () => {
         navigate(`/search/results?${p.toString()}`, { replace: true });
     };
 
-    // ── Fetch data whenever URL-derived values change ─────────────────────
     useEffect(() => {
         if (!displayTarget) return;
 
-        // If no pill has been selected yet, don't fetch — show "select a tab" prompt.
-        // This prevents blindly querying IMPORT data when the product may be EXPORT-only.
+        // Don't fetch until user picks a pill — the product may be EXPORT-only.
         if (!activePill) {
             setLoading(false);
             return;
@@ -168,7 +158,6 @@ const DataDashboard = () => {
         return () => controller.abort();
     }, [displayTarget, activePill, selectedRefinements.join(','), refreshKey]);
 
-    // ── Paywall Logic ───────────────────────────────────────────────────────
     const handlePurchase = async () => {
         if (!isAuthenticated) {
             navigate('/login');
@@ -182,7 +171,7 @@ const DataDashboard = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include', // EXTREMELY IMPORTANT: Replaces old Authorization header chunk
+                credentials: 'include',
                 body: JSON.stringify({
                     access_type: selectedRefinements.length > 0 ? 'PRODUCT' : 'HS_CODE',
                     hscode: displayTarget,
@@ -194,13 +183,11 @@ const DataDashboard = () => {
             if (!res.ok) {
                 alert(`Purchase failed: ${data.error || data.message || 'Unknown error'}`);
                 if (res.status === 402) {
-                    // Not enough tokens
-                    navigate('/subscription'); 
+                    navigate('/subscription');
                 }
             } else {
-                // Refresh data seamlessly without reloading the entire page
-                await refreshUser(); // updates token count in navbar via AuthContext
-                setRefreshKey(prev => prev + 1); // trigger useEffect to grab un-redacted profile data
+                await refreshUser();
+                setRefreshKey(prev => prev + 1);
             }
         } catch (err) {
             alert('Network error during purchase.');
@@ -209,19 +196,16 @@ const DataDashboard = () => {
         }
     };
 
-    // ── Derived metadata ──────────────────────────────────────────────────
     const pill        = PILLS.find(p => p.id === activePill) || null;
     const entityLabel = activePill?.includes('SUPPLIER') ? 'Suppliers' : 'Buyers';
 
-    // Pick the correct sidebar counts based on the active pill's trade direction.
-    // No pill selected → show combined totals so user can see all product volumes.
+    // No pill selected → combined totals so user can see all product volumes.
     const isImportPill = activePill === 'FOREIGN_SUPPLIERS' || activePill === 'PAKISTANI_BUYERS';
     const isExportPill = activePill === 'FOREIGN_BUYERS'    || activePill === 'PAKISTANI_SUPPLIERS';
     const activeSidebarCounts = isImportPill ? sidebarImportCounts
                               : isExportPill ? sidebarExportCounts
                               : sidebarCounts;
 
-    // Build deal detail URL
     const dealUrl = (name) => {
         const params = new URLSearchParams({
             q:      rawQuery,
@@ -238,7 +222,6 @@ const DataDashboard = () => {
         return `/search/supplier/${encodeURIComponent(name)}?${params.toString()}`;
     };
 
-    // Build compare URL
     const compareUrl = () => {
         const params = new URLSearchParams({
             suppliers: selectedEntities.join(','),
@@ -267,7 +250,6 @@ const DataDashboard = () => {
         <div className="dashboard-wrapper bg-slate-50 min-h-screen font-sans">
             <Navbar />
 
-            {/* Header */}
             <div className="bg-slate-900 border-b border-slate-800 sticky top-0 md:top-[64px] z-10 shadow-2xl">
                 <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -304,7 +286,6 @@ const DataDashboard = () => {
 
             <div className="max-w-7xl mx-auto px-4 py-6 flex gap-6">
 
-                {/* Left Sidebar — Refine by Product */}
                 <div className="w-64 flex-shrink-0">
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sticky top-24">
                         <h3 className="font-bold text-slate-900 flex items-center gap-2 mb-4 pb-2 border-b border-slate-100 text-sm uppercase tracking-wide">
@@ -316,7 +297,6 @@ const DataDashboard = () => {
                             <p className="text-xs text-slate-400">No subcategories found.</p>
                         )}
 
-                        {/* Sidebar search input — shown when > 6 products */}
                         {activeSidebarCounts.length > 6 && (
                             <input
                                 type="text"
@@ -368,10 +348,8 @@ const DataDashboard = () => {
                     </div>
                 </div>
 
-                {/* Main Content */}
                 <div className="flex-1 min-w-0">
 
-                    {/* 4-Pill Switcher */}
                     <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-100 p-2 mb-6 grid grid-cols-2 md:grid-cols-4 gap-2">
                         {PILLS.map(p => (
                             <button
@@ -389,7 +367,6 @@ const DataDashboard = () => {
                         ))}
                     </div>
 
-                    {/* Results header */}
                     {!loading && !error && activePill && (
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-xl font-bold text-slate-800">
@@ -403,7 +380,6 @@ const DataDashboard = () => {
                         </div>
                     )}
 
-                    {/* Loading */}
                     {loading && (
                         <div className="flex justify-center items-center py-20 bg-white rounded-xl shadow-sm border border-slate-200">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mr-3"></div>
@@ -411,14 +387,12 @@ const DataDashboard = () => {
                         </div>
                     )}
 
-                    {/* Error */}
                     {error && (
                         <div className="bg-red-50 text-red-600 p-4 rounded-xl font-medium border border-red-200 flex items-center gap-2 text-sm">
                             <AlertCircle size={18} /> {error}
                         </div>
                     )}
 
-                    {/* No pill selected yet — prompt the user */}
                     {!activePill && !loading && (
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 py-16 text-center">
                             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👆</div>
@@ -431,7 +405,6 @@ const DataDashboard = () => {
                         </div>
                     )}
 
-                    {/* Empty — direction-aware message when a filter is active */}
                     {activePill && !loading && !error && profiles.length === 0 && (
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 py-16 text-center px-6">
                             <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📭</div>
@@ -456,7 +429,6 @@ const DataDashboard = () => {
                         </div>
                     )}
 
-                    {/* Profile Cards */}
                     {!loading && !error && profiles.map((entity, idx) => {
                         const isLocked = accessState === 'NO_ACCESS';
                         
@@ -475,7 +447,6 @@ const DataDashboard = () => {
                                     </div>
                                     <div className="text-sm text-slate-500 mb-4 font-medium">{entity.country}</div>
 
-                                    {/* Metrics Array */}
                                     <div className="flex gap-8 text-sm text-slate-700">
                                         <div>
                                             <span className="block text-slate-400 text-xs uppercase font-bold tracking-wider">Avg Price</span>
@@ -534,7 +505,6 @@ const DataDashboard = () => {
                         </div>
                     )})}
 
-                    {/* Inline Teaser CTA (Replaces old dummy wall blocks) */}
                     {!loading && !error && accessState === 'NO_ACCESS' && profiles.length > 0 && (
                         <div className="mt-8 bg-gradient-to-br from-emerald-50 via-white to-teal-50/30 p-8 pt-10 rounded-2xl border border-emerald-200 shadow-xl overflow-hidden relative group">
                             <div className="absolute -top-12 -right-12 opacity-5 pointer-events-none transform group-hover:scale-110 transition-transform duration-700">
@@ -593,7 +563,6 @@ const DataDashboard = () => {
                 </div>
             </div>
 
-            {/* Sticky Compare Bar */}
             {selectedEntities.length > 0 && (
                 <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 z-50">
                     <div className="max-w-7xl mx-auto flex items-center justify-between">

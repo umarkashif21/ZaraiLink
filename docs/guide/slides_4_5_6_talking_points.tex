@@ -23,7 +23,7 @@
   colorlinks=true,
   linkcolor=navy,
   urlcolor=navy,
-  pdftitle={ZaraiLink Presentation -- Slides 4, 5, 6 Speaker Script},
+  pdftitle={ZaraiLink Presentation -- Slides 4, 5, 6, 7 Speaker Script},
   pdfauthor={Group 5}
 }
 
@@ -36,7 +36,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\color{navy}ZaraiLink --- Speaker Script}
-\fancyhead[R]{\small\color{navy}Slides 4, 5, 6}
+\fancyhead[R]{\small\color{navy}Slides 4, 5, 6, 7}
 \fancyfoot[C]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\headrule}{\hbox to\headwidth{\color{rulegrey}\leaders\hrule height \headrulewidth\hfill}}
@@ -62,7 +62,7 @@
 \newcommand{\beat}[1]{\textcolor{accent}{\textbf{[#1]}}}
 \newcommand{\stage}[1]{{\itshape\color{stageborder}#1}}
 
-\title{\color{navy}\bfseries ZaraiLink --- Speaker Script \\[0.3em] \large What to actually say for slides 4, 5, 6}
+\title{\color{navy}\bfseries ZaraiLink --- Speaker Script \\[0.3em] \large What to actually say for slides 4, 5, 6, 7}
 \author{Group 5 \quad\textbar\quad Umar, Fahad, Salman, Ibrahim}
 \date{Total speaking budget: 10 minutes}
 
@@ -94,38 +94,30 @@ Optional          & 1--3           & \S1.2 elevator pitch if you want a one-line
 \end{tabularx}
 \end{readbox}
 
-\subsection*{Script ($\approx$ 3 minutes)}
+\subsection*{Script ($\approx$ 2 minutes 15 seconds)}
 
 \beat{15s} \stage{point at the slide.}
-\textit{``Okay so this is the architecture. Three pieces I want to walk you through: the user side, the backend, and the intelligence layer that lives inside it.''}
+\textit{``Okay so this is the architecture. Three layers I want to walk you through: the frontend on the left, the backend in the middle, and the data store on the right --- plus a couple of third-party services.''}
 
 \vspace{0.4em}
 
-\beat{45s} \stage{walk left to right across the diagram.}
-\textit{``On the left, that's the user opening our web app in a browser. The browser talks to our backend over a REST API --- queries go in as JSON, results come back as JSON. The backend talks to a PostgreSQL database, and that's where everything lives: users, companies, transactions, the whole product catalog.''}
+\beat{30s} \stage{point at the frontend block, then trace the arrow to Django.}
+\textit{``On the left, the user opens our web app in a browser. That's a React single-page app --- charts come from Chart.js and Recharts, maps from React Simple Maps, and the smooth transitions are Framer Motion. The frontend talks to our backend over HTTPS, queries go in as JSON and results come back as JSON. The backend is Django REST Framework.''}
 
 \vspace{0.4em}
 
-\beat{60s} \stage{point at the intelligence layer --- this is the part the audience cares about.}
-\textit{``Now this middle box is the intelligence layer --- this is the part that makes the platform actually feel intelligent. When a search query comes in, it flows through four stages.''}
-
-\textit{``Stage one is NLU. We figure out what the user wants --- are they buying or selling, what product, which country, what price range. Two ML models do this: SetFit for intent, GLiNER for pulling product names and countries out of messy queries.''}
-
-\textit{``Stage two is candidate retrieval. We map the query to the right product sub-categories using keyword search, semantic embeddings, and fuzzy matching for typos.''}
-
-\textit{``Stage three is aggregation. One heavy Postgres query rolls up every transaction per supplier --- average price, total volume, shipment frequency, recency.''}
-
-\textit{``Stage four is ranking. We score every candidate with a seventy-thirty blend of hand-tuned heuristics and a LightGBM ranker.''}
+\beat{45s} \stage{walk through the two boxes inside the backend.}
+\textit{``Inside the backend, two pieces matter. The Security and Access box verifies every request --- it checks the user's token, looks up what they're entitled to see, and only then lets the request continue. The Intelligence Layer is where the actual product lives: a Search and Ranking module, a Supplier Aggregator that rolls up transactions per company, and an NLU Engine that figures out what the user meant. We'll unpack the NLU and ranking on the next slides.''}
 
 \vspace{0.4em}
 
-\beat{30s} \stage{the warmup --- this is a fun detail to drop.}
-\textit{``One thing worth knowing --- when the server boots, we run two throwaway searches in a background thread before any real user shows up. That preloads all the ML models into memory. Without it, the first search of the day would take five seconds while everything cold-starts. With it, the first query and the thousandth query both come back in milliseconds.''}
+\beat{20s} \stage{point at the Postgres column.}
+\textit{``The data store is PostgreSQL. Everything lives there --- accounts and token balances, subscriptions and access grants, the trade transactions and HS codes, and the company directory with contacts and products. One database, four schemas, one source of truth.''}
 
 \vspace{0.4em}
 
-\beat{30s} \stage{point at Redis and OpenRouter.}
-\textit{``Off to the side --- Redis is our cache. If it's running, we share parsed query results across requests so identical queries don't redo all the ML work. If Redis is down, we fall back to an in-memory cache automatically. And this OpenRouter box --- we only call out to a language model when our regex price extraction fails on something tricky like ``cheap basmati under forty cents''. About one query in twenty actually hits it. The rest stay completely local.''}
+\beat{25s} \stage{point at Redis and OpenRouter on the right.}
+\textit{``Two outside dependencies. Redis is an NLU cache --- when an identical query comes through, we skip re-running the ML models and serve the cached interpretation. If Redis is down, we fall back to an in-memory cache automatically, so it's an accelerator, not a hard requirement. And OpenRouter is the language-model fallback --- we only reach out to a hosted LLM when our regex price extraction fails on something tricky. About one query in twenty. The rest stay completely local.''}
 
 \hrule height 0.4pt
 \vspace{0.5em}
@@ -147,27 +139,22 @@ Should            & 67--68          & \S7.5 ingestion scripts --- how raw rows b
 \end{tabularx}
 \end{readbox}
 
-\subsection*{Script ($\approx$ 3 minutes)}
+\subsection*{Script ($\approx$ 2 minutes 30 seconds)}
 
-\beat{60s} \stage{point at the use-case diagram.}
-\textit{``Two kinds of users on the platform. Regular users --- so that's importers, exporters, analysts --- and admins.''}
+\beat{50s} \stage{point at the use-case diagram.}
+\textit{``Two kinds of users on the platform. Regular users --- importers, exporters, analysts --- and admins.''}
 
-\textit{``Regular users can do five things. They can search, and we offer four ways to search: by HS code, by category, by product name, or by typing a question in plain English. They can view a market-intelligence dashboard with charts. They can browse the company directory. They can unlock premium contact information using tokens --- discovery is free, but pulling up a phone number or email spends tokens from their balance. And they can sign in and manage their account.''}
+\textit{``Regular users can do four things. They can search the trade data, and they have multiple entry points: by HS code, by product name, or by typing a question in plain English. They can view a market-intelligence dashboard with charts. They can browse the company directory. And they can unlock premium contact information using tokens --- discovery is free, but pulling up a phone number or email spends tokens from their balance.''}
 
-\textit{``Admins do two things --- they manage user accounts, and they ingest and curate the trade data itself.''}
+\textit{``Admins do two things --- they manage user accounts, and they manage the trade data itself: ingestion, curation, HS code mapping.''}
 
 \vspace{0.4em}
 
-\beat{90s} \stage{this is the part that needs concrete numbers --- slow down and hit each one.}
+\beat{80s} \stage{this is the part that needs concrete numbers --- slow down and hit each one.}
 \textit{``Now, the data. This is what makes the whole thing real instead of a toy.''}
 
-\textit{``Our industry partner is PAR. They handed us roughly nine thousand raw transaction records --- sugar imports and exports spanning 2024 to 2025. Out of those nine thousand, we sat down and manually cleaned and standardized about five thousand. That meant fixing column headers, formatting HS codes to a uniform four-decimal style, and fuzzy-matching company names that were spelled three different ways across different rows.''}
+\textit{``Our industry partner is PAR. They handed us over nine thousand raw transaction records --- sugar imports and exports spanning 2024 to 2025. Out of those nine thousand, we sat down and manually cleaned and standardized about five thousand. That meant fixing column headers, formatting HS codes to a uniform style, and fuzzy-matching company names that were spelled three different ways across different rows.''}
 
-\textit{``Specifically: around 2,200 import transactions covering twelve months ending November 2024, and around 7,200 export transactions on the same schema --- just with the buyer and seller flipped, because Pakistan is now the seller.''}
-
-\vspace{0.4em}
-
-\beat{30s} \stage{end on the hierarchy --- this connects to the ERD slide.}
 \textit{``All of it goes into Postgres in a four-level hierarchy: Product, then Category, then Sub-Category, then Item. We didn't invent this --- it mirrors how the World Customs Organisation actually structures HS codes. Modeling our database the same way means analytics can roll up to whichever level the user is asking about, without us having to maintain separate tables for separate granularities.''}
 
 \hrule height 0.4pt
@@ -189,24 +176,24 @@ Should            & 17              & \S3.4 token economy --- explains the unloc
 \end{tabularx}
 \end{readbox}
 
-\subsection*{Script ($\approx$ 3 minutes)}
+\subsection*{Script ($\approx$ 2 minutes)}
 
 \begin{stagebox}
 \textbf{Strategy.} Don't read field names off the slide. The audience can see the ERD --- give them the four-cluster shape and one interesting design choice, then move on.
 \end{stagebox}
 
-\beat{15s} \stage{open with reassurance --- the audience is staring at a wall of tables.}
+\beat{10s} \stage{open with reassurance --- the audience is staring at a wall of tables.}
 \textit{``This looks like a lot, but it's really just four groups of tables, and each group matches one part of the application.''}
 
 \vspace{0.4em}
 
-\beat{20s} \stage{cluster 1 --- keep brief.} \textbf{[\texttt{accounts\_user}]}
+\beat{15s} \stage{cluster 1 --- keep brief.} \textbf{[\texttt{accounts\_user}]}
 \textit{``First group is identity. Just the user table. Email is the login field, and every user has a token balance integer right on their row --- that's the in-app currency for unlocking premium data.''}
 
 \vspace{0.4em}
 
-\beat{45s} \stage{cluster 2 --- the heart of the schema, this is where to spend the time.} \textbf{[\texttt{trade\_data\_product}, \texttt{trade\_data\_productcategory}, \texttt{trade\_data\_productsubcategory}, \texttt{trade\_data\_productitem}, \texttt{trade\_data\_transaction}, \texttt{trade\_data\_productembedding}]}
-\textit{``Second group is the catalog. The four-level product hierarchy --- Product, Category, Sub-Category, Item --- each level pointing to its parent. And then the transaction table, which is the ledger every other table builds on. Every row is one shipment: when, what HS code, who bought, who sold, where from, where to, how much, at what price. The search engine spends most of its time querying this table, so we've indexed every column the search filters by --- which is what lets a query return in milliseconds even on the full dataset.''}
+\beat{40s} \stage{cluster 2 --- the heart of the schema, this is where to spend the time.} \textbf{[\texttt{trade\_data\_product}, \texttt{trade\_data\_productcategory}, \texttt{trade\_data\_productsubcategory}, \texttt{trade\_data\_productitem}, \texttt{trade\_data\_transaction}, \texttt{trade\_data\_productembedding}]}
+\textit{``Second group is the catalog. The four-level product hierarchy --- Product, Category, Sub-Category, Item --- each level pointing to its parent. And then the transaction table, which is the ledger every other table builds on. Every row is one shipment: when, what HS code, who bought, who sold, where from, where to. The search engine spends most of its time querying this table, so we've indexed every column the search filters by.''}
 
 \vspace{0.4em}
 
@@ -215,13 +202,67 @@ Should            & 17              & \S3.4 token economy --- explains the unloc
 
 \vspace{0.4em}
 
-\beat{30s} \stage{cluster 4 --- end with the one design-choice point worth volunteering.} \textbf{[\texttt{subscriptions\_subscriptionplan}, \texttt{subscriptions\_usersubscription}, \texttt{subscriptions\_useraccess}]}
-\textit{``Fourth group is the access side --- subscription plans, user subscriptions, and a record of what each user has unlocked at the product level. You'll notice we have two separate unlock tables --- one for individual contacts (over in the directory cluster), one for whole product categories (here). They look like duplicates but they aren't --- different granularities of access, different lookups, so they're kept separate.''}
+\beat{25s} \stage{cluster 4 --- end with the one design-choice point worth volunteering.} \textbf{[\texttt{subscriptions\_subscriptionplan}, \texttt{subscriptions\_usersubscription}, \texttt{subscriptions\_useraccess}]}
+\textit{``Fourth group is the access side --- subscription plans, user subscriptions, and a record of what each user has unlocked at the product level. You'll notice we have two separate unlock tables --- one for individual contacts, one for whole product categories. Different granularities of access, different lookups, so they're kept separate.''}
 
 \vspace{0.4em}
 
 \beat{10s} \stage{closer.}
 \textit{``So that's the schema in one breath: identity, catalog, directory, access. Each cluster is its own Django app, so changes in one don't break the others.''}
+
+\hrule height 0.4pt
+\vspace{0.5em}
+
+% =====================================================================
+\section{Slide 7 --- Search Pipeline}
+% =====================================================================
+
+\begin{readbox}
+\begin{tabularx}{\linewidth}{l c X}
+\toprule
+\textbf{Priority} & \textbf{Pages} & \textbf{Why} \\
+\midrule
+\textbf{Must}     & \textbf{40--46} & \S5.1--5.4 walks the four stages: NLU, candidate retrieval, aggregation, ranking. \\
+\textbf{Must}     & \textbf{47}     & \S5.5 the ranking formula and how presets swap the weights. \\
+Should            & 41              & \S5.2 SetFit + GLiNER --- what each model is responsible for. \\
+Should            & 43              & \S5.3 RapidFuzz typo correction + thresholds. \\
+\bottomrule
+\end{tabularx}
+\end{readbox}
+
+\subsection*{Script ($\approx$ 2 minutes 15 seconds)}
+
+\begin{stagebox}
+\textbf{Strategy.} Follow the arrows on the flowchart in order. Pause briefly at the diamond (Numeric?) --- that branch is the one design decision worth calling out. Save the ranking detail for last so it lands.
+\end{stagebox}
+
+\beat{15s} \stage{point at the top of the flowchart.}
+\textit{``This is what actually happens when a user hits search. The input is a query string plus a scope --- products, companies, or both. Everything below is the path that query takes.''}
+
+\vspace{0.4em}
+
+\beat{20s} \stage{point at the diamond.}
+\textit{``First branch is a numeric check. If the query is a number --- say, four-digit HS code like 1701 --- we skip the ML entirely and go straight to a direct database match. That's a fast path for the analysts who know exactly what they're looking for.''}
+
+\vspace{0.4em}
+
+\beat{45s} \stage{point at the NLU pipeline box --- this is the ML-heavy slide.}
+\textit{``If it's not numeric, the query goes through the NLU pipeline. Three pieces working together. SetFit handles intent --- is the user buying, selling, or just researching. GLiNER pulls structured entities out of messy free text --- product names, country names, quantities, price phrases. And RapidFuzz handles typos --- if someone types ``sugr'' instead of ``sugar'', we score it against our product catalog and accept matches above sixty percent. Together these turn an unstructured question into a structured query the rest of the pipeline can act on.''}
+
+\vspace{0.4em}
+
+\beat{20s} \stage{point at the validation box.}
+\textit{``Then validation. We check that the extracted entities make sense for the scope --- if the user asked about products but we extracted a country, we disambiguate. The HS-code fast-path and the NLU path converge here, so everything downstream sees the same structured query shape.''}
+
+\vspace{0.4em}
+
+\beat{25s} \stage{point at the data layer, then branch left and right to access control and results.}
+\textit{``Then the data layer --- one Django ORM aggregation query rolls every matching transaction up per supplier: average price, total volume, shipment count, recency. Results branch two ways. On the left, access control checks the user's token balance and redacts premium fields they haven't paid for. On the right, the surviving rows come back as supplier profiles with their product variants.''}
+
+\vspace{0.4em}
+
+\beat{20s} \stage{end on ranking --- this is the one number worth volunteering.}
+\textit{``One thing worth knowing about the ranking step inside the data layer. We score every candidate with a hand-tuned blend of volume, shipment count, recency, and price --- weights 0.4, 0.3, 0.2, 0.1 by default --- and the weights swap based on what the user asked for. ``Cheapest'' sorts by price directly. ``Most reliable'' tilts toward shipment count. ``Bulk'' tilts toward volume. The default blend is what you see when no preference is signalled.''}
 
 \hrule height 0.4pt
 \vspace{0.8em}
@@ -234,17 +275,18 @@ Should            & 17              & \S3.4 token economy --- explains the unloc
 \toprule
 \textbf{Slide} & \textbf{Budget} & \textbf{Where to spend the time} \\
 \midrule
-Slide 4 & 3 min      & The diagram walk + the ``why we embedded the ML'' moment. \\
-Slide 5 & 3 min      & Use cases brisk. Dataset numbers slow --- those are the academic credibility. \\
-Slide 6 & $\sim$2 min  & Four clusters at a brisk pace. Audience already sees the ERD --- give them shape, not field lists. \\
-Buffer  & $\sim$1 min & Transitions and audience questions. \\
+Slide 4 & $\sim$2:15 & Architecture walk left to right. Don't get into search internals --- save that for slide 7. \\
+Slide 5 & $\sim$2:30 & Use cases brisk. Dataset numbers slow --- those are the academic credibility. \\
+Slide 6 & $\sim$2:00 & Four clusters at a brisk pace. Audience already sees the ERD --- give them shape, not field lists. \\
+Slide 7 & $\sim$2:15 & Follow the arrows in order. Land the ranking weights at the end. \\
+Buffer  & $\sim$1:00 & Transitions and audience questions. \\
 \bottomrule
 \end{tabularx}
 
 \vspace{0.8em}
 
 \begin{stagebox}
-\textbf{One last thing.} Practise once out loud with a stopwatch. The first time through is always 30 seconds longer than you planned. After that you'll know which sentences to drop if you're running long.
+\textbf{One last thing.} Practise once out loud with a stopwatch. The first time through is always 30 seconds longer than you planned. After that you'll know which sentences to drop if you're running long. The most droppable sentences: the Framer Motion / Chart.js name-check on slide 4, and the ``two separate unlock tables'' design note on slide 6.
 \end{stagebox}
 
 \end{document}

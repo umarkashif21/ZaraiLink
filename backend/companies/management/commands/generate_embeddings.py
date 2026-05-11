@@ -1,8 +1,3 @@
-"""
-Management command to generate embeddings for companies in the trade directory.
-This creates CompanyEmbedding records for companies that don't have them,
-enabling the Similar Companies feature.
-"""
 from django.core.management.base import BaseCommand
 from companies.models import Company
 from trade_data.models import CompanyEmbedding

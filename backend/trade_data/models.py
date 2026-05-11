@@ -20,10 +20,6 @@ class HsToProductMap(models.Model):
         return f"{self.hs_code} -> {self.product_name}"
 
 
-# -------------------------
-# PRODUCT HIERARCHY
-# -------------------------
-
 class Product(models.Model):
     name = models.CharField(max_length=1000)
     hs_code = models.CharField(max_length=10, unique=True)
@@ -58,10 +54,6 @@ class ProductItem(models.Model):
         return self.name
 
 
-# -------------------------
-# TRANSACTION MODEL (UPDATED)
-# -------------------------
-
 class Transaction(models.Model):
     """Unified Import/Export Transaction Records"""
 
@@ -77,7 +69,6 @@ class Transaction(models.Model):
 
     reporting_date = models.DateField()
 
-    # Direction of trade
     trade_type = models.CharField(
         max_length=10,
         choices=TRADE_TYPE_CHOICES,
@@ -85,7 +76,6 @@ class Transaction(models.Model):
         default="IMPORT"
     )
 
-    # Product info
     hs_code = models.CharField(max_length=50)
     product_item = models.ForeignKey(
         ProductItem,
@@ -94,7 +84,6 @@ class Transaction(models.Model):
         blank=True
     )
 
-    # Companies
     buyer = models.CharField(max_length=500)
     seller = models.CharField(max_length=500)
     shipping_agent = models.CharField(max_length=500)
@@ -103,11 +92,9 @@ class Transaction(models.Model):
     origin_country = models.CharField(max_length=100, db_index=True, default="Unknown")
     destination_country = models.CharField(max_length=100, db_index=True, default="Unknown")
 
-    # Quantities
     qty_kg = models.DecimalField(max_digits=20, decimal_places=6, default=0)
     qty_mt = models.DecimalField(max_digits=20, decimal_places=6, default=0)
 
-    # Pricing
     usd_per_kg = models.DecimalField(max_digits=20, decimal_places=6, blank=True, null=True)
     usd_per_mt = models.DecimalField(max_digits=20, decimal_places=6, blank=True, null=True)
     pkr = models.DecimalField(max_digits=30, decimal_places=2, blank=True, null=True)
@@ -142,10 +129,6 @@ class Transaction(models.Model):
         )
 
 
-# -------------------------
-# EMBEDDINGS
-# -------------------------
-
 class CompanyEmbedding(models.Model):
     company_name = models.CharField(max_length=500, unique=True)
     embedding = models.JSONField()
@@ -176,10 +159,6 @@ class ProductEmbedding(models.Model):
     def __str__(self):
         return f"{self.product_item.name} → {self.cluster_tag}"
 
-
-# -------------------------
-# AUDIT LOG
-# -------------------------
 
 # auditlog.register(Product)
 # auditlog.register(ProductCategory)

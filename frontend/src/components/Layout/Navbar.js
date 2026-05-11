@@ -30,8 +30,6 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 shadow-lg">
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
-        
-        {/* Logo */}
         <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-slate-900">
             Z
@@ -39,7 +37,6 @@ const Navbar = () => {
           <span className="text-xl font-bold text-white tracking-tight">ZaraiLink</span>
         </Link>
 
-        {/* Navigation Menu (Desktop) */}
         <div className="hidden md:flex items-center gap-6 ml-12 flex-1">
           <Link 
             to="/dashboard" 
@@ -50,8 +47,7 @@ const Navbar = () => {
             Dashboard
           </Link>
           
-          {/* Trade Directory Dropdown */}
-          <div 
+          <div
             className="relative h-16 flex items-center"
             onMouseEnter={() => setActiveDropdown('directory')}
             onMouseLeave={() => setActiveDropdown(null)}
@@ -101,11 +97,8 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Right Section */}
         <div className="flex items-center gap-4">
-          
-          {/* Theme Toggle */}
-          <motion.button 
+          <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-colors"
@@ -115,13 +108,11 @@ const Navbar = () => {
             {isDarkMode ? '☀️' : '🌙'}
           </motion.button>
 
-          {/* Tokens */}
           <div className="hidden sm:flex items-center px-3 py-1.5 bg-slate-800 border border-emerald-500/30 rounded-full">
             <span className="text-sm font-black text-emerald-400 font-mono tracking-wider">{tokenBalance || 0}</span>
           </div>
 
-          {/* User Menu */}
-          <div 
+          <div
             className="relative h-16 flex items-center"
             onMouseEnter={() => setActiveDropdown('user')}
             onMouseLeave={() => setActiveDropdown(null)}

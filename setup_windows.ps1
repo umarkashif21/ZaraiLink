@@ -1,23 +1,7 @@
-# =============================================================================
 # ZaraiLink Setup Script for Windows (PowerShell)
-# =============================================================================
-# This script automates the complete setup of the ZaraiLink development environment.
-# It is idempotent - safe to run multiple times.
-#
-# Prerequisites:
-#   - Python 3.12+
-#   - Node.js 18+ and npm
-#   - Docker Desktop
-#   - PostgreSQL 15+
-#
-# Usage:
-#   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-#   .\setup_windows.ps1
-# =============================================================================
 
 $ErrorActionPreference = "Stop"
 
-# Colors for output
 function Write-ColorOutput($ForegroundColor) {
     $fc = $host.UI.RawUI.ForegroundColor
     $host.UI.RawUI.ForegroundColor = $ForegroundColor
@@ -58,12 +42,8 @@ function Test-Command($command) {
     return [bool](Get-Command -Name $command -ErrorAction SilentlyContinue)
 }
 
-# =============================================================================
-# PRE-FLIGHT CHECKS
-# =============================================================================
 Print-Header "PRE-FLIGHT CHECKS"
 
-# Check Python
 if (-not (Test-Command "python")) {
     Print-Error "Python is not installed. Please install Python 3.12+ from python.org"
     exit 1
@@ -71,7 +51,6 @@ if (-not (Test-Command "python")) {
 $pythonVersion = python --version 2>&1
 Print-Step "Python found: $pythonVersion"
 
-# Check Node.js
 if (-not (Test-Command "node")) {
     Print-Error "Node.js is not installed. Please install from nodejs.org"
     exit 1
@@ -79,7 +58,6 @@ if (-not (Test-Command "node")) {
 $nodeVersion = node --version
 Print-Step "Node.js found: $nodeVersion"
 
-# Check npm
 if (-not (Test-Command "npm")) {
     Print-Error "npm is not installed. It should come with Node.js"
     exit 1
@@ -87,7 +65,6 @@ if (-not (Test-Command "npm")) {
 $npmVersion = npm --version
 Print-Step "npm found: $npmVersion"
 
-# Check Docker
 if (-not (Test-Command "docker")) {
     Print-Error "Docker is not installed. Please install Docker Desktop."
     exit 1
@@ -99,7 +76,6 @@ if ($LASTEXITCODE -ne 0) {
 }
 Print-Step "Docker is running"
 
-# Check PostgreSQL
 if (-not (Test-Command "psql")) {
     Print-Error "PostgreSQL psql is not in PATH. Please add PostgreSQL bin folder to PATH."
     Print-Error "  Typically: C:\Program Files\PostgreSQL\15\bin"
@@ -107,19 +83,14 @@ if (-not (Test-Command "psql")) {
 }
 Print-Step "PostgreSQL found"
 
-# Get script directory (project root)
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
 Print-Step "Working directory: $ScriptDir"
 
-# =============================================================================
-# BACKEND SETUP
-# =============================================================================
 Print-Header "BACKEND SETUP"
 
 Set-Location "$ScriptDir\backend"
 
-# Virtual environment
 if (-not (Test-Path ".venv")) {
     Print-Info "Creating virtual environment..."
     python -m venv .venv
@@ -128,11 +99,9 @@ if (-not (Test-Path ".venv")) {
     Print-Skip "Virtual environment"
 }
 
-# Activate virtual environment
 & ".\.venv\Scripts\Activate.ps1"
 Print-Step "Virtual environment activated"
 
-# Install Python dependencies
 $djangoPath = ".\.venv\Lib\site-packages\django"
 if (-not (Test-Path $djangoPath)) {
     Print-Info "Installing Python dependencies..."
@@ -143,30 +112,23 @@ if (-not (Test-Path $djangoPath)) {
     Print-Skip "Python dependencies"
 }
 
-# Environment file
 if (-not (Test-Path ".env")) {
     Print-Info "Creating .env file..."
     Copy-Item ".env.example" ".env"
-    
-    # Generate SECRET_KEY
+
     $secretKey = python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-    
-    # Update SECRET_KEY in .env
+
     $envContent = Get-Content ".env" -Raw
     $envContent = $envContent -replace "SECRET_KEY=.*", "SECRET_KEY=$secretKey"
     Set-Content ".env" $envContent -NoNewline
-    
+
     Print-Step ".env file created with generated SECRET_KEY"
 } else {
     Print-Skip ".env file"
 }
 
-# =============================================================================
-# DATABASE SETUP
-# =============================================================================
 Print-Header "DATABASE SETUP"
 
-# Check if database exists
 $dbExists = $false
 try {
     $result = psql -U postgres -lqt 2>&1
@@ -174,7 +136,6 @@ try {
         $dbExists = $true
     }
 } catch {
-    # Database check failed, will try to create
 }
 
 if ($dbExists) {
@@ -182,7 +143,7 @@ if ($dbExists) {
 } else {
     Print-Info "Creating PostgreSQL database..."
     Print-Info "(You may be prompted for the postgres password - default: postgres)"
-    
+
     try {
         $env:PGPASSWORD = "postgres"
         createdb -U postgres zarailink
@@ -196,17 +157,14 @@ if ($dbExists) {
     }
 }
 
-# Run migrations
 Print-Info "Running database migrations..."
 python manage.py migrate --no-input
 Print-Step "Migrations complete"
 
-# Setup company roles
 Print-Info "Setting up company roles..."
 python manage.py setup_company_roles
 Print-Step "Company roles configured"
 
-# Load sample data for company comparison (if not already loaded)
 $companyCount = python manage.py shell -c "from companies.models import Company; print(Company.objects.count())" 2>$null
 if ([int]$companyCount -gt 0) {
     Print-Skip "Sample company data"
@@ -220,7 +178,6 @@ if ([int]$companyCount -gt 0) {
     }
 }
 
-# Import trade data (needed for GNN embeddings and Similar Companies)
 $transactionCount = python manage.py shell -c "from trade_data.models import Transaction; print(Transaction.objects.count())" 2>$null
 if ([int]$transactionCount -gt 0) {
     Print-Skip "Trade transaction data"
@@ -238,7 +195,6 @@ if ([int]$transactionCount -gt 0) {
     }
 }
 
-# Build GNN graphs from trade data (needed for Similar Companies)
 $transactionCount = python manage.py shell -c "from trade_data.models import Transaction; print(Transaction.objects.count())" 2>$null
 if ([int]$transactionCount -gt 0) {
     if (-not (Test-Path "company_product_graph.graphml")) {
@@ -256,7 +212,6 @@ if ([int]$transactionCount -gt 0) {
     Print-Info "No trade data found, skipping graph building"
 }
 
-# Generate GNN embeddings for Similar Companies feature (if not already generated)
 $embeddingCount = python manage.py shell -c "from trade_data.models import CompanyEmbedding; print(CompanyEmbedding.objects.count())" 2>$null
 if ([int]$embeddingCount -gt 0) {
     Print-Skip "GNN embeddings"
@@ -274,12 +229,8 @@ if ([int]$embeddingCount -gt 0) {
     }
 }
 
-# =============================================================================
-# DOCKER SERVICES (REDIS)
-# =============================================================================
 Print-Header "DOCKER SERVICES"
 
-# Check if Redis container is running
 $redisRunning = docker ps --format '{{.Names}}' 2>&1 | Select-String -Pattern "zarailink-redis"
 if ($redisRunning) {
     Print-Skip "Redis container"
@@ -289,14 +240,10 @@ if ($redisRunning) {
     Print-Step "Redis container started"
 }
 
-# =============================================================================
-# FRONTEND SETUP
-# =============================================================================
 Print-Header "FRONTEND SETUP"
 
 Set-Location "$ScriptDir\frontend"
 
-# Install npm dependencies
 if (-not (Test-Path "node_modules")) {
     Print-Info "Installing npm dependencies..."
     npm install --legacy-peer-deps --silent
@@ -305,9 +252,6 @@ if (-not (Test-Path "node_modules")) {
     Print-Skip "node_modules"
 }
 
-# =============================================================================
-# PUPPETEER SETUP (PDF Generation)
-# =============================================================================
 Print-Header "PDF GENERATION SETUP"
 
 Set-Location "$ScriptDir\backend"
@@ -320,9 +264,6 @@ if (-not (Test-Path "node_modules")) {
     Print-Skip "Puppeteer (node_modules)"
 }
 
-# =============================================================================
-# FINAL OUTPUT
-# =============================================================================
 Set-Location $ScriptDir
 
 Write-Host ""

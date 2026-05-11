@@ -1,7 +1,3 @@
-"""
-Import company profiles from companies.csv into the DB.
-Run with: python import_companies.py
-"""
 import csv, os, sys
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zarailink.settings')
@@ -12,7 +8,6 @@ from companies.models import Company, CompanyType
 
 CSV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'companies.csv')
 
-# ── Manual name corrections (CSV name -> exact DB name, lowercase) ──────────
 MANUAL_MAP = {
     'ab astepsworth':              'aba stepsworth dwc llc',
     'best buy brands':             'best brands general trading llc',
@@ -22,7 +17,6 @@ MANUAL_MAP = {
     's&s trading':                 'shree sai trading',
     'arshine chemical':            'arshine food additives co ltd',
     'apeloa pharmaceutical':       'apeloa hong kong ltd',
-    # Partial matches confirmed 100% correct
     'emrays':                      'emrays international general trading co llc',
     'jrs pharma':                  'jrs pharma gmbh & co kg',
     'leprino foods':               'leprino foods dairy products co',
@@ -37,13 +31,11 @@ MANUAL_MAP = {
     'greyhound chromatography':    'greyhound chromatography and allied chemicals ltd',
     'armor proteines':             'armor proteines sas',
     'signet excipients':           'signet excipients pvt ltd',
-    'industrial design services (ids)': 'industrial design services',  # skip if not found
+    'industrial design services (ids)': 'industrial design services',
 }
 
-# ── Load all DB companies keyed by lowercase name ───────────────────────────
 all_companies = {c.name.strip().lower(): c for c in Company.objects.all()}
 
-# ── Process CSV ──────────────────────────────────────────────────────────────
 updated = []
 skipped = []
 
@@ -58,7 +50,6 @@ with open(CSV_PATH, encoding='utf-8-sig') as f:
         emp_str    = row.get('employees', '').strip()
         website    = row.get('website', '').strip()
 
-        # Resolve DB key
         db_key = MANUAL_MAP.get(csv_key, csv_key)
 
         if db_key not in all_companies:
@@ -67,7 +58,6 @@ with open(CSV_PATH, encoding='utf-8-sig') as f:
 
         company = all_companies[db_key]
 
-        # Update fields (only if CSV has a non-empty value)
         changed = False
 
         if description:
@@ -92,7 +82,6 @@ with open(CSV_PATH, encoding='utf-8-sig') as f:
             except ValueError:
                 pass
 
-        # company_type is a FK to CompanyType — get_or_create by name
         if type_str:
             ct, _ = CompanyType.objects.get_or_create(name=type_str)
             company.company_type = ct

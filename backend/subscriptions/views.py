@@ -9,11 +9,10 @@ from rest_framework.authentication import SessionAuthentication
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
-        return  # To not perform the CSRF check
+        return
 
 @api_view(['GET'])
 def list_plans(request):
-    """List all available subscription plans"""
     plans = SubscriptionPlan.objects.all()
     plans_data = [{
         'id': plan.id,
@@ -33,7 +32,7 @@ def list_plans(request):
 @permission_classes([IsAuthenticated])
 @transaction.atomic
 def redeem_code(request):
-    """Bypass code and just instantly give tokens based on plan (Demo Mode)"""
+    # Demo mode: bypass actual code validation and instantly grant tokens for the chosen plan.
     plan_id = request.data.get('plan_id')
     
     if not plan_id:
@@ -72,21 +71,6 @@ def redeem_code(request):
 @authentication_classes([CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def purchase_access(request):
-    """
-    Purchase token-based access to a data category or specific product.
-
-    Body:
-        access_type  : 'HS_CODE' | 'PRODUCT'
-        hscode       : str  (e.g. '1702.3000')
-        product_name : str  (required when access_type='PRODUCT')
-
-    Returns:
-        success        : bool
-        message        : str
-        new_balance    : int   (only on success)
-        access_state   : 'FULL_ACCESS' | 'PRODUCT_ACCESS' (only on success)
-        required_tokens: int   (only on failure)
-    """
     from .services import HS_CODE_PRICE, PRODUCT_PRICE
 
     access_type  = request.data.get('access_type', '').upper()

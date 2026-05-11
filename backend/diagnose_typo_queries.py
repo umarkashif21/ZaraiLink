@@ -1,16 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys, io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-"""
-diagnose_typo_queries.py
-========================
-Traces failing vs working queries through the full NLU pipeline and
-subcategory matcher, printing every intermediate value so we can pinpoint
-exactly where each query breaks.
-
-Run from the backend/ directory:
-    python diagnose_typo_queries.py
-"""
 
 import os
 import sys
@@ -49,17 +39,8 @@ WORKING = [
 DIVIDER  = "=" * 70
 DIVIDER2 = "-" * 70
 
-# ──────────────────────────────────────────────────────────────────
-# Helper: run _resolve_subcategories manually so we can inspect
-# what the matcher receives and returns.
-# ──────────────────────────────────────────────────────────────────
 
 def trace_subcategory_match(product_keyword: str, country: str = None):
-    """
-    Mirror the key passes in _resolve_subcategories so we can inspect
-    what input arrives and what scores come back, without calling the
-    full SearchService (which has side-effects and caching).
-    """
     print(f"  [SUBCAT] product_keyword  → '{product_keyword}'")
     print(f"  [SUBCAT] country arg      → {country!r}")
 
@@ -67,20 +48,16 @@ def trace_subcategory_match(product_keyword: str, country: str = None):
         print("  [SUBCAT] SKIPPED — keyword too short")
         return
 
-    # PASS 0: category icontains
     from trade_data.models import ProductCategory
     cat_hits = list(ProductCategory.objects.filter(name__icontains=product_keyword).values_list('name', flat=True)[:5])
     print(f"  [SUBCAT] PASS-0 cat icontains → {cat_hits}")
 
-    # PASS 1: subcategory istartswith
     pass1 = list(ProductSubCategory.objects.filter(name__istartswith=product_keyword).values_list('name', flat=True)[:5])
     print(f"  [SUBCAT] PASS-1 subcat istartswith → {pass1}")
 
-    # PASS 2: item istartswith
     pass2 = list(ProductItem.objects.filter(name__istartswith=product_keyword).values_list('name', flat=True)[:5])
     print(f"  [SUBCAT] PASS-2 item istartswith → {pass2}")
 
-    # PASS 3: trigram (only runs if passes 1+2 empty)
     if not pass1 and not pass2:
         sc_trig = list(
             ProductSubCategory.objects.annotate(
@@ -95,7 +72,6 @@ def trace_subcategory_match(product_keyword: str, country: str = None):
         print(f"  [SUBCAT] PASS-3 trigram subcat (>0.3) → {sc_trig}")
         print(f"  [SUBCAT] PASS-3 trigram items  (>0.3) → {it_trig}")
 
-        # Show what the best trigram score actually is (even if below threshold)
         best_sc = list(
             ProductSubCategory.objects.annotate(
                 sim=TrigramSimilarity('name', product_keyword)
@@ -111,7 +87,6 @@ def trace_subcategory_match(product_keyword: str, country: str = None):
     else:
         print("  [SUBCAT] PASS-3 SKIPPED (earlier passes found results)")
 
-    # PASS 4: word-by-word (only runs if all above empty AND space in keyword)
     if not pass1 and not pass2 and " " in product_keyword:
         words = sorted([w for w in product_keyword.split() if len(w) > 2], key=len, reverse=True)
         print(f"  [SUBCAT] PASS-4 word-by-word, trying words: {words}")
@@ -135,20 +110,12 @@ def trace_subcategory_match(product_keyword: str, country: str = None):
                     break
 
 
-# ──────────────────────────────────────────────────────────────────
-# Helper: show country resolution steps
-# ──────────────────────────────────────────────────────────────────
-
 def trace_country(query: str):
-    """Manually run the three-layer country resolution and print each step."""
     from search.services.nlu_engine import ModernNLUEngine
     import re
 
     q = query.lower()
 
-    # Step 1: GLiNER entities (already in main parse, just show it here for reference)
-
-    # Step 2: Preposition capture
     _PREP_PATTERNS = [
         r'\b(?:based\s+in|located\s+in)\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
         r'\bwithin\s+([a-z][a-z\s]{1,30}?)(?:\s+(?:and|or|for|that|which|where)\b|$)',
@@ -162,7 +129,6 @@ def trace_country(query: str):
             resolved = engine._resolve_country(candidate, cutoff=85.0)
             print(f"  [COUNTRY] RapidFuzz @85 cutoff → '{resolved}'")
             if not resolved:
-                # Show best match even if below cutoff
                 STANDARD_COUNTRIES = [
                     "Pakistan", "China", "United States", "India", "Afghanistan",
                     "United Arab Emirates", "Saudi Arabia", "Germany", "United Kingdom",
@@ -174,14 +140,13 @@ def trace_country(query: str):
                     candidate.lower(), STANDARD_COUNTRIES,
                     scorer=rapidfuzz.fuzz.WRatio,
                     processor=rapidfuzz.utils.default_process,
-                    score_cutoff=0  # No cutoff — show raw best match
+                    score_cutoff=0
                 )
                 print(f"  [COUNTRY] RapidFuzz best match (no cutoff) → {match}")
             break
     else:
         print(f"  [COUNTRY] Preposition regex: NO MATCH in query")
 
-    # Step 3: Abbreviations
     ABBREVIATIONS = {
         "uae": "United Arab Emirates", "uk": "United Kingdom", "usa": "United States",
         "us": "United States", "prc": "China", "ksa": "Saudi Arabia", "pak": "Pakistan",
@@ -196,10 +161,6 @@ def trace_country(query: str):
         print(f"  [COUNTRY] Abbreviation lookup: no match")
 
 
-# ──────────────────────────────────────────────────────────────────
-# Main diagnostic loop
-# ──────────────────────────────────────────────────────────────────
-
 def run_diagnosis(queries, label):
     print(f"\n{DIVIDER}")
     print(f"  {label}")
@@ -210,7 +171,6 @@ def run_diagnosis(queries, label):
         print(f"  QUERY: '{query}'")
         print(f"{'-'*70}")
 
-        # ── STAGE A: full NLU parse ──────────────────────────────────────
         result = engine.parse(query, ui_context="import")
 
         print(f"\n  ── STAGE A: NLU Output ──")
@@ -223,12 +183,10 @@ def run_diagnosis(queries, label):
         print(f"  price_filter      : {result.get('price_filter')}")
         print(f"  ranking_hint      : {result.get('ranking_hint')!r}")
 
-        # ── STAGE B: stopword keyword extraction (standalone) ────────────
         sw_keyword = extract_product_keyword(query)
         print(f"\n  ── STAGE B: extract_product_keyword() ──")
         print(f"  stopword keyword  : {sw_keyword!r}")
 
-        # ── STAGE C: GLiNER entity detail ────────────────────────────────
         entities = result.get("entities", [])
         gliner_product = None
         gliner_country = None
@@ -243,7 +201,6 @@ def run_diagnosis(queries, label):
         for ent in entities:
             print(f"    label={ent['label']!r:22} text={ent['text']!r}")
 
-        # ── STAGE D: Country resolution detail ───────────────────────────
         print(f"\n  ── STAGE D: Country resolution trace ──")
         if gliner_country:
             print(f"  GLiNER gave country span: '{gliner_country}' → resolving @75 cutoff...")
@@ -268,13 +225,12 @@ def run_diagnosis(queries, label):
             print(f"  GLiNER found no country span → running fallback...")
         trace_country(query)
 
-        # ── STAGE E: Subcategory matcher input & results ─────────────────
         print(f"\n  ── STAGE E: Subcategory matcher ──")
         final_keyword = result.get("product_keyword") or result.get("product") or query
         final_country = result.get("country")
         trace_subcategory_match(final_keyword, final_country)
 
-        print()  # blank line
+        print()
 
 print(DIVIDER)
 print("  ZaraiLink Typo Query Diagnosis")

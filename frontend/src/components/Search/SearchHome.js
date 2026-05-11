@@ -39,13 +39,9 @@ const SearchHome = () => {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
             <div className="max-w-3xl w-full text-center space-y-8">
-
-                {/* Hero Text */}
                 <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
                     What are you looking for today?
                 </h1>
-
-                {/* Search Bar */}
                 <form onSubmit={handleSearch} className="relative w-full max-w-2xl mx-auto">
                     <div className="relative group">
                         <input
@@ -71,8 +67,6 @@ const SearchHome = () => {
                             <span className="hidden sm:inline">Search</span>
                         </button>
                     </div>
-
-                    {/* Search Mode Badge */}
                     {searchMode && (
                         <div className="mt-3 flex justify-center">
                             {searchMode === 'hscode' && (
@@ -93,8 +87,6 @@ const SearchHome = () => {
                         </div>
                     )}
                 </form>
-
-                {/* Scope Toggle */}
                 <div className="flex justify-center gap-2">
                     <button
                         type="button"
@@ -117,8 +109,6 @@ const SearchHome = () => {
                         Export
                     </button>
                 </div>
-
-                {/* Intent Pills */}
                 <div className="flex flex-wrap justify-center gap-3">
                     {['I want to buy', 'I want to sell', 'Find suppliers', 'Find buyers'].map((pill) => (
                         <button
@@ -131,8 +121,6 @@ const SearchHome = () => {
                         </button>
                     ))}
                 </div>
-
-                {/* Example Queries */}
                 <div className="pt-12 text-slate-500 text-sm">
                     <p className="mb-4 font-medium uppercase tracking-wide">Example Queries</p>
                     <div className="flex flex-wrap justify-center gap-4 text-slate-400">

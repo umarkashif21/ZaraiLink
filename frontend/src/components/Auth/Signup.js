@@ -87,7 +87,6 @@ export default function Signup() {
       const data = await response.json();
 
       if (response.ok) {
-        // Auto log in the user
         const loginRes = await login(email, password);
         if (loginRes.success) {
           navigate("/dashboard");

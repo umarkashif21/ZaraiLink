@@ -1,34 +1,16 @@
 #!/bin/bash
-
-# =============================================================================
 # ZaraiLink Setup Script for macOS
-# =============================================================================
-# This script automates the complete setup of the ZaraiLink development environment.
-# It is idempotent - safe to run multiple times.
-#
-# Prerequisites:
-#   - Python 3.12+
-#   - Node.js 18+ and npm
-#   - Docker Desktop
-#   - PostgreSQL 15+
-#
-# Usage:
-#   chmod +x setup_mac.sh
-#   ./setup_mac.sh
-# =============================================================================
 
-set -e  # Exit on error
+set -e
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 BOLD='\033[1m'
 
-# Functions
 print_header() {
     echo ""
     echo -e "${BLUE}══════════════════════════════════════════════════════════════════${NC}"
@@ -59,27 +41,20 @@ check_command() {
     fi
 }
 
-# =============================================================================
-# PRE-FLIGHT CHECKS
-# =============================================================================
 print_header "PRE-FLIGHT CHECKS"
 
-# Check Python
 check_command python3
 PYTHON_VERSION=$(python3 --version 2>&1 | cut -d' ' -f2)
 print_step "Python found: $PYTHON_VERSION"
 
-# Check Node.js
 check_command node
 NODE_VERSION=$(node --version)
 print_step "Node.js found: $NODE_VERSION"
 
-# Check npm
 check_command npm
 NPM_VERSION=$(npm --version)
 print_step "npm found: $NPM_VERSION"
 
-# Check Docker
 check_command docker
 if ! docker info &> /dev/null; then
     print_error "Docker is not running. Please start Docker Desktop."
@@ -87,28 +62,21 @@ if ! docker info &> /dev/null; then
 fi
 print_step "Docker is running"
 
-# Check PostgreSQL
 if ! command -v psql &> /dev/null; then
     print_error "PostgreSQL is not installed. Install via: brew install postgresql@15"
     exit 1
 fi
 print_step "PostgreSQL found"
 
-# Get script directory (project root)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 print_step "Working directory: $SCRIPT_DIR"
 
-# =============================================================================
-# BACKEND SETUP
-# =============================================================================
 print_header "BACKEND SETUP"
 
 cd backend
 
-# Virtual environment - recreate if broken
 if [ -d ".venv" ]; then
-    # Check if venv is valid
     if [ ! -f ".venv/bin/activate" ] || [ ! -f ".venv/bin/pip" ]; then
         print_info "Existing venv appears broken, recreating..."
         rm -rf .venv
@@ -127,11 +95,9 @@ else
     print_skip "Virtual environment"
 fi
 
-# Activate virtual environment
 print_info "Activating virtual environment..."
 source .venv/bin/activate
 
-# Verify activation worked by checking VIRTUAL_ENV and pip location
 if [[ -z "$VIRTUAL_ENV" ]]; then
     print_error "Failed to activate virtual environment (VIRTUAL_ENV is empty)!"
     print_error "Try deleting .venv and running this script again:"
@@ -139,7 +105,6 @@ if [[ -z "$VIRTUAL_ENV" ]]; then
     exit 1
 fi
 
-# Double-check pip is from venv, not system
 VENV_PIP=".venv/bin/pip"
 if [ ! -f "$VENV_PIP" ]; then
     print_error "Venv pip not found at $VENV_PIP!"
@@ -147,12 +112,10 @@ if [ ! -f "$VENV_PIP" ]; then
 fi
 print_step "Virtual environment activated: $VIRTUAL_ENV"
 
-# ALWAYS install/upgrade dependencies to ensure all packages are present
 print_info "Installing Python dependencies (this may take a minute)..."
 .venv/bin/pip install --upgrade pip
 .venv/bin/pip install -r requirements.txt
 
-# Verify critical packages installed
 for pkg in django numpy pandas openpyxl; do
     if ! .venv/bin/pip show $pkg &> /dev/null; then
         print_error "Failed to install $pkg!"
@@ -161,28 +124,22 @@ for pkg in django numpy pandas openpyxl; do
 done
 print_step "Python dependencies installed and verified"
 
-# Environment file
 if [ ! -f ".env" ]; then
     print_info "Creating .env file..."
     cp .env.example .env
-    
-    # Generate SECRET_KEY (use 'python' since venv is activated)
+
     SECRET_KEY=$(python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
-    
-    # Update SECRET_KEY in .env (macOS sed syntax)
+
+    # macOS sed requires '' after -i
     sed -i '' "s|SECRET_KEY=.*|SECRET_KEY=$SECRET_KEY|g" .env
-    
+
     print_step ".env file created with generated SECRET_KEY"
 else
     print_skip ".env file"
 fi
 
-# =============================================================================
-# DATABASE SETUP
-# =============================================================================
 print_header "DATABASE SETUP"
 
-# Check if database exists
 if psql -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw zarailink; then
     print_skip "Database 'zarailink'"
 else
@@ -195,17 +152,14 @@ else
     print_step "Database 'zarailink' created"
 fi
 
-# Run migrations
 print_info "Running database migrations..."
 python manage.py migrate --no-input
 print_step "Migrations complete"
 
-# Setup company roles
 print_info "Setting up company roles..."
 python manage.py setup_company_roles
 print_step "Company roles configured"
 
-# Load sample data for company comparison (if not already loaded)
 if python manage.py shell -c "from companies.models import Company; exit(0 if Company.objects.count() > 0 else 1)" 2>/dev/null; then
     print_skip "Sample company data"
 else
@@ -218,7 +172,6 @@ else
     fi
 fi
 
-# Import trade data (needed for GNN embeddings and Similar Companies)
 if python manage.py shell -c "from trade_data.models import Transaction; exit(0 if Transaction.objects.count() > 0 else 1)" 2>/dev/null; then
     print_skip "Trade transaction data"
 else
@@ -233,7 +186,6 @@ else
     fi
 fi
 
-# Build GNN graphs from trade data (needed for Similar Companies)
 TRANSACTIONS_COUNT=$(python manage.py shell -c "from trade_data.models import Transaction; print(Transaction.objects.count())" 2>/dev/null)
 if [ "$TRANSACTIONS_COUNT" -gt 0 ] 2>/dev/null; then
     if [ ! -f "company_product_graph.graphml" ] || [ "../import_data_1year.xlsx" -nt "company_product_graph.graphml" ]; then
@@ -249,7 +201,6 @@ else
     print_info "No trade data found, skipping graph building"
 fi
 
-# Generate GNN embeddings for Similar Companies feature (if not already generated)
 if python manage.py shell -c "from trade_data.models import CompanyEmbedding; exit(0 if CompanyEmbedding.objects.count() > 0 else 1)" 2>/dev/null; then
     print_skip "GNN embeddings"
 else
@@ -264,17 +215,12 @@ else
     fi
 fi
 
-# =============================================================================
-# DOCKER SERVICES (REDIS)
-# =============================================================================
 print_header "DOCKER SERVICES"
 
-# Check if Redis container is running
 if docker ps --format '{{.Names}}' | grep -q 'zarailink-redis'; then
     print_skip "Redis container"
 else
     print_info "Starting Redis container..."
-    # Try new 'docker compose' syntax first, fall back to legacy 'docker-compose'
     if docker compose version &> /dev/null; then
         docker compose up -d
     elif command -v docker-compose &> /dev/null; then
@@ -287,14 +233,10 @@ else
     print_step "Redis container started"
 fi
 
-# =============================================================================
-# FRONTEND SETUP
-# =============================================================================
 print_header "FRONTEND SETUP"
 
 cd ../frontend
 
-# Install npm dependencies
 if [ ! -d "node_modules" ]; then
     print_info "Installing npm dependencies..."
     npm install --legacy-peer-deps --silent
@@ -303,9 +245,6 @@ else
     print_skip "node_modules"
 fi
 
-# =============================================================================
-# PUPPETEER SETUP (PDF Generation)
-# =============================================================================
 print_header "PDF GENERATION SETUP"
 
 cd ../backend
@@ -318,9 +257,6 @@ else
     print_skip "Puppeteer (node_modules)"
 fi
 
-# =============================================================================
-# FINAL OUTPUT
-# =============================================================================
 cd "$SCRIPT_DIR"
 
 echo ""

@@ -7,12 +7,7 @@ from django.utils import timezone
 
 
 class CustomUserManager(BaseUserManager):
-    """
-    Custom user manager where email is the unique identifier
-    for authentication instead of username.
-    """
     def create_user(self, email, password=None, username=None, **extra_fields):
-        """Create and save a regular user with the given email and password."""
         if not email:
             raise ValueError(_('The Email must be set'))
         email = self.normalize_email(email)
@@ -22,7 +17,6 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        """Create and save a SuperUser with the given email and password."""
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
@@ -73,33 +67,28 @@ class User(AbstractUser):
         return full_name or self.email
 
     def is_verification_token_valid(self):
-        """Check if verification token is still valid (24 hours)"""
         if self.email_verified:
             return False
         expiration_time = self.token_created_at + timedelta(hours=24)
         return timezone.now() < expiration_time
 
     def regenerate_verification_token(self):
-        """Generate a new verification token"""
         self.verification_token = uuid.uuid4()
         self.token_created_at = timezone.now()
         self.save(update_fields=['verification_token', 'token_created_at'])
     
     
     def has_tokens(self, amount=1):
-        """Check if user has enough tokens"""
         return self.token_balance >= amount
-    
+
     def deduct_tokens(self, amount=1):
-        """Deduct tokens from balance"""
         if self.has_tokens(amount):
             self.token_balance -= amount
             self.save(update_fields=['token_balance'])
             return True
         return False
-    
+
     def add_tokens(self, amount):
-        """Add tokens to balance"""
         self.token_balance += amount
         self.save(update_fields=['token_balance'])
 

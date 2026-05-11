@@ -13,32 +13,31 @@ const SearchResults = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Derive everything from location.search so drill-down navigation works correctly.
-    // We re-read these on every render (location changes on every navigation).
+    // Derive from location.search on every render so drill-down navigation works.
     const getParams = () => new URLSearchParams(location.search);
     const _p = getParams();
     const initialQuery      = _p.get('q') || '';
-    const initialScope      = _p.get('scope') || null;            // null = no scope (HS code mode)
+    const initialScope      = _p.get('scope') || null;
     const initialHsCode     = _p.get('hs_code') || null;
     const initialSubcatId   = _p.get('subcat_id') || null;
     const initialVariantName = _p.get('variant_name') || null;
     const initialIntent     = _p.get('intent') || null;
-    const isDashboardMode   = _p.get('mode') === 'dashboard'; // Forced by SummaryView "View Trade Data" click
+    const isDashboardMode   = _p.get('mode') === 'dashboard';
 
     const [query, setQuery]               = useState(initialQuery);
-    const [inputValue, setInputValue]     = useState(initialQuery); // Local draft — does NOT trigger search
+    const [inputValue, setInputValue]     = useState(initialQuery);
     const [scope, setScope]               = useState(initialScope);
     const [hsCode, setHsCode]             = useState(initialHsCode);
     const [subcatId, setSubcatId]         = useState(initialSubcatId);
     const [variantName, setVariantName]   = useState(initialVariantName);
     const [overrideIntent, setOverrideIntent] = useState(initialIntent);
 
-    // KEY FIX: sync state from URL whenever the user navigates (e.g. drill-down click)
+    // Sync state from URL on every navigation (drill-down clicks change only the URL).
     useEffect(() => {
         const p = new URLSearchParams(location.search);
         const newQuery = p.get('q') || '';
         setQuery(newQuery);
-        setInputValue(newQuery); // Keep the search bar in sync with URL navigations
+        setInputValue(newQuery);
         setScope(p.get('scope') || null);
         setHsCode(p.get('hs_code') || null);
         setSubcatId(p.get('subcat_id') || null);
@@ -46,8 +45,7 @@ const SearchResults = () => {
         setOverrideIntent(p.get('intent') || null);
     }, [location.search]);
 
-    // Strict check: true if no scope is selected (dedicated HS/Category mode), 
-    // OR if it's purely digits/dots, OR if it's an exact category bridge match.
+    // True for dedicated HS/Category mode: no scope, pure digits/dots, or exact category bridge match.
     const isRawHsCodeMode = (!scope || scope === 'null') || (query && hsCode && query === hsCode) || (query ? /^[\d.]+$/.test(query) : false);
 
     const [sortBy, setSortBy] = useState('relevance');
@@ -77,18 +75,15 @@ const SearchResults = () => {
     const [searchEngine, setSearchEngine] = useState('');
     const [scopeMismatch, setScopeMismatch] = useState(null);
 
-    // ── Paywall State ──────────────────────────────────────────────────────────
     const { isAuthenticated, refreshUser } = useAuth();
     const [accessState, setAccessState] = useState('NO_ACCESS');
     const [paywallPrice, setPaywallPrice] = useState(500);
     const [totalProfilesCount, setTotalProfilesCount] = useState(0);
     const [purchaseLoading, setPurchaseLoading] = useState(false);
-    
-    // Server-resolved context
+
     const [serverSubcatId, setServerSubcatId] = useState(null);
     const [serverVariantName, setServerVariantName] = useState(null);
 
-    // ── Comparison State ───────────────────────────────────────────────────
     const [selectedSuppliers, setSelectedSuppliers] = useState([]);
 
     const toggleCompare = (supplierName) => {
@@ -107,8 +102,7 @@ const SearchResults = () => {
     const handleRawTabClick = (newScope, newIntent) => {
         setScope(newScope);
         setOverrideIntent(newIntent);
-        
-        // Update URL
+
         const params = new URLSearchParams(location.search);
         params.set('scope', newScope);
         params.set('intent', newIntent);
@@ -121,7 +115,6 @@ const SearchResults = () => {
         setError(null);
         try {
             const filters = {};
-            // Only send scope for non-HS-code searches or when a pill tab was clicked
             if (scope) filters.scope = scope;
             if (hsCode) filters.hs_code = hsCode;
             if (subcatId) filters.subcat_id = subcatId;
@@ -132,7 +125,6 @@ const SearchResults = () => {
             const data = await searchService.search(query, filters);
 
             if (data.is_category_bridge) {
-                // Backend matched an exact category! Fast-track to HS Code navigation.
                 const params = new URLSearchParams({ q: data.hs_code, hs_code: data.hs_code });
                 if (variantName) params.set('variant_name', variantName);
                 if (subcatId) params.set('subcat_id', subcatId);
@@ -152,7 +144,7 @@ const SearchResults = () => {
                 setNeedsDisambig(true);
                 setIsBroadSearch(false);
                 setVariants(data.variants || []);
-                setDisambigPage(1);  // reset to first page on new disambiguation
+                setDisambigPage(1);
                 setResults([]);
                 setMarketSnapshot(null);
                 setParsedQueryInfo(data.parsed_query || null);
@@ -171,8 +163,6 @@ const SearchResults = () => {
                 setMarketSnapshot(data.market_snapshot);
                 setSearchEngine(data.search_engine || '');
                 if (data.parsed_query?.intent) {
-                    // Only update parsedIntent if backend returns a definite intent
-                    // AND we don't already have overrideIntent or explicit intent
                     const backendIntent = data.parsed_query.intent;
                     if (backendIntent && backendIntent !== 'UNKNOWN') {
                         setParsedIntent(backendIntent);
@@ -180,7 +170,6 @@ const SearchResults = () => {
                         setParsedIntent('UNKNOWN');
                     }
                 } else if (!overrideIntent) {
-                    // No backend intent and no override — stay UNKNOWN to show pills
                     setParsedIntent('UNKNOWN');
                 }
                 
@@ -208,16 +197,15 @@ const SearchResults = () => {
         fetchResults();
     }, [fetchResults]);
 
-    // ── When user picks a variant from the disambiguation panel ───────────
     const handleVariantPick = (variant) => {
-        // Drill-down node (e.g. '1702') — navigate tree, don't go to results yet
+        // Drill-down node (e.g. '1702') — navigate the tree, don't run a search yet.
         if (variant.is_drill_down) {
             const params = new URLSearchParams({ q: variant.hs_code, hs_code: variant.hs_code });
             navigate(`/search/results?${params.toString()}`);
             return;
         }
 
-        // For HS code flows, do NOT send scope — the 4-tab pill UI handles direction.
+        // HS code flows must NOT send scope — the 4-tab pill UI handles direction.
         const queryParamsObj = {
             q: query,
             hs_code: variant.hs_code,
@@ -225,12 +213,10 @@ const SearchResults = () => {
             variant_name: variant.name,
         };
 
-        // Only carry scope for normal text searches
         if (!isRawHsCodeMode && scope) {
             queryParamsObj.scope = scope;
         }
 
-        // Preserve external country constraint
         if (selectedCountry) {
             queryParamsObj.country = selectedCountry;
         } else if (parsedQueryInfo && parsedQueryInfo.country) {
@@ -247,11 +233,10 @@ const SearchResults = () => {
         setNeedsDisambig(false);
     };
 
-    // ── New search from top bar ────────────────────────────────────────────
     const handleSearch = (e) => {
         e.preventDefault();
         const trimmedInput = inputValue.trim();
-        if (!trimmedInput) return; // Don't search on empty input
+        if (!trimmedInput) return;
         setSelectedCountry(null);
         setPriceMin('');
         setPriceMax('');
@@ -261,17 +246,16 @@ const SearchResults = () => {
         setTempPriceMax('');
         setTempVolumeMin('');
         setHsCode(null);
-        setSubcatId(null);      // Clear variant pin from previous disambiguation click
-        setVariantName(null);   // Clear variant name pin from previous disambiguation click
+        setSubcatId(null);
+        setVariantName(null);
         setOverrideIntent(null);
-        
+
         const params = new URLSearchParams();
         params.set('q', trimmedInput);
         if (scope && scope !== 'null') {
             params.set('scope', scope);
         }
         navigate(`/search/results?${params.toString()}`);
-        // Note: setQuery will be synced via the location.search useEffect above
     };
 
     const applyFilters = () => {
@@ -292,7 +276,6 @@ const SearchResults = () => {
         setTempVolumeMin('');
     };
 
-    // ── Paywall Purchase Logic ──────────────────────────────────────────────
     const handlePurchase = async () => {
         if (!isAuthenticated) {
             navigate('/login');
@@ -323,7 +306,7 @@ const SearchResults = () => {
                 }
             } else {
                 await refreshUser();
-                fetchResults(); // Refresh data smoothly
+                fetchResults();
             }
         } catch (err) {
             alert('Network error during purchase.');
@@ -332,18 +315,15 @@ const SearchResults = () => {
         }
     };
 
-    // ── Entity type label ──────────────────────────────────────────────────
     const activeIntent = overrideIntent || parsedIntent;
-    
-    // Only show pills if scope is missing, OR if the intent couldn't be detected (UNKNOWN).
-    // If we have both a valid scope and a known intent, hide the pills.
+
+    // Show pills only when scope is missing or intent is UNKNOWN.
     const showPills = !scope || scope === 'null' || activeIntent === 'UNKNOWN';
     
     const entityLabel = activeIntent === 'SELL' ? 'Buyers'
         : activeIntent === 'UNKNOWN' ? 'Suppliers & Buyers'
         : 'Suppliers';
 
-    // ── Local Frontend Filtering & Sorting ─────────────────────────────────
     let sortedResults = results.filter((r) => {
         if (selectedCountry && r.country !== selectedCountry) return false;
         if (priceMin && r.avg_price < parseFloat(priceMin)) return false;
@@ -366,19 +346,16 @@ const SearchResults = () => {
         }
     }, [priceMin, priceMax, results.length, sortedResults.length]);
 
-    // ── HS Code Dual-Track Routing ─────────────────────────────────────────
     // Leaf HS codes in our DB are always 7 raw digits (e.g. 1701.991 = 1701991).
-    // Anything with fewer than 7 digits — even if it has a dot (e.g. 1704.9 = 5 digits)
-    // — is still a navigational parent and should show SummaryView.
+    // Anything shorter — even with a dot (e.g. 1704.9 = 5 digits) — is a navigational
+    // parent and should show SummaryView instead of DataDashboard.
     if (isRawHsCodeMode) {
         const queryDigits = (hsCode || query).replace(/\./g, '');
         const isNumeric = /^\d+$/.test(queryDigits);
         
         if (isDashboardMode || (isNumeric && queryDigits.length >= 7)) {
-            // Leaf numeric code OR forced dashboard mode → go straight to DataDashboard
             return <DataDashboard />;
         } else if (queryDigits.length > 0) {
-            // Still navigating (short numeric code or an alphabet category name like "Other")
             return <SummaryView />;
         }
     }
@@ -386,8 +363,6 @@ const SearchResults = () => {
     return (
         <div className="min-h-screen bg-slate-50 font-sans">
             <Navbar />
-
-            {/* Search bar */}
             <div className="bg-white border-b-2 border-slate-100 sticky top-0 z-10 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 md:px-8 w-full py-3 md:py-4" >
                     <form onSubmit={handleSearch} className="w-full relative">
@@ -413,8 +388,6 @@ const SearchResults = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex flex-col md:flex-row gap-8" className="max-w-7xl mx-auto px-6 py-8 flex items-start gap-8">
-
-                {/* Left Sidebar: Filters (hidden during disambiguation) */}
                 {!needsDisambig && (
                     <aside className="w-64 hidden md:block space-y-6 flex-shrink-0">
                         <div className="flex items-center justify-between mb-4">
@@ -486,11 +459,7 @@ const SearchResults = () => {
                         </button>
                     </aside>
                 )}
-
-                {/* Main Content */}
                 <main className="flex-1 space-y-4">
-
-                    {/* ── Scope Mismatch Banner ──────────────────────── */}
                     {scopeMismatch && !loading && (
                         <div className="text-center py-16 bg-white rounded-xl border-2 border-blue-100 p-8 shadow-sm">
                             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔄</div>
@@ -517,8 +486,6 @@ const SearchResults = () => {
                             </button>
                         </div>
                     )}
-
-                    {/* ── Broad Search Warning ──────────────────────────── */}
                     {isBroadSearch && !loading && !scopeMismatch && (
                         <div className="text-center py-16 text-slate-400 bg-white rounded-xl border-2 border-amber-100 p-8 shadow-sm">
                             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌐</div>
@@ -529,8 +496,6 @@ const SearchResults = () => {
                             </p>
                         </div>
                     )}
-
-                    {/* ── Disambiguation Panel ───────────────────────────── */}
                     {needsDisambig && !loading && !scopeMismatch && (
                         <div>
                             <div className="flex items-center gap-3 mb-6">
@@ -577,8 +542,6 @@ const SearchResults = () => {
                                     </button>
                                 ))}
                             </div>
-
-                            {/* Pagination Controls */}
                             {variants.length > DISAMBIG_PAGE_SIZE && (
                                 <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
                                     <p className="text-sm text-slate-500">
@@ -620,12 +583,8 @@ const SearchResults = () => {
                             )}
                         </div>
                     )}
-
-                    {/* ── Normal Results ─────────────────────────────────── */}
                     {!needsDisambig && !isBroadSearch && !scopeMismatch && (
                         <div className="flex flex-col">
-
-                            {/* ── Tab Pill Buttons for Intent Mapping ──────────────── */}
                             {showPills && (
                                 <div className="mb-6">
                                     <h3 className="text-slate-500 font-bold uppercase tracking-wide text-xs mb-3">Select Trade Direction</h3>
@@ -796,8 +755,6 @@ const SearchResults = () => {
                                     </div>
                                 </div>
                             )})}
-
-                            {/* Inline Teaser CTA (Unified Paywall Integration) */}
                             {!loading && !error && accessState === 'NO_ACCESS' && sortedResults.length > 0 && (
                                 <div className="mt-8 bg-gradient-to-br from-emerald-50 via-white to-teal-50/30 p-8 pt-10 rounded-2xl border border-emerald-200 shadow-[0_10px_35px_rgba(16,185,129,0.08)] overflow-hidden relative group">
                                     <div className="absolute -top-12 -right-12 opacity-5 pointer-events-none transform group-hover:scale-110 transition-transform duration-700">
@@ -854,8 +811,6 @@ const SearchResults = () => {
                         </div>
                     )}
                 </main>
-
-                {/* Right Panel: Market Snapshot */}
                 {!needsDisambig && (
                     <aside className="w-72 hidden lg:block space-y-6 flex-shrink-0">
                         {marketSnapshot && (
@@ -885,8 +840,6 @@ const SearchResults = () => {
                     </aside>
                 )}
             </div>
-
-            {/* ── Sticky Compare Bar ────────────────────────────────────────────── */}
             {selectedSuppliers.length > 0 && (
                 <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 z-50 transform transition-transform duration-300">
                     <div className="max-w-7xl mx-auto flex items-center justify-between">

@@ -1,21 +1,9 @@
-"""
-Integration tests for the subscriptions app API views.
-
-Tests cover:
-- List subscription plans
-- Redeem code functionality
-- Token balance updates
-- Subscription creation
-"""
-
 import pytest
 from django.urls import reverse
 
 
 @pytest.mark.django_db
 class TestListPlans:
-    """Test cases for listing subscription plans."""
-    
     def test_list_all_plans(self, api_client, create_subscription_plan):
         """Test listing all subscription plans."""
         create_subscription_plan(plan_name='Basic', price=9.99, tokens_included=50)
@@ -60,8 +48,6 @@ class TestListPlans:
 
 @pytest.mark.django_db
 class TestRedeemCode:
-    """Test cases for redeem code functionality."""
-    
     def test_valid_code_redemption(self, authenticated_django_client, redeem_code, user):
         """Test successful code redemption."""
         initial_balance = user.token_balance
@@ -169,8 +155,6 @@ class TestRedeemCode:
 
 @pytest.mark.django_db
 class TestRedeemCodeModel:
-    """Test cases for RedeemCode model methods."""
-    
     def test_generate_code_uniqueness(self):
         """Test that generated codes are unique."""
         from subscriptions.models import RedeemCode

@@ -1,0 +1,101 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+
+\definecolor{navy}{RGB}{10,40,90}
+\definecolor{rulegrey}{RGB}{120,120,120}
+\definecolor{stagebg}{RGB}{255,250,235}
+\definecolor{stageborder}{RGB}{180,140,40}
+\definecolor{accent}{RGB}{180,30,30}
+
+\titleformat{\section}
+  {\color{navy}\Large\bfseries}{\thesection}{0.6em}{}
+
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{navy}ZaraiLink --- 90-second Script}
+\fancyhead[R]{\small\color{navy}Slides 4, 5, 6, 7}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{rulegrey}\leaders\hrule height \headrulewidth\hfill}}
+
+\newtcolorbox{stagebox}[1][]{%
+  colback=stagebg,colframe=stageborder,
+  left=8pt,right=8pt,top=4pt,bottom=4pt,
+  boxrule=0.5pt,arc=2pt,
+  #1
+}
+
+\newcommand{\beat}[1]{\textcolor{accent}{\textbf{[#1]}}}
+
+\title{\color{navy}\bfseries ZaraiLink --- 90-second Speaker Script \\[0.3em] \large Slides 4, 5, 6, 7 --- the short version}
+\author{Group 5}
+\date{Total budget: 90 seconds}
+
+\begin{document}
+
+\maketitle
+
+\begin{stagebox}
+\textbf{How to read this.} Just talk. The lines below are roughly what to say --- not a script to memorise.
+\end{stagebox}
+
+\vspace{0.3em}
+\hrule height 0.4pt
+\vspace{0.5em}
+
+% =====================================================================
+\section*{Slide 4 --- Architecture \quad \normalsize\textcolor{rulegrey}{$\sim$25 seconds}}
+% =====================================================================
+
+\beat{25s}
+\textit{``This is how the system fits together. A React frontend talks to a Django REST backend over HTTPS. Inside the backend, two pieces matter: a Security and Access layer that verifies tokens on every request, and an Intelligence Layer that does the search, aggregation, and NLU work. Everything persists in PostgreSQL --- users, subscriptions, transactions, companies. Redis caches NLU results, and we only call out to a hosted language model for the trickiest one-in-twenty queries.''}
+
+\vspace{0.5em}
+\hrule height 0.4pt
+\vspace{0.5em}
+
+% =====================================================================
+\section*{Slide 5 --- Use Case and Dataset \quad \normalsize\textcolor{rulegrey}{$\sim$22 seconds}}
+% =====================================================================
+
+\beat{22s}
+\textit{``Two kinds of users --- importers, exporters, and analysts on one side, admins on the other. Users can search by HS code or in plain English, browse a market dashboard, look through the company directory, and spend tokens to unlock premium contacts. The data comes from our industry partner PAR --- over nine thousand raw sugar transactions from 2024 and 2025, of which we manually cleaned five thousand. Everything sits in a four-level hierarchy that mirrors the World Customs Organisation's HS code structure.''}
+
+\vspace{0.5em}
+\hrule height 0.4pt
+\vspace{0.5em}
+
+% =====================================================================
+\section*{Slide 6 --- ERD \quad \normalsize\textcolor{rulegrey}{$\sim$18 seconds}}
+% =====================================================================
+
+\beat{18s}
+\textit{``This looks like a lot of tables, but it's really four groups. Identity is one table --- the user with their token balance. The catalog is the four-level product hierarchy plus the transaction ledger, which is the heart of the schema. The directory holds companies and their key contacts. And access tracks subscriptions and unlocks. Each group is its own Django app.''}
+
+\vspace{0.5em}
+\hrule height 0.4pt
+\vspace{0.5em}
+
+% =====================================================================
+\section*{Slide 7 --- Search Pipeline \quad \normalsize\textcolor{rulegrey}{$\sim$25 seconds}}
+% =====================================================================
+
+\beat{25s}
+\textit{``When a search comes in, we first check if it's numeric --- HS codes go straight to a direct database lookup. Everything else flows through an NLU pipeline: SetFit picks the intent, GLiNER pulls out product and country entities, and RapidFuzz handles typos. We validate the result, run one Django ORM aggregation that rolls every transaction up per supplier, and rank by a hand-tuned blend of volume, shipment count, recency, and price --- with the weights swapping when the user asks for ``cheapest'' or ``most reliable''. Access control redacts premium fields on the way out.''}
+
+\vspace{0.8em}
+\hrule height 0.4pt
+\vspace{0.6em}
+
+\begin{stagebox}
+\textbf{Time check.} Slide 4: $\sim$25s. Slide 5: $\sim$22s. Slide 6: $\sim$18s. Slide 7: $\sim$25s. About 90 seconds. If you're running tight, drop the Redis / language-model line on slide 4 first --- it's the least load-bearing.
+\end{stagebox}
+
+\end{document}

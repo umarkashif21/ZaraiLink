@@ -33,7 +33,7 @@ for method, path in perf_endpoints:
         else:
             requests.post(BASE_URL + path)
         times.append((time.time() - start) * 1000)
-    
+
     avg_time = sum(times) / len(times)
     passed = "Pass" if avg_time < 3000 else "Fail"
     print(f"{path:<45} | {avg_time:>13.2f} ms | {passed}")
@@ -48,7 +48,7 @@ for method, path in sec_endpoints:
         r = requests.get(BASE_URL + path)
     else:
         r = requests.post(BASE_URL + path)
-    
+
     status = r.status_code
     expected = "401/403"
     passed = "Pass" if status in [401, 403] else "Fail"

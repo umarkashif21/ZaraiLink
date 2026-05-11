@@ -26,7 +26,7 @@ const CompanyProducts = () => {
   const [error, setError] = useState(null);
 
   const companyName = decodeURIComponent(id);
-  const _tab = 'products'; // ensure tab highlight
+  const _tab = 'products';
 
   useEffect(() => {
     let cancel = false;
@@ -92,8 +92,6 @@ const CompanyProducts = () => {
   return (
     <><Navbar />
       <div style={{ padding: '2rem', background: '#fafafa', minHeight: '100vh', fontFamily: "'Satoshi', 'Inter', -apple-system, sans-serif" }}>
-
-        {/* ── Header ─────────────────────────────────────── */}
         <div style={{ marginBottom: '2rem' }}>
           <button onClick={() => navigate('/trade-intelligence/ledger')}
             style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.85rem', padding: 0, marginBottom: '0.75rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -126,8 +124,6 @@ const CompanyProducts = () => {
             </button>
           ))}
         </div>
-
-        {/* ── SECTION 1: Products Summary Header ────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ background: 'white', borderRadius: '8px', padding: '1.25rem 1.5rem', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
             <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Total Products</p>
@@ -142,8 +138,6 @@ const CompanyProducts = () => {
             <div style={{ fontSize: '2rem', fontWeight: 600, color: '#111827', fontFeatureSettings: '"tnum"', letterSpacing: '-0.01em', lineHeight: 1.1 }}>{fmtM(summary?.total_value)}</div>
           </div>
         </div>
-
-        {/* ── SECTION 7: Filters ────────────────────────── */}
         <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Filter Analysis</h3>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -176,10 +170,7 @@ const CompanyProducts = () => {
             </div>
           </div>
         </div>
-
-        {/* ── SECTION 2/3: Products Table & Dist ────────── */}
         <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-          {/* Section 2: Products Table */}
           <div style={{ flex: '2 1 600px', background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
               <h3 style={{ margin: '0', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Product Portfolio</h3>
@@ -227,8 +218,6 @@ const CompanyProducts = () => {
               </table>
             </div>
           </div>
-
-          {/* Section 3: Product Distribution */}
           <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
               <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Volume Distribution</h3>
@@ -263,11 +252,7 @@ const CompanyProducts = () => {
             </div>
           </div>
         </div>
-
-        {/* ── SECTION 4 & 5: Trend & Matrix ──────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-
-          {/* Section 4: Avg Price Trend */}
           <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
             <h3 style={{ margin: '0', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Average Price Trends</h3>
             <p style={{ margin: '0.25rem 0 1.25rem 0', fontSize: '0.85rem', color: '#6b7280' }}>Monthly USD/MT trajectory for leading products</p>
@@ -290,8 +275,6 @@ const CompanyProducts = () => {
               ) : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '0.85rem' }}>No trend data</div>}
             </div>
           </div>
-
-          {/* Section 5: Matrix Table */}
           <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', overflowY: 'auto', maxHeight: '370px' }}>
             <h3 style={{ margin: '0', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Top {partnerLabelPlural} by Product</h3>
             <p style={{ margin: '0.25rem 0 1.25rem 0', fontSize: '0.85rem', color: '#6b7280' }}>Revenue concentration amongst counterparties</p>
@@ -313,8 +296,6 @@ const CompanyProducts = () => {
             ) : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '0.85rem', height: '100%' }}>No partner data</div>}
           </div>
         </div>
-
-        {/* ── SECTION 6: Top Partner Per Product ────────── */}
         <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <h3 style={{ margin: '0', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Primary {partnerLabel} per Product</h3>
           <p style={{ margin: '0.25rem 0 1.25rem 0', fontSize: '0.85rem', color: '#6b7280' }}>Identify the leading counterparties driving product volume</p>

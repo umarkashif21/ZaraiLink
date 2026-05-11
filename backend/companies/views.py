@@ -19,7 +19,6 @@ from .serializers import (
 
 
 class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
-    """API for browsing companies"""
     queryset = Company.objects.filter(verification_status='verified')
     permission_classes = [AllowAny]
     
@@ -30,15 +29,10 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        
-        if request.user.is_authenticated:
-            pass # Interaction tracking was removed
-            
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
-        """Override list to include AI fallback indicator in response"""
         queryset = self.filter_queryset(self.get_queryset())
         
         page = self.paginate_queryset(queryset)
@@ -59,7 +53,6 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
 
     
     def get_queryset(self):
-        """Filter companies based on query params"""
         queryset = self.queryset
         
         
@@ -168,7 +161,6 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def regions(self, request):
-        """Get available regions (provinces) dynamically"""
         regions = Company.objects.filter(
             verification_status='verified',
             province__isnull=False
@@ -177,7 +169,6 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'])
     def countries(self, request):
-        """Get distinct countries across all verified companies"""
         role = self.request.query_params.get('role', '').strip()
         qs = Company.objects.filter(verification_status='verified').exclude(country='').exclude(country__isnull=True)
         if role:
@@ -187,7 +178,6 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def hsn_codes(self, request):
-        """Get available HSN codes from products"""
         from .models import CompanyProduct
         hsn_codes = CompanyProduct.objects.exclude(
             hsn_code=''
@@ -196,13 +186,11 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
-    """API for key contacts"""
     queryset = KeyContact.objects.all()
     serializer_class = KeyContactSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
-        """Filter contacts by company if specified"""
         queryset = self.queryset
         company = self.request.query_params.get('company')
         if company:
@@ -213,7 +201,6 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     @transaction.atomic
     def unlock(self, request, pk=None):
-        """Unlock a contact using tokens"""
         contact = self.get_object()
         user = request.user
         
@@ -271,9 +258,8 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SectorListView(APIView):
-    """List all sectors"""
     permission_classes = [AllowAny]
-    
+
     def get(self, request):
         sectors = Sector.objects.all().order_by('name')
         serializer = SectorSerializer(sectors, many=True)
@@ -281,9 +267,8 @@ class SectorListView(APIView):
 
 
 class CompanyTypeListView(APIView):
-    """List all company types"""
     permission_classes = [AllowAny]
-    
+
     def get(self, request):
         types = CompanyType.objects.all().order_by('name')
         serializer = CompanyTypeSerializer(types, many=True)
@@ -291,9 +276,8 @@ class CompanyTypeListView(APIView):
 
 
 class CompanyRoleListView(APIView):
-    """List all company roles"""
     permission_classes = [AllowAny]
-    
+
     def get(self, request):
         roles = CompanyRole.objects.all().order_by('name')
         serializer = CompanyRoleSerializer(roles, many=True)

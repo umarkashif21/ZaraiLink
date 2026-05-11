@@ -103,7 +103,6 @@ class RedisClient:
     
     @classmethod
     def _inmemory_search(cls, query_embedding, top_k=5):
-        """Fallback in-memory vector search using database embeddings."""
         try:
             from trade_data.models import CompanyEmbedding
             from companies.models import Company
@@ -159,7 +158,6 @@ class RedisClient:
 
     @classmethod
     def get_vector(cls, key_prefix, object_id):
-        """Retrieve vector for a specific object to use in recommendations"""
         r = cls.get_connection()
         if not r: return None
         

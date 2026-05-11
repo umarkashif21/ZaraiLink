@@ -1,26 +1,10 @@
-"""
-train_intent.py - SetFit Intent Classifier Training
-=====================================================
-Trains a few-shot BUY/SELL intent classifier using:
-  Backbone : BAAI/bge-small-en-v1.5 (SOTA small encoder, SetFit-compatible)
-  Framework: SetFit (contrastive fine-tuning, no need for large labelled sets)
+"""SetFit BUY/SELL intent classifier training.
 
-NOTE: We originally planned to use answerdotai/ModernBERT-base, but it requires
-transformers>=4.48 which conflicts with SetFit 1.1.x (needs transformers<4.42).
-BAAI/bge-small-en-v1.5 is a production-grade replacement — faster, smaller, and
-consistently top-ranked on the MTEB leaderboard for retrieval/classification tasks.
+Backbone: BAAI/bge-small-en-v1.5. We avoid answerdotai/ModernBERT-base because
+it requires transformers>=4.48 which conflicts with SetFit 1.1.x.
 
-Labels:
-  0 - BUY  (user wants to find a supplier / import goods)
-  1 - SELL (user wants to find a buyer  / export goods)
-
-Output: models/intent_model/  (Hugging-Face-compatible directory)
-
-Usage:
-    cd backend
-    .venv\\Scripts\\activate
-    pip install setfit
-    python -m search.services.train_intent
+Labels: 0=BUY, 1=SELL. Output: models/intent_model/.
+Run: python -m search.services.train_intent
 """
 
 import os
@@ -31,17 +15,12 @@ from setfit import SetFitModel, Trainer, TrainingArguments
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# 0. Output path
-# ---------------------------------------------------------------------------
 MODEL_OUTPUT = os.path.join(os.path.dirname(__file__), "..", "models", "intent_model")
 os.makedirs(MODEL_OUTPUT, exist_ok=True)
 
-# ---------------------------------------------------------------------------
-# 1. Seed Training Data  (8-12 examples per class is enough for SetFit)
-# ---------------------------------------------------------------------------
+# 15 examples per class is plenty for SetFit's contrastive training.
 TRAIN_TEXTS = [
-    # ── BUY (label 0) ──────────────────────────────────────────────────────
+    # BUY (label 0)
     "Looking for sugar suppliers from Brazil",
     "I want to buy refined sugar",
     "Find me importers of rice from Vietnam",
@@ -57,7 +36,7 @@ TRAIN_TEXTS = [
     "Need to buy synthetic yarn with monthly shipments",
     "Which countries export the most basmati rice?",
     "Looking for reliable polyethylene suppliers",
-    # ── SELL (label 1) ─────────────────────────────────────────────────────
+    # SELL (label 1)
     "Looking for rice buyers in Dubai",
     "Find buyers for our pink Himalayan salt",
     "I want to export cotton to the UAE",
@@ -80,47 +59,34 @@ TRAIN_LABELS = (
     + [1] * 15  # SELL
 )
 
-# ---------------------------------------------------------------------------
-# 2. Evaluation Data (held-out)
-# ---------------------------------------------------------------------------
 EVAL_TEXTS = [
-    "source chemicals from China",          # BUY
-    "I need to import machinery",           # BUY
-    "find buyers for our wheat",            # SELL
-    "export Pakistani dates to UK",         # SELL
+    "source chemicals from China",
+    "I need to import machinery",
+    "find buyers for our wheat",
+    "export Pakistani dates to UK",
 ]
 EVAL_LABELS = [0, 0, 1, 1]
 
-# ---------------------------------------------------------------------------
-# 3. Build HuggingFace Datasets
-# ---------------------------------------------------------------------------
 train_ds = Dataset.from_dict({"text": TRAIN_TEXTS, "label": TRAIN_LABELS})
 eval_ds  = Dataset.from_dict({"text": EVAL_TEXTS,  "label": EVAL_LABELS})
 
-# ---------------------------------------------------------------------------
-# 4. Load SetFit Model (body only first)
-# ---------------------------------------------------------------------------
 logger.info("Loading SetFit backbone: BAAI/bge-small-en-v1.5 ...")
 model = SetFitModel.from_pretrained(
     "BAAI/bge-small-en-v1.5",
     labels=["BUY", "SELL"],
 )
 
-# ---------------------------------------------------------------------------
-# 5. Training Arguments (contrastive body training only)
-# ---------------------------------------------------------------------------
+# eval_strategy/save_strategy "no" because we fit the sklearn head and save
+# manually after contrastive body training.
 args = TrainingArguments(
     output_dir=MODEL_OUTPUT,
     num_epochs=3,
     batch_size=8,
     num_iterations=20,
-    eval_strategy="no",       # skip eval to avoid Trainer head complications
-    save_strategy="no",       # we handle saving ourselves
+    eval_strategy="no",
+    save_strategy="no",
 )
 
-# ---------------------------------------------------------------------------
-# 6. Train the body (SentenceTransformer fine-tuning via contrastive pairs)
-# ---------------------------------------------------------------------------
 trainer = Trainer(
     model=model,
     args=args,
@@ -130,41 +96,29 @@ trainer = Trainer(
 logger.info("Starting SetFit contrastive training ...")
 trainer.train()
 
-# ---------------------------------------------------------------------------
-# 7. Manually fit the sklearn head on full training embeddings
-#    and persist everything explicitly.
-# ---------------------------------------------------------------------------
 import joblib
 import torch
 
 logger.info("Fitting classification head on training embeddings ...")
 
-# Generate embeddings using the trained body
 with torch.no_grad():
     train_embeddings = model.model_body.encode(TRAIN_TEXTS, batch_size=16, convert_to_numpy=True)
 
-# Fit the sklearn head
 model.model_head.fit(train_embeddings, TRAIN_LABELS)
 logger.info("Head fitted.")
 
-# Save the SentenceTransformer body
 model.model_body.save(MODEL_OUTPUT)
 logger.info(f"Body saved to: {MODEL_OUTPUT}")
 
-# Explicitly save the sklearn head
 head_path = os.path.join(MODEL_OUTPUT, "model_head.pkl")
 joblib.dump(model.model_head, head_path)
 logger.info(f"Head saved to: {head_path}")
 
-# Also save model config so SetFitModel.from_pretrained() can read it
 import json as _json
 config_path = os.path.join(MODEL_OUTPUT, "config_setfit.json")
 with open(config_path, "w") as f:
     _json.dump({"id2label": {0: "BUY", 1: "SELL"}, "label2id": {"BUY": 0, "SELL": 1}}, f)
 
-# ---------------------------------------------------------------------------
-# 8. Quick smoke test
-# ---------------------------------------------------------------------------
 smoke = [
     "I want to buy sugar from Vietnam",
     "Looking for buyers for our rice",

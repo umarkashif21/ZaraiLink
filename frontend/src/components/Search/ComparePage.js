@@ -44,7 +44,6 @@ const ComparePage = () => {
         fetchCompare();
     }, [suppliersParam, query, scopeParam, subcatIdParam, variantNameParam]);
 
-    // ── Winner Logic ──────────────────────────────────────────────
     const getWinners = () => {
         if (!suppliers.length) return {};
         let minPrice = Infinity;
@@ -72,12 +71,10 @@ const ComparePage = () => {
 
     const winners = getWinners();
 
-    // ── Document Export Logic ─────────────────────────────────────────────
     const exportPDF = () => {
         const doc = new jsPDF('landscape');
-        
-        // --- 1. Header Section ---
-        doc.setFillColor(16, 185, 129); // Emerald 500
+
+        doc.setFillColor(16, 185, 129);
         doc.rect(0, 0, doc.internal.pageSize.width, 25, 'F');
         
         doc.setTextColor(255, 255, 255);
@@ -89,7 +86,6 @@ const ComparePage = () => {
         doc.setFont("helvetica", "normal");
         doc.text(isBuyerMode ? "Buyer Comparison Report" : "Supplier Comparison Report", 210, 16);
 
-        // Date & Query Details
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(10);
         doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 35);
@@ -98,7 +94,6 @@ const ComparePage = () => {
             doc.text(`Product Scope: ${variantNameParam || 'Specific Variant'}`, 14, 49);
         }
 
-        // Helpers for clean formatting and sanity
         const formatCurrency = (val) => {
             const num = parseFloat(val);
             if (isNaN(num) || num <= 0 || num > 10000) return 'N/A';
@@ -111,7 +106,6 @@ const ComparePage = () => {
             return num.toLocaleString();
         };
 
-        // --- 2. Comparison Table ---
         const cleanName = (name) => name ? name.replace(/[^\x00-\x7F]/g, "") : 'Unknown';
 
         const tableColumn = ["Metrics", ...suppliers.map(s => cleanName(s.name))];
@@ -160,7 +154,6 @@ const ComparePage = () => {
             alternateRowStyles: { fillColor: [252, 253, 253] }
         });
 
-        // --- 3. Price Trend Section ---
         let finalY = doc.lastAutoTable.finalY + 15;
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
@@ -169,7 +162,6 @@ const ComparePage = () => {
         finalY += 10;
 
         suppliers.forEach(s => {
-            // Check page break before rendering supplier block
             if (finalY > doc.internal.pageSize.height - 40) {
                 doc.addPage();
                 finalY = 20;
@@ -177,12 +169,11 @@ const ComparePage = () => {
 
             doc.setFontSize(11);
             doc.setFont("helvetica", "bold");
-            doc.setTextColor(16, 185, 129); // Emerald 500
+            doc.setTextColor(16, 185, 129);
             doc.text(`${isBuyerMode ? 'Buyer' : 'Supplier'}: ${cleanName(s.name)}`, 14, finalY);
             finalY += 4;
 
             if (s.sparkline && s.sparkline.length > 0) {
-                // Filter out bad data points (e.g. >10000 or NaN)
                 const validPoints = s.sparkline.filter(sp => {
                     const p = parseFloat(sp.price);
                     return !isNaN(p) && p > 0 && p <= 10000;
@@ -204,7 +195,7 @@ const ComparePage = () => {
                         margin: { left: 14, right: 14 }
                     });
                     
-                    finalY = doc.lastAutoTable.finalY + 12; // Update Y for next supplier
+                    finalY = doc.lastAutoTable.finalY + 12;
                 } else {
                     doc.setFontSize(9);
                     doc.setFont("helvetica", "italic");
@@ -221,7 +212,6 @@ const ComparePage = () => {
             }
         });
 
-        // --- 4. Footer ---
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
@@ -232,7 +222,6 @@ const ComparePage = () => {
             doc.text(cleanFooter, 14, pageHeight - 10);
         }
 
-        // Save PDF
         let dateStr = new Date().toISOString().split('T')[0];
         let safeName = variantNameParam ? variantNameParam.replace(/[^a-z0-9]/gi, '_') : 'Product';
         doc.save(`ZaraiLink_Comparison_${safeName}_${dateStr}.pdf`);
@@ -263,15 +252,12 @@ const ComparePage = () => {
         );
     }
 
-    // Build query params for routing specifically backward
     const backToResultsUrl = `/search/results?q=${encodeURIComponent(query)}&scope=${encodeURIComponent(scopeParam)}${subcatIdParam ? `&subcat_id=${encodeURIComponent(subcatIdParam)}` : ''}${variantNameParam ? `&variant_name=${encodeURIComponent(variantNameParam)}` : ''}`;
 
     return (
         <div className="min-h-screen bg-gray-50 pt-20 pb-24 font-primary">
             <Navbar />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-                
-                {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
                     <div>
                         <Link to={backToResultsUrl} className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-emerald-600 transition-colors mb-2">
@@ -288,7 +274,6 @@ const ComparePage = () => {
                     </button>
                 </div>
 
-                {/* Table wrapper */}
                 <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-100 overflow-x-auto">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
@@ -304,7 +289,6 @@ const ComparePage = () => {
                         </thead>
                         <tbody>
 
-                            {/* Average Price Row */}
                             <tr className="border-b border-gray-100 hover:bg-emerald-50/30 transition-colors">
                                 <td className="p-4 font-bold text-gray-500 text-sm border-r border-gray-100 text-right">Avg Price ($/MT)</td>
                                 {suppliers.map((s, idx) => (
@@ -319,7 +303,6 @@ const ComparePage = () => {
                                 ))}
                             </tr>
 
-                            {/* Total Volume Row */}
                             <tr className="border-b border-gray-100 hover:bg-emerald-50/30 transition-colors">
                                 <td className="p-4 font-bold text-gray-500 text-sm border-r border-gray-100 text-right">Total Volume (MT)</td>
                                 {suppliers.map((s, idx) => (
@@ -334,7 +317,6 @@ const ComparePage = () => {
                                 ))}
                             </tr>
 
-                            {/* Shipment Count Row */}
                             <tr className="border-b border-gray-100 hover:bg-emerald-50/30 transition-colors">
                                 <td className="p-4 font-bold text-gray-500 text-sm border-r border-gray-100 text-right">Shipments</td>
                                 {suppliers.map((s, idx) => (
@@ -349,7 +331,6 @@ const ComparePage = () => {
                                 ))}
                             </tr>
 
-                            {/* Last Active Row */}
                             <tr className="border-b border-gray-100 hover:bg-emerald-50/30 transition-colors bg-gray-50/30">
                                 <td className="p-4 font-bold text-gray-500 text-sm border-r border-gray-100 text-right">Last Active</td>
                                 {suppliers.map((s, idx) => {
@@ -367,7 +348,6 @@ const ComparePage = () => {
                                 })}
                             </tr>
 
-                            {/* Historic Price Range Row */}
                             <tr className="border-b border-gray-100 hover:bg-emerald-50/30 transition-colors">
                                 <td className="p-4 font-bold text-gray-500 text-sm border-r border-gray-100 text-right">Historical Price Range</td>
                                 {suppliers.map((s, idx) => (
@@ -379,7 +359,6 @@ const ComparePage = () => {
                                 ))}
                             </tr>
 
-                            {/* Ships To / Buys From Row */}
                             <tr className="border-b-2 border-gray-100 hover:bg-emerald-50/30 transition-colors">
                                 <td className="p-4 font-bold text-gray-500 text-sm border-r border-gray-100 text-right">{isBuyerMode ? 'Buys From' : 'Ships To'}</td>
                                 {suppliers.map((s, idx) => (
@@ -393,7 +372,6 @@ const ComparePage = () => {
                                 ))}
                             </tr>
 
-                            {/* Price Trend Sparkline Row */}
                             <tr className="border-b-2 border-gray-100 hover:bg-emerald-50/30 transition-colors">
                                 <td className="p-4 font-bold text-gray-500 text-sm border-r border-gray-100 text-right">
                                     <div className="flex justify-end items-center gap-2">
@@ -428,7 +406,6 @@ const ComparePage = () => {
                                 ))}
                             </tr>
 
-                            {/* Action Row */}
                             <tr className="bg-gray-50/50">
                                 <td className="p-4 border-r border-gray-100"></td>
                                 {suppliers.map((s, idx) => (

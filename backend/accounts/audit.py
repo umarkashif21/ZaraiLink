@@ -1,6 +1,3 @@
-"""
-Audit logging for sensitive actions
-"""
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -8,7 +5,6 @@ import json
 
 
 class AuditLog(models.Model):
-    """Model to track sensitive user actions"""
     ACTION_TYPES = [
         ('contact_unlock', 'Contact Unlock'),
         ('bulk_unlock', 'Bulk Contact Unlock'),
@@ -47,16 +43,6 @@ class AuditLog(models.Model):
 
 
 def log_action(user, action_type, description='', metadata=None, request=None):
-    """
-    Log a user action to the audit trail
-    
-    Args:
-        user: User object
-        action_type: Type of action (must be in ACTION_TYPES)
-        description: Human-readable description
-        metadata: Additional JSON data
-        request: HTTP request object (optional, for IP/user agent)
-    """
     ip_address = None
     user_agent = ''
     
@@ -81,7 +67,6 @@ def log_action(user, action_type, description='', metadata=None, request=None):
 
 
 def get_user_activity(user, limit=50, action_types=None):
-    """Get recent activity for a user"""
     queryset = AuditLog.objects.filter(user=user)
     
     if action_types:

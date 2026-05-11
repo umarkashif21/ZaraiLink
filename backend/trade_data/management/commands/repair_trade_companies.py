@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction as db_transaction
 from django.db.models import Q
 from trade_data.models import Transaction
-from companies.models import Company  # adjust if app name differs
+from companies.models import Company
 
 
 class Command(BaseCommand):
@@ -23,14 +23,12 @@ class Command(BaseCommand):
             for tx in transactions:
                 processed += 1
 
-                # Normalize names
                 buyer_name = (tx.buyer or "").strip()
                 seller_name = (tx.seller or "").strip()
 
                 if not buyer_name and not seller_name:
                     continue
 
-                # Determine correct country logic
                 if tx.trade_type == "IMPORT":
                     buyer_country = tx.destination_country
                     seller_country = tx.origin_country
@@ -38,9 +36,6 @@ class Command(BaseCommand):
                     seller_country = tx.origin_country
                     buyer_country = tx.destination_country
 
-                # -----------------------------
-                # HANDLE BUYER
-                # -----------------------------
                 if buyer_name:
 
                     buyer_obj, created = Company.objects.get_or_create(
@@ -69,9 +64,6 @@ class Command(BaseCommand):
                             buyer_obj.save()
                             updated_count += 1
 
-                # -----------------------------
-                # HANDLE SELLER
-                # -----------------------------
                 if seller_name:
 
                     seller_obj, created = Company.objects.get_or_create(

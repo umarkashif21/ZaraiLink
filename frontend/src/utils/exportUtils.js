@@ -1,5 +1,3 @@
-// Stubbed export utils
-
 export const downloadCSV = (data, columns, filename) => {
   console.log(`Exported ${data?.length} rows to CSV:`, filename);
   alert("Export functionality has been removed.");

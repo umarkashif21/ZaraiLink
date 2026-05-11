@@ -7,34 +7,21 @@ import math
 class SupplierAggregator:
     def get_suppliers_for_subcategories(self, subcategory_ids, intent='BUY', scope='WORLDWIDE', country_filter=None, price_filter=None, volume_filter=None, time_filter=None, product_item_filter=None):
         """
-        Aggregates counterparty data (Suppliers or Buyers) for the given subcategory IDs.
-        
-        Args:
-            intent: 'BUY' (Find Suppliers) or 'SELL' (Find Buyers).
-            scope: 'WORLDWIDE' or 'PAKISTAN'.
-            country_filter: List of countries to filter by.
-            price_filter: Dict with 'ceiling' and 'floor'.
-            volume_filter: Requested volume in MT (used for soft compatibility scoring, NOT hard filter).
-            time_filter: Dict with 'start_date' and 'end_date'.
-            product_item_filter: List of ProductItem IDs to filter by (specific variants).
+        volume_filter is a soft compatibility score, NOT a hard filter.
+        product_item_filter pins to specific ProductItem IDs (variant level).
         """
         queryset = Transaction.objects.all()
-        
-        # Subcategory filter (optional — None means all products for filter-only queries)
+
         if subcategory_ids:
             queryset = queryset.filter(product_item__sub_category_id__in=subcategory_ids)
-            
-        # Specific Product Item (Variant) Filter
+
         if product_item_filter:
             queryset = queryset.filter(product_item__id__in=product_item_filter)
-        
-        # Default Scope
+
         scope = scope or 'WORLDWIDE'
-        
-        # Intent & Scope Logic
+
         if intent == 'UNKNOWN':
-            # No trade direction signal — return ALL companies across both import/export
-            # Sellers from import records + Buyers from export records
+            # No trade-direction signal: combine sellers from imports + buyers from exports.
             import_qs = queryset.filter(trade_type='IMPORT')
             export_qs = queryset.filter(trade_type='EXPORT')
 
@@ -77,30 +64,23 @@ class SupplierAggregator:
             return combined
 
         elif scope == 'IMPORT':
-            # Looking at IMPORT Data (Origin is foreign, destination is Pakistan)
             queryset = queryset.filter(trade_type='IMPORT')
             if intent == 'BUY':
-                # Import + Buy -> Foreign Suppliers
                 target_field = 'seller'
                 country_field = 'origin_country'
             else:
-                # Import + Sell -> Pakistani Buyers
                 target_field = 'buyer'
                 country_field = 'destination_country'
 
-        else: # scope == 'EXPORT'
-            # Looking at EXPORT Data (Origin is Pakistan, destination is foreign)
+        else:  # scope == 'EXPORT'
             queryset = queryset.filter(trade_type='EXPORT')
             if intent == 'SELL':
-                # Export + Sell -> Foreign Buyers
                 target_field = 'buyer'
                 country_field = 'destination_country'
             else:
-                # Export + Buy -> Pakistani Suppliers
                 target_field = 'seller'
                 country_field = 'origin_country'
 
-        # Apply Filters
         if country_filter and len(country_filter) > 0:
             filter_kwargs = {f"{country_field}__in": country_filter}
             queryset = queryset.filter(**filter_kwargs)
@@ -111,15 +91,10 @@ class SupplierAggregator:
             if time_filter.get('end_date'):
                 queryset = queryset.filter(reporting_date__lte=time_filter['end_date'])
 
-        # NOTE: Price filter is NOT applied here (not a row-level WHERE).
-        # It will be applied AFTER aggregation on the computed avg_price.
-        # Rationale: filtering individual rows by usd_per_mt would exclude a supplier
-        # if even ONE of their shipments was above the ceiling, even if their average
-        # price is well within the limit.  The correct semantic is supplier-level.
+        # Price filter is applied AFTER aggregation on the computed avg_price.
+        # A row-level WHERE on usd_per_mt would drop a supplier if any single
+        # shipment broke the ceiling, even when their weighted average is fine.
 
-
-
-        # Aggregate — NO hard volume filter at DB level
         results = queryset.values(target_field, country_field).annotate(
             total_volume=Sum('qty_mt'),
             weighted_price_sum=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField())),
@@ -128,17 +103,14 @@ class SupplierAggregator:
             max_shipment_vol=Max('qty_mt'),
             avg_shipment_vol=Avg('qty_mt')
         ).order_by('-total_volume')
-        
-        # Convert to list + Volume Compatibility Scoring
+
         counterparties = []
         for r in results:
             tv = float(r['total_volume'] or 0)
             wps = float(r.get('weighted_price_sum') or 0)
             avg_price = round(wps / tv, 2) if tv > 0 else 0.0
 
-            # Post-aggregation price filter (HAVING-equivalent on computed avg_price)
-            # This is the correct level: filter based on supplier's weighted average price,
-            # not individual transaction row prices.
+            # HAVING-equivalent: filter on the supplier's weighted average price.
             if price_filter:
                 ceiling = price_filter.get('ceiling')
                 floor = price_filter.get('floor')
@@ -173,21 +145,18 @@ class SupplierAggregator:
                 total = entry['total_volume']
                 avg = entry['avg_shipment_vol']
                 V = float(volume_filter)
-                
-                # Soft floor: exclude extreme mismatches (max single < 30% of V)
-                # BUT only if they also have low total volume
+
+                # Soft floor: drop extreme mismatches (max single < 30% AND total < 50%).
                 if mss < 0.3 * V and total < 0.5 * V:
                     continue
-                
-                # Volume Compatibility Score
+
                 single_match = min(mss / V, 1.0) if V > 0 else 0
                 capacity_match = min(total / V, 1.0) if V > 0 else 0
                 avg_match = min(avg / V, 1.0) if V > 0 else 0
-                
+
                 vol_score = 0.5 * single_match + 0.3 * capacity_match + 0.2 * avg_match
                 entry['volume_score'] = round(vol_score, 3)
-                
-                # Label
+
                 if vol_score >= 0.8:
                     entry['volume_fit'] = 'Strong'
                 elif vol_score >= 0.5:
@@ -198,23 +167,18 @@ class SupplierAggregator:
                     entry['volume_fit'] = 'Low'
             
             counterparties.append(entry)
-        
-        # If volume scoring was applied, sort by volume_score descending
+
         if volume_filter and volume_filter > 0:
             counterparties.sort(key=lambda x: x.get('volume_score', 0), reverse=True)
-            
+
         return counterparties
 
 
     def get_supplier_details(self, seller_name, subcategory_ids, product_item_filter=None, scope='WORLDWIDE'):
-        """
-        Get detailed stats, sparklines, and history for a specific supplier within a category.
-        """
-        # 1. First, build the MARKET queryset (all transactions for these products in this scope)
         market_qs = Transaction.objects.all()
         if subcategory_ids:
             market_qs = market_qs.filter(product_item__sub_category_id__in=subcategory_ids)
-            
+
         scope = scope or 'WORLDWIDE'
         if scope == 'EXPORT':
             market_qs = market_qs.filter(trade_type='EXPORT')
@@ -226,22 +190,18 @@ class SupplierAggregator:
         if product_item_filter:
             market_qs = market_qs.filter(product_item__id__in=product_item_filter)
 
-        # 2. Derive the ENTITY queryset from the market queryset
         queryset = market_qs.filter(seller__iexact=seller_name.strip()).order_by('-reporting_date')
 
         if not queryset.exists():
             return None
 
-        # 1. High-level Stats
         stats = queryset.aggregate(
             total_volume=Sum('qty_mt'),
             avg_price=Avg('usd_per_mt'),
             shipment_count=Count('id'),
             last_shipment_date=Max('reporting_date')
         )
-        
-        # 2. Sparklines (Monthly Aggregation)
-        # Group by Month and calculate Avg Price & Total Volume
+
         monthly_data = queryset.annotate(
             month=TruncMonth('reporting_date')
         ).values('month').annotate(
@@ -262,23 +222,18 @@ class SupplierAggregator:
         for tx in queryset[:50]:
             history.append({
                 "id": tx.id,
-                "transaction_hash": tx.tx_reference, # Unique ID
+                "transaction_hash": tx.tx_reference,
                 "buyer": tx.buyer,
-                "country": tx.destination_country, 
+                "country": tx.destination_country,
                 "quantity": float(tx.qty_mt or 0),
                 "price": float(tx.usd_per_mt or 0),
                 "date": tx.reporting_date
             })
 
-        # 4. Filters (Countries & Years)
         countries = list(queryset.values_list('destination_country', flat=True).distinct().order_by('destination_country'))
-        
-        # 5. Typical Shipment Sizes
-        # Bucket: 0-25, 25-50, 50-100, 100+
-        # We can do this in Python since we already have the queryset (or optimize with DB conditional aggregation)
-        # Given potential volume, let's do DB aggregation for performance
+
         from django.db.models import Case, When, Value, CharField
-        
+
         size_buckets = queryset.annotate(
             bucket=Case(
                 When(qty_mt__lte=25, then=Value('0-25')),
@@ -291,12 +246,11 @@ class SupplierAggregator:
             count=Count('id'),
             avg_price=Avg('usd_per_mt')
         ).order_by('bucket')
-        
-        # Format for frontend
+
         shipment_sizes = []
         bucket_order = ['0-25', '25-50', '50-100', '100+']
         size_dict = {item['bucket']: item for item in size_buckets}
-        
+
         for b in bucket_order:
             if b in size_dict:
                 shipment_sizes.append({
@@ -311,11 +265,8 @@ class SupplierAggregator:
                     "avg_price": 0
                 })
 
-        # 6. Buyer Insights
-        # Unique buyers scoped to the filtered product queryset (same scope as stats above)
         total_unique_buyers = queryset.values('buyer').distinct().count()
-        
-        # Unique buyers last 30d (approx, since reporting_date is date)
+
         last_month_start = datetime.date.today() - datetime.timedelta(days=30)
         recent_buyers = queryset.filter(reporting_date__gte=last_month_start).values('buyer').distinct().count()
         
@@ -347,42 +298,33 @@ class SupplierAggregator:
         }
 
     def get_buyer_details(self, buyer_name, subcategory_ids, product_item_filter=None, scope='WORLDWIDE'):
-        """
-        Get detailed stats, sparklines, and history for a specific BUYER within a category.
-        """
-        # 1. First, build the MARKET queryset
         market_qs = Transaction.objects.all()
         if subcategory_ids:
             market_qs = market_qs.filter(product_item__sub_category_id__in=subcategory_ids)
-            
+
         scope = scope or 'WORLDWIDE'
         if scope == 'IMPORT':
             market_qs = market_qs.filter(trade_type='IMPORT')
         elif scope == 'PAKISTAN':
             market_qs = market_qs.filter(trade_type='IMPORT', destination_country='Pakistan')
-        else:  # EXPORT or WORLDWIDE
+        else:
             market_qs = market_qs.filter(trade_type='EXPORT')
-        
+
         if product_item_filter:
             market_qs = market_qs.filter(product_item__id__in=product_item_filter)
 
-        # 2. Derive the ENTITY queryset
         queryset = market_qs.filter(buyer__iexact=buyer_name.strip()).order_by('-reporting_date')
-
-
 
         if not queryset.exists():
             return None
 
-        # 1. High-level Stats (Purchasing)
         stats = queryset.aggregate(
             total_volume=Sum('qty_mt'),
             avg_price=Avg('usd_per_mt'),
             shipment_count=Count('id'),
             last_shipment_date=Max('reporting_date')
         )
-        
-        # 2. Sparklines (Monthly Purchasing)
+
         monthly_data = queryset.annotate(
             month=TruncMonth('reporting_date')
         ).values('month').annotate(
@@ -400,23 +342,20 @@ class SupplierAggregator:
                     "price": valid_price
                 })
 
-        # 3. Transaction History (Top 50 latest purchases)
         history = []
         for tx in queryset[:50]:
             history.append({
                 "id": tx.id,
                 "transaction_hash": tx.tx_reference,
-                "seller": tx.seller,  # Show who they bought from
-                "origin_country": tx.origin_country, # Where it came from
+                "seller": tx.seller,
+                "origin_country": tx.origin_country,
                 "quantity": float(tx.qty_mt or 0),
                 "price": float(tx.usd_per_mt or 0),
                 "date": tx.reporting_date
             })
 
-        # 4. Filters (Source Countries)
         countries = list(queryset.values_list('origin_country', flat=True).distinct().order_by('origin_country'))
-        
-        # 5. Typical Order Sizes (Buying habits)
+
         from django.db.models import Case, When, Value, CharField
         size_buckets = queryset.annotate(
             bucket=Case(
@@ -449,8 +388,6 @@ class SupplierAggregator:
                     "avg_price": 0
                 })
 
-        # 6. Supplier Insights from Buyer perspective — "Who are they buying from?"
-        # Unique sellers scoped to the filtered product queryset (same scope as stats above)
         total_unique_sellers = queryset.values('seller').distinct().count()
         
         last_month_start = datetime.date.today() - datetime.timedelta(days=30)
@@ -485,15 +422,11 @@ class SupplierAggregator:
         }
 
     def _compute_overview_metrics(self, queryset, is_buyer=False, intelligence=None):
-        """
-        Compute all metrics needed for the Overview tab.
-        Pass pre-computed intelligence dict to avoid a double DB call.
-        """
+        # Pass pre-computed intelligence dict to avoid a double DB call.
         from django.db.models import Sum, Count, Avg, Min, Max, Case, When, Value, CharField
         from django.db.models.functions import TruncMonth
         import datetime
 
-        # ── Active Period ──────────────────────────────────────────────────
         dates      = queryset.aggregate(first=Min('reporting_date'), last=Max('reporting_date'))
         first_date = dates['first']
         last_date  = dates['last']
@@ -519,7 +452,7 @@ class SupplierAggregator:
                 y = max(1, days_since // 365)
                 last_active = f"{last_date.strftime('%b %Y')} ({y} year{'s' if y != 1 else ''} ago)"
 
-        # ── Typical Shipment Size (25th–75th percentile) ───────────────────
+        # Typical shipment size = 25th-75th percentile.
         qtys = list(queryset.values_list('qty_mt', flat=True).order_by('qty_mt')[:500])
         typical_shipment_size = 'N/A'
         if qtys:
@@ -531,7 +464,6 @@ class SupplierAggregator:
             else:
                 typical_shipment_size = f"{round(p25):,}\u2013{round(p75):,} MT per shipment"
 
-        # ── Geographic Data ────────────────────────────────────────────────
         total_vol = float(queryset.aggregate(total=Sum('qty_mt'))['total'] or 0)
 
         geo_vols = list(
@@ -565,7 +497,6 @@ class SupplierAggregator:
             elif geo_presence:
                 geo_summary = f"Primarily sourced from {geo_presence[0]['country']}"
 
-        # ── Top Counterparties ─────────────────────────────────────────────
         cp_field = 'seller' if is_buyer else 'buyer'
 
         top_cps = list(
@@ -600,7 +531,6 @@ class SupplierAggregator:
         else:
             cp_note = f"Concentrated {'supplier' if is_buyer else 'buyer'} base with key long-term partners"
 
-        # ── Shipment Size Distribution ─────────────────────────────────────
         size_dist_qs = queryset.annotate(
             bucket=Case(
                 When(qty_mt__lt=50,  then=Value('Small (< 50 MT)')),
@@ -619,7 +549,6 @@ class SupplierAggregator:
             for b in bucket_order if size_dict.get(b, 0) > 0
         ]
 
-        # ── Frequency Pattern ──────────────────────────────────────────────
         monthly_data = list(
             queryset.annotate(month=TruncMonth('reporting_date'))
                     .values('month').annotate(count=Count('id')).order_by('month')
@@ -645,7 +574,7 @@ class SupplierAggregator:
             else:
                 freq_desc = f"Occasional activity ({active_months} active months over {span})"
 
-            # Volume trend: compare first vs second half
+            # Volume trend: first half vs second half.
             if len(monthly_data) >= 6:
                 mid = len(monthly_data) // 2
                 monthly_vols = list(
@@ -662,7 +591,6 @@ class SupplierAggregator:
                                      else f"\u2193 {vpct}% over period" if vpct < 0
                                      else "Stable over period")
 
-            # Price trend
             monthly_prices = list(
                 queryset.annotate(month=TruncMonth('reporting_date'))
                         .values('month').annotate(price=Avg('usd_per_mt')).order_by('month')
@@ -677,7 +605,6 @@ class SupplierAggregator:
                     if ppct != 0:
                         price_trend_text = (f"\u2191 +{ppct}% trend" if ppct > 0 else f"\u2193 {ppct}% trend")
 
-        # ── Behavioral Summary ─────────────────────────────────────────────
         behavioral_summary = 'Regular shipment activity observed'
         if size_distribution:
             dom = max(size_distribution, key=lambda x: x['count'])
@@ -689,7 +616,6 @@ class SupplierAggregator:
             else:
                 behavioral_summary = f"Small frequent shipments with {cadence} cadence"
 
-        # ── Market / Price Positioning ─────────────────────────────────────
         market_position_label = 'Mid-Range Competitive'
         market_position_desc  = 'Pricing positioned in the middle tier for this product category'
         price_stability       = 'Stable pricing with minimal volatility'
@@ -734,40 +660,30 @@ class SupplierAggregator:
         }
 
     def _calculate_intelligence(self, queryset, is_buyer=False, entity_name=""):
-        """
-        Calculates dynamic intelligence metrics based on a queryset of transactions.
-        """
         if not queryset.exists():
             return None
 
-        # 1. Repeat Ratio
-        # Counterparty field depends on perspective
         cp_field = 'seller' if is_buyer else 'buyer'
         total_tx = queryset.count()
-        
-        # Count counterparties with more than 1 transaction in this data
+
         cp_counts = queryset.values(cp_field).annotate(count=Count('id')).filter(count__gt=1)
         repeat_counts_sum = sum(c['count'] for c in cp_counts)
-        
+
         repeat_ratio = round((repeat_counts_sum / total_tx) * 100) if total_tx > 0 else 0
-        
+
         repeat_label = "Strong" if repeat_ratio > 70 else "Moderate" if repeat_ratio > 30 else "Low"
 
-        # 2. Concentration Ratio (Top 3 counterparties by volume)
         total_vol = queryset.aggregate(total=Sum('qty_mt'))['total'] or 0
         top_cp_vol = queryset.values(cp_field).annotate(vol=Sum('qty_mt')).order_by('-vol')[:3]
         top_3_vol = sum(c['vol'] for c in top_cp_vol)
-        
+
         concentration_ratio = round((top_3_vol / total_vol) * 100) if total_vol > 0 else 0
         concentration_label = "High" if concentration_ratio > 60 else "Moderate" if concentration_ratio > 30 else "Low"
 
-        # 3. Pricing Label
-        # Based on price trend and volatility
-        # Cast to float — Django Avg() returns Decimal which breaks math.sqrt / division
+        # Cast to float — Django Avg() returns Decimal which breaks math.sqrt and division.
         avg_price = float(queryset.aggregate(avg=Avg('usd_per_mt'))['avg'] or 0)
         prices = [float(p) for p in queryset.values_list('usd_per_mt', flat=True)]
-        
-        # Simple Volatility (Std Dev approximation)
+
         if len(prices) > 1:
             variance = sum((p - avg_price) ** 2 for p in prices) / len(prices)
             volatility = math.sqrt(variance)
@@ -775,7 +691,6 @@ class SupplierAggregator:
         else:
             vol_ratio = 0
 
-        # Price Trend (Latest vs First in the dataset)
         latest_tx = queryset.order_by('-reporting_date').first()
         earliest_tx = queryset.order_by('reporting_date').first()
         
@@ -785,18 +700,15 @@ class SupplierAggregator:
             price_change = 0
 
         if is_buyer:
-            # Buyer perspective: Price Sensitivity
             if vol_ratio > 0.15: pricing_label = "Opportunistic"
             elif price_change < -0.05: pricing_label = "High Sensitivity"
             else: pricing_label = "Stable Procurement"
         else:
-            # Supplier perspective: Pricing Power
             if price_change > 0.05 and repeat_ratio > 50: pricing_label = "Premium"
             elif price_change < -0.05: pricing_label = "Competitive"
             else: pricing_label = "Stable"
 
-        # 4. Momentum Label
-        # Based on shipment growth in last 90 days vs previous 90
+        # Momentum: last 90 days vs previous 90.
         today = datetime.date.today()
         last_90 = today - datetime.timedelta(days=90)
         prev_90 = today - datetime.timedelta(days=180)
@@ -809,12 +721,10 @@ class SupplierAggregator:
         if growth > 0.1: momentum_label = "Growing"
         elif growth < -0.1: momentum_label = "Declining"
         else: momentum_label = "Stable"
-        
-        # If no recent volume but has history
+
         if vol_recent == 0 and total_vol > 0:
             momentum_label = "Declining"
 
-        # 5. Generated Summary
         summary = ""
         if is_buyer:
              summary = f"is a {momentum_label.lower()} buyer with {concentration_label.lower()} supplier concentration. They show {pricing_label.lower()} behavior in recent transactions."
@@ -832,9 +742,6 @@ class SupplierAggregator:
         }
 
     def get_supplier_comparison(self, company_names, subcategory_ids, product_item_filter=None, scope='WORLDWIDE', intent='BUY'):
-        """
-        Get aggregated stats for a list of companies for side-by-side comparison.
-        """
         from django.db.models import Min, Max, Sum, Avg, Count
         from django.db.models.functions import TruncMonth
 
@@ -844,19 +751,17 @@ class SupplierAggregator:
                 queryset = Transaction.objects.filter(buyer__iexact=company.strip())
             else:
                 queryset = Transaction.objects.filter(seller__iexact=company.strip())
-                
+
             if subcategory_ids:
                 queryset = queryset.filter(product_item__sub_category_id__in=subcategory_ids)
-                
+
             scope = scope or 'WORLDWIDE'
             if intent == 'SELL':
-                # Buyers appear on EXPORT transactions (Pakistani seller exporting to foreign buyer)
                 if scope == 'PAKISTAN':
                     queryset = queryset.filter(trade_type='IMPORT', destination_country='Pakistan')
                 else:
                     queryset = queryset.filter(trade_type='EXPORT').exclude(destination_country='Pakistan')
             else:
-                # Sellers appear on IMPORT transactions (Pakistani buyer importing from foreign seller)
                 if scope == 'PAKISTAN':
                     queryset = queryset.filter(trade_type='EXPORT', origin_country='Pakistan')
                 else:
@@ -868,7 +773,6 @@ class SupplierAggregator:
             if not queryset.exists():
                 continue
 
-            # Stats
             stats = queryset.aggregate(
                 total_volume=Sum('qty_mt'),
                 avg_price=Avg('usd_per_mt'),
@@ -878,7 +782,6 @@ class SupplierAggregator:
                 last_shipment_date=Max('reporting_date')
             )
 
-            # Sparklines (Monthly Aggregation)
             monthly_data = queryset.annotate(
                 month=TruncMonth('reporting_date')
             ).values('month').annotate(
@@ -894,21 +797,17 @@ class SupplierAggregator:
                         "price": valid_price
                     })
 
-            # Countries
             if intent == 'SELL':
-                # For buyers, we care about where they are buying from (origin) or who they are (destination)
-                # Actually, buyer's primary location is destination_country.
+                # Buyer's primary location is destination_country.
                 primary_qs = queryset.values('destination_country').annotate(c=Count('id')).order_by('-c').first()
                 primary_country = primary_qs['destination_country'] if primary_qs else 'Unknown'
-                
-                # Associated countries: where do they import from?
+
                 if scope == 'PAKISTAN':
                     ships_to = ['Pakistan']
                 else:
                     origins = list(queryset.values_list('origin_country', flat=True).distinct())
                     ships_to = [c for c in origins if c and c.strip()]
             else:
-                # For sellers
                 if scope == 'PAKISTAN':
                     dests = list(queryset.values_list('destination_country', flat=True).distinct())
                     countries = [c for c in dests if c and c.strip()]
@@ -935,13 +834,8 @@ class SupplierAggregator:
         return results
 
     def _compute_market_pricing(self, entity_qs, market_qs, is_buyer, entity_name):
-        """
-        Computes market-level metrics and benchmarks the specific entity against the market.
-        Used for the 'Market & Pricing' sub-tab.
-        """
         result = {}
-        
-        # 1. Market Overview
+
         market_stats = market_qs.aggregate(
             total_vol=Sum('qty_mt'),
             total_tx=Count('id'),
@@ -965,8 +859,7 @@ class SupplierAggregator:
             "trade_direction": trade_dir,
             "top_route": top_route
         }
-        
-        # 2. Price Intelligence (Monthly Trend)
+
         monthly_market = market_qs.annotate(
             month=TruncMonth('reporting_date')
         ).values('month').annotate(
@@ -996,7 +889,6 @@ class SupplierAggregator:
             "median": median_price
         }
 
-        # 3. Supplier/Buyer Price Positioning
         entity_stats = entity_qs.aggregate(
             weighted_price_sum=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField())),
             total_vol=Sum('qty_mt')
@@ -1021,7 +913,6 @@ class SupplierAggregator:
             "differential_pct": diff_pct
         }
 
-        # 4. Country Level Pricing & Volume
         geo_field = 'destination_country' if is_buyer else 'origin_country'
         country_agg = market_qs.values(geo_field).annotate(
             avg_price=Avg('usd_per_mt'),
@@ -1041,7 +932,6 @@ class SupplierAggregator:
         
         result["country_pricing"] = country_metrics
 
-        # 5. Supply Chain Flow
         routes = market_qs.values('origin_country', 'destination_country').annotate(
             vol=Sum('qty_mt'),
             avg_p=Avg('usd_per_mt')
@@ -1060,8 +950,6 @@ class SupplierAggregator:
             })
         result["supply_chain"] = flow
 
-        # 6. Demand & Volume Trends
-        # We reuse the market_trend list but calculate direction
         if len(market_trend) >= 6:
             last_3 = sum(x['volume'] for x in market_trend[-3:])
             prev_3 = sum(x['volume'] for x in market_trend[-6:-3])
@@ -1078,12 +966,11 @@ class SupplierAggregator:
             "low_period": low_month['date'] if low_month else None
         }
 
-        # 7. Competitive Benchmarking
         competitor_field = 'seller'
         competitors = market_qs.values(competitor_field).annotate(
             total_vol=Sum('qty_mt'),
             wps=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()))
-        ).order_by('-total_vol')[:50]  # Get top 50 for the scatter plot
+        ).order_by('-total_vol')[:50]
         
         comp_data = []
         for cpt in competitors:
@@ -1111,31 +998,27 @@ class SupplierAggregator:
         return result
 
     def _compute_company_profile(self, entity_name, is_buyer):
-        """
-        Computes the entirely unified metrics for the Company across ALL their products.
-        """
+        # Unified metrics across all products for the entity.
         import datetime
         from django.db.models import Sum, Count, Avg, F, ExpressionWrapper, FloatField
         from django.db.models.functions import TruncQuarter
 
-        # 1. Base Queryset (All products for this entity)
         entity_q = entity_name.strip()
         if is_buyer:
             qs = Transaction.objects.filter(buyer__iexact=entity_q)
             partner_field = 'seller'
-            route_label = 'origin_country' # the countries they source from
-            export_label = 'destination_country' # countries they export to (rare if they are pure buyer acting as supplier here? well entity could be both)
+            route_label = 'origin_country'
+            export_label = 'destination_country'
         else:
             qs = Transaction.objects.filter(seller__iexact=entity_q)
             partner_field = 'buyer'
             route_label = 'destination_country'
             export_label = 'origin_country'
-            
+
         total_tx = qs.count()
         if total_tx == 0:
             return None
-            
-        # Overall KPIs
+
         stats = qs.aggregate(
             vol=Sum('qty_mt'),
             val=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()))
@@ -1143,7 +1026,6 @@ class SupplierAggregator:
         total_vol = float(stats['vol'] or 0)
         total_val = float(stats['val'] or 0)
 
-        # Trade Direction
         import_tx = qs.filter(trade_type='IMPORT').count()
         export_tx = qs.filter(trade_type='EXPORT').count()
         if total_tx > 0:
@@ -1153,7 +1035,6 @@ class SupplierAggregator:
             dominant_direction = "Unknown"
             direction_pct = 0
 
-        # Product Portfolio
         products = qs.values('product_item__sub_category__name').annotate(
             vol=Sum('qty_mt'),
             wps=Sum(ExpressionWrapper(F('qty_mt') * F('usd_per_mt'), output_field=FloatField()))
@@ -1176,8 +1057,7 @@ class SupplierAggregator:
             })
             
         top_products = portfolio[:5]
-        
-        # Partner Network
+
         partners = qs.values(partner_field).annotate(
             vol=Sum('qty_mt'),
             first_tx=Min('reporting_date'),
@@ -1198,8 +1078,7 @@ class SupplierAggregator:
             
             p_vol = float(p['vol'] or 0)
             share = round((p_vol / total_vol * 100), 1) if total_vol > 0 else 0
-            
-            # Days between first and last tx
+
             first_d = p['first_tx']
             last_d = p['last_tx']
             days_length = 0
@@ -1220,8 +1099,7 @@ class SupplierAggregator:
             })
             
         top_partners = partner_list[:5]
-        
-        # Partner Concentration check
+
         top_5_share = sum(p['share_pct'] for p in top_partners)
         if top_5_share > 80:
             concentration_label = "Highly Concentrated"
@@ -1233,8 +1111,6 @@ class SupplierAggregator:
         avg_rel_length_years = round((total_relationship_days / relationships_counted) / 365.25, 1) if relationships_counted > 0 else 0.0
         repeat_ratio = round((repeat_partners / total_partners) * 100) if total_partners > 0 else 0
 
-        # Geographic Presence (Export = destination for a Supplier, or source for a Buyer)
-        # We will calculate top Origins and top Destinations.
         def get_geo(field):
             geo = qs.values(field).annotate(vol=Sum('qty_mt')).order_by('-vol')
             g_list = []
@@ -1248,7 +1124,6 @@ class SupplierAggregator:
         export_geo = get_geo('destination_country')
         source_geo = get_geo('origin_country')
 
-        # Activity & Growth Trends (Quarterly)
         qtr_trends = qs.annotate(
             qtr=TruncQuarter('reporting_date')
         ).values('qtr').annotate(
@@ -1259,7 +1134,6 @@ class SupplierAggregator:
         for q in qtr_trends:
             if not q['qtr']: continue
             q_date = q['qtr']
-            # Format as Q1 2022
             quarter = (q_date.month - 1) // 3 + 1
             activity_trends.append({
                 "date_raw": q_date,
@@ -1267,8 +1141,7 @@ class SupplierAggregator:
                 "volume": float(q['vol'] or 0)
             })
             
-        # YoY Growth
-        # To calculate YoY, let's take the last 4 quarters vs the previous 4 quarters from the activity_trends
+        # YoY: last 4 quarters vs previous 4 (fallback to 1-vs-1 when short).
         yoy_growth = 0
         trend_label = "Stable"
         peak_qtr = "N/A"
@@ -1284,16 +1157,14 @@ class SupplierAggregator:
                     if yoy_growth > 5: trend_label = "Growing"
                     elif yoy_growth < -5: trend_label = "Declining"
             elif len(activity_trends) >= 2:
-                # Fallback to simple latest vs previous if we don't have enough data
                 last_1 = activity_trends[-1]['volume']
                 prev_1 = activity_trends[-2]['volume']
                 if prev_1 > 0:
                     yoy_growth = round(((last_1 - prev_1) / prev_1) * 100)
                     if yoy_growth > 5: trend_label = "Growing"
                     elif yoy_growth < -5: trend_label = "Declining"
-                    
-        # Product <-> Partner Mapping
-        # For the top 5 products, who are the top 3 buyers/sellers?
+
+        # Top-3 partners per top-5 product.
         product_names = [p['product'] for p in top_products]
         mapping = []
         for p_name in product_names:
@@ -1335,7 +1206,7 @@ class SupplierAggregator:
                 "yoy_growth": yoy_growth,
                 "trend_label": trend_label,
                 "peak_qtr": peak_qtr,
-                "status": "Active" # Or calculate based on recent activity
+                "status": "Active"
             },
             "behavior": {
                 "unique_partners": total_partners,
@@ -1347,18 +1218,13 @@ class SupplierAggregator:
         }
 
     def get_supplier_transactions(self, entity_name, is_buyer, subcat_ids, product_item_filter, scope, filters, page, page_size):
-        """
-        Gets paginated transactions with server-side filtering for the Transactions Tab.
-        """
         queryset = Transaction.objects.all()
 
-        # Apply Product constraints
         if subcat_ids:
             queryset = queryset.filter(product_item__sub_category_id__in=subcat_ids)
         if product_item_filter:
             queryset = queryset.filter(product_item__id__in=product_item_filter)
 
-        # Apply Scope 
         scope = scope or 'WORLDWIDE'
         if is_buyer:
             if scope == 'PAKISTAN':
@@ -1379,7 +1245,6 @@ class SupplierAggregator:
             cp_field = 'buyer'
             cp_country_field = 'destination_country'
 
-        # Apply User Filters
         if filters.get('start_date'):
             queryset = queryset.filter(reporting_date__gte=filters['start_date'])
         if filters.get('end_date'):
@@ -1401,7 +1266,6 @@ class SupplierAggregator:
         if filters.get('country') and filters['country'].lower() != 'all countries':
             queryset = queryset.filter(**{f"{cp_country_field}__iexact": filters['country']})
 
-        # Calculate Summaries (based on filtered data)
         stats = queryset.aggregate(
             total_vol=Sum('qty_mt'),
             total_tx=Count('id'),
@@ -1412,8 +1276,6 @@ class SupplierAggregator:
         total_vol = float(stats['total_vol'] or 0)
         avg_price = float(stats['avg_price'] or 0)
 
-        # Top Counterparties (based on filtered data)
-        # Handle cases where cp_field might be null
         top_cps = list(
             queryset.exclude(**{f"{cp_field}__isnull": True})
                     .exclude(**{f"{cp_field}": ''})
@@ -1423,7 +1285,6 @@ class SupplierAggregator:
         )
         top_cps_formatted = [{"name": cp[cp_field], "volume": float(cp['vol'] or 0)} for cp in top_cps]
 
-        # Top Countries (based on filtered data)
         top_countries = list(
             queryset.exclude(**{f"{cp_country_field}__isnull": True})
                     .exclude(**{f"{cp_country_field}": ''})
@@ -1433,7 +1294,6 @@ class SupplierAggregator:
         )
         top_countries_formatted = [{"name": cp[cp_country_field], "volume": float(cp['vol'] or 0)} for cp in top_countries]
 
-        # Pagination for Records
         offset = (page - 1) * page_size
         records_qs = queryset.order_by('-reporting_date')[offset : offset + page_size]
 

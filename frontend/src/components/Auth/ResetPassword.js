@@ -176,7 +176,7 @@ const ResetPassword = () => {
                     passwordStrength === 'Strong' ? 'text-green-600' :
                     passwordStrength === 'Moderate' ? 'text-yellow-600' :
                     passwordStrength === 'Weak' ? 'text-orange-600' :
-                    'text-red-600' // Includes 'Too Short'
+                    'text-red-600'
                   }`}>
                     Strength: {passwordStrength}
                   </p>

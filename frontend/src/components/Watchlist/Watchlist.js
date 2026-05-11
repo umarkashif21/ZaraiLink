@@ -117,8 +117,6 @@ const Watchlist = () => {
             </div>
           )}
         </div>
-
-        {/* Search Bar */}
         {watchlist.length > 0 && (
           <div className="watchlist-search">
             <input
@@ -138,8 +136,6 @@ const Watchlist = () => {
             )}
           </div>
         )}
-
-        {/* Empty State */}
         {watchlist.length === 0 ? (
           <EmptyState
             title="Your watchlist is empty"
@@ -156,12 +152,9 @@ const Watchlist = () => {
           />
         ) : (
           <>
-            {/* Results Count */}
             <div className="results-info">
               Showing {sortedWatchlist.length} of {watchlist.length} companies
             </div>
-
-            {/* Watchlist Grid */}
             <div className="watchlist-grid">
               {sortedWatchlist.map((item, index) => (
                 <div 
@@ -210,8 +203,6 @@ const Watchlist = () => {
             </div>
           </>
         )}
-
-        {/* Quick Actions */}
         {watchlist.length > 0 && (
           <div className="quick-actions">
             <h3>Quick Actions</h3>

@@ -137,7 +137,6 @@ export const InsufficientTokensModal = ({ isOpen, onClose, currentBalance, requi
   );
 };
 
-// Error Modal
 export const ErrorModal = ({ isOpen, onClose, errorMessage }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

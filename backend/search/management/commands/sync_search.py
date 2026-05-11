@@ -1,12 +1,8 @@
-"""
-sync_search.py - Django Management Command
-==========================================
-Phase 1: OpenSearch Foundation - Indexes all Transactions into a hybrid
-BM25 + kNN (vector) index for use by the ZaraiLink Trade Search Engine.
+"""Indexes all Transactions into the OpenSearch BM25 + kNN hybrid index.
 
 Usage:
     python manage.py sync_search
-    python manage.py sync_search --reset   (drops index first, then rebuilds)
+    python manage.py sync_search --reset
 """
 
 import logging
@@ -17,20 +13,12 @@ from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger(__name__)
 
-# ===========================================================================
-# Constants
-# ===========================================================================
-
 OPENSEARCH_HOST = "http://localhost:9200"
 INDEX_NAME = "trade_index"
 VECTOR_DIM = 384
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 BATCH_SIZE = 500
 
-
-# ===========================================================================
-# Index Definition
-# ===========================================================================
 
 INDEX_SETTINGS = {
     "settings": {
@@ -114,45 +102,25 @@ INDEX_SETTINGS = {
 }
 
 
-# ===========================================================================
-# Core Search Function
-# ===========================================================================
-
 def hybrid_trade_search(client: OpenSearch, model: SentenceTransformer,
                         query_text: str, trade_type_filter: str = None, top_k: int = 10):
-    """
-    Execute a Hybrid BM25 + kNN search against the trade_index.
-
-    Args:
-        client: OpenSearch Python client instance.
-        model:  The loaded SentenceTransformer model.
-        query_text:         Natural language query (e.g. "refined sugar from Brazil").
-        trade_type_filter:  Optional "IMPORT" or "EXPORT" filter.
-        top_k:              Number of results to return.
-
-    Returns:
-        List of hit _source dicts with a `_score` key injected.
-    """
-    # 1. Embed the query
     query_vector = model.encode(query_text).tolist()
 
-    # 2. Build hybrid query
+    # Field boosts: clean_product_name=9 (highest signal), product_item_name=3,
+    # buyer/seller=1.
     should_clauses = [
-        # BM25 full-text match — clean_product_name gets 9x boost (most signal),
-        # product_item_name gets 3x, buyer/seller at 1x.
         {
             "multi_match": {
                 "query": query_text,
                 "fields": [
-                    "clean_product_name^9",  # sub_category name — highest signal
-                    "product_item_name^3",   # raw item name — secondary
+                    "clean_product_name^9",
+                    "product_item_name^3",
                     "buyer",
                     "seller"
                 ],
                 "type": "best_fields"
             }
         },
-        # Dense kNN vector search
         {
             "knn": {
                 "combined_vector": {
@@ -172,7 +140,6 @@ def hybrid_trade_search(client: OpenSearch, model: SentenceTransformer,
         }
     }
 
-    # 3. Apply optional trade_type filter
     if trade_type_filter:
         query_body["query"]["bool"]["filter"] = [
             {"term": {"trade_type": trade_type_filter.upper()}}
@@ -180,7 +147,6 @@ def hybrid_trade_search(client: OpenSearch, model: SentenceTransformer,
 
     response = client.search(index=INDEX_NAME, body=query_body)
 
-    # 4. Flatten results
     results = []
     for hit in response["hits"]["hits"]:
         doc = hit["_source"]
@@ -189,10 +155,6 @@ def hybrid_trade_search(client: OpenSearch, model: SentenceTransformer,
 
     return results
 
-
-# ===========================================================================
-# Django Management Command
-# ===========================================================================
 
 class Command(BaseCommand):
     help = "Sync all Transactions into the OpenSearch hybrid index (trade_index)."
@@ -205,14 +167,11 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        # Lazy import to avoid Django app registry issues
+        # Lazy import to avoid Django app registry issues.
         from trade_data.models import Transaction
 
         self.stdout.write(self.style.MIGRATE_HEADING("=== ZaraiLink: OpenSearch Sync ==="))
 
-        # -----------------------------------------------------------------------
-        # 1. Connect to OpenSearch
-        # -----------------------------------------------------------------------
         self.stdout.write("Connecting to OpenSearch...")
         client = OpenSearch(hosts=[OPENSEARCH_HOST], timeout=30)
 
@@ -230,9 +189,6 @@ class Command(BaseCommand):
             ))
             return
 
-        # -----------------------------------------------------------------------
-        # 2. Create (or reset) the index
-        # -----------------------------------------------------------------------
         if options["reset"] and client.indices.exists(index=INDEX_NAME):
             self.stdout.write(f"Dropping existing index '{INDEX_NAME}'...")
             client.indices.delete(index=INDEX_NAME)
@@ -248,36 +204,26 @@ class Command(BaseCommand):
                 f"Use --reset to rebuild from scratch."
             ))
 
-        # -----------------------------------------------------------------------
-        # 3. Load Embedding Model
-        # -----------------------------------------------------------------------
         self.stdout.write(f"Loading embedding model: {EMBEDDING_MODEL} ...")
         model = SentenceTransformer(EMBEDDING_MODEL)
         self.stdout.write(self.style.SUCCESS("Embedding model loaded."))
 
-        # -----------------------------------------------------------------------
-        # 4. ETL: Fetch, Embed, and Bulk Index
-        # -----------------------------------------------------------------------
         self.stdout.write("Fetching transactions from database...")
-        # Deep join: product_item -> sub_category to get clean category names
         qs = Transaction.objects.select_related("product_item__sub_category").all()
         total = qs.count()
         self.stdout.write(f"Found {total:,} transactions. Indexing in batches of {BATCH_SIZE}...")
 
         def generate_actions(queryset):
-            """Generator that yields OpenSearch bulk action dicts."""
             for tx in queryset.iterator(chunk_size=BATCH_SIZE):
                 item = tx.product_item
                 item_description = item.name if item else ""
-                # sub_category.name is the clean, canonical product label (e.g. "Refined Sugar")
                 sub_category_name = (
                     item.sub_category.name
                     if item and item.sub_category
                     else item_description
                 )
 
-                # Structured semantic string: Sub-Category is leading so the AI
-                # learns it is the most important concept in the embedding.
+                # Sub-Category leads the embedding string so it dominates the vector.
                 semantic_text = (
                     f"Product: {sub_category_name}. "
                     f"Details: {item_description}. "
@@ -319,9 +265,6 @@ class Command(BaseCommand):
         if failed_count:
             self.stdout.write(self.style.WARNING(f"⚠ {failed_count} documents failed."))
 
-        # -----------------------------------------------------------------------
-        # 5. Verification: Run a test search
-        # -----------------------------------------------------------------------
         self.stdout.write("\nRunning test search: 'sugar importers from Brazil'...")
         try:
             results = hybrid_trade_search(

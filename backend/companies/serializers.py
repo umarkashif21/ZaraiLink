@@ -9,46 +9,39 @@ User = get_user_model()
 
 
 class SectorSerializer(serializers.ModelSerializer):
-    """Sector/Product category serializer"""
     class Meta:
         model = Sector
         fields = ['id', 'name', 'description']
 
 
 class CompanyRoleSerializer(serializers.ModelSerializer):
-    """Company role serializer"""
     class Meta:
         model = CompanyRole
         fields = ['id', 'name', 'description']
 
 
 class CompanyTypeSerializer(serializers.ModelSerializer):
-    """Company type serializer"""
     class Meta:
         model = CompanyType
         fields = ['id', 'name', 'description']
 
 
 class CompanyProductSerializer(serializers.ModelSerializer):
-    """Company product serializer"""
     class Meta:
         model = CompanyProduct
         fields = ['id', 'name', 'description', 'variety', 'value_added', 'hsn_code']
 
 
 class KeyContactSerializer(serializers.ModelSerializer):
-    """
-    Dynamic serializer that hides/shows contact info based on unlock status
-    """
+    """Hides phone/email/whatsapp unless contact is_public or current user has unlocked it."""
     is_unlocked = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = KeyContact
-        fields = ['id', 'name', 'designation', 'phone', 'email', 
+        fields = ['id', 'name', 'designation', 'phone', 'email',
                   'whatsapp', 'is_public', 'is_unlocked']
-    
+
     def get_is_unlocked(self, obj):
-        """Check if current user has unlocked this contact"""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return KeyContactUnlock.objects.filter(
@@ -56,9 +49,8 @@ class KeyContactSerializer(serializers.ModelSerializer):
                 key_contact=obj
             ).exists()
         return False
-    
+
     def to_representation(self, instance):
-        """Hide sensitive fields if not unlocked"""
         data = super().to_representation(instance)
         
         
@@ -73,7 +65,6 @@ class KeyContactSerializer(serializers.ModelSerializer):
 
 
 class CompanyListSerializer(serializers.ModelSerializer):
-    """Minimal info for company listings"""
     sector_name = serializers.CharField(source='sector.name', read_only=True)
     role_name = serializers.CharField(source='company_role.name', read_only=True)
     type_name = serializers.CharField(source='company_type.name', read_only=True)
@@ -88,7 +79,6 @@ class CompanyListSerializer(serializers.ModelSerializer):
         return obj.key_contacts.exists()
 
 class CompanyDetailSerializer(serializers.ModelSerializer):
-    """Full company details with products and contacts"""
     sector = SectorSerializer(read_only=True)
     company_role = CompanyRoleSerializer(read_only=True)
     company_type = CompanyTypeSerializer(read_only=True)
@@ -105,12 +95,10 @@ class CompanyDetailSerializer(serializers.ModelSerializer):
         ]
     
     def get_products(self, obj):
-        """Get company products"""
         products = obj.products.all()
         return CompanyProductSerializer(products, many=True).data
-    
+
     def get_key_contacts(self, obj):
-        """Get company key contacts with unlock status"""
         contacts = obj.key_contacts.all()
         return KeyContactSerializer(
             contacts, 

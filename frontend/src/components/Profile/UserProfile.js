@@ -16,13 +16,11 @@ const UserProfile = () => {
   const [telemetry, setTelemetry] = useState({ tokensSpent: 0, topCategory: 'None' });
   const [loading, setLoading] = useState(true);
 
-  // ── Edit Name state ───────────────────────────────────────────────
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [nameLoading, setNameLoading] = useState(false);
-  const [nameMsg, setNameMsg] = useState(null); // { type: 'success'|'error', text }
+  const [nameMsg, setNameMsg] = useState(null);
 
-  // ── Change Password state ─────────────────────────────────────────
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
@@ -55,7 +53,6 @@ const UserProfile = () => {
     if (user?.name) setNameValue(user.name);
   }, [user]);
 
-  // ── Handlers ─────────────────────────────────────────────────────
   const handleSaveName = async () => {
     if (!nameValue.trim()) return;
     setNameLoading(true);
@@ -137,10 +134,8 @@ const UserProfile = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            {/* LEFT COLUMN */}
             <div className="space-y-8 lg:col-span-1">
 
-              {/* Identity Card */}
               <motion.section
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden"
@@ -167,7 +162,6 @@ const UserProfile = () => {
                   </div>
                 </div>
 
-                {/* Edit Name */}
                 <div className="pt-4 border-t border-slate-800/50 space-y-3">
                   {!editingName ? (
                     <button
@@ -208,7 +202,6 @@ const UserProfile = () => {
                     </p>
                   )}
 
-                  {/* Change Password */}
                   {!showPasswordForm ? (
                     <button
                       onClick={() => { setShowPasswordForm(true); setPwMsg(null); }}
@@ -257,7 +250,6 @@ const UserProfile = () => {
                 </div>
               </motion.section>
 
-              {/* Token Wallet */}
               <motion.section
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden"
@@ -283,7 +275,6 @@ const UserProfile = () => {
                   Top Up Tokens
                 </button>
 
-                {/* Real stats: tokens spent + top category */}
                 <div className="grid grid-cols-2 gap-3 z-10 relative">
                   <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl">
                     <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Tokens Spent</div>
@@ -295,7 +286,6 @@ const UserProfile = () => {
                   </div>
                 </div>
 
-                {/* Token history */}
                 <div className="space-y-4 relative z-10 mt-6">
                   <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-2">Recent Ledger Activity</h3>
                   <div className="space-y-3 mt-4">
@@ -318,7 +308,6 @@ const UserProfile = () => {
               </motion.section>
             </div>
 
-            {/* RIGHT COLUMN: Entitlements */}
             <div className="space-y-8 lg:col-span-2">
               <motion.section
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}

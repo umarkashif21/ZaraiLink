@@ -112,9 +112,6 @@ def api_logout(request):
 
 
 def api_check_auth(request):
-    """
-    Check if user is authenticated and return user info
-    """
     if request.user.is_authenticated:
         return JsonResponse({
             "authenticated": True,
@@ -158,10 +155,6 @@ def api_forgot_password(request):
 
 
 def api_verify_email(request, token):
-    """
-    Verify user's email using the token sent via email.
-    Redirects to frontend after verification.
-    """
     try:
         user = User.objects.get(verification_token=token)
 
@@ -192,9 +185,6 @@ def api_verify_email(request, token):
 
 @csrf_exempt
 def api_resend_verification(request):
-    """
-    Resend verification email to the user
-    """
     if request.method != "POST":
         return JsonResponse({"error": "Only POST allowed"}, status=405)
 

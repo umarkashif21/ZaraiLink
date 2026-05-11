@@ -29,8 +29,6 @@ const FindSuppliers = () => {
   const [filterOptions, setFilterOptions] = useState({ countries: [], sectors: [] });
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
   const debouncedSearch = useDebounce(search, 300);
-
-  // ── Load filter options + resolve supplier role ID ──────────────────
   useEffect(() => {
     const init = async () => {
       try {
@@ -51,7 +49,6 @@ const FindSuppliers = () => {
             resolvedRoleId = r.id;
           }
         }
-        // Fetch countries scoped to supplier role
         if (resolvedRoleId) {
           const cRes = await fetch(`${API}/api/companies/countries/?role=${resolvedRoleId}`);
           if (cRes.ok) {
@@ -63,8 +60,6 @@ const FindSuppliers = () => {
     };
     init();
   }, []);
-
-  // ── Fetch companies ──────────────────────────────────────────────────
   const fetchCompanies = useCallback(async () => {
     if (!supplierRoleId) return;
     setLoading(true);
@@ -91,8 +86,6 @@ const FindSuppliers = () => {
   const reset = () => { setSearch(''); setCountry(''); setSector(''); setContactStatus('all'); };
 
   const activeFilterCount = [search, country, sector, contactStatus !== 'all'].filter(Boolean).length;
-
-  // ── Sort + paginate ──────────────────────────────────────────────────
   const sorted = useMemo(() => {
     let arr = [...companies];
     if (contactStatus === 'verified') arr = arr.filter(c => c.has_key_contacts);
@@ -107,8 +100,6 @@ const FindSuppliers = () => {
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       <Navbar />
-
-      {/* ── Hero Header ───────────────────────────────────────────── */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 py-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -124,8 +115,6 @@ const FindSuppliers = () => {
               </Link>
             </div>
           </div>
-
-          {/* ── Search bar ──────────────────────────────────────── */}
           <div className="mt-6 flex gap-3">
             <div className="relative flex-1">
               <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -156,8 +145,6 @@ const FindSuppliers = () => {
               )}
             </button>
           </div>
-
-          {/* ── Filter panel ────────────────────────────────────── */}
           {showFilters && (
             <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-wrap gap-4 items-end">
               <div className="flex flex-col gap-1">
@@ -184,7 +171,6 @@ const FindSuppliers = () => {
                   <option value="name_desc">Name Z–A</option>
                 </select>
               </div>
-              {/* Contact Status */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Status</label>
                 <select value={contactStatus} onChange={e => setContactStatus(e.target.value)}
@@ -204,10 +190,7 @@ const FindSuppliers = () => {
           )}
         </div>
       </div>
-
-      {/* ── Results ───────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats bar */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm font-medium text-slate-500">
             {loading ? 'Loading…' : <><span className="font-bold text-slate-800">{companies.length}</span> suppliers found</>}
@@ -220,8 +203,6 @@ const FindSuppliers = () => {
             </div>
           )}
         </div>
-
-        {/* Loading skeletons */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -234,16 +215,12 @@ const FindSuppliers = () => {
             ))}
           </div>
         )}
-
-        {/* Error */}
         {error && (
           <div className="text-center py-16">
             <p className="text-red-500 font-medium">{error}</p>
             <button onClick={fetchCompanies} className="mt-3 text-sm text-slate-500 hover:text-slate-700 underline">Try again</button>
           </div>
         )}
-
-        {/* Empty */}
         {!loading && !error && companies.length === 0 && (
           <div className="text-center py-20">
             <p className="text-5xl mb-4">🔍</p>
@@ -252,15 +229,12 @@ const FindSuppliers = () => {
             <button onClick={reset} className="mt-4 px-5 py-2 bg-emerald-500 text-white rounded-xl font-bold text-sm">Clear Filters</button>
           </div>
         )}
-
-        {/* Company cards */}
         {!loading && !error && paginated.length > 0 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {paginated.map(company => (
                 <div key={company.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col">
                   <div className="p-5 flex-1">
-                    {/* Header */}
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         {company.name?.charAt(0)?.toUpperCase()}
@@ -278,8 +252,6 @@ const FindSuppliers = () => {
                     <h3 className="font-bold text-slate-900 text-sm leading-tight mb-3 line-clamp-2">
                       {company.name}
                     </h3>
-
-                    {/* Meta pills */}
                     <div className="flex flex-wrap gap-1.5">
                       {company.country && (
                         <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
@@ -299,7 +271,6 @@ const FindSuppliers = () => {
                           {company.type_name}
                         </span>
                       )}
-                      {/* Verified contacts badge */}
                     {company.has_key_contacts && (
                       <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
                         <ShieldCheck size={10} /> Verified Contacts
@@ -307,8 +278,6 @@ const FindSuppliers = () => {
                     )}
                   </div>
                   </div>
-
-                  {/* CTA */}
                   <div className="px-5 pb-5">
                     <Link
                       to={`/trade-directory/company/${company.id}`}

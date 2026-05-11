@@ -22,7 +22,6 @@ QUERIES = [
     "suggar from brazil",
     "suggar cheap frm brazl",
     "sugr cheep frm UAE",
-    # reference
     "buy sugar from brazil",
     "suggar",
 ]
@@ -36,14 +35,12 @@ for query in QUERIES:
     print(f"  QUERY: {query!r}")
     print(DIV2)
 
-    # 1. NLU output
     nlu = engine.parse(query, ui_context="import")
     kw  = nlu.get("product_keyword", "")
     country = nlu.get("country")
     intent  = nlu.get("intent")
     print(f"  NLU: intent={intent!r}  keyword={kw!r}  country={country!r}")
 
-    # 2. Trace PASS-3 trigram on keyword
     if kw and len(kw) >= 2:
         sc_trig = list(
             ProductSubCategory.objects.annotate(sim=TrigramSimilarity('name', kw))
@@ -61,7 +58,6 @@ for query in QUERIES:
         print(f"    Best subcat   : {(sc_trig[0]['name'], round(sc_trig[0]['sim'],3)) if sc_trig else 'none'}")
         print(f"    Best item     : {(it_trig[0]['name'], round(it_trig[0]['sim'],3)) if it_trig else 'none'}")
 
-    # 3. Run _resolve_subcategories to see what subcat_ids are produced
     scope = "IMPORT"
     subcat_ids, variant_list, product_item_ids = svc._resolve_subcategories(
         product_keyword=kw,
@@ -74,9 +70,7 @@ for query in QUERIES:
     print(f"    subcat_ids   : {subcat_ids}")
     print(f"    variant_list : {[(v['name'], v.get('hs_code')) for v in variant_list]}")
 
-    # 4. Show what transactions actually exist for each returned subcat WITH country filter
     if country and subcat_ids:
-        # What the availability filter runs
         country_field = 'origin_country' if intent == 'BUY' else 'destination_country'
         print(f"\n  Availability filter: trade_type=IMPORT, {country_field}={country!r}, subcat_ids={subcat_ids}")
         for sid in subcat_ids:
@@ -92,7 +86,6 @@ for query in QUERIES:
             ).count()
             print(f"    subcat id={sid} ({sc['name'] if sc else '?'} HS:{sc['hs_code'] if sc else '?'}): {txn_count} txns with {country}, {txn_any} total IMPORT txns")
 
-    # 5. Check what Brazil actually has in the full sugar space
     if country == 'Brazil':
         print(f"\n  All IMPORT transactions from Brazil (sugar family):")
         brazil_txns = Transaction.objects.filter(
@@ -112,7 +105,6 @@ for query in QUERIES:
             ).count()
             print(f"    {t['product_item__sub_category__name']} (HS {t['product_item__sub_category__hs_code']}) id={t['product_item__sub_category_id']} : {count} txns")
 
-    # 6. For UAE queries, what UAE actually sells
     if country == 'United Arab Emirates':
         print(f"\n  All IMPORT transactions from UAE (HS 17xx family):")
         uae_txns = Transaction.objects.filter(
@@ -127,7 +119,6 @@ for query in QUERIES:
         for t in uae_txns:
             print(f"    {t['product_item__sub_category__name']} HS {t['product_item__sub_category__hs_code']} id={t['product_item__sub_category_id']}")
 
-    # 7. Check what execute_search returns (response shape)
     result = svc.execute_search(query, ui_context="import")
     needs_disambig = result.get("needs_disambiguation")
     is_broad = result.get("is_broad_search")

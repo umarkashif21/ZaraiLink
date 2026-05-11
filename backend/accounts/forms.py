@@ -6,9 +6,6 @@ User = get_user_model()
 
 
 class UserRegisterForm(UserCreationForm):
-    """
-    Custom user registration form that uses email as the primary identifier
-    """
     name = forms.CharField(
         max_length=200,
         required=True,

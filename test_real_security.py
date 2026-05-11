@@ -23,7 +23,7 @@ for feature, method, path in endpoints:
         r = requests.get(BASE_URL + path)
     else:
         r = requests.post(BASE_URL + path)
-    
+
     status = r.status_code
     expected = "401/403"
     passed = "Pass" if status in [401, 403] else "Fail"

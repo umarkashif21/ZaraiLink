@@ -11,10 +11,8 @@ then
     echo "PostgreSQL started"
 fi
 
-# Apply migrations
 echo "Applying database migrations..."
 python manage.py migrate
 
-# Start server
 echo "Starting server..."
 exec "$@"

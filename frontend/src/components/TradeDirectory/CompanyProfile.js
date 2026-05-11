@@ -12,14 +12,11 @@ import {
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function getCookie(name) {
   const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
   return v ? v[2] : null;
 }
 
-/** Derive a seniority label from the designation string */
 function getSeniorityBadge(designation = '') {
   const d = designation.toLowerCase();
   if (d.includes('ceo') || d.includes('chief') || d.includes('director') || d.includes('owner') || d.includes('partner') || d.includes('president'))
@@ -33,22 +30,17 @@ function getSeniorityBadge(designation = '') {
   return { label: 'Team Member', color: 'bg-slate-100 text-slate-600 border-slate-200' };
 }
 
-/** Mask locked value: show partial number hint */
 function maskValue(val) {
   if (!val || val.includes('Locked')) {
-    // Generic blur placeholder
     return '•••• •••• ••••';
   }
   if (val.includes('@')) {
     const [user, domain] = val.split('@');
     return `${user[0]}${'•'.repeat(Math.min(user.length - 1, 5))}@${domain}`;
   }
-  // Phone — show country code + mask the rest
   const clean = val.replace(/\D/g, '');
   return `+${clean.slice(0, 2)} ${'•'.repeat(4)}-${'•'.repeat(7)}`;
 }
-
-// ─── Contact Card ─────────────────────────────────────────────────────────────
 
 const ContactCard = ({ contact, onUnlock, unlocking }) => {
   const { label, color } = getSeniorityBadge(contact.designation);
@@ -69,13 +61,11 @@ const ContactCard = ({ contact, onUnlock, unlocking }) => {
         isUnlocked ? 'border-emerald-200 shadow-emerald-50' : 'border-slate-200 hover:border-slate-300'
       }`}
     >
-      {/* Unlocked top bar */}
       {isUnlocked && (
         <div className="h-1 w-full bg-gradient-to-r from-emerald-400 to-teal-400" />
       )}
 
       <div className="p-5">
-        {/* Header row */}
         <div className="flex items-start gap-4 mb-4">
           <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
             isUnlocked
@@ -106,8 +96,6 @@ const ContactCard = ({ contact, onUnlock, unlocking }) => {
             </span>
           </div>
         </div>
-
-        {/* Channel availability (always visible) */}
         <div className="flex gap-2 mb-4">
           {channels.map(ch => {
             const hasChannel = contact[ch.key] && !contact[ch.key].includes('Locked');
@@ -127,8 +115,6 @@ const ContactCard = ({ contact, onUnlock, unlocking }) => {
             );
           })}
         </div>
-
-        {/* Contact details */}
         <div className="space-y-2">
           {channels.map(ch => {
             if (ch.key === 'whatsapp' && !contact.whatsapp) return null;
@@ -148,8 +134,6 @@ const ContactCard = ({ contact, onUnlock, unlocking }) => {
             );
           })}
         </div>
-
-        {/* Unlock CTA */}
         {!isUnlocked && (
           <button
             onClick={() => onUnlock(contact)}
@@ -165,9 +149,6 @@ const ContactCard = ({ contact, onUnlock, unlocking }) => {
     </motion.div>
   );
 };
-
-// ─── Main Component ────────────────────────────────────────────────────────────
-
 const CompanyProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -240,8 +221,6 @@ const CompanyProfile = () => {
       setUnlocking(false);
     }
   };
-
-  // ── Loading / Error states ────────────────────────────────────────────────
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
@@ -269,8 +248,6 @@ const CompanyProfile = () => {
     <>
       <div className="min-h-screen bg-slate-50 font-sans">
         <Navbar />
-
-        {/* ── Hero Header ─────────────────────────────────────────────── */}
         <div className="bg-white border-b border-slate-200 shadow-sm">
           <div className="max-w-5xl mx-auto px-6 py-8">
             <button
@@ -280,7 +257,6 @@ const CompanyProfile = () => {
               ← Back to Directory
             </button>
             <div className="flex items-start gap-5">
-              {/* Company initial avatar */}
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white font-black text-2xl flex-shrink-0 shadow-lg">
                 {company.name?.charAt(0)?.toUpperCase()}
               </div>
@@ -303,11 +279,7 @@ const CompanyProfile = () => {
             </div>
           </div>
         </div>
-
-        {/* ── Main content ─────────────────────────────────────────────── */}
         <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
-
-          {/* About + Quick Stats */}
           <section>
             {company.description && (
               <p className="text-slate-600 leading-relaxed mb-6 max-w-3xl">{company.description}</p>
@@ -342,8 +314,6 @@ const CompanyProfile = () => {
               )}
             </div>
           </section>
-
-          {/* Products */}
           {company.products && company.products.length > 0 && (
             <section>
               <h2 className="text-lg font-bold text-slate-700 mb-3">Products Dealt In</h2>
@@ -360,8 +330,6 @@ const CompanyProfile = () => {
               </div>
             </section>
           )}
-
-          {/* ── KEY CONTACTS — Hero Section ──────────────────────────── */}
           <section>
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -401,8 +369,6 @@ const CompanyProfile = () => {
                 ))}
               </div>
             )}
-
-            {/* Low balance nudge */}
             {contacts.length > 0 && unlockedCount < contacts.length && tokenBalance < 1 && (
               <div className="mt-5 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-5 py-3">
                 <p className="text-sm font-medium text-amber-800">You need tokens to unlock contacts.</p>
@@ -415,8 +381,6 @@ const CompanyProfile = () => {
 
         </div>
       </div>
-
-      {/* Modals */}
       <UnlockConfirmModal
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}

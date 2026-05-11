@@ -175,7 +175,6 @@ const FindBuyers = () => {
                   <option value="name_desc">Name Z–A</option>
                 </select>
               </div>
-              {/* Contact Status */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Status</label>
                 <select value={contactStatus} onChange={e => setContactStatus(e.target.value)}
@@ -270,7 +269,6 @@ const FindBuyers = () => {
                           <Building2 size={10} />{company.type_name}
                         </span>
                       )}
-                      {/* Verified contacts badge */}
                       {company.has_key_contacts && (
                         <span className="inline-flex items-center gap-1 text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full font-semibold">
                           <ShieldCheck size={10} /> Verified Contacts

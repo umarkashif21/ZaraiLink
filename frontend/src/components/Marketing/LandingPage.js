@@ -11,8 +11,6 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page-wrapper min-h-screen bg-slate-50 text-slate-900 font-sans">
-      
-      {/* 1. Hero Section */}
       <section className="hero-pattern pt-24 pb-32 px-6 lg:px-8 text-white">
         <div className="max-w-7xl mx-auto relative z-10">
           <nav className="flex items-center justify-between mb-20">
@@ -65,7 +63,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 2. Live Insights Preview (Mock Data) */}
       <section className="py-24 bg-slate-100 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -74,7 +71,6 @@ export default function LandingPage() {
           </div>
 
           <div className="relative max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-            {/* Fake Dashboard UI */}
             <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
@@ -92,7 +88,6 @@ export default function LandingPage() {
             </div>
             
             <div className="p-8 relative">
-              {/* Fake Chart */}
               <div className="flex items-end justify-between h-64 gap-2 opacity-80">
                 {[40, 60, 45, 80, 55, 90, 75, 110, 85, 130, 100, 150].map((h, i) => (
                   <div key={i} className="w-full bg-slate-200 rounded-t-lg relative group">
@@ -104,7 +99,6 @@ export default function LandingPage() {
                 ))}
               </div>
 
-              {/* Blur Overlay & Lock CTA */}
               <div className="absolute inset-0 blur-overlay flex flex-col items-center justify-center z-10">
                 <div className="bg-slate-900/95 p-8 rounded-2xl shadow-2xl text-center max-w-sm border border-slate-700">
                   <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 lock-pulse">
@@ -125,7 +119,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. Buyer/Seller Discovery Section */}
       <section className="py-24 px-6 max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
@@ -153,11 +146,9 @@ export default function LandingPage() {
           </div>
 
           <div className="relative">
-            {/* Decorative background elements */}
             <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-blue-500/10 rounded-3xl transform rotate-3"></div>
-            
+
             <div className="relative space-y-4">
-              {/* Mock Company Card 1 */}
               <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-100">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -184,7 +175,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Mock Company Card 2 (Blurred) */}
               <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 relative overflow-hidden">
                 <div className="filter blur-[3px] opacity-60">
                   <div className="flex justify-between items-start mb-4">
@@ -210,7 +200,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. Market Intelligence Section */}
       <section className="py-24 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -245,7 +234,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. How It Works */}
       <section className="py-24 bg-slate-50 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -253,7 +241,6 @@ export default function LandingPage() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 relative">
-            {/* Connecting Line */}
             <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-slate-200 z-0"></div>
 
             <div className="relative z-10 bg-white p-8 rounded-2xl shadow-xl border border-slate-100 flex flex-col items-center text-center">
@@ -283,7 +270,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. Social Proof */}
       <section className="py-20 border-y border-slate-200 bg-white text-center px-6">
         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">Trusted by Global Trading Desk Analysts</h3>
         <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
@@ -295,9 +281,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 7. CTA / Final Conversion */}
       <section className="py-32 bg-slate-900 text-white relative overflow-hidden">
-        {/* Background glow */}
         <div className="absolute inset-0 bg-emerald-500/10 blur-[100px] rounded-full scale-150 transform translate-y-1/2"></div>
         
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">

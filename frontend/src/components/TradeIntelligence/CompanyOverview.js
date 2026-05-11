@@ -3,8 +3,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../Layout/Navbar';
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
 import './TradeIntelligence.css';
-
-// ─── Colour palette ────────────────────────────────────────
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 const TYPE_STYLES = {
@@ -37,8 +35,6 @@ const COORDS = {
 };
 
 const GEO_URL = 'https://unpkg.com/world-atlas@2.0.2/countries-110m.json';
-
-// ─── Formatters ───────────────────────────────────────────
 const fmtN = (v, d = 0) =>
   new Intl.NumberFormat('en-US', { maximumFractionDigits: d }).format(v || 0);
 
@@ -60,8 +56,6 @@ const fmtMonth = (s) => {
   try { return new Date(s + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); }
   catch { return s; }
 };
-
-// ─── SVG Line Chart ───────────────────────────────────────
 const LineChart = ({ data, width = 600, height = 180 }) => {
   if (!data || data.length < 2) return (
     <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e0', fontSize: '0.85rem' }}>
@@ -98,33 +92,23 @@ const LineChart = ({ data, width = 600, height = 180 }) => {
           <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.01" />
         </linearGradient>
       </defs>
-
-      {/* Y grid + ticks */}
       {ticks.map((t, i) => (
         <g key={i}>
           <line x1={PAD.left} y1={t.y} x2={PAD.left + W} y2={t.y} stroke="#e2e8f0" strokeDasharray="4 4" />
           <text x={PAD.left - 8} y={t.y + 3} fontSize={10} fill="#718096" textAnchor="end">{t.label}</text>
         </g>
       ))}
-
-      {/* Area + Line */}
       <path d={areaPath} fill="url(#areaGrad)" />
       <path d={linePath} fill="none" stroke="#8b5cf6" strokeWidth={3} strokeLinejoin="round" />
-
-      {/* X labels */}
       {data.map((d, i) => i % step === 0 && (
         <text key={i} x={xs[i]} y={PAD.top + H + 20} fontSize={10} fill="#718096" textAnchor="middle">
           {fmtMonth(d.month)}
         </text>
       ))}
-
-      {/* Point on last value */}
       <circle cx={xs[xs.length - 1]} cy={ys[ys.length - 1]} r={4} fill="#8b5cf6" />
     </svg>
   );
 };
-
-// ─── World Map with Pins ──────────────────────────────────
 const GeoMap = ({ geoData }) => {
   const [tooltip, setTooltip] = useState(null);
   const maxVol = Math.max(...geoData.map(g => g.volume), 1);
@@ -155,8 +139,6 @@ const GeoMap = ({ geoData }) => {
           </Marker>
         ))}
       </ComposableMap>
-
-      {/* Tooltip */}
       {tooltip && (
         <div style={{
           position: 'absolute', top: 10, right: 10, background: 'white', padding: '0.6rem 0.8rem',
@@ -167,8 +149,6 @@ const GeoMap = ({ geoData }) => {
           <div style={{ fontSize: '0.75rem', color: '#718096' }}>{fmtN(tooltip.volume)} MT · {tooltip.trade_type}</div>
         </div>
       )}
-
-      {/* Legend */}
       <div style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.7)', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#4a5568' }}>
         <span><span style={{ color: '#3b82f6', fontWeight: 700 }}>●</span> Import partners</span>
         <span><span style={{ color: '#10b981', fontWeight: 700 }}>●</span> Export partners</span>
@@ -176,8 +156,6 @@ const GeoMap = ({ geoData }) => {
     </div>
   );
 };
-
-// ─── Horizontal bar ───────────────────────────────────────
 const HBar = ({ label, pct, note, color }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
     <span style={{ width: 130, fontSize: '0.85rem', color: '#2d3748', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }} title={label}>
@@ -191,8 +169,6 @@ const HBar = ({ label, pct, note, color }) => (
     </span>
   </div>
 );
-
-// ─── Section wrapper ───────────────────────────────────────
 const Section = ({ title, children, accent = '#10b981', style = {} }) => (
   <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: '1.5rem', marginBottom: '1.5rem', borderTop: `3px solid ${accent}`, boxShadow: '0 2px 8px rgba(0,0,0,0.03)', ...style }}>
     <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.2rem', fontWeight: 800, color: '#1a202c' }}>{title}</h3>
@@ -257,8 +233,6 @@ const CompanyOverview = () => {
   return (
     <><Navbar />
       <div style={{ padding: '2rem', background: '#fafafa', minHeight: '100vh', fontFamily: "'Satoshi', 'Inter', -apple-system, sans-serif" }}>
-
-        {/* ── Header ─────────────────────────────────────── */}
         <div style={{ marginBottom: '2rem' }}>
           <button onClick={() => navigate('/trade-intelligence/ledger')}
             style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.85rem', padding: 0, marginBottom: '0.75rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -304,8 +278,6 @@ const CompanyOverview = () => {
             </button>
           ))}
         </div>
-
-        {/* ── SECTION 1: Metrics Row ────────────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
 
           <div style={{ background: 'white', borderRadius: '8px', padding: '1.25rem 1.5rem', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
@@ -353,11 +325,7 @@ const CompanyOverview = () => {
             ) : <p style={{ color: '#9ca3af', fontSize: '0.85rem', margin: 0 }}>No data</p>}
           </div>
         </div>
-
-        {/* ── SECTION 2 & 3: Geography and Trend ──────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'start' }}>
-
-          {/* Partner Geography */}
           <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', height: '100%', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
             <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Partner Geography</h3>
             {geo.length === 0 ? <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>No geographic data</p> : (
@@ -381,8 +349,6 @@ const CompanyOverview = () => {
               </div>
             )}
           </div>
-
-          {/* Volume Trend */}
           <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
             <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Volume Trend</h3>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
@@ -390,8 +356,6 @@ const CompanyOverview = () => {
             </div>
           </div>
         </div>
-
-        {/* ── SECTION 5: Filters (bottom) ─────────────────── */}
         <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Filter Analysis</h3>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>

@@ -5,12 +5,6 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    
-    
-    
-    
-    
-    
     list_display = ('email', 'first_name', 'last_name', 'email_verified', 'token_balance', 'is_staff', 'date_joined')
     list_filter = ('is_staff', 'is_superuser', 'email_verified', 'date_joined')
     search_fields = ('email', 'first_name', 'last_name', 'phone_number')

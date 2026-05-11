@@ -1,16 +1,3 @@
-"""
-Integration tests for the accounts app API views.
-
-Tests cover:
-- User registration (api_signup)
-- User login (api_login)
-- User logout (api_logout)
-- Auth check (api_check_auth)
-- Email verification (api_verify_email)
-- Password reset (api_forgot_password)
-- Resend verification (api_resend_verification)
-"""
-
 import pytest
 import json
 from django.urls import reverse
@@ -21,8 +8,6 @@ User = get_user_model()
 
 @pytest.mark.django_db
 class TestUserRegistration:
-    """Test cases for user registration API."""
-    
     def test_valid_registration(self, api_client):
         """Test successful user registration with valid data."""
         url = reverse('accounts:api_signup')
@@ -123,8 +108,6 @@ class TestUserRegistration:
 
 @pytest.mark.django_db
 class TestUserLogin:
-    """Test cases for user login API."""
-    
     def test_valid_credentials(self, api_client, user):
         """Test successful login with valid credentials."""
         url = reverse('accounts:api_login')
@@ -180,8 +163,6 @@ class TestUserLogin:
 
 @pytest.mark.django_db
 class TestUserLogout:
-    """Test cases for user logout API."""
-    
     def test_logout_clears_session(self, authenticated_django_client):
         """Test logout clears user session."""
         url = reverse('accounts:api_logout')
@@ -193,8 +174,6 @@ class TestUserLogout:
 
 @pytest.mark.django_db
 class TestAuthCheck:
-    """Test cases for authentication check API."""
-    
     def test_authenticated_user(self, authenticated_django_client, user):
         """Test auth check returns user info when authenticated."""
         url = reverse('accounts:api_check_auth')
@@ -218,8 +197,6 @@ class TestAuthCheck:
 
 @pytest.mark.django_db
 class TestEmailVerification:
-    """Test cases for email verification API."""
-    
     def test_valid_token_verification(self, api_client, unverified_user):
         """Test successful email verification with valid token."""
         token = unverified_user.verification_token
@@ -258,8 +235,6 @@ class TestEmailVerification:
 
 @pytest.mark.django_db
 class TestForgotPassword:
-    """Test cases for forgot password API."""
-    
     def test_valid_email(self, api_client, user):
         """Test password reset request for existing user."""
         url = reverse('accounts:api_forgot_password')
@@ -283,8 +258,6 @@ class TestForgotPassword:
 
 @pytest.mark.django_db
 class TestResendVerification:
-    """Test cases for resend verification email API."""
-    
     def test_resend_for_unverified_user(self, authenticated_django_client, unverified_user):
         """Test resending verification email to unverified user."""
         

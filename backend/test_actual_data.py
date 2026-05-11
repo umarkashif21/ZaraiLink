@@ -5,7 +5,6 @@ django.setup()
 
 from trade_data.models import Transaction
 
-# Check IMPORT data with China
 print("====== IMPORT TRANSACTIONS FROM CHINA ======")
 imports_from_china = Transaction.objects.filter(
     trade_type='IMPORT',
@@ -22,7 +21,6 @@ if imports_from_china.exists():
     print(f"  Seller: {sample.seller}")
     print(f"  Product: {sample.product_item.sub_category.name if sample.product_item and sample.product_item.sub_category else 'N/A'}")
 
-# Check for dextrose in subcategories
 print("\n====== DEXTROSE SUBCATEGORIES ======")
 from trade_data.models import ProductSubCategory
 dextrose_subs = ProductSubCategory.objects.filter(name__icontains='dextrose')
@@ -30,8 +28,7 @@ print(f"Found {dextrose_subs.count()} subcategories with 'dextrose'")
 if dextrose_subs.exists():
     for sub in dextrose_subs:
         print(f"  - ID: {sub.id}, Name: {sub.name}, HS: {sub.hs_code}")
-        
-        # Check if there are Chinese imports for this subcategory
+
         chinese_imports = Transaction.objects.filter(
             trade_type='IMPORT',
             origin_country='China',

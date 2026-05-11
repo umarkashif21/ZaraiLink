@@ -30,8 +30,6 @@ const CompanyPartners = () => {
   const [direction, setDirection] = useState('import');
   const [productName, setProductName] = useState('');
   const [pendingProductName, setPendingProductName] = useState('');
-
-  // Sorting state for Top Partners Table
   const [sortConfig, setSortConfig] = useState({ key: 'total_volume', direction: 'desc' });
 
   useEffect(() => {
@@ -64,8 +62,6 @@ const CompanyPartners = () => {
   const clearFilters = () => { setPendingProductName(''); setProductName(''); };
 
   const COLORS = ['#2563eb', '#3b82f6', '#60a5fa', '#f59e0b', '#10b981', '#6366f1'];
-
-  // Data processing
   const top_partners = data?.top_partners || [];
   const volume_by_country = data?.volume_by_country || [];
   const monthly_partner_trends = data?.monthly_partner_trends || [];
@@ -73,8 +69,6 @@ const CompanyPartners = () => {
   const summary = data?.summary || { total_volume: 0 };
 
   const totalVolumeOverall = summary.total_volume || 1;
-
-  // Process Trends for Line Chart
   const processedTrendData = React.useMemo(() => {
     if (!monthly_partner_trends.length) return [];
     const allMonths = new Set();
@@ -90,8 +84,6 @@ const CompanyPartners = () => {
       return row;
     });
   }, [monthly_partner_trends]);
-
-  // Sorting Logic for Top Partners Table
   const sortedPartners = React.useMemo(() => {
     let sortableItems = [...top_partners];
     if (sortConfig.key) {
@@ -134,8 +126,6 @@ const CompanyPartners = () => {
   return (
     <><Navbar />
       <div style={{ padding: '2rem', background: '#fafafa', minHeight: '100vh', fontFamily: "'Satoshi', 'Inter', -apple-system, sans-serif" }}>
-
-        {/* ── Header ─────────────────────────────────────── */}
         <div style={{ marginBottom: '2rem' }}>
           <button onClick={() => navigate('/trade-intelligence/ledger')}
             style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.85rem', padding: 0, marginBottom: '0.75rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -171,8 +161,6 @@ const CompanyPartners = () => {
             </button>
           ))}
         </div>
-
-        {/* ── SECTION 5: Filters ────────────────────────── */}
         <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Data Scope & Filters</h3>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -212,7 +200,6 @@ const CompanyPartners = () => {
           <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}>{error}</div>
         ) : !data ? null : (
           <>
-            {/* ── SECTION 1: Top Trading Partners Table ──────── */}
             <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
               <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.25rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Top Trading Partners</h3>
               <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '450px' }}>
@@ -264,11 +251,7 @@ const CompanyPartners = () => {
                 </table>
               </div>
             </div>
-
-            {/* ── SECTION 2 / 3: Grid Wrapper ────────────────── */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '2rem' }}>
-
-              {/* SECTION 2: Trade Volume by Partner Country */}
               <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Trade Volume by Partner Country</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -304,8 +287,6 @@ const CompanyPartners = () => {
                   )}
                 </div>
               </div>
-
-              {/* SECTION 3: Monthly Trade Activity */}
               <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                 <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Monthly Trade Activity with Top Partners</h3>
                 <div style={{ height: 320, background: '#f8fafc', padding: '1rem', borderRadius: '4px' }}>
@@ -328,8 +309,6 @@ const CompanyPartners = () => {
               </div>
 
             </div>
-
-            {/* ── SECTION 4: Product Mix per Partner ────────── */}
             <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
               <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.15rem', fontWeight: 600, color: '#111827', letterSpacing: '-0.01em' }}>Key Products Traded with Partners</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>

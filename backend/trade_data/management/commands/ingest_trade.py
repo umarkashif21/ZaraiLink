@@ -25,9 +25,6 @@ class Command(BaseCommand):
         file_path = options["file"]
         self.stdout.write(self.style.WARNING(f"Reading file: {file_path}"))
 
-        # -------------------------
-        # Load File
-        # -------------------------
         if file_path.endswith(".xlsx"):
             df = pd.read_excel(file_path, header=6)
         else:
@@ -35,7 +32,7 @@ class Command(BaseCommand):
 
         df.columns = df.columns.str.strip().str.replace(" ", "_").str.lower()
 
-        # Fix: pandas reads HS codes as floats (1702.1110 → 1702.111), losing trailing zeros.
+        # pandas reads HS codes as floats (1702.1110 -> 1702.111), losing trailing zeros.
         # Reformat to 4 decimal places so DB stores "1702.1110" not "1702.111".
         if 'hs_code' in df.columns:
             def _fmt_hs(x):
@@ -75,9 +72,6 @@ class Command(BaseCommand):
 
         transactions_to_create = []
 
-        # -------------------------
-        # Ingestion
-        # -------------------------
         with db_transaction.atomic():
             for idx, row in df.iterrows():
 
@@ -92,9 +86,6 @@ class Command(BaseCommand):
                     )
                     continue
 
-                # -------------------------
-                # Product Hierarchy
-                # -------------------------
                 hs_code_full = str(row["hs_code"]).strip()
                 category_name = str(row["category"]).strip()
                 sub_category_name = str(row["sub-category"]).strip()
@@ -124,9 +115,6 @@ class Command(BaseCommand):
                     name=item_name
                 )
 
-                # -------------------------
-                # Safe Numeric Handling
-                # -------------------------
                 qty_kg = row["qty_kg"] if pd.notna(row["qty_kg"]) else 0
                 qty_mt = row["qty_mt"] if pd.notna(row["qty_mt"]) else 0
                 usd_per_kg = row["usd/kg"] if pd.notna(row["usd/kg"]) else None
@@ -134,9 +122,7 @@ class Command(BaseCommand):
                 pkr = row["pkr"] if pd.notna(row["pkr"]) else None
                 usd = row["usd"] if pd.notna(row["usd"]) else None
 
-                # -------------------------
-                # IMPORTANT: Direction Logic
-                # -------------------------
+                # Direction logic: imports go FROM country TO Pakistan.
                 origin_country = str(row["country"]).strip()
                 destination_country = "Pakistan"
 

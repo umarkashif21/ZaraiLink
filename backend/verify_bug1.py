@@ -15,7 +15,6 @@ queries = [
     ("sugr suppliers from brazil", "sugr"),
     ("suggar cheap frm brazl",     "suggar"),
     ("sugr cheep frm UAE",         "sugr"),
-    # Controls - should be unchanged
     ("buy sugar from brazil",      "sugar"),
     ("suggar",                     "suggar"),
 ]

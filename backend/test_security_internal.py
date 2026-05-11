@@ -29,7 +29,7 @@ for feature, method, path in endpoints:
         r = client.get(path)
     else:
         r = client.post(path)
-    
+
     status = r.status_code
     expected = "401/403"
     passed = "Pass" if status in [401, 403] else "Fail"

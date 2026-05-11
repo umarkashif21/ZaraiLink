@@ -9,21 +9,11 @@ from .services.aggregation import SupplierAggregator
 
 logger = logging.getLogger(__name__)
 
-# ============================================================
-# GLOBAL INIT — models load once at startup
-# ============================================================
 logger.info("Initializing Global SearchService on Startup...")
 global_search_service = SearchService()
 
 
 class SearchViewSet(viewsets.ViewSet):
-    """
-    Revamped Modern Search API.
-    Endpoints:
-      GET /api/search/?q=...&scope=import&hs_code=1702.4  → supplier list
-      GET /api/search/autocomplete/?q=dex                    → product suggestions
-      GET /api/search/supplier-detail/?name=...&query=...    → supplier deep-dive
-    """
     permission_classes = [AllowAny]
 
     def __init__(self, **kwargs):
@@ -31,16 +21,13 @@ class SearchViewSet(viewsets.ViewSet):
         self.search_service = global_search_service
         self.aggregator = SupplierAggregator()
 
-    # ----------------------------------------------------------------
-    # MAIN SEARCH — GET /api/search/?q=...
-    # ----------------------------------------------------------------
     def list(self, request):
         query        = request.query_params.get('q', '').strip()
         scope_param  = request.query_params.get('scope', 'import').lower()
         hs_code      = request.query_params.get('hs_code', None)
-        subcat_id    = request.query_params.get('subcat_id', None)   # Exact subcategory DB id
-        variant_name = request.query_params.get('variant_name', None) # Exact product name user clicked
-        intent       = request.query_params.get('intent', None)      # Explicit intent bypass
+        subcat_id    = request.query_params.get('subcat_id', None)
+        variant_name = request.query_params.get('variant_name', None)
+        intent       = request.query_params.get('intent', None)
         already_switched = request.query_params.get('already_switched', 'false').lower() == 'true'
 
         if not query:
@@ -71,7 +58,7 @@ class SearchViewSet(viewsets.ViewSet):
         parsed_query = search_result.get('nlu', {})
         raw_profiles = search_result.get('profiles', [])
 
-        # ── Loop-break: fired when already_switched=True and STILL mismatched ─
+        # Loop-break: fired when already_switched=True and STILL mismatched
         if search_result.get('no_data_message'):
             return Response({
                 "query":                query,
@@ -85,7 +72,7 @@ class SearchViewSet(viewsets.ViewSet):
                 "count":                0,
             })
 
-        # ── Scope Mismatch — product exists only in opposite scope ─────
+        # Scope mismatch: product exists only in opposite scope.
         if search_result.get('scope_mismatch'):
             return Response({
                 "query":                query,
@@ -99,7 +86,6 @@ class SearchViewSet(viewsets.ViewSet):
             })
 
 
-        # ── Disambiguation — return early with variant picker ──────────
         if search_result.get('needs_disambiguation'):
             return Response({
                 "query":                query,
@@ -114,7 +100,6 @@ class SearchViewSet(viewsets.ViewSet):
                 "count":                0,
             })
 
-        # ── Normal results ─────────────────────────────────────────────
         mapped_results = []
         for p in raw_profiles:
             tx_count   = p["transaction_count"]
@@ -148,7 +133,6 @@ class SearchViewSet(viewsets.ViewSet):
             "top_country":      mapped_results[0]["country"] if mapped_results else "N/A",
         }
 
-        # ── Apply Access Restrictions ──────────────────────────────────────────
         from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS, HS_CODE_PRICE, PRODUCT_PRICE
         
         active_hs_code = hs_code or parsed_query.get('hs_code', '')
@@ -175,7 +159,7 @@ class SearchViewSet(viewsets.ViewSet):
 
         access_state = get_access_state(request.user, active_hs_code, active_subcat_id)
 
-        # Store total count before slicing so frontend can show "36 results found, showing 2"
+        # Capture full count before slicing for paywall "36 results, showing 2" display.
         total_profiles_count = len(mapped_results)
 
         if access_state not in (FULL_ACCESS, PRODUCT_ACCESS):
@@ -203,9 +187,6 @@ class SearchViewSet(viewsets.ViewSet):
             "ranking_applied":     search_result.get("ranking_applied"),
         })
 
-    # ----------------------------------------------------------------
-    # AUTOCOMPLETE — GET /api/search/autocomplete/?q=dex
-    # ----------------------------------------------------------------
     @action(detail=False, methods=['get'], url_path='autocomplete')
     def autocomplete(self, request):
         partial = request.query_params.get('q', '').strip()
@@ -232,9 +213,6 @@ class SearchViewSet(viewsets.ViewSet):
 
         return Response(result)
 
-    # ----------------------------------------------------------------
-    # HS CODE TREE — GET /api/search/hs-code-tree/?q=17
-    # ----------------------------------------------------------------
     @action(detail=False, methods=['get'], url_path='hs-code-tree')
     def hs_code_tree(self, request):
         q = request.query_params.get('q', '').strip()
@@ -249,8 +227,7 @@ class SearchViewSet(viewsets.ViewSet):
             return Response(results)
 
         if len(clean_q) <= 2:
-            # Chapter (1-2 digits) -> Derive 4-digit headings from Transaction.hs_code via Substr
-            # ProductCategory does NOT store 4-digit codes, so Transaction is the ground truth.
+            # ProductCategory has no 4-digit rows, so derive headings from Transaction.hs_code.
             rows = (
                 Transaction.objects
                 .filter(hs_code__startswith=clean_q)
@@ -259,8 +236,6 @@ class SearchViewSet(viewsets.ViewSet):
                 .annotate(count=Count('id'))
                 .order_by('heading')[:20]
             )
-            # Name lookup: ProductCategory stores codes like "1702.3"; there are no 4-digit rows.
-            # Best we can do is group by heading prefix and pick the first category name.
             heading_names = {}
             for row in rows:
                 h = row['heading']
@@ -272,7 +247,6 @@ class SearchViewSet(viewsets.ViewSet):
                 results.append({"hs_code": h, "name": heading_names.get(h, h), "is_final": False})
 
         elif len(clean_q) <= 3:
-            # 3 digits: still show 4-digit headings
             rows = (
                 Transaction.objects
                 .filter(hs_code__startswith=clean_q)
@@ -288,7 +262,6 @@ class SearchViewSet(viewsets.ViewSet):
                 results.append({"hs_code": h, "name": name, "is_final": False})
 
         elif len(clean_q) <= 7:
-            # 4-7 digits: show distinct hs_codes from ProductCategory (the real tariff subcategory level)
             items = (
                 ProductCategory.objects
                 .filter(hs_code__startswith=q)
@@ -300,7 +273,6 @@ class SearchViewSet(viewsets.ViewSet):
                 results.append({"hs_code": item['hs_code'], "name": item['name'], "is_final": True})
 
         else:
-            # 8+ digits: exact tariff match
             items = (
                 ProductCategory.objects
                 .filter(hs_code__startswith=q)
@@ -313,9 +285,6 @@ class SearchViewSet(viewsets.ViewSet):
 
         return Response(results)
 
-    # ----------------------------------------------------------------
-    # HS SUMMARY — GET /api/search/hs-summary/?q=1702
-    # ----------------------------------------------------------------
     @action(detail=False, methods=['get'], url_path='hs-summary')
     def hs_summary(self, request):
         from trade_data.models import Transaction, ProductCategory, ProductSubCategory
@@ -326,17 +295,15 @@ class SearchViewSet(viewsets.ViewSet):
         if not q:
             return Response({"error": "Query required"}, status=400)
 
-        # Helper method for Context Naming
         def get_contextual_name(hs_code, base_name):
+            # Disambiguate vague names like "Other" by prepending the parent heading.
             vague_names = ["other", "other items", "not elsewhere specified"]
             if base_name.lower().strip() in vague_names:
-                # Need parent context. If hs_code is 1704.909, parent is heading 1704 or similar
                 four_digit = hs_code[:4]
                 parent = ProductCategory.objects.filter(hs_code=four_digit).first()
                 if parent:
                     return f"{parent.name} > {base_name}"
                 elif len(hs_code) >= 6:
-                    # try a closer parent
                     parent = ProductCategory.objects.filter(hs_code__startswith=hs_code[:6]).first()
                     if parent:
                         return f"{parent.name} > {base_name}"
@@ -345,16 +312,14 @@ class SearchViewSet(viewsets.ViewSet):
         is_alpha = not all(c.isdigit() or c == '.' for c in q)
         
         if is_alpha:
-            # Word search: like "dextrose" -> Return each individual subcategory variant
-            # so users see the full list (e.g. "Dextrose Ball", "Dextrose Anhydrous", etc.)
-            # matching what the autocomplete dropdown shows — NOT HS-code-grouped rows.
+            # Word search returns each subcategory variant as its own row (matches autocomplete),
+            # not HS-code-grouped rows.
             subcat_qs = list(ProductSubCategory.objects.filter(name__icontains=q))
             cat_qs = list(ProductCategory.objects.filter(name__icontains=q))
 
             results = []
             seen_subcat_ids = set()
 
-            # Each individual subcategory variant gets its own row
             for sc in subcat_qs:
                 if sc.id in seen_subcat_ids:
                     continue
@@ -369,7 +334,6 @@ class SearchViewSet(viewsets.ViewSet):
                         "is_leaf": True,
                     })
 
-            # Add broad categories not already covered by a subcategory row
             seen_hs = {r["hs_code"] for r in results}
             for cat in cat_qs:
                 if cat.hs_code not in seen_hs:
@@ -393,7 +357,6 @@ class SearchViewSet(viewsets.ViewSet):
             return Response({"error": "Summary view only supports < 7 raw digits"}, status=400)
             
         if len(clean_q) <= 3:
-            # Group Transactions by 4-digit heading (Substr of hs_code, stripping dots)
             qs = list(
                 Transaction.objects
                 .filter(hs_code__startswith=q if '.' in q else clean_q)
@@ -421,7 +384,6 @@ class SearchViewSet(viewsets.ViewSet):
                 
                 results.append({"hs_code": c, "name": get_contextual_name(c, name), "count": item['count'], "is_leaf": False})
         else:
-            # 4-6 digits: Use the raw query
             qs = list(
                 Transaction.objects
                 .filter(hs_code__startswith=q)
@@ -446,9 +408,6 @@ class SearchViewSet(viewsets.ViewSet):
                 
         return Response(results)
 
-    # ----------------------------------------------------------------
-    # HS DASHBOARD — GET /api/search/hs-dashboard/?q=1704.909&intent=FOREIGN_SUPPLIERS
-    # ----------------------------------------------------------------
     @action(detail=False, methods=['get'], url_path='hs-dashboard')
     def hs_dashboard(self, request):
         from trade_data.models import Transaction, ProductCategory
@@ -468,9 +427,8 @@ class SearchViewSet(viewsets.ViewSet):
         cat = ProductCategory.objects.filter(hs_code__startswith=q).values('hs_code', 'name').order_by('hs_code').first()
         hs_description = cat['name'] if cat else q
 
-        # ── Sidebar: ALL subcategories for this HS code, across ALL directions ────
-        # Built from a completely unfiltered qs so it never shrinks when the user
-        # selects a subcat filter or switches pills. This is the full product universe.
+        # Sidebar uses an unfiltered qs so counts don't shrink when the user picks a
+        # subcat filter or switches pills.
         sidebar_qs = Transaction.objects.filter(hs_code__startswith=q).select_related(
             'product_item', 'product_item__sub_category'
         )
@@ -481,7 +439,6 @@ class SearchViewSet(viewsets.ViewSet):
                       .annotate(count=Count('id'))
                       .order_by('-count')
             )
-            # Deduplicate by name — keep the first (highest-count) occurrence
             seen = {}
             for r in rows:
                 name = r['product_item__sub_category__name']
@@ -496,14 +453,12 @@ class SearchViewSet(viewsets.ViewSet):
         import_map   = _build_sidebar(sidebar_qs.filter(trade_type='IMPORT'))
         export_map   = _build_sidebar(sidebar_qs.filter(trade_type='EXPORT'))
 
-        # Order by combined count; include every subcategory that exists in any direction
         all_names = sorted(combined_map.keys(), key=lambda n: combined_map[n]['count'], reverse=True)
         sidebar_counts        = [{"name": n, "count": combined_map[n]['count'], "subcat_id": combined_map[n]['subcat_id']}  for n in all_names]
         sidebar_import_counts = [{"name": n, "count": import_map.get(n, {}).get('count', 0), "subcat_id": combined_map[n]['subcat_id']} for n in all_names]
         sidebar_export_counts = [{"name": n, "count": export_map.get(n, {}).get('count', 0), "subcat_id": combined_map[n]['subcat_id']} for n in all_names]
 
 
-        # ── Apply variant/subcat filter to profile qs (not to sidebar) ─────────
         subcat_names = []
         filter_was_ignored = False
         if subcat_filter:
@@ -515,25 +470,21 @@ class SearchViewSet(viewsets.ViewSet):
                     Q(product_item__name__in=subcat_names)
                 )
                 if filtered_qs.exists():
-                    # Valid leaf-level filter — apply it
                     qs = filtered_qs
                 else:
-                    # The name is a category label, not a subcategory/item name.
-                    # Silently ignore so we don't show a false 0-results page.
+                    # Name is a category label, not a subcategory/item — ignore silently
+                    # to avoid showing a false 0-results page.
                     subcat_names = []
                     filter_was_ignored = True
 
-        # ── total_count: filtered count for the header badge ──────────────────
         total_count = qs.count()
 
-        # ── Apply intent → trade_type filter for profiles only ───────────────
         is_import_tab = intent in ('FOREIGN_SUPPLIERS', 'PAKISTANI_BUYERS')
         if is_import_tab:
             qs = qs.filter(trade_type='IMPORT')
         else:
             qs = qs.filter(trade_type='EXPORT')
 
-        # Determine which entity field to aggregate by
         if intent in ('FOREIGN_SUPPLIERS', 'PAKISTANI_SUPPLIERS'):
             entity_field = 'seller'
             country_field = 'origin_country'
@@ -541,7 +492,6 @@ class SearchViewSet(viewsets.ViewSet):
             entity_field = 'buyer'
             country_field = 'destination_country'
 
-        # Sort and construct profiles
         raw_profiles = list(
             qs.values(entity_field, country_field)
               .annotate(
@@ -569,10 +519,8 @@ class SearchViewSet(viewsets.ViewSet):
                 "type":               "Supplier" if intent in ('FOREIGN_SUPPLIERS', 'PAKISTANI_SUPPLIERS') else "Buyer",
             })
 
-        # ─── 4. Apply Access Restrictions ─────────────────────────────────────────────
         from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS, NO_ACCESS, HS_CODE_PRICE, PRODUCT_PRICE
 
-        # If they filtered to a subcategory, find its ID for access check
         primary_product_name = subcat_names[0] if subcat_names else None
         active_subcat_id = None
         if primary_product_name:
@@ -585,7 +533,6 @@ class SearchViewSet(viewsets.ViewSet):
 
         access_state = get_access_state(request.user, q, active_subcat_id)
 
-        # Explicit data sanitization layer (Frontend is secondary, Backend is authority)
         if access_state in (FULL_ACCESS, PRODUCT_ACCESS):
             visible_profiles = profiles
             full_profiles = profiles
@@ -604,7 +551,6 @@ class SearchViewSet(viewsets.ViewSet):
             "sidebar_export_counts": sidebar_export_counts,
             "trade_direction":       "IMPORT" if is_import_tab else "EXPORT",
             "subcat_filter_ignored": filter_was_ignored,
-            # Access / paywall
             "access_state":          access_state,
             "paywall_price":         paywall_price,
             "visible_profiles":      visible_profiles,
@@ -613,9 +559,6 @@ class SearchViewSet(viewsets.ViewSet):
         })
 
 
-    # ----------------------------------------------------------------
-    # SUPPLIER DETAIL — GET /api/search/supplier-detail/?name=...&query=...
-    # ----------------------------------------------------------------
     @action(detail=False, methods=['get'], url_path='supplier-detail', permission_classes=[IsAuthenticated])
     def supplier_detail(self, request):
         seller_name  = request.query_params.get('name')
@@ -629,29 +572,25 @@ class SearchViewSet(viewsets.ViewSet):
         scope     = request.query_params.get('scope', 'import').lower()
         orm_scope = 'EXPORT' if scope == 'export' else 'IMPORT'
 
-        # --- Intent resolution (priority order) ---
-        # 1. Explicit intent from URL param (most reliable — set by frontend based on active pill tab)
+        # Intent resolution priority: explicit URL param > NLU cache > fresh NLU parse.
         explicit_intent = request.query_params.get('intent', '').upper()
 
         if explicit_intent in ('BUY', 'SELL'):
             intent = explicit_intent
             parsed_query = {'intent': intent, 'product': query, 'hs_code': ''}
         else:
-            # 2. NLU cache (fast path when user came from a natural-language search)
             import hashlib
             from django.core.cache import cache
             _cache_raw = f"nlu:{query.lower().strip()}:{scope}"
             _cache_key = "nlu_" + hashlib.md5(_cache_raw.encode()).hexdigest()
             parsed_query = cache.get(_cache_key)
             if parsed_query is None:
-                # 3. Run NLU only if nothing else resolved
                 parsed_query = self.search_service._nlu_engine.parse(query)
             intent = parsed_query.get('intent', 'BUY')
-            # For numeric HS-code queries NLU yields UNKNOWN — treat as BUY
+            # Numeric HS-code queries yield UNKNOWN — default to BUY.
             if intent not in ('BUY', 'SELL'):
                 intent = 'BUY'
 
-        # Resolve exact subcategory if selected from UI
         hs_code_hint = query if all(c.isdigit() or c == '.' for c in query.strip()) else parsed_query.get("hs_code", "")
         subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
             product_keyword=parsed_query.get("product", query),
@@ -662,9 +601,8 @@ class SearchViewSet(viewsets.ViewSet):
             scope=orm_scope
         )
 
-        # --- Layer 2: Entitlement Check ---
         from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS
-        
+
         active_hs_code = parsed_query.get("hs_code", "")
         if not active_hs_code and hs_code_hint:
             active_hs_code = hs_code_hint
@@ -681,7 +619,6 @@ class SearchViewSet(viewsets.ViewSet):
         if access_state not in (FULL_ACCESS, PRODUCT_ACCESS):
             return Response({"error": "Access denied. Please unlock this category or product first."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Route to the correct aggregator
         if intent == 'SELL':
             details = self.aggregator.get_buyer_details(
                 seller_name, subcat_ids, product_item_filter=product_item_ids, scope=orm_scope
@@ -702,9 +639,6 @@ class SearchViewSet(viewsets.ViewSet):
             "type": "BUYER" if intent == 'SELL' else "SUPPLIER",
         })
 
-    # ----------------------------------------------------------------
-    # SUPPLIER COMPARE — GET /api/search/compare/?suppliers=A,B,C&query=...
-    # ----------------------------------------------------------------
     @action(detail=False, methods=['get'], url_path='compare', permission_classes=[IsAuthenticated])
     def supplier_compare(self, request):
         suppliers_param = request.query_params.get('suppliers')
@@ -740,9 +674,8 @@ class SearchViewSet(viewsets.ViewSet):
             scope=orm_scope
         )
 
-        # --- Layer 2: Entitlement Check ---
         from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS
-        
+
         active_hs_code = parsed_query.get("hs_code", "")
         active_subcat_id = int(subcat_id) if subcat_id else (subcat_ids[0] if subcat_ids else None)
         
@@ -770,9 +703,6 @@ class SearchViewSet(viewsets.ViewSet):
         match = re.search(r'\b(?:top|best|first|suggest)\s+(\d+)\b', query.lower())
         return int(match.group(1)) if match else None
 
-    # ----------------------------------------------------------------
-    # SUPPLIER TRANSACTIONS — GET /api/search/supplier-transactions/
-    # ----------------------------------------------------------------
     @action(detail=False, methods=['get'], url_path='supplier-transactions', permission_classes=[IsAuthenticated])
     def supplier_transactions(self, request):
         seller_name = request.query_params.get('name')
@@ -796,14 +726,12 @@ class SearchViewSet(viewsets.ViewSet):
             page_size = 15
 
         try:
-            # Intent
             explicit_intent = request.query_params.get('intent', '').upper()
             if explicit_intent in ('BUY', 'SELL'):
                 intent = explicit_intent
                 is_buyer = (intent == 'SELL')
-                # Still resolve subcategories using subcat_id/variant_name so the
-                # Transactions tab is scoped to the filtered product (e.g. "Dextrose Anhydrous"),
-                # not all products under the HS code.
+                # Still resolve subcategories so Transactions tab is scoped to the
+                # filtered product, not all products under the HS code.
                 try:
                     hs_code_hint = query if all(c.isdigit() or c == '.' for c in query.strip()) else ''
                     subcat_ids, _, product_item_ids = self.search_service._resolve_subcategories(
@@ -841,14 +769,11 @@ class SearchViewSet(viewsets.ViewSet):
                         scope=orm_scope
                     )
                 except Exception:
-                    # If subcategory resolution fails just load all transactions for entity
                     subcat_ids = None
                     product_item_ids = None
 
-            # --- Layer 2: Entitlement Check ---
             from subscriptions.services import get_access_state, FULL_ACCESS, PRODUCT_ACCESS
-            
-            # Use query as hs_code hint if it looks like one, or fall back to parsed NLU hs_code
+
             active_hs_code = query if all(c.isdigit() or c == '.' for c in query.strip()) else parsed_query.get("hs_code", "") if 'parsed_query' in locals() else ""
             active_subcat_id = int(subcat_id) if subcat_id else (subcat_ids[0] if subcat_ids else None)
             
@@ -862,7 +787,6 @@ class SearchViewSet(viewsets.ViewSet):
             if access_state not in (FULL_ACCESS, PRODUCT_ACCESS):
                 return Response({"error": "Access denied. Please unlock this category or product first."}, status=status.HTTP_403_FORBIDDEN)
 
-            # Filters
             filters = {}
             if request.query_params.get('start_date'): filters['start_date'] = request.query_params.get('start_date')
             if request.query_params.get('end_date'): filters['end_date'] = request.query_params.get('end_date')

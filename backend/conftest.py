@@ -1,13 +1,3 @@
-"""
-Central configuration for pytest fixtures used across all apps.
-
-This file provides:
-- Database fixtures with automatic cleanup
-- Authentication fixtures for testing protected endpoints
-- Factory classes for generating test data
-- Common test utilities
-"""
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
@@ -22,10 +12,6 @@ User = get_user_model()
 
 @pytest.fixture
 def db_access_without_rollback_and_truncate(request, django_db_setup, django_db_blocker):
-    """
-    Fixture that allows database access without transaction rollback.
-    Use for tests that need persistent data across multiple test functions.
-    """
     django_db_blocker.unblock()
     yield
     django_db_blocker.restore()
@@ -37,13 +23,6 @@ def db_access_without_rollback_and_truncate(request, django_db_setup, django_db_
 
 @pytest.fixture
 def create_user(db):
-    """
-    Factory fixture for creating test users.
-    
-    Usage:
-        def test_something(create_user):
-            user = create_user(email='test@example.com', password='pass123')
-    """
     def _create_user(
         email='testuser@example.com',
         password='testpass123',
@@ -70,13 +49,11 @@ def create_user(db):
 
 @pytest.fixture
 def user(create_user):
-    """Create a default verified test user."""
     return create_user()
 
 
 @pytest.fixture
 def unverified_user(create_user):
-    """Create an unverified test user."""
     return create_user(
         email='unverified@example.com',
         email_verified=False
@@ -85,7 +62,6 @@ def unverified_user(create_user):
 
 @pytest.fixture
 def user_no_tokens(create_user):
-    """Create a test user with no tokens."""
     return create_user(
         email='notokens@example.com',
         token_balance=0
@@ -94,7 +70,6 @@ def user_no_tokens(create_user):
 
 @pytest.fixture
 def admin_user(db):
-    """Create an admin/superuser for testing admin functionality."""
     return User.objects.create_superuser(
         email='admin@example.com',
         password='adminpass123',
@@ -109,33 +84,28 @@ def admin_user(db):
 
 @pytest.fixture
 def api_client():
-    """Return an unauthenticated API test client."""
     return APIClient()
 
 
 @pytest.fixture
 def authenticated_client(api_client, user):
-    """Return an authenticated API test client."""
     api_client.force_authenticate(user=user)
     return api_client
 
 
 @pytest.fixture
 def authenticated_client_no_tokens(api_client, user_no_tokens):
-    """Return an authenticated API client for user with no tokens."""
     api_client.force_authenticate(user=user_no_tokens)
     return api_client
 
 
 @pytest.fixture
 def django_client():
-    """Return a standard Django test client (for session-based auth)."""
     return Client()
 
 
 @pytest.fixture
 def authenticated_django_client(django_client, user):
-    """Return an authenticated Django test client."""
     django_client.force_login(user)
     return django_client
 
@@ -146,9 +116,8 @@ def authenticated_django_client(django_client, user):
 
 @pytest.fixture
 def create_sector(db):
-    """Factory fixture for creating sectors."""
     from companies.models import Sector
-    
+
     def _create_sector(name='Agriculture', description='Agricultural products'):
         sector, _ = Sector.objects.get_or_create(
             name=name,
@@ -160,9 +129,8 @@ def create_sector(db):
 
 @pytest.fixture
 def create_company_role(db):
-    """Factory fixture for creating company roles."""
     from companies.models import CompanyRole
-    
+
     def _create_role(name='Supplier', description='Product supplier'):
         role, _ = CompanyRole.objects.get_or_create(
             name=name,
@@ -174,9 +142,8 @@ def create_company_role(db):
 
 @pytest.fixture
 def create_company_type(db):
-    """Factory fixture for creating company types."""
     from companies.models import CompanyType
-    
+
     def _create_type(name='Manufacturer', description='Manufacturing company'):
         company_type, _ = CompanyType.objects.get_or_create(
             name=name,
@@ -188,13 +155,6 @@ def create_company_type(db):
 
 @pytest.fixture
 def create_company(db, create_sector, create_company_role, create_company_type):
-    """
-    Factory fixture for creating test companies.
-    
-    Usage:
-        def test_company(create_company):
-            company = create_company(name='Test Corp', country='Pakistan')
-    """
     from companies.models import Company
     
     def _create_company(
@@ -223,13 +183,11 @@ def create_company(db, create_sector, create_company_role, create_company_type):
 
 @pytest.fixture
 def company(create_company):
-    """Create a default test company."""
     return create_company()
 
 
 @pytest.fixture
 def supplier_company(create_company, create_company_role):
-    """Create a supplier company."""
     supplier_role = create_company_role(name='Supplier')
     return create_company(
         name='Supplier Corp',
@@ -239,7 +197,6 @@ def supplier_company(create_company, create_company_role):
 
 @pytest.fixture
 def buyer_company(create_company, create_company_role):
-    """Create a buyer company."""
     buyer_role = create_company_role(name='Buyer')
     return create_company(
         name='Buyer Corp',
@@ -249,7 +206,6 @@ def buyer_company(create_company, create_company_role):
 
 @pytest.fixture
 def create_key_contact(db, company):
-    """Factory fixture for creating key contacts."""
     from companies.models import KeyContact
     
     def _create_contact(
@@ -271,7 +227,6 @@ def create_key_contact(db, company):
 
 @pytest.fixture
 def key_contact(create_key_contact):
-    """Create a default key contact."""
     return create_key_contact()
 
 
@@ -281,7 +236,6 @@ def key_contact(create_key_contact):
 
 @pytest.fixture
 def create_subscription_plan(db):
-    """Factory fixture for creating subscription plans."""
     from subscriptions.models import SubscriptionPlan
     
     def _create_plan(
@@ -305,13 +259,11 @@ def create_subscription_plan(db):
 
 @pytest.fixture
 def subscription_plan(create_subscription_plan):
-    """Create a default subscription plan."""
     return create_subscription_plan()
 
 
 @pytest.fixture
 def create_redeem_code(db, subscription_plan):
-    """Factory fixture for creating redeem codes."""
     from subscriptions.models import RedeemCode
     
     def _create_code(plan=None, status='active', **kwargs):
@@ -326,7 +278,6 @@ def create_redeem_code(db, subscription_plan):
 
 @pytest.fixture
 def redeem_code(create_redeem_code):
-    """Create a default active redeem code."""
     return create_redeem_code()
 
 
@@ -336,7 +287,6 @@ def redeem_code(create_redeem_code):
 
 @pytest.fixture
 def create_transaction(db, supplier_company, buyer_company):
-    """Factory fixture for creating trade transactions."""
     from trade_data.models import Transaction
     from datetime import date
     
@@ -367,7 +317,6 @@ def create_transaction(db, supplier_company, buyer_company):
 
 
 def assert_status_code(response, expected_code):
-    """Assert response status code with helpful error message."""
     assert response.status_code == expected_code, (
         f"Expected status code {expected_code}, got {response.status_code}. "
         f"Response: {response.content.decode()[:500]}"
@@ -375,7 +324,6 @@ def assert_status_code(response, expected_code):
 
 
 def assert_json_response(response):
-    """Assert response is valid JSON."""
     import json
     try:
         return json.loads(response.content)
@@ -385,7 +333,6 @@ def assert_json_response(response):
 
 @pytest.fixture
 def assert_helpers():
-    """Provide assertion helper functions."""
     return {
         'assert_status_code': assert_status_code,
         'assert_json_response': assert_json_response,

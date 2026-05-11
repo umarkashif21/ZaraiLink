@@ -1,8 +1,3 @@
-"""
-Simple script to import companies from Excel file into the database.
-Usage: python load_data.py
-"""
-
 import os
 import sys
 import django
@@ -26,8 +21,6 @@ SHEET_NAME = 0
 
 
 def import_companies():
-    """Import companies from Excel file"""
-    
     print(f"Reading Excel file: {EXCEL_FILE}")
     
     try:
@@ -54,9 +47,7 @@ def import_companies():
     with transaction.atomic():
         for idx, row in df.iterrows():
             try:
-                
                 def safe_str(val):
-                    """Convert value to string, handle NaN/None"""
                     if pd.isna(val):
                         return ''
                     return str(val).strip()
@@ -69,60 +60,51 @@ def import_companies():
 
                 sector_name = safe_str(row.get('Sector', '')) or 'Unknown'
                 country = safe_str(row.get('Country', '')) or 'Unknown'
-                company_role = safe_str(row.get('Company role', '')).lower()  
-                company_type = safe_str(row.get('Company type', ''))  
+                company_role = safe_str(row.get('Company role', '')).lower()
+                company_type = safe_str(row.get('Company type', ''))
                 year_established = row.get('Year_established')
                 number_of_employees_raw = row.get('Number of employees')
-                
+
                 try:
                     if pd.notna(number_of_employees_raw):
-                        number_of_employees = str(int(number_of_employees_raw))  
+                        number_of_employees = str(int(number_of_employees_raw))
                     else:
                         number_of_employees = None
                 except (ValueError, TypeError):
                     number_of_employees = None
-                
+
                 website = safe_str(row.get('Website', '')) or None
                 if not website:
-                    
-                    website = 'https://example.com'  
-                
-                phone = safe_str(row.get('Landline Numbers', '')) or None  
-                
+                    website = 'https://example.com'
+
+                phone = safe_str(row.get('Landline Numbers', '')) or None
+
                 if phone and len(phone) > 50:
                     phone = phone[:50]
-                
-                description = safe_str(row.get('Description', '')) or 'N/A'  
+
+                description = safe_str(row.get('Description', '')) or 'N/A'
                 address = safe_str(row.get('Address', '')) or country
 
-                
                 try:
                     year_established = int(year_established) if pd.notna(year_established) else None
                 except (ValueError, TypeError):
                     year_established = None
 
-                
-                
-                role_name = company_role.capitalize() if company_role else 'Supplier'  
-                type_name = company_type.strip() if company_type else 'Sugar Mill'  
-                
-                
+                role_name = company_role.capitalize() if company_role else 'Supplier'
+                type_name = company_type.strip() if company_type else 'Sugar Mill'
+
                 if not type_name or type_name == '':
                     if 'supplier' in role_name.lower():
                         type_name = 'Sugar Mill'
                     else:
-                        type_name = 'Confectionary'  
+                        type_name = 'Confectionary'
 
-                
                 sector, _ = Sector.objects.get_or_create(name=sector_name)
 
-                
                 company_role, _ = CompanyRole.objects.get_or_create(name=role_name)
 
-                
                 company_type, _ = CompanyType.objects.get_or_create(name=type_name)
 
-                
                 company, created = Company.objects.update_or_create(
                     name=company_name,
                     defaults={
@@ -150,7 +132,6 @@ def import_companies():
                 error_count += 1
                 print(f"Row {idx + 2}: Error: {str(e)}")
 
-    
     print("\n" + "=" * 70)
     print("IMPORT COMPLETE!")
     print(f"  Created:  {created_count}")
@@ -162,8 +143,6 @@ def import_companies():
 
 
 def import_contacts(sheet_name=0):
-    """Import key contacts from separate Excel file"""
-    
     print(f"\nReading contacts from file: {CONTACTS_FILE}")
     
     try:
@@ -187,7 +166,6 @@ def import_contacts(sheet_name=0):
     error_count = 0
 
     def safe_str(val):
-        """Convert value to string, handle NaN/None"""
         if pd.isna(val):
             return ''
         return str(val).strip()
@@ -197,13 +175,12 @@ def import_contacts(sheet_name=0):
             try:
                 company_name = safe_str(row.get('Company', ''))
                 contact_name = safe_str(row.get('Name', ''))
-                
+
                 if not company_name or not contact_name:
                     print(f"Row {idx + 2}: Skipped (missing company or name)")
                     skipped_count += 1
                     continue
 
-                
                 try:
                     company = Company.objects.get(name__iexact=company_name)
                 except Company.DoesNotExist:
@@ -216,18 +193,15 @@ def import_contacts(sheet_name=0):
                 whatsapp = safe_str(row.get('Whatsapp', '')) or None
                 email = safe_str(row.get('Email', '')) or None
 
-                
+                # phone is required in DB
                 if not phone and whatsapp:
                     phone = whatsapp
-                
                 if not phone:
                     phone = 'N/A'
-                
-                
+
                 if not email:
                     email = f"contact_{idx}_{company.id}@example.com"
 
-                
                 if designation and len(designation) > 150:
                     designation = designation[:150]
                 if phone and len(phone) > 50:
@@ -237,7 +211,6 @@ def import_contacts(sheet_name=0):
                 if email and len(email) > 255:
                     email = email[:255]
 
-                
                 contact, created = KeyContact.objects.update_or_create(
                     company=company,
                     name=contact_name,
@@ -246,7 +219,7 @@ def import_contacts(sheet_name=0):
                         'phone': phone,
                         'whatsapp': whatsapp,
                         'email': email,
-                        'is_public': False,  
+                        'is_public': False,
                     }
                 )
 
@@ -260,7 +233,6 @@ def import_contacts(sheet_name=0):
                 error_count += 1
                 print(f"Row {idx + 2}: Error: {str(e)}")
 
-    
     print("\n" + "=" * 70)
     print("CONTACTS IMPORT COMPLETE!")
     print(f"  Created:  {created_count}")
@@ -272,4 +244,4 @@ def import_contacts(sheet_name=0):
 
 if __name__ == '__main__':
     import_companies()
-    import_contacts()  
+    import_contacts()
