@@ -133,23 +133,74 @@ def api_forgot_password(request):
     try:
         data = json.loads(request.body)
         email = data.get("email")
+        if not email:
+            return JsonResponse({"error": "Email is required"}, status=400)
         try:
             user = User.objects.get(email=email)
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_url = request.build_absolute_uri(
-                reverse("accounts:password_reset_confirm", args=[uid, token])
+            reset_url = f"{settings.FRONTEND_URL.rstrip('/')}/reset-password/{uid}/{token}"
+
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background-color: #1A4D2E; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }}
+                    .content {{ background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; }}
+                    .button {{ display: inline-block; padding: 12px 30px; background-color: #1A4D2E; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+                    .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header"><h1>ZaraiLink Password Reset</h1></div>
+                    <div class="content">
+                        <h2>Hi {user.first_name or 'there'},</h2>
+                        <p>We received a request to reset your ZaraiLink password.</p>
+                        <p>Click the button below to choose a new password:</p>
+                        <div style="text-align: center;">
+                            <a href="{reset_url}" class="button">Reset Password</a>
+                        </div>
+                        <p>Or copy and paste this link into your browser:</p>
+                        <p style="word-break: break-all; color: #1A4D2E;">{reset_url}</p>
+                        <p>If you didn't request this, you can safely ignore this email.</p>
+                    </div>
+                    <div class="footer">
+                        <p>&copy; ZaraiLink. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            text_content = (
+                f"Hi {user.first_name or 'there'},\n\n"
+                f"We received a request to reset your ZaraiLink password.\n"
+                f"Use the link below to choose a new password:\n\n{reset_url}\n\n"
+                f"If you didn't request this, you can safely ignore this email."
             )
-            send_mail(
-                subject="Reset your ZaraiLink password",
-                message=f"Click the link to reset your password: {reset_url}",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
+            try:
+                msg = EmailMultiAlternatives(
+                    subject="Reset your ZaraiLink password",
+                    body=text_content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[user.email],
+                )
+                msg.attach_alternative(html_content, "text/html")
+                msg.send(fail_silently=False)
+            except Exception as mail_err:
+                import logging
+                logging.getLogger('zarailink').error(
+                    f"Failed to send password reset email: {mail_err}"
+                )
         except User.DoesNotExist:
             pass
-        return JsonResponse({"success": True})
+        return JsonResponse({
+            "success": True,
+            "message": "If that email is registered, a password reset link has been sent.",
+        })
     except Exception:
         return JsonResponse({"error": "Invalid request"}, status=400)
 
@@ -353,3 +404,59 @@ def api_change_password(request):
         return JsonResponse({"success": True, "message": "Password updated successfully"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+
+
+@csrf_exempt
+def api_reset_password_confirm(request):
+    """Confirm a password reset using the uid + token from the email link."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+    try:
+        data = json.loads(request.body)
+        uid = data.get("uid")
+        token = data.get("token")
+        new_password = data.get("new_password", "")
+
+        if not uid or not token or not new_password:
+            return JsonResponse(
+                {"error": "uid, token and new_password are required"}, status=400
+            )
+
+        from django.utils.http import urlsafe_base64_decode
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError
+
+        try:
+            user_pk = urlsafe_base64_decode(uid).decode()
+            user = User.objects.get(pk=user_pk)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return JsonResponse({"error": "Invalid reset link."}, status=400)
+
+        if not default_token_generator.check_token(user, token):
+            return JsonResponse(
+                {"error": "Reset link is invalid or has expired."}, status=400
+            )
+
+        try:
+            validate_password(new_password, user=user)
+        except ValidationError as ve:
+            return JsonResponse({"error": " ".join(ve.messages)}, status=400)
+
+        user.set_password(new_password)
+        user.save()
+
+        # Auto-login on the new password so the React app immediately sees an authed session.
+        login(request, user)
+
+        return JsonResponse({
+            "success": True,
+            "message": "Password reset successful.",
+            "user": {
+                "name": f"{user.first_name} {user.last_name}".strip(),
+                "email": user.email,
+                "email_verified": user.email_verified,
+                "token_balance": user.token_balance,
+            },
+        })
+    except Exception:
+        return JsonResponse({"error": "Invalid request"}, status=400)

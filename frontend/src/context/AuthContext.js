@@ -3,37 +3,37 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context;
+  return ctx;
 };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/accounts/api/check-auth/`, {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/accounts/api/check-auth/`, {
         method: 'GET',
-        credentials: 'include', 
+        credentials: 'include',
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (res.ok) {
+        const data = await res.json();
+        console.log("auth check", data?.authenticated);
         if (data.authenticated) {
           setUser(data.user);
         }
       }
-    } catch (error) {
-      console.error('Auth check failed:', error);
+    } catch (err) {
+      console.error('Auth check failed:', err);
     } finally {
       setLoading(false);
     }
@@ -41,25 +41,26 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/accounts/api/login/`, {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/accounts/api/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', 
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
+      console.log("login resp", res.status);
 
-      if (response.ok) {
+      if (res.ok) {
         setUser(data.user);
         return { success: true, user: data.user };
       } else {
         return { success: false, error: data.error, email_not_verified: data.email_not_verified };
       }
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (err) {
+      console.error('Login error:', err);
       return { success: false, error: 'Network error. Please check your connection.' };
     }
   };
@@ -70,8 +71,8 @@ export const AuthProvider = ({ children }) => {
         method: 'POST',
         credentials: 'include',
       });
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch (err) {
+      console.error('Logout error:', err);
     } finally {
       setUser(null);
     }
@@ -84,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     isAuthenticated: !!user,
-    refreshUser: checkAuthStatus, 
+    refreshUser: checkAuthStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

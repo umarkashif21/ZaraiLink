@@ -49,8 +49,8 @@ const SummaryView = () => {
             <Navbar />
             <div className="max-w-4xl w-full px-4 pt-10 pb-20 mt-12 bg-white shadow-xl rounded-xl border border-gray-100">
                 <div className="text-center mb-10">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-3">
-                        HS Category: <span className="text-indigo-600">{query}</span>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+                        HS Category: <span className="text-emerald-600">{query}</span>
                     </h1>
                     <p className="text-gray-500 max-w-lg mx-auto">
                         This is a broad category. Select a specific 8-digit product from the sub-categories below to view deep-dive trade data, pricing, and suppliers.
@@ -58,8 +58,8 @@ const SummaryView = () => {
                 </div>
 
                 {loading && (
-                    <div className="flex justify-center items-center py-20 text-indigo-500">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+                    <div className="flex justify-center items-center py-20 text-emerald-500">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600"></div>
                         <span className="ml-3 font-medium">Loading sub-categories...</span>
                     </div>
                 )}
@@ -75,7 +75,7 @@ const SummaryView = () => {
                         <Package size={48} className="mx-auto mb-4 text-gray-300" />
                         <h3 className="font-bold text-lg text-gray-600">No data found</h3>
                         <p>No trade records found within this specific category.</p>
-                        <button onClick={() => navigate('/search')} className="mt-4 text-indigo-600 font-bold hover:underline">
+                        <button onClick={() => navigate('/search')} className="mt-4 text-emerald-600 font-bold hover:underline">
                             Return to Search
                         </button>
                     </div>
@@ -84,11 +84,11 @@ const SummaryView = () => {
                 {!loading && results.length > 0 && (
                     <div className="space-y-4">
                         {results.map((item, idx) => (
-                            <div key={item.hs_code || idx} className="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-gray-50 rounded-xl hover:bg-indigo-50 transition-colors border border-transparent hover:border-indigo-100">
-                                <div>
+                            <div key={item.hs_code || idx} className="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors border border-transparent hover:border-emerald-100 gap-3">
+                                <div className="min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Package size={18} className="text-indigo-500" />
-                                        <h3 className="text-lg font-bold text-gray-900">{item.name}</h3>
+                                        <Package size={18} className="text-emerald-500" />
+                                        <h3 className="text-base sm:text-lg font-bold text-gray-900">{item.name}</h3>
                                     </div>
                                     <div className="text-sm font-medium text-gray-500">
                                         HS Code: <span className="font-bold text-gray-700">{item.hs_code}</span>
@@ -115,7 +115,7 @@ const SummaryView = () => {
                                             // Broad HS code — navigate as before
                                             return `/search/results?q=${encodeURIComponent(item.hs_code)}&hs_code=${encodeURIComponent(item.hs_code)}${item.is_leaf ? '&mode=dashboard' : ''}`;
                                         })()}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-lg flex items-center gap-1 transition-transform hover:scale-105"
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-lg flex items-center gap-1 transition-transform hover:scale-105"
                                         style={{ textDecoration: 'none' }}
                                     >
                                         View Trade Data <ChevronRight size={16} />

@@ -249,7 +249,7 @@ const CompanyProfile = () => {
       <div className="min-h-screen bg-slate-50 font-sans">
         <Navbar />
         <div className="bg-white border-b border-slate-200 shadow-sm">
-          <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
             <button
               onClick={() => navigate(-1)}
               className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 font-medium mb-5 transition-colors"
@@ -279,7 +279,7 @@ const CompanyProfile = () => {
             </div>
           </div>
         </div>
-        <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-10">
           <section>
             {company.description && (
               <p className="text-slate-600 leading-relaxed mb-6 max-w-3xl">{company.description}</p>

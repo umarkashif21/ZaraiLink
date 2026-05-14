@@ -120,11 +120,11 @@ export default function Signup() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex flex-col">
       {}
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <div className="text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
+      <nav className="bg-white shadow-sm px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+        <div className="text-xl sm:text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
         <div>
           <button
-            className="text-[#1A4D2E] font-medium hover:underline"
+            className="text-[#1A4D2E] font-medium hover:underline text-sm sm:text-base"
             onClick={() => navigate("/login")}
           >
             Sign In
@@ -133,15 +133,15 @@ export default function Signup() {
       </nav>
 
       {}
-      <div className="flex-1 flex flex-col md:flex-row items-center justify-center px-6 py-10 space-y-10 md:space-y-0 md:space-x-10">
+      <div className="flex-1 flex flex-col md:flex-row items-center justify-center px-4 sm:px-6 py-6 sm:py-10 space-y-6 md:space-y-0 md:space-x-10">
         <form
           onSubmit={handleSubmit}
-          className="bg-white w-full max-w-md rounded-2xl shadow-lg p-10 space-y-6"
+          className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 sm:p-10 space-y-5 sm:space-y-6"
         >
-          <h1 className="text-3xl font-bold text-[#1A4D2E] text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1A4D2E] text-center">
             Get Started with ZaraiLink
           </h1>
-          <p className="text-gray-600 text-center">
+          <p className="text-gray-600 text-center text-sm sm:text-base">
             Optimize Data. Empower Tomorrow. Get Started Now.
           </p>
 

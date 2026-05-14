@@ -94,10 +94,31 @@
               color var(--transition-normal);
 }
 
-body {
+html, body {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+#root {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+img, svg, video {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  button, a, [role="button"], input[type="checkbox"], input[type="radio"] {
+    min-height: 40px;
+  }
+  button.zl-icon-btn, a.zl-icon-btn {
+    min-height: 0;
+  }
 }
 
 :root.dark ::-webkit-scrollbar {

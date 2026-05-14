@@ -101,7 +101,7 @@ const FindSuppliers = () => {
     <div className="min-h-screen bg-slate-50 font-sans">
       <Navbar />
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-6 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-1">Trade Directory</p>
@@ -190,7 +190,7 @@ const FindSuppliers = () => {
           )}
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm font-medium text-slate-500">
             {loading ? 'Loading…' : <><span className="font-bold text-slate-800">{companies.length}</span> suppliers found</>}

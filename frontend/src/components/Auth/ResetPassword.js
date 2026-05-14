@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom'; 
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const ResetPassword = () => {
-  const { token } = useParams(); 
-  const navigate = useNavigate(); 
+  const { uid, token } = useParams();
+  const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -48,28 +50,37 @@ const ResetPassword = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    setMessage(''); 
+    setMessage('');
 
-    
-    
-    
-    console.log('Resetting password with token:', token, 'and new password:', newPassword);
-    
-    
-
-    
-    setTimeout(() => {
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/accounts/api/reset-password/`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid, token, new_password: newPassword }),
+        }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setMessage('Password updated successfully!');
+        setShowSuccess(true);
+        try { await refreshUser(); } catch (_) {}
+      } else {
+        setMessage(
+          data.error || 'Failed to reset password. The link may be invalid or expired.'
+        );
+      }
+    } catch (err) {
+      setMessage('Network error. Please check your connection and try again.');
+    } finally {
       setLoading(false);
-      
-      setMessage('Password updated successfully!');
-      setShowSuccess(true);
-      
-      
-    }, 1500); 
+    }
   };
 
   if (showSuccess) {
@@ -77,13 +88,13 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex flex-col">
         {}
-        <nav className="bg-white shadow-sm px-6 py-4 flex justify-center items-center"> {}
-          <div className="text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
+        <nav className="bg-white shadow-sm px-4 sm:px-6 py-3 sm:py-4 flex justify-center items-center"> {}
+          <div className="text-xl sm:text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
         </nav>
 
         {}
-        <div className="flex-1 flex items-center justify-center px-6 py-10">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-10 space-y-8">
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-10">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 sm:p-10 space-y-6 sm:space-y-8">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
                 {}
@@ -91,7 +102,7 @@ const ResetPassword = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-[#1A4D2E] mt-4">Password Updated!</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#1A4D2E] mt-4">Password Updated!</h1>
               <p className="text-gray-600 mt-2">
                 Your password has been successfully reset.
               </p>
@@ -114,14 +125,14 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex flex-col">
       {}
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-center items-center"> {}
-        <div className="text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
+      <nav className="bg-white shadow-sm px-4 sm:px-6 py-3 sm:py-4 flex justify-center items-center"> {}
+        <div className="text-xl sm:text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
       </nav>
 
       {}
-      <div className="flex-1 flex items-center justify-center px-6 py-10">
-        <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-10 space-y-8">
-          <h1 className="text-3xl font-bold text-[#1A4D2E] text-center">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-10">
+        <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 sm:p-10 space-y-6 sm:space-y-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1A4D2E] text-center">
             Set a new password for your account
           </h1>
           <p className="text-gray-600 text-center">

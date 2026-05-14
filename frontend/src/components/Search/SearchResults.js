@@ -387,7 +387,7 @@ const SearchResults = () => {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex flex-col md:flex-row gap-8" className="max-w-7xl mx-auto px-6 py-8 flex items-start gap-8">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex flex-col md:flex-row gap-8" className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex items-start gap-8">
                 {!needsDisambig && (
                     <aside className="w-64 hidden md:block space-y-6 flex-shrink-0">
                         <div className="flex items-center justify-between mb-4">

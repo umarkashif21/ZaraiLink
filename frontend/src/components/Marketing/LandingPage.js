@@ -11,37 +11,38 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page-wrapper min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <section className="hero-pattern pt-24 pb-32 px-6 lg:px-8 text-white">
+      <section className="hero-pattern pt-12 sm:pt-20 lg:pt-24 pb-16 sm:pb-24 lg:pb-32 px-4 sm:px-6 lg:px-8 text-white">
         <div className="max-w-7xl mx-auto relative z-10">
-          <nav className="flex items-center justify-between mb-20">
-            <div className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-slate-900">
+          <nav className="flex items-center justify-between mb-10 sm:mb-16 lg:mb-20 gap-3">
+            <div className="text-lg sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-slate-900 shrink-0">
                 Z
               </div>
               ZaraiLink
             </div>
-            <div className="flex gap-4 items-center">
-              <button 
+            <div className="flex gap-2 sm:gap-4 items-center">
+              <button
                 onClick={() => navigate('/login')}
-                className="text-slate-300 hover:text-white font-medium"
+                className="text-slate-300 hover:text-white font-medium text-sm sm:text-base"
               >
                 Sign In
               </button>
-              <button 
+              <button
                 onClick={() => navigate('/signup')}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-5 py-2.5 rounded-full font-bold transition-colors shadow-lg shadow-emerald-500/20"
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-sm sm:text-base transition-colors shadow-lg shadow-emerald-500/20 whitespace-nowrap"
               >
-                Create Account
+                <span className="hidden xs:inline">Create Account</span>
+                <span className="xs:hidden">Sign Up</span>
               </button>
             </div>
           </nav>
 
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
+            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight">
               Trade intelligence for <br className="hidden md:block"/>
               <span className="text-emerald-400">global commodities.</span>
             </h1>
-            <p className="text-xl md:text-2xl text-slate-300 mb-12 font-medium max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl md:text-2xl text-slate-300 mb-8 sm:mb-12 font-medium max-w-2xl mx-auto px-2 sm:px-0">
               Find the right partners. Enter the right markets. Make data-driven sourcing and export decisions.
             </p>
             
@@ -63,32 +64,33 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 bg-slate-100 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Real-Time Market Signals</h2>
-            <p className="text-slate-500 text-lg">Gain unprecedented visibility into global trade flows.</p>
+      <section className="py-12 sm:py-20 lg:py-24 bg-slate-100 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">Real-Time Market Signals</h2>
+            <p className="text-slate-500 text-base sm:text-lg">Gain unprecedented visibility into global trade flows.</p>
           </div>
 
-          <div className="relative max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                  <TrendingUp size={24} />
+          <div className="relative max-w-5xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="p-4 sm:p-8 border-b border-slate-100 flex items-center justify-between gap-3 bg-slate-50">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
+                  <TrendingUp size={20} className="sm:hidden" />
+                  <TrendingUp size={24} className="hidden sm:block" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-lg">Global Wheat Import Volume</h3>
-                  <p className="text-sm text-slate-500">Live 30-day tracking index</p>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-slate-900 text-sm sm:text-lg truncate">Global Wheat Import Volume</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 truncate">Live 30-day tracking index</p>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-black text-emerald-600">+14.2%</div>
-                <div className="text-sm text-slate-500">vs Prev 30 Days</div>
+              <div className="text-right shrink-0">
+                <div className="text-lg sm:text-2xl font-black text-emerald-600">+14.2%</div>
+                <div className="text-xs sm:text-sm text-slate-500 whitespace-nowrap">vs Prev 30 Days</div>
               </div>
             </div>
-            
-            <div className="p-8 relative">
-              <div className="flex items-end justify-between h-64 gap-2 opacity-80">
+
+            <div className="p-4 sm:p-8 relative">
+              <div className="flex items-end justify-between h-40 sm:h-64 gap-1 sm:gap-2 opacity-80">
                 {[40, 60, 45, 80, 55, 90, 75, 110, 85, 130, 100, 150].map((h, i) => (
                   <div key={i} className="w-full bg-slate-200 rounded-t-lg relative group">
                     <div 
@@ -119,13 +121,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section className="py-12 sm:py-20 lg:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>
             <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-6">
               <Users size={24} />
             </div>
-            <h2 className="text-4xl font-extrabold text-slate-900 mb-6">Discover Verified Trading Partners</h2>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-6">Discover Verified Trading Partners</h2>
             <p className="text-lg text-slate-600 mb-8 leading-relaxed">
               Stop guessing who you're trading with. Access our proprietary database of thousands of global buyers and suppliers, complete with verified shipment records, trust indicators, and active product portfolios.
             </p>
@@ -200,25 +202,25 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            
-            <div className="order-2 lg:order-1 grid grid-cols-2 gap-4">
-              <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 transform hover:-translate-y-1 transition-transform">
-                <Globe className="text-blue-400 mb-4" size={32} />
-                <h4 className="text-4xl font-black mb-2 brand-gradient-text">140+</h4>
-                <p className="text-slate-400 font-medium">Countries Tracked</p>
+      <section className="py-12 sm:py-20 lg:py-24 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+            <div className="order-2 lg:order-1 grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 transform hover:-translate-y-1 transition-transform">
+                <Globe className="text-blue-400 mb-3 sm:mb-4" size={28} />
+                <h4 className="text-2xl sm:text-4xl font-black mb-2 brand-gradient-text">140+</h4>
+                <p className="text-slate-400 font-medium text-sm sm:text-base">Countries Tracked</p>
               </div>
-              <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 transform translate-y-8 hover:translate-y-6 transition-transform">
-                <BarChart2 className="text-emerald-400 mb-4" size={32} />
-                <h4 className="text-4xl font-black mb-2 brand-gradient-text">10M+</h4>
-                <p className="text-slate-400 font-medium">Shipment Records</p>
+              <div className="bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 transform translate-y-4 sm:translate-y-8 hover:translate-y-3 sm:hover:translate-y-6 transition-transform">
+                <BarChart2 className="text-emerald-400 mb-3 sm:mb-4" size={28} />
+                <h4 className="text-2xl sm:text-4xl font-black mb-2 brand-gradient-text">10M+</h4>
+                <p className="text-slate-400 font-medium text-sm sm:text-base">Shipment Records</p>
               </div>
             </div>
 
             <div className="order-1 lg:order-2">
-              <h2 className="text-4xl font-extrabold mb-6">Unrivaled Market Intelligence</h2>
+              <h2 className="text-3xl sm:text-4xl font-extrabold mb-6">Unrivaled Market Intelligence</h2>
               <p className="text-lg text-slate-400 mb-8 leading-relaxed">
                 Whether you are analyzing macro supply chain shifts or tracking a competitor's export footprint, ZaraiLink gives you the strategic advantage of comprehensive data.
               </p>
@@ -234,13 +236,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 bg-slate-50 px-6">
+      <section className="py-12 sm:py-20 lg:py-24 bg-slate-50 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-extrabold text-slate-900">Three steps to smarter trade.</h2>
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Three steps to smarter trade.</h2>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 relative">
+
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-8 relative">
             <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-slate-200 z-0"></div>
 
             <div className="relative z-10 bg-white p-8 rounded-2xl shadow-xl border border-slate-100 flex flex-col items-center text-center">
@@ -281,12 +283,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-32 bg-slate-900 text-white relative overflow-hidden">
+      <section className="py-16 sm:py-24 lg:py-32 bg-slate-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-emerald-500/10 blur-[100px] rounded-full scale-150 transform translate-y-1/2"></div>
-        
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-5xl font-extrabold mb-6">Stop searching. Start trading.</h2>
-          <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6">Stop searching. Start trading.</h2>
+          <p className="text-base sm:text-xl text-slate-300 mb-8 sm:mb-10 max-w-2xl mx-auto">
             Join the platform that gives you an unfair advantage in global commodity markets. Institutional-grade intelligence, accessible to everyone.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">

@@ -56,22 +56,22 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex flex-col">
       {}
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <div className="text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
-        <Link to="/signup" className="text-[#1A4D2E] font-medium hover:underline">
+      <nav className="bg-white shadow-sm px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+        <div className="text-xl sm:text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
+        <Link to="/signup" className="text-[#1A4D2E] font-medium hover:underline text-sm sm:text-base">
           Sign Up
         </Link>
       </nav>
 
       {}
-      <div className="flex-1 flex items-center justify-center px-6 py-10">
-        <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-10 space-y-8">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-10">
+        <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 sm:p-10 space-y-6 sm:space-y-8">
           {}
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-[#1A4D2E] mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#1A4D2E] mb-2">
               Welcome to ZaraiLink!
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm sm:text-base">
               Your Gateway to Pakistan’s Verified Trade Intelligence
             </p>
           </div>

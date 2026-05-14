@@ -33,20 +33,18 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        
-        page = self.paginate_queryset(queryset)
+        qs = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(qs)
+        print(f"companies list page: {page is not None}")
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            response = self.get_paginated_response(serializer.data)
-            
+            ser = self.get_serializer(page, many=True)
+            resp = self.get_paginated_response(ser.data)
             if getattr(self, '_ai_fallback', False):
-                response.data['ai_fallback'] = True
-            return response
+                resp.data['ai_fallback'] = True
+            return resp
 
-        serializer = self.get_serializer(queryset, many=True)
-        data = {'results': serializer.data}
-        
+        ser = self.get_serializer(qs, many=True)
+        data = {'results': ser.data}
         if getattr(self, '_ai_fallback', False):
             data['ai_fallback'] = True
         return Response(data)
@@ -203,23 +201,21 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
     def unlock(self, request, pk=None):
         contact = self.get_object()
         user = request.user
-        
-        
-        already_unlocked = KeyContactUnlock.objects.filter(
-            user=user, 
-            key_contact=contact 
+        print(f"unlock attempt user={user.id} contact={contact.id}")
+
+        already = KeyContactUnlock.objects.filter(
+            user=user,
+            key_contact=contact
         ).exists()
-        
-        if already_unlocked:
+
+        if already:
             return Response({
                 'status': 'already_unlocked',
                 'message': 'You have already unlocked this contact',
                 'contact': KeyContactSerializer(contact, context={'request': request}).data
             })
-        
-        
+
         if contact.is_public:
-            
             KeyContactUnlock.objects.create(user=user, key_contact=contact)
             return Response({
                 'status': 'success',
@@ -228,8 +224,7 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
                 'remaining_balance': user.token_balance,
                 'contact': KeyContactSerializer(contact, context={'request': request}).data
             })
-        
-        
+
         if not user.has_tokens(1):
             return Response({
                 'status': 'insufficient_tokens',
@@ -237,12 +232,11 @@ class KeyContactViewSet(viewsets.ReadOnlyModelViewSet):
                 'current_balance': user.token_balance,
                 'required': 1
             }, status=status.HTTP_402_PAYMENT_REQUIRED)
-        
-        
-        success = user.deduct_tokens(1)
-        if success:
+
+        ok = user.deduct_tokens(1)
+        print(f"deduct ok: {ok}")
+        if ok:
             KeyContactUnlock.objects.create(user=user, key_contact=contact)
-            
             return Response({
                 'status': 'success',
                 'message': 'Contact unlocked successfully',

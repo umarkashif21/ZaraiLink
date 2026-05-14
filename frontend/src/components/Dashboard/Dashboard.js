@@ -334,13 +334,13 @@ const Dashboard = () => {
           <FloatingOrb className="w-64 h-64 bg-blue-300 bottom-0 left-1/2" />
         </div>
 
-        <main className="max-w-4xl mx-auto px-6 py-20 md:py-28 relative z-10">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16 md:py-20 lg:py-28 relative z-10 flex flex-col">
 
               <motion.div
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="mb-10 bg-white/80 backdrop-blur border border-slate-200 rounded-2xl shadow-lg shadow-slate-200/50 p-5 text-left relative"
+                className="mt-8 mb-4 md:mt-0 md:mb-10 bg-white/80 backdrop-blur border border-slate-200 rounded-2xl shadow-lg shadow-slate-200/50 p-5 text-left relative order-5 md:order-1"
               >
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
@@ -373,15 +373,15 @@ const Dashboard = () => {
             initial="hidden"
             animate="visible"
             variants={stagger}
-            className="text-center mb-10"
+            className="text-center mb-6 md:mb-10 order-1 md:order-2"
           >
             <motion.h1
               variants={fadeUp}
-              className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-4 leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight mb-4 leading-tight"
             >
               What are you<br />
               looking for,{' '}
-              <span className="relative inline-block">
+              <span className="relative inline-block break-words max-w-full">
                 <span className="text-emerald-600">{user?.name || user?.email?.split('@')[0]}</span>
                 <motion.div
                   className="absolute -bottom-1 left-0 h-1 bg-emerald-400 rounded-full"
@@ -392,7 +392,7 @@ const Dashboard = () => {
               </span>?
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="text-slate-400 text-lg font-medium mb-8">
+            <motion.p variants={fadeUp} className="text-slate-400 text-base sm:text-lg font-medium mb-6 sm:mb-8 px-2 sm:px-0">
               Search across thousands of importers, exporters, and their transaction histories.
             </motion.p>
           </motion.div>
@@ -401,6 +401,7 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 32, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
+            className="order-2 md:order-3"
           >
             <form id="tour-search-bar" onSubmit={handleSearch} className="relative w-full mx-auto mb-6">
               <div className="relative group shadow-2xl shadow-emerald-500/10 rounded-2xl">
@@ -411,18 +412,19 @@ const Dashboard = () => {
                   onChange={(e) => setQuery(e.target.value)}
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                   placeholder="Try 'Import Dextrose from China under $700'..."
-                  className="w-full h-16 pl-16 pr-36 rounded-2xl border-2 border-slate-200 bg-white focus:outline-none focus:ring-0 focus:border-emerald-400 text-base transition-all shadow-inner"
+                  className="w-full h-14 sm:h-16 pl-12 sm:pl-16 pr-24 sm:pr-36 rounded-2xl border-2 border-slate-200 bg-white focus:outline-none focus:ring-0 focus:border-emerald-400 text-sm sm:text-base transition-all shadow-inner"
                   autoComplete="off"
                 />
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors">
-                  <Search size={22} />
+                <div className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors">
+                  <Search size={20} className="sm:hidden" />
+                  <Search size={22} className="hidden sm:block" />
                 </div>
 
                 {query && (
                   <button
                     type="button"
                     onClick={clearQuery}
-                    className="absolute right-[8.5rem] top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-[6rem] sm:right-[8.5rem] top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors zl-icon-btn"
                   >
                     <X size={18} />
                   </button>
@@ -430,10 +432,10 @@ const Dashboard = () => {
 
                 <button
                   type="submit"
-                  className="absolute right-2 top-2 bottom-2 px-7 bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 group/btn"
+                  className="absolute right-2 top-2 bottom-2 px-4 sm:px-7 bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-xl font-bold text-sm sm:text-base transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-1 sm:gap-2 group/btn"
                 >
                   Search
-                  <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                  <ArrowRight size={16} className="hidden xs:block group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </div>
 
@@ -443,21 +445,24 @@ const Dashboard = () => {
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    className="mt-3 flex justify-center"
+                    className="mt-3 flex justify-center px-2"
                   >
                     {searchMode === 'hscode' && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
-                        <Hash size={11} /> HS Code Mode — browsing by trade code
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 max-w-full">
+                        <Hash size={11} className="shrink-0" />
+                        <span className="truncate">HS Code Mode<span className="hidden sm:inline"> — browsing by trade code</span></span>
                       </span>
                     )}
                     {searchMode === 'product' && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
-                        <Package size={11} /> Product Search — browse matching variants
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 max-w-full">
+                        <Package size={11} className="shrink-0" />
+                        <span className="truncate">Product Search<span className="hidden sm:inline"> — browse matching variants</span></span>
                       </span>
                     )}
                     {searchMode === 'ai' && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-violet-100 text-violet-700 border border-violet-200">
-                        <Zap size={11} /> AI Query Mode — powered by natural language
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-violet-100 text-violet-700 border border-violet-200 max-w-full">
+                        <Zap size={11} className="shrink-0" />
+                        <span className="truncate">AI Query Mode<span className="hidden sm:inline"> — powered by natural language</span></span>
                       </span>
                     )}
                   </motion.div>
@@ -527,7 +532,7 @@ const Dashboard = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="flex justify-center gap-3 mb-8"
+            className="flex justify-center gap-3 mb-6 md:mb-8 order-3 md:order-4"
           >
             {[
               { label: 'Imports', value: 'IMPORT' },
@@ -551,7 +556,7 @@ const Dashboard = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="flex flex-wrap justify-center gap-3 mb-10"
+            className="hidden md:flex flex-wrap justify-center gap-3 mb-6 md:mb-10 order-4 md:order-5"
           >
             {['I want to buy', 'I want to sell', 'Find suppliers', 'Find buyers'].map((pill) => (
               <button
@@ -569,7 +574,7 @@ const Dashboard = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
-            className="text-center"
+            className="hidden md:block text-center order-6"
           >
             <p className="mb-3 font-bold uppercase tracking-widest text-xs text-slate-400">Example Queries</p>
             <div className="flex flex-wrap justify-center gap-6 text-slate-400 font-medium text-sm">
@@ -591,34 +596,34 @@ const Dashboard = () => {
         </main>
       </div>
 
-      <div className="bg-slate-900 py-10">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="grid grid-cols-3 gap-8 text-center">
+      <div className="bg-slate-900 py-8 sm:py-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-3 gap-3 sm:gap-8 text-center">
             {STATS.map(({ icon, value, suffix, label }) => (
               <div key={label} className="flex flex-col items-center gap-1">
-                <div className="text-emerald-400 mb-2">{icon}</div>
-                <div className="text-3xl font-black text-white font-mono">
+                <div className="text-emerald-400 mb-1 sm:mb-2">{icon}</div>
+                <div className="text-xl sm:text-3xl font-black text-white font-mono">
                   <AnimatedCounter end={value} suffix={suffix} />
                 </div>
-                <div className="text-slate-400 text-sm font-medium">{label}</div>
+                <div className="text-slate-400 text-xs sm:text-sm font-medium">{label}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20 lg:py-24">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-80px' }}
           variants={stagger}
-          className="text-center mb-14"
+          className="text-center mb-10 sm:mb-14"
         >
-          <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-3">
+          <motion.h2 variants={fadeUp} className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mb-3">
             Everything you need to close better deals
           </motion.h2>
-          <motion.p variants={fadeUp} className="text-slate-400 text-base">
+          <motion.p variants={fadeUp} className="text-slate-400 text-sm sm:text-base">
             From first search to the right contact — all in one place.
           </motion.p>
         </motion.div>
@@ -628,16 +633,16 @@ const Dashboard = () => {
           whileInView="visible"
           viewport={{ once: true, margin: '-60px' }}
           variants={stagger}
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
         >
           {FEATURES.map((f, i) => (
             <motion.div
               key={i}
               variants={fadeUp}
               whileHover={{ y: -6, boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}
-              className="bg-white p-7 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 cursor-default"
+              className="bg-white p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 cursor-default"
             >
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-5 shadow-lg`}>
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-4 sm:mb-5 shadow-lg`}>
                 <f.Icon size={22} className="text-white" strokeWidth={2} />
               </div>
               <h4 className="font-bold text-slate-900 mb-2 text-base">{f.title}</h4>
@@ -647,13 +652,13 @@ const Dashboard = () => {
         </motion.div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 pb-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-14 sm:pb-20 lg:pb-24">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative bg-slate-900 rounded-[2.5rem] p-12 text-center overflow-hidden shadow-2xl"
+          className="relative bg-slate-900 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-10 lg:p-12 text-center overflow-hidden shadow-2xl"
         >
           <motion.div
             className="absolute inset-0 opacity-30"
@@ -665,10 +670,10 @@ const Dashboard = () => {
           <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
               Find your next<br />trading partner
             </h2>
-            <p className="text-slate-400 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-slate-400 text-sm sm:text-lg mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
               Browse the directory, explore real transaction data, and connect with the right buyers or suppliers — without the cold calls.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">

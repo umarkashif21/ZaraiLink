@@ -251,7 +251,7 @@ const DataDashboard = () => {
             <Navbar />
 
             <div className="bg-slate-900 border-b border-slate-800 sticky top-0 md:top-[64px] z-10 shadow-2xl">
-                <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <div className="text-emerald-500 font-bold tracking-widest text-[10px] uppercase mb-1">Market Intelligence</div>
                         <div className="flex items-center gap-3 mb-2">

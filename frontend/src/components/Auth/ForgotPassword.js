@@ -19,25 +19,42 @@ const ForgotPassword = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
     setMessage('');
 
-    
-    console.log('Sending password reset email to:', email);
-    setTimeout(() => {
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/accounts/api/forgot-password/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setMessage(
+          data.message ||
+            'Password reset email sent successfully. Please check your inbox.'
+        );
+        setShowSuccess(true);
+      } else {
+        setMessage(data.error || 'Failed to send reset email. Please try again.');
+      }
+    } catch (err) {
+      setMessage('Network error. Please check your connection and try again.');
+    } finally {
       setLoading(false);
-      setMessage('Password reset email sent successfully! Please check your inbox.');
-      setShowSuccess(true);
-    }, 1500);
+    }
   };
 
   
   const Navbar = () => (
-    <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-      <div className="text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
+    <nav className="bg-white shadow-sm px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+      <div className="text-xl sm:text-2xl font-bold text-[#1A4D2E]">ZaraiLink</div>
     </nav>
   );
 
@@ -46,8 +63,8 @@ const ForgotPassword = () => {
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex flex-col">
         <Navbar />
 
-        <div className="flex-1 flex items-center justify-center px-6 py-10">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-10 space-y-8">
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-10">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 sm:p-10 space-y-6 sm:space-y-8">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
                 <svg
@@ -65,7 +82,7 @@ const ForgotPassword = () => {
                   ></path>
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-[#1A4D2E] mt-4">Check your email</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#1A4D2E] mt-4">Check your email</h1>
               <p className="text-gray-600 mt-2">
                 We sent a password reset link to <span className="font-medium">{email}</span>
               </p>
@@ -98,8 +115,8 @@ const ForgotPassword = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex flex-col">
       <Navbar />
 
-      <div className="flex-1 flex items-center justify-center px-6 py-10">
-        <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-10 space-y-8">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-10">
+        <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 sm:p-10 space-y-6 sm:space-y-8">
           <h1 className="text-3xl font-bold text-[#1A4D2E] text-center">
             Forgot your password?
           </h1>
